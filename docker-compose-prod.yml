@@ -1,0 +1,39 @@
+version: "3.1"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.2
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    environment:
+      - "cluster.name=publiccode"
+      - "network.host=0.0.0.0"
+      - "discovery.zen.minimum_master_nodes=1"
+      - "discovery.type=single-node"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana-oss:6.2.2
+    ports:
+      - "5601:5601"
+    environment:
+      - "elasticsearch.url=http://elasticsearch:9200"
+
+  prometheus:
+    image: quay.io/prometheus/prometheus:v2.2.1
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  spider:
+    image: italia/developers-italia-backend:0.0.1
+    ports:
+      - "8081:8081"
+    command: ["ls", "-la", "/app"]
+
+volumes:
+  es_data:
+    driver: local

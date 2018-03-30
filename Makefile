@@ -1,16 +1,14 @@
-.PHONY: run build lint test
+include .env
+
+.PHONY: run build lint test up stop up-prod stop-prod
 
 default: build
-
-NAME=developers-italia-backend
-PROJECT?=github.com/italia/developers-italia-backend
-VERSION?=0.0.1
 
 run:
 	go run main.go version.go
 
-build: lint
-	go build -ldflags "-X main.Version=${VERSION}" -o ${NAME} "${PROJECT}"
+build:
+	docker build -t italia/${NAME}:${VERSION} --build-arg NAME=${NAME} --build-arg PROJECT=${PROJECT} .
 
 lint:
 	gometalinter --install
@@ -18,3 +16,15 @@ lint:
 
 test:
 	go test -race "${PROJECT}"/...
+
+up:
+	docker-compose up -d
+
+stop:
+	docker-compose stop
+
+up-prod:
+	docker-compose --file=docker-compose-prod.yml up -d
+
+stop-prod:
+	docker-compose --file=docker-compose-prod.yml stop

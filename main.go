@@ -6,7 +6,11 @@ import (
 	"io/ioutil"
 	"os"
 
+	"net/http"
+
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -18,6 +22,8 @@ func main() {
 	)
 
 	flag.Parse()
+
+	processedCounter := initPrometheus()
 
 	if *version {
 		log.Info(Version)
@@ -39,7 +45,36 @@ func main() {
 		go crawler.Process(hosting, repositories)
 	}
 
-	for {
-		log.Info(<-repositories)
+	processRepositories(repositories, processedCounter)
+}
+
+func initPrometheus() prometheus.Counter {
+	processedCounter := prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "repository_processed",
+		Help: "Number of repository processed.",
+	})
+	err := prometheus.Register(processedCounter)
+	if err != nil {
+		log.Errorf("error in registering Prometheus handler: %v:", err)
+	}
+
+	go startMetricsServer()
+
+	return processedCounter
+}
+
+func startMetricsServer() {
+	http.Handle("/metrics", promhttp.Handler())
+
+	err := http.ListenAndServe("0.0.0.0:8081", nil)
+	if err != nil {
+		log.Warningf("monitoring endpoint non available: %v: ", err)
+	}
+}
+
+func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
+	for repository := range repositories {
+		log.Info(repository)
+		processedCounter.Inc()
 	}
 }

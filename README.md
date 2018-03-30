@@ -1,5 +1,7 @@
 # developers-italia-backend
 
+[![CircleCI](https://circleci.com/gh/italia/developers-italia-backend/tree/master.svg?style=svg)](https://circleci.com/gh/italia/developers-italia-backend/tree/master)
+
 Backend &amp; crawler for the OSS catalog of Developers Italia
 
 **This document is a Work in progress**
