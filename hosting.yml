@@ -1,0 +1,6 @@
+- url: 'https://github.com'
+  service: 'github'
+- url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100'
+  service: 'bitbucket'
+- url: 'https://gitlab.com'
+  service: 'gitlab'
