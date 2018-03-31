@@ -1,6 +1,6 @@
 include .env
 
-.PHONY: run build lint test up stop up-prod stop-prod
+.PHONY: run build lint test up stop prod-up prod-stop
 
 default: build
 
@@ -8,7 +8,11 @@ run:
 	go run main.go version.go
 
 build:
-	docker build -t italia/${NAME}:${VERSION} --build-arg NAME=${NAME} --build-arg PROJECT=${PROJECT} .
+	docker build -t italia/${NAME}:${VERSION} \
+	    --build-arg NAME=${NAME} \
+	    --build-arg PROJECT=${PROJECT} \
+	    --build-arg VERSION=${VERSION} \
+	    ./
 
 lint:
 	gometalinter --install
@@ -23,8 +27,8 @@ up:
 stop:
 	docker-compose stop
 
-up-prod:
+prod-up:
 	docker-compose --file=docker-compose-prod.yml up -d
 
-stop-prod:
+prod-stop:
 	docker-compose --file=docker-compose-prod.yml stop
