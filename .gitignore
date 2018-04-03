@@ -1,5 +1,24 @@
+# IDEs config files
 .idea
 
+# OS generated files
+.DS_Store
+.DS_Store?
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Logs and database
+log/
+*.log
+*.sql
+*.sqlite
+
+# Golang vendor folder
 vendor
 
+# Compiled binary
 developers-italia-backend
+
+# Elasticsearch data volume
+es_data
