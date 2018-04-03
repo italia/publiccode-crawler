@@ -11,6 +11,7 @@ services:
     environment:
       - "CLUSTER_NAME=publiccode"
       - "ELASTIC_PWD=elastic"
+      - "KIBANA_PWD=kibana"
       - "ES_TMPDIR=/tmp"
     labels:
       - "traefik.enable=true"
@@ -30,6 +31,27 @@ services:
     volumes:
       - ./es_data:/elasticsearch/data
       - ./docker/images/elasticsearch/config:/elasticsearch/config
+
+  kibana:
+    image: khezen/kibana:6.2.2
+    links:
+      - elasticsearch
+    environment:
+      - "KIBANA_PWD=kibana"
+      - "ELASTICSEARCH_HOST=elasticsearch"
+      - "ELASTICSEARCH_PORT=9200"
+    labels:
+      - "traefik.enable=true"
+      - 'traefik.backend=kibana'
+      - 'traefik.port=5601'
+      - 'traefik.frontend.rule=Host:kibana.${PROJECT_BASE_URL}'
+    ports:
+      - "5601:5601"
+    networks:
+      - web
+    volumes:
+      - ./docker/images/kibana/config:/opt/kibana-6.2.2-linux-x86_64/config
+      - ./docker/images/elasticsearch/config:/etc/elasticsearch
 
   prometheus:
     image: quay.io/prometheus/prometheus:v2.2.1
