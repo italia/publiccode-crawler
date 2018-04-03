@@ -18,7 +18,7 @@ server.host: '0.0.0.0'
 #server.name: "your-hostname"
 
 # The URL of the Elasticsearch instance to use for all your queries.
-elasticsearch.url: '${ELASTICSEARCH_PROTOCOL}://${ELASTICSEARCH_HOST}:${ELASTICSEARCH_PORT}'
+elasticsearch.url: 'https://elasticsearch:9200'
 
 # When this setting’s value is true Kibana uses the hostname specified in the server.host
 # setting. When the value of this setting is false, Kibana uses the hostname of the host
@@ -37,7 +37,7 @@ elasticsearch.url: '${ELASTICSEARCH_PROTOCOL}://${ELASTICSEARCH_HOST}:${ELASTICS
 # index at startup. Your Kibana users still need to authenticate with Elasticsearch, which
 # is proxied through the Kibana server.
 elasticsearch.username: "kibana"
-elasticsearch.password: '${KIBANA_PWD}'
+elasticsearch.password: "kibana"
 searchguard.cookie.password: "4fjNPloEVvrVj28BsVh3jI8t3pmv7Qg6"
 elasticsearch.requestHeadersWhitelist: [ "Authorization", "sgtenant" ]
 
