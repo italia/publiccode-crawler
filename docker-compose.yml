@@ -13,6 +13,7 @@ services:
       - "ELASTIC_PWD=elastic"
       - "KIBANA_PWD=kibana"
       - "ES_TMPDIR=/tmp"
+      - "HTTP_SSL=true"
     labels:
       - "traefik.enable=true"
       - 'traefik.backend=elasticsearch'
@@ -30,7 +31,6 @@ services:
       - web
     volumes:
       - ./es_data:/elasticsearch/data
-      - ./docker/images/elasticsearch/config:/elasticsearch/config
 
   kibana:
     image: khezen/kibana:6.2.2
@@ -40,6 +40,8 @@ services:
       - "KIBANA_PWD=kibana"
       - "ELASTICSEARCH_HOST=elasticsearch"
       - "ELASTICSEARCH_PORT=9200"
+      - "KIBANA_HOST=0.0.0.0"
+      - "ELASTICSEARCH_PROTOCOL=https"
     labels:
       - "traefik.enable=true"
       - 'traefik.backend=kibana'
