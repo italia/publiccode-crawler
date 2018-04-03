@@ -13,7 +13,8 @@ services:
       - "ELASTIC_PWD=elastic"
       - "KIBANA_PWD=kibana"
       - "ES_TMPDIR=/tmp"
-      - "HTTP_SSL=true"
+      - "HTTP_SSL=false"
+      - "searchguard.enterprise_modules_enabled=false"
     labels:
       - "traefik.enable=true"
       - 'traefik.backend=elasticsearch'
@@ -24,13 +25,10 @@ services:
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.period=60s"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.average=100"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.burst=200"
-    ports:
-      - "9200:9200"
-      - "9300:9300"
     networks:
       - web
     volumes:
-      - ./es_data:/elasticsearch/data
+      - es_data:/elasticsearch/data
 
   kibana:
     image: khezen/kibana:6.2.2
@@ -41,19 +39,16 @@ services:
       - "ELASTICSEARCH_HOST=elasticsearch"
       - "ELASTICSEARCH_PORT=9200"
       - "KIBANA_HOST=0.0.0.0"
-      - "ELASTICSEARCH_PROTOCOL=https"
+      - "ELASTICSEARCH_PROTOCOL=http"
     labels:
       - "traefik.enable=true"
       - 'traefik.backend=kibana'
       - 'traefik.port=5601'
       - 'traefik.frontend.rule=Host:kibana.${PROJECT_BASE_URL}'
-    ports:
-      - "5601:5601"
     networks:
       - web
     volumes:
-      - ./docker/images/kibana/config:/opt/kibana-6.2.2-linux-x86_64/config
-      - ./docker/images/elasticsearch/config:/etc/elasticsearch
+      - ./docker/elasticsearch/config/searchguard/ssl:/etc/elasticsearch/searchguard/ssl
 
   prometheus:
     image: quay.io/prometheus/prometheus:v2.2.1
@@ -66,12 +61,12 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
-  spider:
-    image: italia/developers-italia-backend:0.0.1
-    networks:
-      - web
+#  spider:
+#    image: italia/developers-italia-backend:0.0.1
+#    networks:
+#      - web
 
- # #De comment next lines if you don't have Træfik running locally:
+ # De comment next lines if you don't have Træfik running locally:
  #  proxy:
  #   command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
  #   image: containous/traefik:experimental
