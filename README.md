@@ -17,6 +17,14 @@ Backend &amp; crawler for the OSS catalog of Developers Italia
 
 ### Starting steps
 
+* rename .env.example to .env and fill the variables with your values
+
+  Default elastic user and password are `elastic`
+
+  Default kibana user and password are `kibana`
+
+  Basic Auth token is generated with `echo -n "user:password" | openssl base64 -base64`
+
 * start the Docker stack: `docker-compose up -d`
 * execute the application: `make run`
 
