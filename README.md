@@ -22,7 +22,7 @@ Backend &amp; crawler for the OSS catalog of Developers Italia
 
 ### Copyright
 
-```.bash
+```
 Copyright (c) the respective contributors, as shown by the AUTHORS file.
 
 This program is free software: you can redistribute it and/or modify
