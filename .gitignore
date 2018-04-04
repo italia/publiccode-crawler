@@ -22,3 +22,6 @@ developers-italia-backend
 
 # Elasticsearch data volume
 es_data
+
+# Env
+.env
