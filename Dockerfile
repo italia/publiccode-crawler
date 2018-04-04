@@ -6,7 +6,7 @@ ARG VERSION
 
 ADD . /go/src/$PROJECT
 
-RUN cd /go/src/$PROJECT && go build -ldflags "-X main.Version=${VERSION}" -o $NAME
+RUN cd /go/src/$PROJECT && go build -ldflags "-X github.com/italia/developers-italia-backend/version.VERSION=${VERSION}" -o $NAME
 
 # final stage
 FROM alpine:3.7
@@ -22,4 +22,4 @@ EXPOSE 8081
 
 # ARG values are not allowed in ENTRYPOINT, pass NAME as ENV variable.
 ENV NAME=$NAME
-ENTRYPOINT ./$NAME
+ENTRYPOINT ./$NAME all

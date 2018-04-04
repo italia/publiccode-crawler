@@ -5,7 +5,7 @@ include .env
 default: build
 
 run:
-	go run main.go version.go
+	go run main.go
 
 build:
 	docker build -t italia/${NAME}:${VERSION} \
@@ -16,7 +16,7 @@ build:
 
 lint:
 	gometalinter --install
-	gometalinter --exclude=vendor --exclude=middleware ./...
+	gometalinter --exclude=vendor ./...
 
 test:
 	go test -race "${PROJECT}"/...
