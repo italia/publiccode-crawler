@@ -9,7 +9,7 @@ services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.2
     environment:
-      - "cluster.name=publiccode"
+      - "cluster.name=developers-italia"
       - "network.host=0.0.0.0"
       - "discovery.zen.minimum_master_nodes=1"
       - "discovery.type=single-node"
