@@ -19,7 +19,7 @@ services:
       - 'traefik.backend=elasticsearch'
       - 'traefik.port=9200'
       - 'traefik.frontend.rule=Host:elasticsearch.${PROJECT_BASE_URL};Method:GET'
-      - "traefik.frontend.auth.basic=elastic:$$apr1$$cDD.EQlE$$cD4nqXwzquqAXF9Q7/n82/"
+      - "traefik.frontend.headers.customRequestHeaders=Authorization: Basic ZWxhc3RpYzplbGFzdGlj"
       - "traefik.frontend.rateLimit.extractorFunc=client.ip"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.period=60s"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.average=100"
@@ -59,19 +59,19 @@ services:
 #    networks:
 #      - web
 
- # De comment next lines if you don't have Træfik running locally:
- #  proxy:
- #   command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
- #   image: containous/traefik:experimental
- #   networks:
- #     - web
- #   ports:
- #     - "80:80"
- #     - "443:443"
- #     - "8080:8080"
- #   restart: always
- #   volumes:
- #     - /var/run/docker.sock:/var/run/docker.sock
+# De comment next lines if you don't have Træfik running locally:
+  proxy:
+   command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
+   image: containous/traefik:experimental
+   networks:
+     - web
+   ports:
+     - "80:80"
+     - "443:443"
+     - "8080:8080"
+   restart: always
+   volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   es_data:
