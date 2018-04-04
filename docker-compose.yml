@@ -60,18 +60,18 @@ services:
 #      - web
 
 # De comment next lines if you don't have Træfik running locally:
-  proxy:
-   command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
-   image: containous/traefik:experimental
-   networks:
-     - web
-   ports:
-     - "80:80"
-     - "443:443"
-     - "8080:8080"
-   restart: always
-   volumes:
-     - /var/run/docker.sock:/var/run/docker.sock
+  # proxy:
+  #  command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
+  #  image: containous/traefik:experimental
+  #  networks:
+  #    - web
+  #  ports:
+  #    - "80:80"
+  #    - "443:443"
+  #    - "8080:8080"
+  #  restart: always
+  #  volumes:
+  #    - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   es_data:
