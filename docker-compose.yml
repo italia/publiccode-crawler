@@ -9,18 +9,17 @@ services:
   elasticsearch:
     image: khezen/elasticsearch:6.2.2
     environment:
-      - "CLUSTER_NAME=publiccode"
+      - "CLUSTER_NAME=developers-italia"
       - "ELASTIC_PWD=elastic"
       - "KIBANA_PWD=kibana"
       - "ES_TMPDIR=/tmp"
       - "HTTP_SSL=false"
-      - "searchguard.enterprise_modules_enabled=false"
     labels:
       - "traefik.enable=true"
       - 'traefik.backend=elasticsearch'
       - 'traefik.port=9200'
       - 'traefik.frontend.rule=Host:elasticsearch.${PROJECT_BASE_URL};Method:GET'
-      - "traefik.frontend.auth.basic=elastic:$$2y$$12$$1oZ5vCDluxGnfV.ggxtvROITZnoQnWBuB8OeQu3CTt0TfUcP8XMJm"
+      - "traefik.frontend.auth.basic=elastic:$$apr1$$cDD.EQlE$$cD4nqXwzquqAXF9Q7/n82/"
       - "traefik.frontend.rateLimit.extractorFunc=client.ip"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.period=60s"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.average=100"
@@ -29,17 +28,10 @@ services:
       - web
     volumes:
       - es_data:/elasticsearch/data
+      - ./docker/elasticsearch/config/elasticsearch.yml:/elasticsearch/config/elasticsearch.yml
 
   kibana:
     image: khezen/kibana:6.2.2
-    links:
-      - elasticsearch
-    environment:
-      - "KIBANA_PWD=kibana"
-      - "ELASTICSEARCH_HOST=elasticsearch"
-      - "ELASTICSEARCH_PORT=9200"
-      - "KIBANA_HOST=0.0.0.0"
-      - "ELASTICSEARCH_PROTOCOL=http"
     labels:
       - "traefik.enable=true"
       - 'traefik.backend=kibana'
@@ -48,11 +40,12 @@ services:
     networks:
       - web
     volumes:
-      - ./docker/elasticsearch/config/searchguard/ssl:/etc/elasticsearch/searchguard/ssl
+      - ./docker/kibana/config/kibana.yml:/opt/kibana-6.2.2-linux-x86_64/config/kibana.yml
 
   prometheus:
     image: quay.io/prometheus/prometheus:v2.2.1
     labels:
+      - "traefik.enable=true"
       - 'traefik.backend=prometheus'
       - 'traefik.port=9090'
       - 'traefik.frontend.rule=Host:prometheus.${PROJECT_BASE_URL}'
