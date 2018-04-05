@@ -85,7 +85,7 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 	counter := 0
 
 	//Throttle requests.
-	rate := time.Second / 1000 // 1 per second. TODO check rate limit (https://confluence.atlassian.com/bitbucket/rate-limits-668173227.html)
+	rate := time.Second / 100 // 1/150 can be ok. TODO check rate limit (https://confluence.atlassian.com/bitbucket/rate-limits-668173227.html)
 	throttle := time.Tick(rate)
 
 	for repository := range repositories {
@@ -105,8 +105,6 @@ func checkAvailability(name, url string, ch chan<- string, processedCounter prom
 
 	// If it's available and no error returned.
 	if response.StatusCode == http.StatusOK && err == nil {
-		log.Info("I FOUND ONE! IT'S: " + name + " at: " + url)
-
 		// Retrieve the URL body.
 		body, _ := ioutil.ReadAll(response.Body)
 		response.Body.Close()
@@ -116,9 +114,9 @@ func checkAvailability(name, url string, ch chan<- string, processedCounter prom
 		fileName := "gitignore"
 		go saveFile(vendor, repo, fileName, body)
 
-		ch <- fmt.Sprintf("%s - FOUND IT! - %s", name, url)
+		ch <- fmt.Sprintf("%s - HIT! - %s", name, url)
 	} else {
-		ch <- fmt.Sprintf("%s - this one is bad :( - %s", name, url)
+		ch <- fmt.Sprintf("%s - miss :( - %s", name, url)
 	}
 
 	processedCounter.Inc()
