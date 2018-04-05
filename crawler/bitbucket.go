@@ -42,7 +42,8 @@ func (c Bitbucket) GetRepositories(repositories chan Repository) error {
 		for _, v := range result.Values {
 			repositories <- Repository{
 				Name: v.Name,
-				URL:  v.Links.Clone[0].Href + "/raw/default/publiccode.yml",
+				//URL:  v.Links.Clone[0].Href + "/raw/default/publiccode.yml",
+				URL: v.Links.Clone[0].Href + "/raw/default/.gitignore",
 			}
 		}
 
