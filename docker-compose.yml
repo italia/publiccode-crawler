@@ -32,6 +32,11 @@ services:
 
   kibana:
     image: khezen/kibana:6.2.2
+    environment:
+      - "ELASTICSEARCH_PROTOCOL=http"
+      - "ELASTICSEARCH_HOST=elasticsearch"
+      - "ELASTICSEARCH_PORT=9200"
+      - "KIBANA_PWD=${KIBANA_PWD}"
     labels:
       - "traefik.enable=true"
       - 'traefik.backend=kibana'

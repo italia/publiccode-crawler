@@ -51,7 +51,6 @@ Beware! May take days to complete.`,
 
 		// Process the repositories in order to retrieve publiccode.yml.
 		processRepositories(repositories, processedCounter)
-
 	},
 }
 
@@ -99,7 +98,6 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 }
 
 func checkAvailability(name, url string, ch chan<- string, processedCounter prometheus.Counter) {
-
 	// Retrieve the url.
 	response, err := http.Get(url)
 
