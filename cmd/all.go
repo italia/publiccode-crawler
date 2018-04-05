@@ -74,9 +74,7 @@ func startMetricsServer() {
 }
 
 func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
-
 	ch := make(chan string, 100)
-	counter := 0
 
 	//throttle requests
 	rate := time.Second // 1 per second. TODO check rate limit (https://confluence.atlassian.com/bitbucket/rate-limits-668173227.html)
@@ -87,21 +85,10 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 
 		<-throttle
 		go checkAvailability(repository.Name, repository.URL, ch, processedCounter)
-
-		// slow version
-		// response, err := http.Get(repository.URL)
-		// if response.StatusCode == http.StatusOK && err == nil {
-		// 	log.Info("I FOUND ONE! IT'S: " + repository.Name + " at: " + repository.URL)
-		// } else {
-		// 	log.Info("this one is bad :( " + repository.URL)
-		// }
-		fmt.Println(counter)
-		counter = counter + 1
 	}
 }
 
 func checkAvailability(name, url string, ch chan<- string, processedCounter prometheus.Counter) {
-
 	response, err := http.Get(url)
 	if response.StatusCode == http.StatusOK && err == nil {
 		log.Info("I FOUND ONE! IT'S: " + name + " at: " + url)
