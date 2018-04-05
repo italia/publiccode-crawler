@@ -121,7 +121,6 @@ func checkAvailability(name, url string, ch chan<- string, processedCounter prom
 }
 
 func saveFile(vendor, repo, fileName string, data []byte) {
-
 	path := filepath.Join("./data", vendor, repo)
 
 	// MkdirAll will create all the folder path.
