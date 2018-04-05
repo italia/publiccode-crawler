@@ -13,8 +13,13 @@ type Crawler interface {
 
 // Hosting is a single hosting service.
 type Hosting struct {
-	URL             string `yaml:"url"`
-	ServiceName     string `yaml:"service"`
+	ServiceName string `yaml:"name"`
+	URL         string `yaml:"url"`
+	RateLimit   struct {
+		ReqH int `yaml:"req/h"`
+		ReqM int `yaml:"req/m"`
+	} `yaml:"rate-limit"`
+
 	ServiceInstance Crawler
 }
 
@@ -37,7 +42,8 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 		switch row.ServiceName {
 		case "bitbucket":
 			rows[i].ServiceInstance = Bitbucket{
-				URL: row.URL,
+				URL:       row.URL,
+				RateLimit: rows[i].RateLimit,
 			}
 			break
 		default:

@@ -23,7 +23,11 @@ type response struct {
 
 // Bitbucket is a Crawler for the Bitbucket hosting.
 type Bitbucket struct {
-	URL string
+	URL       string
+	RateLimit struct {
+		ReqH int `yaml:"req/h"`
+		ReqM int `yaml:"req/m"`
+	} `yaml:"rate-limit"`
 }
 
 // GetRepositories retrieves the list of all repository from an hosting.
