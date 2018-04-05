@@ -6,8 +6,8 @@
 - name: 'bitbucket'
   url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100'
   rate-limit:
-    req/h: 0
-    req/m: 0
+    req/h: 60000
+    req/m: 6000
 - name: 'gitlab'
   url: 'https://gitlab.com'
   rate-limit:

@@ -6,6 +6,15 @@ import (
 	"github.com/italia/developers-italia-backend/httpclient"
 )
 
+// Bitbucket is a Crawler for the Bitbucket hosting.
+type Bitbucket struct {
+	URL       string
+	RateLimit struct {
+		ReqH int `yaml:"req/h"`
+		ReqM int `yaml:"req/m"`
+	} `yaml:"rate-limit"`
+}
+
 type response struct {
 	Values []struct {
 		Name  string `json:"name"`
@@ -21,21 +30,12 @@ type response struct {
 	Next string `json:"next"`
 }
 
-// Bitbucket is a Crawler for the Bitbucket hosting.
-type Bitbucket struct {
-	URL       string
-	RateLimit struct {
-		ReqH int `yaml:"req/h"`
-		ReqM int `yaml:"req/m"`
-	} `yaml:"rate-limit"`
-}
-
 // GetRepositories retrieves the list of all repository from an hosting.
-func (c Bitbucket) GetRepositories(repositories chan Repository) error {
-	var nextPage = c.URL
+func (host Bitbucket) GetRepositories(repositories chan Repository) error {
+	var nextPage = host.URL
 
 	for {
-		body, err := httpclient.GetURL(nextPage)
+		body, err := httpclient.GetURL(nextPage) // TODO: from 1 to 4 seconds to retrieve this data. Bottleneck.
 		if err != nil {
 			return err
 		}
@@ -45,7 +45,7 @@ func (c Bitbucket) GetRepositories(repositories chan Repository) error {
 
 		for _, v := range result.Values {
 			repositories <- Repository{
-				Name: v.Name,
+				Name: v.FullName,
 				//URL:  v.Links.Clone[0].Href + "/raw/default/publiccode.yml",
 				URL: v.Links.Clone[0].Href + "/raw/default/.gitignore",
 			}
