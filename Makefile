@@ -1,11 +1,17 @@
 include .env
 
-.PHONY: run build lint test up stop prod-up prod-stop
+.PHONY: run run-all run-version build lint test up stop prod-up prod-stop
 
 default: build
 
 run:
-	go run main.go version.go
+	go run main.go
+
+run-all:
+	go run main.go all
+
+run-version:
+	go run main.go version
 
 build:
 	docker build -t italia/${NAME}:${VERSION} \
@@ -16,7 +22,7 @@ build:
 
 lint:
 	gometalinter --install
-	gometalinter --exclude=vendor --exclude=middleware ./...
+	gometalinter --exclude=vendor ./...
 
 test:
 	go test -race "${PROJECT}"/...

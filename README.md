@@ -26,7 +26,7 @@ Backend &amp; crawler for the OSS catalog of Developers Italia
   Basic Auth token is generated with `echo -n "user:password" | openssl base64 -base64`
 
 * start the Docker stack: `docker-compose up -d`
-* execute the application: `make run`
+* execute the application: `make run-all`
 
 ### Copyright
 
