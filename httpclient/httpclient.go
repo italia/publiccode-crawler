@@ -19,7 +19,14 @@ func GetURL(URL string) ([]byte, error) {
 	}
 
 	for {
-		resp, err := client.Get(URL)
+		req, err := http.NewRequest("GET", URL, nil)
+		if err != nil {
+			return nil, err
+		}
+		// Set special user agent for bot.
+		req.Header.Set("User-Agent", "Golang_talia_backend_bot/0.0.1")
+
+		resp, err := client.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -33,6 +40,7 @@ func GetURL(URL string) ([]byte, error) {
 			if err != nil {
 				return nil, err
 			}
+
 			resp.Body.Close()
 
 			return body, nil
