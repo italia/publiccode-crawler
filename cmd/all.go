@@ -41,7 +41,7 @@ Beware! May take days to complete.`,
 			panic(fmt.Sprintf("error in parsing %s file: %v", hostingFile, err))
 		}
 
-		// Initiate a channel of repositories. TODO: check the limit. Possible Bottleneck.
+		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository)
 
 		// For each host parsed from hosting, Process the repositories.
