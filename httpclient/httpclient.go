@@ -41,7 +41,10 @@ func GetURL(URL string) ([]byte, error) {
 				return nil, err
 			}
 
-			resp.Body.Close()
+			err = resp.Body.Close()
+			if err != nil {
+				log.Info("Error closing Body in httpclient.go\n")
+			}
 
 			return body, nil
 		}
