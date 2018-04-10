@@ -126,7 +126,7 @@ func saveFile(vendor, repo, fileName string, data []byte) {
 
 	err := ioutil.WriteFile(path+"/"+fileName, data, 0644)
 	if err != nil {
-		log.Info(err)
+		log.Error(err)
 	}
 }
 
