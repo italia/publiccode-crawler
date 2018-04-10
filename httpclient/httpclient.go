@@ -31,6 +31,7 @@ func GetURL(URL string) ([]byte, error) {
 			return nil, err
 		}
 
+		// Check if the request results in http RateLimit error.
 		if resp.StatusCode == 429 {
 			sleep = sleep + (5 * time.Minute)
 			log.Infof("Rate limit reached, sleep %v minutes\n", sleep)

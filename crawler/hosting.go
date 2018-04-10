@@ -28,6 +28,7 @@ type Repository struct {
 func ParseHostingFile(data []byte) ([]Hosting, error) {
 	hostings := []Hosting{}
 
+	// Unmarshal the yml in hostings list
 	err := yaml.Unmarshal(data, &hostings)
 	if err != nil {
 		return nil, err

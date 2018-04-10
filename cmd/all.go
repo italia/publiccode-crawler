@@ -79,12 +79,14 @@ func startMetricsServer() {
 }
 
 func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
-	// TODO: check the limit. Possible Bottleneck.
-	ch := make(chan string, 100)
+	channelCapacity := 100
+	ch := make(chan string, channelCapacity)
 	counter := 0
 
-	//Throttle requests.
-	rate := time.Second / 100 // 1/150 can be ok. TODO check rate limit (https://confluence.atlassian.com/bitbucket/rate-limits-668173227.html)
+	// Throttle requests.
+	// Time limits should be calibrated on more tests in order to avoid errors and bans.
+	// 1/100 can perform a number of request < bitbucket limit.
+	rate := time.Second / 100
 	throttle := time.Tick(rate)
 
 	for repository := range repositories {
@@ -112,18 +114,19 @@ func checkAvailability(name, url string, ch chan<- string, processedCounter prom
 		fileName := "gitignore"
 		go saveFile(vendor, repo, fileName, body)
 
-		ch <- fmt.Sprintf("%s - HIT! - %s", name, url)
+		ch <- fmt.Sprintf("%s - hit - %s", name, url)
 	} else {
-		ch <- fmt.Sprintf("%s - miss :( - %s", name, url)
+		ch <- fmt.Sprintf("%s - miss - %s", name, url)
 	}
 
 	processedCounter.Inc()
 }
 
+// saveFile save the choosen <file_name> in ./data/<vendor>/<repo>/<file_name>
 func saveFile(vendor, repo, fileName string, data []byte) {
 	path := filepath.Join("./data", vendor, repo)
 
-	// MkdirAll will create all the folder path.
+	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.MkdirAll(path, os.ModePerm)
 	}
@@ -134,6 +137,7 @@ func saveFile(vendor, repo, fileName string, data []byte) {
 	}
 }
 
+// splitFullName split a git FullName format to vendor and repo strings.
 func splitFullName(fullName string) (string, string) {
 	s := strings.Split(fullName, "/")
 	return s[0], s[1]
