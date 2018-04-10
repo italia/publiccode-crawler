@@ -81,8 +81,6 @@ func startMetricsServer() {
 func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
 	channelCapacity := 100
 	ch := make(chan string, channelCapacity)
-	counter := 0
-
 	// Throttle requests.
 	// Time limits should be calibrated on more tests in order to avoid errors and bans.
 	// 1/100 can perform a number of request < bitbucket limit.
@@ -94,8 +92,6 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 		<-throttle
 		go checkAvailability(repository.Name, repository.URL, ch, processedCounter)
 
-		// Comment: fmt.Println(counter)
-		counter = counter + 1
 	}
 }
 
