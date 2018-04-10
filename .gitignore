@@ -25,3 +25,6 @@ es_data
 
 # Env
 .env
+
+# Downloaded files
+data

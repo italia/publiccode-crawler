@@ -1,6 +1,15 @@
-- url: 'https://github.com'
-  service: 'github'
-- url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100'
-  service: 'bitbucket'
-- url: 'https://gitlab.com'
-  service: 'gitlab'
+- name: 'github'
+  url: 'https://github.com'
+  rate-limit:
+    req/h: 0
+    req/m: 0
+- name: 'bitbucket'
+  url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100'
+  rate-limit:
+    req/h: 60000
+    req/m: 6000
+- name: 'gitlab'
+  url: 'https://gitlab.com'
+  rate-limit:
+    req/h: 0
+    req/m: 0

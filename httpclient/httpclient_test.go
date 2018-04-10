@@ -10,14 +10,14 @@ import (
 
 // handlerOneRepoList print on ResponseWriter one element of response list
 func handlerOneRepoList(w http.ResponseWriter, _ *http.Request) {
-	fmt.Fprint(w, "{\"data\": \"SUPERDATA\"}")
+	fmt.Fprint(w, "{\"data\": \"example data\"}")
 }
 
 // handlerOneRepoListWithDelay print on ResponseWriter one element of response
 // with delay of 15 seconds
 func handlerOneRepoListWithDelay(w http.ResponseWriter, _ *http.Request) {
 	time.Sleep(15 * time.Second)
-	fmt.Fprint(w, "{\"data\": \"SUPERDATA\"}")
+	fmt.Fprint(w, "{\"data\": \"example data\"}")
 }
 
 // handlerEmpty print an empty response
@@ -30,20 +30,28 @@ func TestGetUrl(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handlerOneRepoList))
 	defer ts.Close()
 
-	data, _ := GetURL(ts.URL)
-	r := "{\"data\": \"SUPERDATA\"}"
-
-	if string(data) != r {
+	data, status, _ := GetURL(ts.URL)
+	r := "{\"data\": \"example data\"}"
+	if string(data) != r && status.StatusCode == 200 {
 		t.Errorf("Call was incorrect, got: %s, want: %v.", data, r)
+	}
+}
+
+// TestIncorrectProtocolUrl should test if a getUrl to incorrect protocol url will fail
+func TestIncorrectProtocolUrl(t *testing.T) {
+	_, status, err := GetURL("hktp://incorrectprotocol.url")
+
+	if err == nil && status.StatusCode != -1 {
+		t.Errorf("TestInexistentUrlCall was incorrect, got error: %v", err)
 	}
 }
 
 // TestInexistentUrl should test if a getUrl to inexistent url will fail
 func TestInexistentUrl(t *testing.T) {
-	_, err := GetURL("inexistent.url")
-
+	_, status, err := GetURL("http://inexistent.url")
+	fmt.Printf("inexistent %+v", status)
 	if err == nil {
-		t.Errorf("TestInexistentUrlCall was incorrect, got: %v, want: %v.", nil, err)
+		t.Errorf("TestInexistentUrlCall was incorrect, got error: %v", err)
 	}
 }
 
@@ -53,9 +61,8 @@ func TestEmptyResponse(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handlerEmpty))
 	defer ts.Close()
 
-	data, _ := GetURL(ts.URL)
+	data, _, _ := GetURL(ts.URL)
 	r := ""
-
 	if string(data) != r {
 		t.Errorf("TestEmptyCall was incorrect, got: %s, want: %v.", data, r)
 	}
@@ -66,8 +73,7 @@ func TestGetUrlWithDelayResponse(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(handlerOneRepoListWithDelay))
 	defer ts.Close()
 
-	data, _ := GetURL(ts.URL)
-
+	data, _, _ := GetURL(ts.URL)
 	if data != nil {
 		t.Errorf("TestCallWithDelay was incorrect, got: %s, want: %v.", data, nil)
 	}

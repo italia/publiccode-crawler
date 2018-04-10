@@ -4,16 +4,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
-
-var hostingFile = "hosting.yml"
 
 func init() {
 	rootCmd.AddCommand(allCmd)
@@ -28,23 +30,27 @@ Beware! May take days to complete.`,
 		// Init Prometheus for metrics.
 		processedCounter := initPrometheus()
 
-		// Open hosting file list.
+		// Open and read hosting file list.
+		hostingFile := "hosting.yml"
 		data, err := ioutil.ReadFile(hostingFile)
 		if err != nil {
 			panic(fmt.Sprintf("error in reading %s file: %v", hostingFile, err))
 		}
-		// Parse hosting file list
+		// Parse hosting file list.
 		hostings, err := crawler.ParseHostingFile(data)
 		if err != nil {
 			panic(fmt.Sprintf("error in parsing %s file: %v", hostingFile, err))
 		}
 
-		// For each host parsed from hosting, Process the repositories
-		repositories := make(chan crawler.Repository, 100)
+		// Initiate a channel of repositories.
+		repositories := make(chan crawler.Repository)
+
+		// For each host parsed from hosting, Process the repositories.
 		for _, hosting := range hostings {
 			go crawler.Process(hosting, repositories)
 		}
 
+		// Process the repositories in order to retrieve publiccode.yml.
 		processRepositories(repositories, processedCounter)
 	},
 }
@@ -74,37 +80,58 @@ func startMetricsServer() {
 }
 
 func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
-	ch := make(chan string, 100)
-
-	//throttle requests
-	rate := time.Second // 1 per second. TODO check rate limit (https://confluence.atlassian.com/bitbucket/rate-limits-668173227.html)
+	channelCapacity := 100
+	ch := make(chan string, channelCapacity)
+	// Throttle requests.
+	// Time limits should be calibrated on more tests in order to avoid errors and bans.
+	// 1/100 can perform a number of request < bitbucket limit.
+	rate := time.Second / 100
 	throttle := time.Tick(rate)
 
 	for repository := range repositories {
-		//log.Info(repository)
-
+		// Throttle down the calls.
 		<-throttle
 		go checkAvailability(repository.Name, repository.URL, ch, processedCounter)
+
 	}
 }
 
 func checkAvailability(name, url string, ch chan<- string, processedCounter prometheus.Counter) {
-	response, err := http.Get(url)
-	if response.StatusCode == http.StatusOK && err == nil {
-		log.Info("I FOUND ONE! IT'S: " + name + " at: " + url)
+	// Retrieve the url.
+	body, status, err := httpclient.GetURL(url)
 
-		defer response.Body.Close()
-		body, _ := ioutil.ReadAll(response.Body)
+	// If it's available and no error returned.
+	if status.StatusCode == http.StatusOK && err == nil {
+		// Save the file.
+		vendor, repo := splitFullName(name)
+		fileName := "gitignore"
+		go saveFile(vendor, repo, fileName, body)
 
-		err := ioutil.WriteFile("data/"+name, body, 0644)
-		if err != nil {
-			log.Info("Error")
-		}
-
-		ch <- fmt.Sprintf("%s - FOUND IT! - %s", name, url)
+		ch <- fmt.Sprintf("%s - hit - %s", name, url)
 	} else {
-		ch <- fmt.Sprintf("%s - this one is bad :( - %s", name, url)
+		ch <- fmt.Sprintf("%s - miss - %s", name, url)
 	}
 
 	processedCounter.Inc()
+}
+
+// saveFile save the choosen <file_name> in ./data/<vendor>/<repo>/<file_name>
+func saveFile(vendor, repo, fileName string, data []byte) {
+	path := filepath.Join("./data", vendor, repo)
+
+	// MkdirAll will create all the folder path, if not exists.
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		os.MkdirAll(path, os.ModePerm)
+	}
+
+	err := ioutil.WriteFile(path+"/"+fileName, data, 0644)
+	if err != nil {
+		log.Error(err)
+	}
+}
+
+// splitFullName split a git FullName format to vendor and repo strings.
+func splitFullName(fullName string) (string, string) {
+	s := strings.Split(fullName, "/")
+	return s[0], s[1]
 }
