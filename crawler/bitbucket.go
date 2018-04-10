@@ -2,8 +2,12 @@ package crawler
 
 import (
 	"encoding/json"
+	"net/http"
+	"net/url"
 
+	"github.com/go-redis/redis"
 	"github.com/italia/developers-italia-backend/httpclient"
+	log "github.com/sirupsen/logrus"
 )
 
 // Bitbucket is a Crawler for the Bitbucket hosting.
@@ -34,9 +38,22 @@ type response struct {
 func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 	var nextPage = host.URL
 
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
 	for {
-		body, _, err := httpclient.GetURL(nextPage) // TODO: from 1 to 4 seconds to retrieve this data. Bottleneck.
+		// AAA: aggiungi a redis K: nextPage e V: false
+		err := redisClient.Set(nextPage, false, 0).Err()
 		if err != nil {
+			panic(err)
+		}
+		log.Debug("GetRepositories -> NextPage at false: " + nextPage)
+		///
+		body, status, err := httpclient.GetURL(nextPage) // TODO: from 1 to 4 seconds to retrieve this data. Bottleneck.
+		if err != nil && status.StatusCode != http.StatusOK {
 			return err
 		}
 
@@ -47,14 +64,34 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 			repositories <- Repository{
 				Name: v.FullName,
 				//URL:  v.Links.Clone[0].Href + "/raw/default/publiccode.yml",
-				URL: v.Links.Clone[0].Href + "/raw/default/.gitignore",
+				URL:    v.Links.Clone[0].Href + "/raw/default/.gitignore",
+				Source: nextPage,
 			}
 		}
 
+		// AAA: cambia a redis K: nextPage e V: after parsed.
+
+		u, _ := url.Parse(nextPage)
+		q := u.Query()
+		value := q.Get("after")
+
+		err = redisClient.Set(nextPage, value, 0).Err()
+		if err != nil {
+			panic(err)
+		}
+		log.Debug("GetRepositories -> Set at " + value + ": " + nextPage)
+		///
 		if len(result.Next) == 0 {
-			return nil
+			if len(repositories) == 0 {
+				// if i want to restart:
+				//nextPage = "https://api.bitbucket.org/2.0/repositories?pagelen=100"
+				//and comment "close(repositories)"
+				log.Debug("End of repos")
+				close(repositories)
+			}
+		} else {
+			nextPage = result.Next
 		}
 
-		nextPage = result.Next
 	}
 }

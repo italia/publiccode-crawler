@@ -59,6 +59,13 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
+  # redis:
+  #   image: redis
+  #   ports:
+  #     - 6379:6379
+  #   networks:
+  #     - web
+
 #  spider:
 #    image: italia/developers-italia-backend:0.0.1
 #    networks:

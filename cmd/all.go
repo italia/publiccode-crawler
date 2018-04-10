@@ -41,6 +41,7 @@ Beware! May take days to complete.`,
 		if err != nil {
 			panic(fmt.Sprintf("error in parsing %s file: %v", hostingFile, err))
 		}
+		log.Debug("Loaded and parsed hosting.yml")
 
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository)
@@ -67,6 +68,8 @@ func initPrometheus() prometheus.Counter {
 
 	go startMetricsServer()
 
+	log.Debug("initPrometheus()")
+
 	return processedCounter
 }
 
@@ -85,7 +88,7 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 	// Throttle requests.
 	// Time limits should be calibrated on more tests in order to avoid errors and bans.
 	// 1/100 can perform a number of request < bitbucket limit.
-	rate := time.Second / 100
+	rate := time.Nanosecond //time.Second / 100
 	throttle := time.Tick(rate)
 
 	for repository := range repositories {
@@ -94,6 +97,7 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 		go checkAvailability(repository.Name, repository.URL, ch, processedCounter)
 
 	}
+
 }
 
 func checkAvailability(name, url string, ch chan<- string, processedCounter prometheus.Counter) {
@@ -105,7 +109,7 @@ func checkAvailability(name, url string, ch chan<- string, processedCounter prom
 		// Save the file.
 		vendor, repo := splitFullName(name)
 		fileName := "gitignore"
-		go saveFile(vendor, repo, fileName, body)
+		saveFile(vendor, repo, fileName, body)
 
 		ch <- fmt.Sprintf("%s - hit - %s", name, url)
 	} else {

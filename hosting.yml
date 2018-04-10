@@ -4,7 +4,8 @@
     req/h: 0
     req/m: 0
 - name: 'bitbucket'
-  url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100'
+  #url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100'
+  url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2018-04-10T11%3A50%3A29.550480%2B00%3A00'
   rate-limit:
     req/h: 60000
     req/m: 6000
