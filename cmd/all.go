@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -97,14 +98,10 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 
 func checkAvailability(name, url string, ch chan<- string, processedCounter prometheus.Counter) {
 	// Retrieve the url.
-	response, err := http.Get(url)
+	body, status, err := httpclient.GetURL(url)
 
 	// If it's available and no error returned.
-	if response.StatusCode == http.StatusOK && err == nil {
-		// Retrieve the URL body.
-		body, _ := ioutil.ReadAll(response.Body)
-		response.Body.Close()
-
+	if status.StatusCode == http.StatusOK && err == nil {
 		// Save the file.
 		vendor, repo := splitFullName(name)
 		fileName := "gitignore"

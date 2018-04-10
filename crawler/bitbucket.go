@@ -35,7 +35,7 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 	var nextPage = host.URL
 
 	for {
-		body, err := httpclient.GetURL(nextPage) // TODO: from 1 to 4 seconds to retrieve this data. Bottleneck.
+		body, _, err := httpclient.GetURL(nextPage) // TODO: from 1 to 4 seconds to retrieve this data. Bottleneck.
 		if err != nil {
 			return err
 		}
