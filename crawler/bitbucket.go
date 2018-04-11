@@ -2,8 +2,9 @@ package crawler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
-	"net/url"
+	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/italia/developers-italia-backend/httpclient"
@@ -36,61 +37,76 @@ type response struct {
 
 // GetRepositories retrieves the list of all repository from an hosting.
 func (host Bitbucket) GetRepositories(repositories chan Repository) error {
-	var nextPage = host.URL
+	var sourceURL = host.URL
 
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     "redis:6379", // docker redis ip "192.168.99.100:6379",
+		Password: "",           // no password set
+		DB:       0,            // use default DB
 	})
 
 	for {
-		// AAA: aggiungi a redis K: nextPage e V: false
-		err := redisClient.Set(nextPage, false, 0).Err()
+		// Save the current processed page as "not already processed".
+		// Set a redis K: sourceURL e V: false
+		err := redisClient.Set(sourceURL, false, 0).Err()
 		if err != nil {
-			panic(err)
+			log.Error(err)
+			return err
 		}
-		log.Debug("GetRepositories -> NextPage at false: " + nextPage)
-		///
-		body, status, err := httpclient.GetURL(nextPage) // TODO: from 1 to 4 seconds to retrieve this data. Bottleneck.
-		if err != nil && status.StatusCode != http.StatusOK {
+		log.Debugf("Redis: %s saved as 'false'.", sourceURL)
+
+		// Get the list of repositories to check.
+		// Note: it may take from 1 to 5 seconds.
+		headers := make(map[string]string)
+		headers["Authorization"] = "Basic Yml0YjAwMUBjZC5taW50ZW1haWwuY29tOmJpdGIwMDFAY2QubWludGVtYWlsLmNvbQ=="
+
+		body, status, err := httpclient.GetURL(sourceURL, headers)
+		if err != nil {
+			return err
+		}
+		if status.StatusCode != http.StatusOK {
+			return errors.New("requets returned an incorrect http.Status: " + status.Status)
+		}
+
+		// Fill response as list of values (repositories data).
+		var result response
+		err = json.Unmarshal(body, &result)
+		if err != nil {
 			return err
 		}
 
-		var result response
-		json.Unmarshal(body, &result)
-
+		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range result.Values {
 			repositories <- Repository{
 				Name: v.FullName,
 				//URL:  v.Links.Clone[0].Href + "/raw/default/publiccode.yml",
 				URL:    v.Links.Clone[0].Href + "/raw/default/.gitignore",
-				Source: nextPage,
+				Source: sourceURL,
 			}
 		}
 
-		// AAA: cambia a redis K: nextPage e V: after parsed.
-
-		u, _ := url.Parse(nextPage)
-		q := u.Query()
-		value := q.Get("after")
-
-		err = redisClient.Set(nextPage, value, 0).Err()
+		// If reached, the page was correctly retrieved.
+		// Set the value of sourceURL on redis to actual timestamp.
+		timestamp := time.Now().String()
+		err = redisClient.Set(sourceURL, timestamp, 0).Err()
 		if err != nil {
-			panic(err)
+			log.Error(err)
+			return err
 		}
-		log.Debug("GetRepositories -> Set at " + value + ": " + nextPage)
-		///
+		log.Debugf("Redis: set %s value as '%s'.", sourceURL, timestamp)
+
+		// Check if the end of bitbucket repositories is reached and the repositories are all processed.
 		if len(result.Next) == 0 {
 			if len(repositories) == 0 {
-				// if i want to restart:
-				//nextPage = "https://api.bitbucket.org/2.0/repositories?pagelen=100"
-				//and comment "close(repositories)"
-				log.Debug("End of repos")
+				// If i want to restart when it ends:
+				// sourceURL = "https://api.bitbucket.org/2.0/repositories?pagelen=100"
+				// and comment the line "close(repositories)"
+				log.Debug("Bitbucket repositories status: end reached.")
 				close(repositories)
 			}
 		} else {
-			nextPage = result.Next
+			// Set the new URL to retrieve and continue.
+			sourceURL = result.Next
 		}
 
 	}

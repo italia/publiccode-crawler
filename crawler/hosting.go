@@ -3,7 +3,6 @@ package crawler
 import (
 	"gopkg.in/yaml.v2"
 
-	"github.com/go-redis/redis"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,23 +29,33 @@ type Repository struct {
 func ParseHostingFile(data []byte) ([]Hosting, error) {
 	hostings := []Hosting{}
 
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-
-	// Unmarshal the yml in hostings list
-	err := yaml.Unmarshal(data, &hostings)
+	// Redis connection.
+	redisClient, err := redisClientFactory("redis:6379")
 	if err != nil {
 		return nil, err
 	}
 
+	// Unmarshal the yml in hostings list.
+	err = yaml.Unmarshal(data, &hostings)
+	if err != nil {
+		return nil, err
+	}
+
+	// Manage every host
 	for i, hosting := range hostings {
 		switch hosting.ServiceName {
 		case "bitbucket":
-			// AAA: se in redis c'è un url che è "false" => set hosting.URL to the one that is "false"
+			// Check if there is an URL that wasn't correctly retrieved.
+			// URL.value="false" => set hosting.URL to the one that one ("false")
 			keys, _ := redisClient.Keys("*").Result()
+			// First launch. TODO: refactory. This break is terrible.
+			if len(keys) == 0 {
+				hostings[i].ServiceInstance = Bitbucket{
+					URL:       hosting.URL,
+					RateLimit: hostings[i].RateLimit,
+				}
+				break
+			}
 			for _, key := range keys {
 				if redisClient.Get(key).Val() == "false" {
 					log.Debug("Found one false URL! start from here: " + key)
@@ -55,7 +64,7 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 						RateLimit: hostings[i].RateLimit,
 					}
 					break
-					// Altrimenti usa ciò che legge dal file
+					// Or read from file.
 				} else {
 					hostings[i].ServiceInstance = Bitbucket{
 						URL:       hosting.URL,
@@ -63,6 +72,12 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 					}
 				}
 			}
+			break
+		case "github":
+			log.Warningf("implementation not found for service %s, skipping", hosting.ServiceName)
+			break
+		case "gitlab":
+			log.Warningf("implementation not found for service %s, skipping", hosting.ServiceName)
 			break
 		default:
 			log.Warningf("implementation not found for service %s, skipping", hosting.ServiceName)

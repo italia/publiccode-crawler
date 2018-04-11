@@ -76,47 +76,48 @@ func initPrometheus() prometheus.Counter {
 func startMetricsServer() {
 	http.Handle("/metrics", promhttp.Handler())
 
-	err := http.ListenAndServe("0.0.0.0:8081", nil)
+	err := http.ListenAndServe(":8081", nil)
 	if err != nil {
 		log.Warningf("monitoring endpoint non available: %v: ", err)
 	}
 }
 
 func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
+	log.Debug("Repositories are going to be processed...")
 	channelCapacity := 100
 	ch := make(chan string, channelCapacity)
 	// Throttle requests.
 	// Time limits should be calibrated on more tests in order to avoid errors and bans.
 	// 1/100 can perform a number of request < bitbucket limit.
-	rate := time.Nanosecond //time.Second / 100
+	rate := time.Second / 100
 	throttle := time.Tick(rate)
 
 	for repository := range repositories {
 		// Throttle down the calls.
 		<-throttle
 		go checkAvailability(repository.Name, repository.URL, ch, processedCounter)
-
 	}
 
 }
 
-func checkAvailability(name, url string, ch chan<- string, processedCounter prometheus.Counter) {
+func checkAvailability(fullName, url string, ch chan<- string, processedCounter prometheus.Counter) {
+	processedCounter.Inc()
 	// Retrieve the url.
-	body, status, err := httpclient.GetURL(url)
+	headers := make(map[string]string)
+	headers["Authorization"] = "Basic Yml0YjAwMUBjZC5taW50ZW1haWwuY29tOmJpdGIwMDFAY2QubWludGVtYWlsLmNvbQ=="
 
+	body, status, err := httpclient.GetURL(url, headers)
 	// If it's available and no error returned.
 	if status.StatusCode == http.StatusOK && err == nil {
 		// Save the file.
-		vendor, repo := splitFullName(name)
+		vendor, repo := splitFullName(fullName)
 		fileName := "gitignore"
 		saveFile(vendor, repo, fileName, body)
 
-		ch <- fmt.Sprintf("%s - hit - %s", name, url)
+		ch <- fmt.Sprintf("%s - hit - %s", fullName, url)
 	} else {
-		ch <- fmt.Sprintf("%s - miss - %s", name, url)
+		ch <- fmt.Sprintf("%s - miss - %s", fullName, url)
 	}
-
-	processedCounter.Inc()
 }
 
 // saveFile save the choosen <file_name> in ./data/<vendor>/<repo>/<file_name>

@@ -58,32 +58,38 @@ services:
       - web
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - 9090:9090
 
-  # redis:
-  #   image: redis
-  #   ports:
-  #     - 6379:6379
-  #   networks:
-  #     - web
+  redis:
+    image: redis:4.0
+    ports:
+      - 6379:6379
+    networks:
+      - web
 
-#  spider:
-#    image: italia/developers-italia-backend:0.0.1
-#    networks:
-#      - web
+  spider:
+    image: italia/developers-italia-backend:0.0.1
+    ports:
+      - 8081:8081
+    volumes:
+      - ./data:/app/data
+    networks:
+      - web
 
 # De comment next lines if you don't have Træfik running locally:
-  # proxy:
-  #  command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
-  #  image: containous/traefik:experimental
-  #  networks:
-  #    - web
-  #  ports:
-  #    - "80:80"
-  #    - "443:443"
-  #    - "8080:8080"
-  #  restart: always
-  #  volumes:
-  #    - /var/run/docker.sock:/var/run/docker.sock
+  proxy:
+   command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
+   image: containous/traefik:experimental
+   networks:
+     - web
+   ports:
+     - "80:80"
+     - "443:443"
+     - "8080:8080"
+   restart: always
+   volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   es_data:

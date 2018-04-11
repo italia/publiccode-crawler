@@ -10,6 +10,7 @@ type Crawler interface {
 // Process delegates the work to single hosting crawlers.
 func Process(hosting Hosting, repositories chan Repository) {
 	if hosting.ServiceInstance == nil {
+		log.Warnf("Hosting %s is not available.", hosting.ServiceName)
 		return
 	}
 
