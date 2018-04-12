@@ -56,32 +56,6 @@ Beware! May take days to complete.`,
 	},
 }
 
-func initPrometheus() prometheus.Counter {
-	processedCounter := prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "repository_processed",
-		Help: "Number of repository processed.",
-	})
-	err := prometheus.Register(processedCounter)
-	if err != nil {
-		log.Errorf("error in registering Prometheus handler: %v:", err)
-	}
-
-	go startMetricsServer()
-
-	log.Debug("initPrometheus()")
-
-	return processedCounter
-}
-
-func startMetricsServer() {
-	http.Handle("/metrics", promhttp.Handler())
-
-	err := http.ListenAndServe(":8081", nil)
-	if err != nil {
-		log.Warningf("monitoring endpoint non available: %v: ", err)
-	}
-}
-
 func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
 	log.Debug("Repositories are going to be processed...")
 	channelCapacity := 100
@@ -95,16 +69,13 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 	for repository := range repositories {
 		// Throttle down the calls.
 		<-throttle
-		go checkAvailability(repository.Name, repository.URL, ch, processedCounter)
+		go checkAvailability(repository.Name, repository.URL, repository.Headers, ch, processedCounter)
 	}
 
 }
 
-func checkAvailability(fullName, url string, ch chan<- string, processedCounter prometheus.Counter) {
+func checkAvailability(fullName, url string, headers map[string]string, ch chan<- string, processedCounter prometheus.Counter) {
 	processedCounter.Inc()
-	// Retrieve the url.
-	headers := make(map[string]string)
-	headers["Authorization"] = "Basic Yml0YjAwMUBjZC5taW50ZW1haWwuY29tOmJpdGIwMDFAY2QubWludGVtYWlsLmNvbQ=="
 
 	body, status, err := httpclient.GetURL(url, headers)
 	// If it's available and no error returned.
@@ -139,4 +110,30 @@ func saveFile(vendor, repo, fileName string, data []byte) {
 func splitFullName(fullName string) (string, string) {
 	s := strings.Split(fullName, "/")
 	return s[0], s[1]
+}
+
+func initPrometheus() prometheus.Counter {
+	processedCounter := prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "repository_processed",
+		Help: "Number of repository processed.",
+	})
+	err := prometheus.Register(processedCounter)
+	if err != nil {
+		log.Errorf("error in registering Prometheus handler: %v:", err)
+	}
+
+	go startMetricsServer()
+
+	log.Debug("initPrometheus()")
+
+	return processedCounter
+}
+
+func startMetricsServer() {
+	http.Handle("/metrics", promhttp.Handler())
+
+	err := http.ListenAndServe(":8081", nil)
+	if err != nil {
+		log.Warningf("monitoring endpoint non available: %v: ", err)
+	}
 }

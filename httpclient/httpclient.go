@@ -1,7 +1,6 @@
 package httpclient
 
 import (
-	"crypto/tls"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -24,12 +23,6 @@ func GetURL(URL string, headers map[string]string) ([]byte, RespStatus, error) {
 	client := http.Client{
 		// Request Timeout.
 		Timeout: timeout,
-		// Disable ssl cert validation.
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: true,
-			},
-		},
 	}
 
 	for {

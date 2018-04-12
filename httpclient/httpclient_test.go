@@ -16,7 +16,7 @@ func handlerOneRepoList(w http.ResponseWriter, _ *http.Request) {
 // handlerOneRepoListWithDelay print on ResponseWriter one element of response.
 // with delay of 15 seconds
 func handlerOneRepoListWithDelay(w http.ResponseWriter, _ *http.Request) {
-	time.Sleep(15 * time.Second)
+	time.Sleep(30 * time.Second)
 	fmt.Fprint(w, "{\"data\": \"example data\"}")
 }
 

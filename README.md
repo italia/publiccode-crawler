@@ -15,7 +15,9 @@ Backend &amp; crawler for the OSS catalog of Developers Italia
 * [Docker](https://www.docker.com/)
 * [Docker-compose](https://docs.docker.com/compose/)
 
-### Starting steps
+### Setup
+
+**Stack**
 
 * rename .env.example to .env and fill the variables with your values
 
@@ -25,8 +27,19 @@ Backend &amp; crawler for the OSS catalog of Developers Italia
 
   Basic Auth token is generated with `echo -n "user:password" | openssl base64 -base64`
 
+  **Crawler**
+
+* Fill your hosting.yml file with configuration values (like specific host basic auth token)
+
+### Run
+
+**With docker-compose**
+
 * start the Docker stack: `docker-compose up -d`
-* execute the application: `make run-all`
+
+  **As golang app**
+
+* start the Crawler: `make run-all`
 
 ### Copyright
 

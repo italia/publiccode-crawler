@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/go-redis/redis"
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
 )
@@ -18,6 +17,7 @@ type Bitbucket struct {
 		ReqH int `yaml:"req/h"`
 		ReqM int `yaml:"req/m"`
 	} `yaml:"rate-limit"`
+	BasicAuth string `yaml:"basic-auth"`
 }
 
 type response struct {
@@ -39,11 +39,12 @@ type response struct {
 func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 	var sourceURL = host.URL
 
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     "redis:6379", // docker redis ip "192.168.99.100:6379",
-		Password: "",           // no password set
-		DB:       0,            // use default DB
-	})
+	// Redis connection.
+	redisClient, err := redisClientFactory("redis:6379")
+	if err != nil {
+		log.Error(err)
+		return err
+	}
 
 	for {
 		// Save the current processed page as "not already processed".
@@ -55,16 +56,19 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 		}
 		log.Debugf("Redis: %s saved as 'false'.", sourceURL)
 
-		// Get the list of repositories to check.
-		// Note: it may take from 1 to 5 seconds.
+		// Set BasicAuth header
 		headers := make(map[string]string)
-		headers["Authorization"] = "Basic Yml0YjAwMUBjZC5taW50ZW1haWwuY29tOmJpdGIwMDFAY2QubWludGVtYWlsLmNvbQ=="
+		if host.BasicAuth != "" {
+			headers["Authorization"] = "Basic " + host.BasicAuth
+		}
 
+		// Get List of repositories
 		body, status, err := httpclient.GetURL(sourceURL, headers)
 		if err != nil {
 			return err
 		}
 		if status.StatusCode != http.StatusOK {
+			log.Warnf("Request returned: %s", string(body))
 			return errors.New("requets returned an incorrect http.Status: " + status.Status)
 		}
 
@@ -80,8 +84,9 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 			repositories <- Repository{
 				Name: v.FullName,
 				//URL:  v.Links.Clone[0].Href + "/raw/default/publiccode.yml",
-				URL:    v.Links.Clone[0].Href + "/raw/default/.gitignore",
-				Source: sourceURL,
+				URL:     v.Links.Clone[0].Href + "/raw/default/.gitignore",
+				Source:  sourceURL,
+				Headers: headers,
 			}
 		}
 
@@ -97,13 +102,12 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 
 		// Check if the end of bitbucket repositories is reached and the repositories are all processed.
 		if len(result.Next) == 0 {
-			if len(repositories) == 0 {
-				// If i want to restart when it ends:
-				// sourceURL = "https://api.bitbucket.org/2.0/repositories?pagelen=100"
-				// and comment the line "close(repositories)"
-				log.Debug("Bitbucket repositories status: end reached.")
-				close(repositories)
-			}
+			// If I want to restart when it ends:
+			// sourceURL = "https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2008-08-13"
+			// and comment the line "close(repositories)"
+			log.Info("Bitbucket repositories status: end reached.")
+			close(repositories)
+
 		} else {
 			// Set the new URL to retrieve and continue.
 			sourceURL = result.Next
