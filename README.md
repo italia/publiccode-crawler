@@ -34,7 +34,7 @@ If you already have a Træfik container running on your host simply remove the `
 networks:
   web:
     external:
-      name: nome_of_træfik_network:
+      name: nome_of_træfik_network
 ```
 
 ##### 3) rename .env.example to .env and fill the variables with your values
