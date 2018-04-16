@@ -2,9 +2,16 @@
 
 [![CircleCI](https://circleci.com/gh/italia/developers-italia-backend/tree/master.svg?style=svg)](https://circleci.com/gh/italia/developers-italia-backend/tree/master)
 
-Backend &amp; crawler for the OSS catalog of Developers Italia
+Backend &amp; crawler for the OSS catalog of Developers Italia.
 
-**This document is a Work in progress**
+**This document is a Work in progress!**
+
+## Components
+
+* Elasticsearch
+* Kibana
+* Prometheus
+* Træfik
 
 ## How to contribute
 
@@ -17,16 +24,38 @@ Backend &amp; crawler for the OSS catalog of Developers Italia
 
 ### Starting steps
 
-* rename .env.example to .env and fill the variables with your values
+##### 1) rename docker-compose.yml.dist to docker-compose.yml
 
-  Default elastic user and password are `elastic`
+##### 2) set up Træfik
+If you already have a Træfik container running on your host simply remove the `proxy` definition from
+`docker-compose.yml` file and set up the `web` network to be external:
 
-  Default kibana user and password are `kibana`
+```yaml
+networks:
+  web:
+    external:
+      name: nome_of_træfik_network:
+```
 
-  Basic Auth token is generated with `echo -n "user:password" | openssl base64 -base64`
+##### 3) rename .env.example to .env and fill the variables with your values
 
-* start the Docker stack: `docker-compose up -d`
-* execute the application: `make run-all`
+* default Elasticsearch user and password are `elastic`
+* default Kibana user and password are `kibana`
+* basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
+
+##### 4) add mapping in `/etc/hosts` for exposed services
+
+For example, if `PROJECT_BASE_URL` in `.env` is `developers.loc`, add (if your Docker daemon is listening on localhost):
+* 127.0.0.1    elasticsearch.developers.loc
+* 127.0.0.1    kibana.developers.loc
+* 127.0.0.1    prometheus.developers.loc
+
+Or use a local DNS (like [dnsmasq](https://en.wikipedia.org/wiki/Dnsmasq)) to resolve all DNS request to `.loc` domains
+to localhost.
+
+##### 5) start the Docker stack: `make up`
+
+##### 6) launch the crawler (beware, this could take days to complete): `make run-all`
 
 ### Copyright
 

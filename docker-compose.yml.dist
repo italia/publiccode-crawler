@@ -54,7 +54,20 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
-#  spider:
+  proxy:
+   command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
+   image: containous/traefik:experimental
+   networks:
+     - web
+   ports:
+     - "80:80"
+     - "443:443"
+     - "8080:8080"
+   volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+
+# De-comment next lines after build a local image for the crawler.
+#  crawler:
 #    image: italia/developers-italia-backend:0.0.1
 #    networks:
 #      - web
@@ -65,5 +78,3 @@ volumes:
 
 networks:
   web:
-    external:
-      name: traefik_webgateway
