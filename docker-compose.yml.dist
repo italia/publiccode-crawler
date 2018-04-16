@@ -52,7 +52,7 @@ services:
     networks:
       - web
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
   proxy:
    command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG

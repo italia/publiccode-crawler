@@ -52,7 +52,7 @@ services:
     networks:
       - web
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
 #  spider:
 #    image: italia/developers-italia-backend:0.0.1
