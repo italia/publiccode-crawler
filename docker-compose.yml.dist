@@ -2,6 +2,7 @@ version: "3.1"
 
 services:
   elasticsearch:
+    container_name: "${NAME}_elasticsearch"
     image: khezen/elasticsearch:6.2.2
     environment:
       - "CLUSTER_NAME=developers-italia"
@@ -26,6 +27,7 @@ services:
       - ./docker/elasticsearch/config/elasticsearch.yml:/elasticsearch/config/elasticsearch.yml
 
   kibana:
+    container_name: "${NAME}_kibana"
     image: khezen/kibana:6.2.2
     environment:
       - "ELASTICSEARCH_PROTOCOL=http"
@@ -43,6 +45,7 @@ services:
       - ./docker/kibana/config/kibana.yml:/opt/kibana-6.2.2-linux-x86_64/config/kibana.yml
 
   prometheus:
+    container_name: "${NAME}_prometheus"
     image: quay.io/prometheus/prometheus:v2.2.1
     labels:
       - "traefik.enable=true"
@@ -56,6 +59,7 @@ services:
 
   proxy:
    command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
+   container_name: "${NAME}_proxy"
    image: containous/traefik:experimental
    networks:
      - web
@@ -68,6 +72,7 @@ services:
 
 # De-comment next lines after build a local image for the crawler.
 #  crawler:
+#    container_name: "${NAME}_crawler"
 #    image: italia/developers-italia-backend:0.0.1
 #    networks:
 #      - web
