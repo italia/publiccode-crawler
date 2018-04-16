@@ -23,6 +23,9 @@ developers-italia-backend
 # Elasticsearch data volume
 es_data
 
+# Local docker-compose file
+docker-compose.yml
+
 # Env
 .env
 

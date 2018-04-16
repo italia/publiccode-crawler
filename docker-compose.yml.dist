@@ -1,12 +1,8 @@
 version: "3.1"
 
-networks:
-  web:
-    external:
-      name: traefik_webgateway
-
 services:
   elasticsearch:
+    container_name: "${NAME}_elasticsearch"
     image: khezen/elasticsearch:6.2.2
     environment:
       - "CLUSTER_NAME=developers-italia"
@@ -31,6 +27,7 @@ services:
       - ./docker/elasticsearch/config/elasticsearch.yml:/elasticsearch/config/elasticsearch.yml
 
   kibana:
+    container_name: "${NAME}_kibana"
     image: khezen/kibana:6.2.2
     environment:
       - "ELASTICSEARCH_PROTOCOL=http"
@@ -48,6 +45,7 @@ services:
       - ./docker/kibana/config/kibana.yml:/opt/kibana-6.2.2-linux-x86_64/config/kibana.yml
 
   prometheus:
+    container_name: "${NAME}_prometheus"
     image: quay.io/prometheus/prometheus:v2.2.1
     labels:
       - "traefik.enable=true"
@@ -57,29 +55,11 @@ services:
     networks:
       - web
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - 9090:9090
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
-  redis:
-    image: redis:4.0
-    ports:
-      - 6379:6379
-    networks:
-      - web
-
-  spider:
-    image: italia/developers-italia-backend:0.0.1
-    ports:
-      - 8081:8081
-    volumes:
-      - ./data:/app/data
-    networks:
-      - web
-
-# De comment next lines if you don't have Træfik running locally:
   proxy:
    command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
+   container_name: "${NAME}_proxy"
    image: containous/traefik:experimental
    networks:
      - web
@@ -87,10 +67,29 @@ services:
      - "80:80"
      - "443:443"
      - "8080:8080"
-   restart: always
    volumes:
      - /var/run/docker.sock:/var/run/docker.sock
+
+  redis:
+    container_name: "${NAME}_redis"
+    image: redis:4.0
+    networks:
+      - web
+
+# De-comment next lines after build a local image for the crawler.
+#  crawler:
+#    container_name: "${NAME}_crawler"
+#    image: italia/developers-italia-backend:0.0.1
+#    ports:
+#      - 8081:8081
+#    networks:
+#      - web
+#    volumes:
+#      - ./data:/app/data
 
 volumes:
   es_data:
     driver: local
+
+networks:
+  web:
