@@ -82,7 +82,7 @@ func checkAvailability(fullName, url string, headers map[string]string, ch chan<
 	if status.StatusCode == http.StatusOK && err == nil {
 		// Save the file.
 		vendor, repo := splitFullName(fullName)
-		fileName := "gitignore"
+		fileName := os.Getenv("CRAWLED_FILENAME")
 		saveFile(vendor, repo, fileName, body)
 
 		ch <- fmt.Sprintf("%s - hit - %s", fullName, url)

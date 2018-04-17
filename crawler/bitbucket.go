@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
@@ -82,9 +83,8 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range result.Values {
 			repositories <- Repository{
-				Name: v.FullName,
-				//URL:  v.Links.Clone[0].Href + "/raw/default/publiccode.yml",
-				URL:     v.Links.Clone[0].Href + "/raw/default/.gitignore",
+				Name:    v.FullName,
+				URL:     v.Links.Clone[0].Href + "/raw/default/" + os.Getenv("CRAWLED_FILENAME"),
 				Source:  sourceURL,
 				Headers: headers,
 			}

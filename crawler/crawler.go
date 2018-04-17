@@ -17,6 +17,7 @@ func Process(hosting Hosting, repositories chan Repository) {
 	err := hosting.ServiceInstance.GetRepositories(repositories)
 	if err != nil {
 		log.Errorf("error reading %s repository list: %v", hosting.ServiceName, err)
+		close(repositories)
 		return
 	}
 }
