@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	version "github.com/italia/developers-italia-backend/version"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,7 +38,7 @@ func GetURL(URL string, headers map[string]string) ([]byte, RespStatus, error) {
 		}
 
 		// Set special user agent for bot.
-		req.Header.Add("User-Agent", "Golang_talia_backend_bot/0.0.1")
+		req.Header.Add("User-Agent", "Golang_italia_backend_bot/"+version.VERSION)
 
 		// Perform the request.
 		resp, err := client.Do(req)
