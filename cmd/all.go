@@ -11,8 +11,8 @@ import (
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/httpclient"
+	metrics "github.com/italia/developers-italia-backend/metrics"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +28,7 @@ var allCmd = &cobra.Command{
 Beware! May take days to complete.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Init Prometheus for metrics.
-		processedCounter := initPrometheus()
+		processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
 		// Open and read hosting file list.
 		hostingFile := "hosting.yml"
@@ -110,30 +110,4 @@ func saveFile(vendor, repo, fileName string, data []byte) {
 func splitFullName(fullName string) (string, string) {
 	s := strings.Split(fullName, "/")
 	return s[0], s[1]
-}
-
-func initPrometheus() prometheus.Counter {
-	processedCounter := prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "repository_processed",
-		Help: "Number of repository processed.",
-	})
-	err := prometheus.Register(processedCounter)
-	if err != nil {
-		log.Errorf("error in registering Prometheus handler: %v:", err)
-	}
-
-	go startMetricsServer()
-
-	log.Debug("initPrometheus()")
-
-	return processedCounter
-}
-
-func startMetricsServer() {
-	http.Handle("/metrics", promhttp.Handler())
-
-	err := http.ListenAndServe(":8081", nil)
-	if err != nil {
-		log.Warningf("monitoring endpoint non available: %v: ", err)
-	}
 }
