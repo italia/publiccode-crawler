@@ -64,7 +64,7 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 			}
 			// N launch. Check if some repo list was interrupted.
 			for _, key := range keys {
-				if redisClient.Get(key).Val() == "false" {
+				if redisClient.HGet(hosting.ServiceName, key).Val() == "false" {
 					log.Debug("Found one interrupted URL. Starts from here: " + key)
 					defaultBitbucket.URL = key
 					hostings[i].ServiceInstance = defaultBitbucket
