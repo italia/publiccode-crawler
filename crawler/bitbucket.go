@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
@@ -49,8 +50,8 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 
 	for {
 		// Save the current processed page as "not already processed".
-		// Set a redis K: sourceURL e V: false
-		err := redisClient.Set(sourceURL, false, 0).Err()
+		// Set a redis on "bitbucket" hash, K: sourceURL and V: false
+		err := redisClient.HSet("bitbucket", sourceURL, false).Err()
 		if err != nil {
 			log.Error(err)
 			return err
@@ -91,9 +92,9 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 		}
 
 		// If reached, the page was correctly retrieved.
-		// Set the value of sourceURL on redis to actual timestamp.
-		timestamp := time.Now().String()
-		err = redisClient.Set(sourceURL, timestamp, 0).Err()
+		// Set the value of sourceURL on redis to actual Unix timestamp.
+		timestamp := strconv.FormatInt(time.Now().Unix(), 10)
+		err = redisClient.HSet("bitbucket", sourceURL, timestamp).Err()
 		if err != nil {
 			log.Error(err)
 			return err

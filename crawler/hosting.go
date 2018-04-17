@@ -49,7 +49,7 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 		case "bitbucket":
 			// Check if there is an URL that wasn't correctly retrieved.
 			// URL.value="false" => set hosting.URL to the one that one ("false")
-			keys, _ := redisClient.Keys("*").Result()
+			keys, _ := redisClient.HVals(hosting.ServiceName).Result()
 
 			// Default Bitbucket struct.
 			defaultBitbucket := Bitbucket{
