@@ -1,9 +1,6 @@
 package crawler
 
 import (
-	"strconv"
-	"time"
-
 	log "github.com/sirupsen/logrus"
 )
 
@@ -30,12 +27,10 @@ func Process(hosting Hosting, repositories chan Repository) {
 
 	for {
 		// Set the value of nextURL on redis to "failed".
-		timestamp := strconv.FormatInt(time.Now().Unix(), 10)
 		err = redisClient.HSet(hosting.ServiceName, url, "failed").Err()
 		if err != nil {
 			log.Error(err)
 		}
-		log.Infof("%s saved on redis.", url)
 
 		nextURL, err := hosting.ServiceInstance.GetRepositories(url, repositories)
 		if err != nil {
@@ -43,16 +38,12 @@ func Process(hosting Hosting, repositories chan Repository) {
 			close(repositories)
 			return
 		}
-		time.Sleep(5 * time.Second)
 		// If reached, the repository list was successfully retrieved.
 		// Delete the repository url from redis.
-		timestamp = strconv.FormatInt(time.Now().Unix(), 10)
 		err = redisClient.HDel(hosting.ServiceName, url).Err()
 		if err != nil {
 			log.Error(err)
 		}
-		log.Infof("%s removed from redis at %s.", url, timestamp)
-		time.Sleep(5 * time.Second)
 		// Update url to nextURL.
 		url = nextURL
 	}
