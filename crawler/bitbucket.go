@@ -5,8 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
@@ -38,26 +36,10 @@ type response struct {
 }
 
 // GetRepositories retrieves the list of all repository from an hosting.
-func (host Bitbucket) GetRepositories(repositories chan Repository) error {
+func (host Bitbucket) GetRepositories(repositories chan Repository) (string, error) {
 	var sourceURL = host.URL
 
-	// Redis connection.
-	redisClient, err := redisClientFactory("redis:6379")
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
 	for {
-		// Save the current processed page as "not already processed".
-		// Set a redis on "bitbucket" hash, K: sourceURL and V: false
-		err := redisClient.HSet("bitbucket", sourceURL, false).Err()
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-		log.Debugf("Redis: %s saved as 'false'.", sourceURL)
-
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if host.BasicAuth != "" {
@@ -67,18 +49,18 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 		// Get List of repositories
 		body, status, err := httpclient.GetURL(sourceURL, headers)
 		if err != nil {
-			return err
+			return sourceURL, err
 		}
 		if status.StatusCode != http.StatusOK {
 			log.Warnf("Request returned: %s", string(body))
-			return errors.New("requets returned an incorrect http.Status: " + status.Status)
+			return sourceURL, errors.New("requets returned an incorrect http.Status: " + status.Status)
 		}
 
 		// Fill response as list of values (repositories data).
 		var result response
 		err = json.Unmarshal(body, &result)
 		if err != nil {
-			return err
+			return sourceURL, err
 		}
 
 		// Add repositories to the channel that will perform the check on everyone.
@@ -91,16 +73,6 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 			}
 		}
 
-		// If reached, the page was correctly retrieved.
-		// Set the value of sourceURL on redis to actual Unix timestamp.
-		timestamp := strconv.FormatInt(time.Now().Unix(), 10)
-		err = redisClient.HSet("bitbucket", sourceURL, timestamp).Err()
-		if err != nil {
-			log.Error(err)
-			return err
-		}
-		log.Debugf("Redis: set %s value as '%s'.", sourceURL, timestamp)
-
 		// Check if the end of bitbucket repositories is reached and the repositories are all processed.
 		if len(result.Next) == 0 {
 			// If I want to restart when it ends:
@@ -108,11 +80,12 @@ func (host Bitbucket) GetRepositories(repositories chan Repository) error {
 			// and comment the line "close(repositories)"
 			log.Info("Bitbucket repositories status: end reached.")
 			close(repositories)
-
 		} else {
 			// Set the new URL to retrieve and continue.
 			sourceURL = result.Next
 		}
 
 	}
+
+	return sourceURL, nil
 }
