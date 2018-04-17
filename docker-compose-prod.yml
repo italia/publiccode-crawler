@@ -48,6 +48,8 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
 
   crawler:
+    environment:
+      - "CRAWLED_FILENAME=${CRAWLED_FILENAME}"
     container_name: "${NAME}_crawler"
     image: italia/developers-italia-backend:0.0.1
     networks:
