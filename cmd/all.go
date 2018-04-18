@@ -11,8 +11,8 @@ import (
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/httpclient"
+	metrics "github.com/italia/developers-italia-backend/metrics"
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -28,7 +28,7 @@ var allCmd = &cobra.Command{
 Beware! May take days to complete.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Init Prometheus for metrics.
-		processedCounter := initPrometheus()
+		processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
 		// Open and read hosting file list.
 		hostingFile := "hosting.yml"
@@ -41,6 +41,7 @@ Beware! May take days to complete.`,
 		if err != nil {
 			panic(fmt.Sprintf("error in parsing %s file: %v", hostingFile, err))
 		}
+		log.Debug("Loaded and parsed hosting.yml")
 
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository)
@@ -55,64 +56,34 @@ Beware! May take days to complete.`,
 	},
 }
 
-func initPrometheus() prometheus.Counter {
-	processedCounter := prometheus.NewCounter(prometheus.CounterOpts{
-		Name: "repository_processed",
-		Help: "Number of repository processed.",
-	})
-	err := prometheus.Register(processedCounter)
-	if err != nil {
-		log.Errorf("error in registering Prometheus handler: %v:", err)
-	}
-
-	go startMetricsServer()
-
-	return processedCounter
-}
-
-func startMetricsServer() {
-	http.Handle("/metrics", promhttp.Handler())
-
-	err := http.ListenAndServe("0.0.0.0:8081", nil)
-	if err != nil {
-		log.Warningf("monitoring endpoint non available: %v: ", err)
-	}
-}
-
 func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
-	channelCapacity := 100
-	ch := make(chan string, channelCapacity)
+	log.Debug("Repositories are going to be processed...")
 	// Throttle requests.
 	// Time limits should be calibrated on more tests in order to avoid errors and bans.
 	// 1/100 can perform a number of request < bitbucket limit.
-	rate := time.Second / 100
-	throttle := time.Tick(rate)
+	throttleRate := time.Second / 100
+	throttle := time.Tick(throttleRate)
 
 	for repository := range repositories {
 		// Throttle down the calls.
 		<-throttle
-		go checkAvailability(repository.Name, repository.URL, ch, processedCounter)
+		go checkAvailability(repository.Name, repository.URL, repository.Headers, processedCounter)
 
 	}
+
 }
 
-func checkAvailability(name, url string, ch chan<- string, processedCounter prometheus.Counter) {
-	// Retrieve the url.
-	body, status, err := httpclient.GetURL(url)
+func checkAvailability(fullName, url string, headers map[string]string, processedCounter prometheus.Counter) {
+	processedCounter.Inc()
 
+	body, status, err := httpclient.GetURL(url, headers)
 	// If it's available and no error returned.
 	if status.StatusCode == http.StatusOK && err == nil {
 		// Save the file.
-		vendor, repo := splitFullName(name)
-		fileName := "gitignore"
-		go saveFile(vendor, repo, fileName, body)
-
-		ch <- fmt.Sprintf("%s - hit - %s", name, url)
-	} else {
-		ch <- fmt.Sprintf("%s - miss - %s", name, url)
+		vendor, repo := splitFullName(fullName)
+		fileName := os.Getenv("CRAWLED_FILENAME")
+		saveFile(vendor, repo, fileName, body)
 	}
-
-	processedCounter.Inc()
 }
 
 // saveFile save the choosen <file_name> in ./data/<vendor>/<repo>/<file_name>

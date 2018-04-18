@@ -4,8 +4,13 @@ ARG NAME
 ARG PROJECT
 ARG VERSION
 
+RUN apk update && \
+    apk upgrade && \
+    apk add git
+
 ADD . /go/src/$PROJECT
 
+RUN cd /go/src/$PROJECT && go get -u github.com/golang/dep/cmd/dep && dep ensure
 RUN cd /go/src/$PROJECT && go build -ldflags "-X github.com/italia/developers-italia-backend/version.VERSION=${VERSION}" -o $NAME
 
 # final stage

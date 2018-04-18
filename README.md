@@ -22,7 +22,9 @@ Backend &amp; crawler for the OSS catalog of Developers Italia.
 * [Docker](https://www.docker.com/)
 * [Docker-compose](https://docs.docker.com/compose/)
 
-### Starting steps
+### Setup
+
+#### Stack
 
 ##### 1) rename docker-compose.yml.dist to docker-compose.yml
 
@@ -55,7 +57,19 @@ to localhost.
 
 ##### 5) start the Docker stack: `make up`
 
-##### 6) launch the crawler (beware, this could take days to complete): `make run-all`
+#### Crawler
+
+* Fill your hosting.yml file with configuration values (like specific host basic auth token)
+
+##### With docker-compose
+
+* build the crawler image: `make build`
+* de-comment the crawler container from docker-compose.yml file
+* start the Docker stack: `make up`
+
+##### As golang app
+
+* start the crawler: `make run-all`
 
 ### Copyright
 
