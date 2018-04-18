@@ -1,9 +1,8 @@
 #!/bin/bash
 #
-# To create a index in elasticsearch
+# Lists aliases on elasticsearch
 #
 
-# shards & replicas are default values.
-#
+source config.sh
 
-curl -u elastic:elastic -X GET "http://elasticsearch:9200/_cat/aliases?v"
+curl -u "$BASICAUTH" -X GET "http://elasticsearch:9200/_cat/aliases?v"

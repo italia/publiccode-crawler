@@ -1,10 +1,9 @@
 #!/bin/bash
 #
-# To create a index in elasticsearch
+# To insert a document to an index in elasticsearch
 #
 
-# shards & replicas are default values.
-#
+source config.sh
 
 TODAY=$(date '+%Y%m%d')
 YESTERDAY="20180416"
@@ -83,4 +82,4 @@ generate_document() {
 EOF
 }
 
-curl -u elastic:elastic -X PUT "http://elasticsearch:9200/$INDEX_TODAY/software/1" -H 'Content-Type: application/json' -d"$(generate_document)"
+curl -u "$BASICAUTH" -X PUT "http://elasticsearch:9200/$INDEX_TODAY/software/1" -H 'Content-Type: application/json' -d"$(generate_document)"

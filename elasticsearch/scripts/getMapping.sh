@@ -3,6 +3,8 @@
 # To get index mappings
 #
 
+source config.sh
+
 INDEX=$1
 
 if [ ! -n "${INDEX}" ] ; then
@@ -10,4 +12,4 @@ if [ ! -n "${INDEX}" ] ; then
     exit 1;
 fi
 
-curl -u elastic:elastic -X GET "http://elasticsearch:9200/$INDEX/_mapping"
+curl -u "$BASICAUTH" -X GET "http://elasticsearch:9200/$INDEX/_mapping"

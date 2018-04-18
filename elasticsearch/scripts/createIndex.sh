@@ -1,10 +1,12 @@
 #!/bin/bash
 #
-# To create a index in elasticsearch
+# To create an index in elasticsearch
 #
 
 # shards & replicas are default values.
 #
+
+source config.sh
 
 TODAY=$(date '+%Y%m%d')
 INDEX="publiccode_$TODAY"
@@ -146,5 +148,5 @@ generate_index_settings() {
 EOF
 }
 
-curl -u elastic:elastic -X PUT "http://elasticsearch:9200/$INDEX" -H 'Content-Type: application/json' -d"$(generate_index_settings)"
+curl -u "$BASICAUTH" -X PUT "http://elasticsearch:9200/$INDEX" -H 'Content-Type: application/json' -d"$(generate_index_settings)"
 

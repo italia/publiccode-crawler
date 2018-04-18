@@ -1,20 +1,19 @@
 #!/bin/bash
 #
-# To create a index in elasticsearch
+# To delete an alias from elasticsearch
 #
 
-# shards & replicas are default values.
-#
+source config.sh
 
 ALIAS=$1
 INDEX=$2
 
 if [ ! -n "${ALIAS}" ] ; then
-    echo -e $RED "Devi passarmi il nome dell'Alias" $Z;
+    echo -e $RED "You have to pass alias name as first parameter of the script" $Z;
     exit 1;
 fi
 if [ ! -n "${INDEX}" ] ; then
-    echo -e $RED "Devi passarmi il nome dell'Indice" $Z;
+    echo -e $RED "You have to pass index name as second parameter of the script" $Z;
     exit 1;
 fi
 
@@ -28,4 +27,4 @@ generate_delete_msg() {
 EOF
 }
 
-curl -u elastic:elastic -X POST "http://elasticsearch:9200/_aliases" -H 'Content-Type: application/json' -d"$(generate_delete_msg)"
+curl -u "$BASICAUTH" -X POST "http://elasticsearch:9200/_aliases" -H 'Content-Type: application/json' -d"$(generate_delete_msg)"

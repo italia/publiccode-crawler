@@ -1,16 +1,15 @@
 #!/bin/bash
 #
-# To create a index in elasticsearch
+# To delete an index from elasticsearch
 #
 
-# shards & replicas are default values.
-#
+source config.sh
 
 INDEX=$1
 
 if [ ! -n "${INDEX}" ] ; then
-    echo -e $RED "Devi passarmi il nome dell'indice" $Z;
+    echo -e $RED "You have to pass index name as first parameter of the script" $Z;
     exit 1;
 fi
 
-curl -u elastic:elastic -X DELETE "http://elasticsearch:9200/$INDEX"
+curl -u "$BASICAUTH" -X DELETE "http://elasticsearch:9200/$INDEX"

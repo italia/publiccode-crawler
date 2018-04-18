@@ -31,3 +31,6 @@ docker-compose.yml
 
 # Downloaded files
 data
+
+# Elasticsearch scripts
+elasticsearch/scripts/config.sh
