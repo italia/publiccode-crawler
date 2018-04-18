@@ -58,23 +58,22 @@ Beware! May take days to complete.`,
 
 func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
 	log.Debug("Repositories are going to be processed...")
-	channelCapacity := 100
-	ch := make(chan string, channelCapacity)
 	// Throttle requests.
 	// Time limits should be calibrated on more tests in order to avoid errors and bans.
 	// 1/100 can perform a number of request < bitbucket limit.
-	rate := time.Second / 100
-	throttle := time.Tick(rate)
+	throttleRate := time.Second / 100
+	throttle := time.Tick(throttleRate)
 
 	for repository := range repositories {
 		// Throttle down the calls.
 		<-throttle
-		go checkAvailability(repository.Name, repository.URL, repository.Headers, ch, processedCounter)
+		go checkAvailability(repository.Name, repository.URL, repository.Headers, processedCounter)
+
 	}
 
 }
 
-func checkAvailability(fullName, url string, headers map[string]string, ch chan<- string, processedCounter prometheus.Counter) {
+func checkAvailability(fullName, url string, headers map[string]string, processedCounter prometheus.Counter) {
 	processedCounter.Inc()
 
 	body, status, err := httpclient.GetURL(url, headers)
@@ -84,10 +83,6 @@ func checkAvailability(fullName, url string, headers map[string]string, ch chan<
 		vendor, repo := splitFullName(fullName)
 		fileName := os.Getenv("CRAWLED_FILENAME")
 		saveFile(vendor, repo, fileName, body)
-
-		ch <- fmt.Sprintf("%s - hit - %s", fullName, url)
-	} else {
-		ch <- fmt.Sprintf("%s - miss - %s", fullName, url)
 	}
 }
 

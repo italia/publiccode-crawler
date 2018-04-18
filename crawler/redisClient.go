@@ -7,7 +7,7 @@ import (
 
 func redisClientFactory(URL string) (*redis.Client, error) {
 	redisClient := redis.NewClient(&redis.Options{
-		Addr:     URL, // docker redis ip "192.168.99.100:6379",
+		Addr:     URL, // docker redis ip "redis:6379",
 		Password: "",  // no password set
 		DB:       0,   // use default DB
 	})

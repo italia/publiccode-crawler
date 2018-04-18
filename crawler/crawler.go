@@ -1,6 +1,8 @@
 package crawler
 
 import (
+	"os"
+
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,7 +19,7 @@ func Process(hosting Hosting, repositories chan Repository) {
 	}
 
 	// Redis connection.
-	redisClient, err := redisClientFactory("redis:6379")
+	redisClient, err := redisClientFactory(os.Getenv("REDIS_URL"))
 	if err != nil {
 		log.Error(err)
 	}

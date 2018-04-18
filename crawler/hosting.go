@@ -1,8 +1,11 @@
 package crawler
 
 import (
+	"os"
+
 	"gopkg.in/yaml.v2"
 
+	"github.com/go-redis/redis"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,6 +39,11 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 	if err != nil {
 		return nil, err
 	}
+	// Redis connection.
+	redisClient, err := redisClientFactory(os.Getenv("REDIS_URL"))
+	if err != nil {
+		return hostings, err
+	}
 
 	// Manage every host
 	for i, hosting := range hostings {
@@ -43,8 +51,8 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 		switch hosting.ServiceName {
 
 		case "bitbucket":
-			// Check if there is some work failed.
-			data, err := checkFailed(hostings[i])
+			// Check if there is some failed URL in redis.
+			data, err := checkFailed(hostings[i], redisClient)
 			if err != nil {
 				log.Warn(err)
 			}
@@ -61,16 +69,8 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 	return hostings, nil
 }
 
-func checkFailed(hosting Hosting) (Bitbucket, error) {
-	// Redis connection.
-	redisClient, err := redisClientFactory("redis:6379")
-	if err != nil {
-		return Bitbucket{
-			URL:       hosting.URL,
-			RateLimit: hosting.RateLimit,
-			BasicAuth: hosting.BasicAuth,
-		}, err
-	}
+// checkFailed checks if a repository list previously failed to be retrieved.
+func checkFailed(hosting Hosting, redisClient *redis.Client) (Bitbucket, error) {
 
 	// Check if there is an URL that wasn't correctly retrieved.
 	// URL.value="false" => set hosting.URL to the one that one ("false")
