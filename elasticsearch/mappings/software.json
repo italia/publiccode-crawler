@@ -118,8 +118,7 @@
           "type": "keyword"
         },
         "suggest-name": {
-          "type": "completion",
-          "payloads" : true
+          "type": "completion"
         }
       }
     }

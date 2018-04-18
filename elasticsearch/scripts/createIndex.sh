@@ -137,8 +137,7 @@ generate_index_settings() {
           "type": "keyword"
         },
         "suggest-name": {
-          "type": "completion",
-          "payloads" : true
+          "type": "completion"
         }
       }
     }
