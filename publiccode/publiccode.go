@@ -8,7 +8,7 @@ import (
 // BaseDir is the Base Directory of the PublicCode file.
 // If local will be empty: ""
 // If remote will be the url of the repository
-var BaseDir = "https://bitbucket.org/marco-capobussi/publiccode-example"
+var BaseDir = ""
 
 // Version of the PublicCode specs.
 // Source https://github.com/publiccodenet/publiccode.yml

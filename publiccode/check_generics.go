@@ -1,7 +1,6 @@
 package publiccode
 
 import (
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -24,8 +23,6 @@ func (p *parser) checkEmail(key string, fn string) error {
 // An URL resource is well formatted if it's' a valid URL and the scheme is not empty.
 // An URL resource is reachable if returns an http Status = 200 OK.
 func (p *parser) checkUrl(key string, value string) (*url.URL, error) {
-	fmt.Println("value: " + value)
-
 	u, err := url.Parse(value)
 	if err != nil {
 		return nil, newErrorInvalidValue(key, "not a valid URL: %s", value)
@@ -52,11 +49,11 @@ func (p *parser) checkFile(key string, fn string) (string, error) {
 		}
 	} else {
 		//Remote bitbucket
-		_, err := p.checkUrl(key, BaseDir+"/raw/master/"+fn)
+		_, err := p.checkUrl(key, BaseDir+fn)
 
 		//_, err := p.checkUrl(key, "https://bitbucket.org/marco-capobussi/publiccode-example/raw/master/"+fn)
 		if err != nil {
-			return "", newErrorInvalidValue(key, "file does not exist on remote: %v", BaseDir+"/raw/master/"+fn)
+			return "", newErrorInvalidValue(key, "file does not exist on remote: %v", BaseDir+fn)
 		}
 	}
 	return fn, nil

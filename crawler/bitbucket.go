@@ -179,11 +179,11 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 		}
 	}
 
+	// Bitbucket end reached.
 	if len(result.Next) == 0 {
 		// If I want to restart when it ends:
 		// sourceURL = "https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2008-08-13"
 		// and comment the line "close(repositories)"
-		log.Info("Bitbucket repositories status: end reached.")
 		for len(repositories) != 0 {
 			time.Sleep(time.Second)
 		}

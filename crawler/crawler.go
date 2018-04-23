@@ -46,6 +46,12 @@ func Process(hosting Hosting, repositories chan Repository) {
 		if err != nil {
 			log.Error(err)
 		}
+
+		// If end is reached, url and nextURL contains the same value.
+		if url == nextURL {
+			log.Info("Bitbucket repositories status: end reached.")
+			return
+		}
 		// Update url to nextURL.
 		url = nextURL
 	}

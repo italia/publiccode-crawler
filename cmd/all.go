@@ -79,27 +79,22 @@ func checkAvailability(fullName, url string, headers map[string]string, processe
 	body, status, err := httpclient.GetURL(url, headers)
 	// If it's available and no error returned.
 	if status.StatusCode == http.StatusOK && err == nil {
-		fmt.Println("-> checkAvail: FOUND: " + fullName)
 		// Save the file.
 		vendor, repo := splitFullName(fullName)
 		fileName := os.Getenv("CRAWLED_FILENAME")
 		saveFile(vendor, repo, fileName, body)
 
 		// Parse data into pc struct and validate.
-		baseUrl := strings.TrimSuffix(url, "/raw/master/publiccode.yml")
-		publiccode.BaseDir = baseUrl
+		baseURL := strings.TrimSuffix(url, "/publiccode.yml")
+		publiccode.BaseDir = baseURL
 		var pc publiccode.PublicCode
 
 		err = publiccode.Parse(body, &pc)
-		fmt.Println("-> VALIDATION: publiccode.yml: base = " + baseUrl)
-
 		if err != nil {
 			log.Warn("Invalid publiccode.yml: " + url)
 			log.Warn("Errors:" + err.Error())
 		}
-		if err == nil {
-			fmt.Println("-> VALID: publiccode.yml")
-		}
+
 	}
 }
 
