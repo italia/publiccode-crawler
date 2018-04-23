@@ -7,6 +7,7 @@ import (
 	"testing"
 )
 
+// Test publiccode.yml local files for key errors.
 func TestDecodeValueErrors(t *testing.T) {
 	BaseDir = ""
 
@@ -68,6 +69,7 @@ func TestDecodeValueErrors(t *testing.T) {
 	}
 }
 
+// Test publiccode.yml remote files for key errors.
 func TestDecodeValueErrorsRemote(t *testing.T) {
 	BaseDir = "https://bitbucket.org/marco-capobussi/publiccode-example/raw/master/"
 
@@ -84,13 +86,6 @@ func TestDecodeValueErrorsRemote(t *testing.T) {
 
 	for _, test := range testRemoteFiles {
 		t.Run(test.errkey, func(t *testing.T) {
-
-			// // Read data.
-			// data, err := ioutil.ReadFile(test.file)
-			// if err != nil {
-			// 	fmt.Println(err)
-			// 	return
-			// }
 
 			// Read data.
 			resp, err := http.Get(test.file)

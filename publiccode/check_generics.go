@@ -69,24 +69,16 @@ func (p *parser) checkDate(key string, value string) (time.Time, error) {
 	}
 }
 
-// checkDate tells whether the string in a valid image. It also checks if the file exists.
+// checkImage tells whether the string in a valid image. It also checks if the file exists.
 func (p *parser) checkImage(key string, value string) error {
 	// Based on https://github.com/italia/publiccode.yml/blob/master/schema.md#key-descriptionlogo
 	//TODO: check two version of the Logo
-	//TODO: check .png size
+	//TODO: check extensions and image size
 	//TODO: raster should exists iff vector does not exists
 
 	if _, err := p.checkFile(key, value); err != nil {
 		return err
 	}
 
-	// fileExt := filepath.Ext(value)
-	// for _, v := range []string{".png", ".svg"} {
-	// 	if v == fileExt {
-	// 		p.pc.Maintenance.Type = value
-	// 		return nil
-	// 	}
-	// }
-	//return newErrorInvalidValue(key, "image must be .svg or .png: %v", value)
 	return nil
 }
