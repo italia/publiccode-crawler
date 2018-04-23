@@ -10,7 +10,7 @@
   rate-limit:
     req/h: 60000
     req/m: 6000
-  basic-auth: "Yml0YjAwMUBjZC5taW50ZW1haWwuY29tOmJpdGIwMDFAY2QubWludGVtYWlsLmNvbQ=="
+  basic-auth: ""
 
 - name: 'gitlab'
   url: 'https://gitlab.com'
