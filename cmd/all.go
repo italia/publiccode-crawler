@@ -12,6 +12,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/httpclient"
 	metrics "github.com/italia/developers-italia-backend/metrics"
+	publiccode "github.com/italia/developers-italia-backend/publiccode"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -75,19 +76,35 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 
 func checkAvailability(fullName, url string, headers map[string]string, processedCounter prometheus.Counter) {
 	processedCounter.Inc()
-
 	body, status, err := httpclient.GetURL(url, headers)
 	// If it's available and no error returned.
 	if status.StatusCode == http.StatusOK && err == nil {
+		fmt.Println("-> checkAvail: FOUND: " + fullName)
 		// Save the file.
 		vendor, repo := splitFullName(fullName)
 		fileName := os.Getenv("CRAWLED_FILENAME")
 		saveFile(vendor, repo, fileName, body)
+
+		// Parse data into pc struct and validate.
+		baseUrl := strings.TrimSuffix(url, "/raw/master/publiccode.yml")
+		publiccode.BaseDir = baseUrl
+		var pc publiccode.PublicCode
+
+		err = publiccode.Parse(body, &pc)
+		fmt.Println("-> VALIDATION: publiccode.yml: base = " + baseUrl)
+
+		if err != nil {
+			log.Warn("Invalid publiccode.yml: " + url)
+			log.Warn("Errors:" + err.Error())
+		}
+		if err == nil {
+			fmt.Println("-> VALID: publiccode.yml")
+		}
 	}
 }
 
 // saveFile save the choosen <file_name> in ./data/<vendor>/<repo>/<file_name>
-func saveFile(vendor, repo, fileName string, data []byte) {
+func saveFile(vendor, repo, fileName string, data []byte) error {
 	path := filepath.Join("./data", vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.
@@ -99,6 +116,9 @@ func saveFile(vendor, repo, fileName string, data []byte) {
 	if err != nil {
 		log.Error(err)
 	}
+
+	return err
+
 }
 
 // splitFullName split a git FullName format to vendor and repo strings.
