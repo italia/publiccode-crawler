@@ -171,12 +171,17 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 
 	// Add repositories to the channel that will perform the check on everyone.
 	for _, v := range result.Values {
-		repositories <- Repository{
-			Name:    v.FullName,
-			URL:     v.Links.HTML.Href + "/raw/master/" + os.Getenv("CRAWLED_FILENAME"),
-			Source:  url,
-			Headers: headers,
+		// If the repository was never used, the mainbrench name is empty ("")
+		if v.Mainbranch.Name != "" {
+			repositories <- Repository{
+				Name:    v.FullName,
+				URL:     v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
+				Source:  url,
+				Headers: headers,
+			}
+
 		}
+
 	}
 
 	// Bitbucket end reached.
