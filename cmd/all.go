@@ -85,7 +85,7 @@ func checkAvailability(fullName, url string, headers map[string]string, processe
 		saveFile(vendor, repo, fileName, body)
 
 		// Parse data into pc struct and validate.
-		baseURL := strings.TrimSuffix(url, "/publiccode.yml")
+		baseURL := strings.TrimSuffix(url, "publiccode.yml")
 		publiccode.BaseDir = baseURL
 		var pc publiccode.PublicCode
 
