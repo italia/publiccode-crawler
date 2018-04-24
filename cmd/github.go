@@ -90,7 +90,7 @@ func checkAvailabilityGithub(fullName, url string, headers map[string]string, pr
 
 // saveFile save the choosen <file_name> in ./data/<vendor>/<repo>/<file_name>
 func saveFileGithub(vendor, repo, fileName string, data []byte) {
-	path := filepath.Join("./data", vendor, repo)
+	path := filepath.Join("./data", "github.com", vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
