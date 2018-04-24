@@ -12,7 +12,7 @@ if [ ! -n "${INDEX}" ] ; then
     exit 1;
 fi
 
-curl -u "$BASICAUTH" -X POST "http://elasticsearch:9200/$INDEX/_search?pretty" -H 'Content-Type: application/json' -d'
+curl -u "$BASICAUTH" -X POST "$ELASTICSEARCH_URL/$INDEX/_search?pretty" -H 'Content-Type: application/json' -d'
 {
   "suggest": {
       "names" : {

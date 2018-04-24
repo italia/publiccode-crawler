@@ -27,4 +27,4 @@ generate_delete_msg() {
 EOF
 }
 
-curl -u "$BASICAUTH" -X POST "http://elasticsearch:9200/_aliases" -H 'Content-Type: application/json' -d"$(generate_delete_msg)"
+curl -u "$BASICAUTH" -X POST "$ELASTICSEARCH_URL/_aliases" -H 'Content-Type: application/json' -d"$(generate_delete_msg)"

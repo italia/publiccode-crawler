@@ -12,4 +12,4 @@ if [ ! -n "${INDEX}" ] ; then
     exit 1;
 fi
 
-curl -u "$BASICAUTH" -X DELETE "http://elasticsearch:9200/$INDEX"
+curl -u "$BASICAUTH" -X DELETE "$ELASTICSEARCH_URL/$INDEX"

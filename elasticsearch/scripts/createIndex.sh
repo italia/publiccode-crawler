@@ -148,5 +148,5 @@ generate_index_settings() {
 EOF
 }
 
-curl -u "$BASICAUTH" -X PUT "http://elasticsearch:9200/$INDEX" -H 'Content-Type: application/json' -d"$(generate_index_settings)"
+curl -u "$BASICAUTH" -X PUT "$ELASTICSEARCH_URL/$INDEX" -H 'Content-Type: application/json' -d"$(generate_index_settings)"
 

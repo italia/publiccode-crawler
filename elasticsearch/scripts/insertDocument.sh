@@ -82,4 +82,4 @@ generate_document() {
 EOF
 }
 
-curl -u "$BASICAUTH" -X PUT "http://elasticsearch:9200/$INDEX_TODAY/software/1" -H 'Content-Type: application/json' -d"$(generate_document)"
+curl -u "$BASICAUTH" -X PUT "$ELASTICSEARCH_URL/$INDEX_TODAY/software/1" -H 'Content-Type: application/json' -d"$(generate_document)"

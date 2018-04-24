@@ -12,4 +12,4 @@ if [ ! -n "${INDEX}" ] ; then
     exit 1;
 fi
 
-curl -u "$BASICAUTH" -X GET "http://elasticsearch:9200/$INDEX/_mapping"
+curl -u "$BASICAUTH" -X GET "$ELASTICSEARCH_URL/$INDEX/_mapping"

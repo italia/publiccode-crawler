@@ -5,4 +5,4 @@
 
 source config.sh
 
-curl -u "$BASICAUTH" -X GET "http://elasticsearch:9200/_cat/indices?v"
+curl -u "$BASICAUTH" -X GET "$ELASTICSEARCH_URL/_cat/indices?v"
