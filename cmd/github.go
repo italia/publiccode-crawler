@@ -18,17 +18,17 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(allCmd)
+	rootCmd.AddCommand(githubCmd)
 }
 
-var allCmd = &cobra.Command{
-	Use:   "all",
-	Short: "Crawl publiccode.yml from hostings.",
-	Long: `Start the crawler on every host written on hosting.yml file.
+var githubCmd = &cobra.Command{
+	Use:   "github",
+	Short: "Crawl publiccode.yml from github.",
+	Long: `Start the crawler on github host defined on hosting.yml file.
 Beware! May take days to complete.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Init Prometheus for metrics.
-		processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
+		processedCounter := metrics.PrometheusCounter("repository_processed_github", "Number of repository processed on Github.")
 
 		// Open and read hosting file list.
 		hostingFile := "hosting.yml"
@@ -48,15 +48,17 @@ Beware! May take days to complete.`,
 
 		// For each host parsed from hosting, Process the repositories.
 		for _, hosting := range hostings {
-			go crawler.Process(hosting, repositories)
+			if hosting.ServiceName == "github" {
+				go crawler.Process(hosting, repositories)
+			}
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
-		processRepositories(repositories, processedCounter)
+		processRepositoriesGithub(repositories, processedCounter)
 	},
 }
 
-func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
+func processRepositoriesGithub(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
 	log.Debug("Repositories are going to be processed...")
 	// Throttle requests.
 	// Time limits should be calibrated on more tests in order to avoid errors and bans.
@@ -67,27 +69,27 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 	for repository := range repositories {
 		// Throttle down the calls.
 		<-throttle
-		go checkAvailability(repository.Name, repository.URL, repository.Headers, processedCounter)
+		go checkAvailabilityGithub(repository.Name, repository.URL, repository.Headers, processedCounter)
 
 	}
 
 }
 
-func checkAvailability(fullName, url string, headers map[string]string, processedCounter prometheus.Counter) {
+func checkAvailabilityGithub(fullName, url string, headers map[string]string, processedCounter prometheus.Counter) {
 	processedCounter.Inc()
 
 	body, status, _, err := httpclient.GetURL(url, headers)
 	// If it's available and no error returned.
 	if status.StatusCode == http.StatusOK && err == nil {
 		// Save the file.
-		vendor, repo := splitFullName(fullName)
+		vendor, repo := splitFullNameGithub(fullName)
 		fileName := os.Getenv("CRAWLED_FILENAME")
-		saveFile(vendor, repo, fileName, body)
+		saveFileGithub(vendor, repo, fileName, body)
 	}
 }
 
 // saveFile save the choosen <file_name> in ./data/<vendor>/<repo>/<file_name>
-func saveFile(vendor, repo, fileName string, data []byte) {
+func saveFileGithub(vendor, repo, fileName string, data []byte) {
 	path := filepath.Join("./data", vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.
@@ -102,7 +104,7 @@ func saveFile(vendor, repo, fileName string, data []byte) {
 }
 
 // splitFullName split a git FullName format to vendor and repo strings.
-func splitFullName(fullName string) (string, string) {
+func splitFullNameGithub(fullName string) (string, string) {
 	s := strings.Split(fullName, "/")
 	return s[0], s[1]
 }

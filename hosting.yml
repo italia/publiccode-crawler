@@ -1,8 +1,8 @@
 - name: 'github'
-  url: 'https://github.com'
+  url: 'https://api.github.com/repositories'
   rate-limit:
-    req/h: 0
-    req/m: 0
+    req/h: 5000
+    req/m: 500
   basic-auth: ""
 
 - name: 'bitbucket'

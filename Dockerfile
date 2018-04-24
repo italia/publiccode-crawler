@@ -10,7 +10,7 @@ RUN apk update && \
 
 ADD . /go/src/$PROJECT
 
-RUN cd /go/src/$PROJECT && go get -u github.com/golang/dep/cmd/dep && dep ensure
+# RUN cd /go/src/$PROJECT && go get -u github.com/golang/dep/cmd/dep && dep ensure
 RUN cd /go/src/$PROJECT && go build -ldflags "-X github.com/italia/developers-italia-backend/version.VERSION=${VERSION}" -o $NAME
 
 # final stage
@@ -27,4 +27,4 @@ EXPOSE 8081
 
 # ARG values are not allowed in ENTRYPOINT, pass NAME as ENV variable.
 ENV NAME=$NAME
-ENTRYPOINT ./$NAME all
+ENTRYPOINT ./$NAME github

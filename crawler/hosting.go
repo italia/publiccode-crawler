@@ -52,25 +52,35 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 
 		case "bitbucket":
 			// Check if there is some failed URL in redis.
-			data, err := checkFailed(hostings[i], redisClient)
+			data, err := checkFailedBitbucket(hostings[i], redisClient)
 			if err != nil {
 				log.Warn(err)
 			}
 
 			hostings[i].ServiceInstance = data
 			hostings[i].URL = data.URL
-			break
+
+		case "github":
+			// Check if there is some failed URL in redis.
+			data, err := checkFailedGithub(hostings[i], redisClient)
+			if err != nil {
+				log.Warn(err)
+			}
+
+			hostings[i].ServiceInstance = data
+			hostings[i].URL = data.URL
+
 		default:
 			log.Warningf("implementation not found for service %s, skipping", hosting.ServiceName)
-			break
+
 		}
 	}
 
 	return hostings, nil
 }
 
-// checkFailed checks if a repository list previously failed to be retrieved.
-func checkFailed(hosting Hosting, redisClient *redis.Client) (Bitbucket, error) {
+// checkFailedBitbucket checks if a repository list previously failed to be retrieved in bitbucket.
+func checkFailedBitbucket(hosting Hosting, redisClient *redis.Client) (Bitbucket, error) {
 
 	// Check if there is an URL that wasn't correctly retrieved.
 	// URL.value="false" => set hosting.URL to the one that one ("false")
@@ -101,6 +111,44 @@ func checkFailed(hosting Hosting, redisClient *redis.Client) (Bitbucket, error) 
 	}
 
 	return Bitbucket{
+		URL:       hosting.URL,
+		RateLimit: hosting.RateLimit,
+		BasicAuth: hosting.BasicAuth,
+	}, nil
+}
+
+// checkFailedGithub checks if a repository list previously failed to be retrieved in github.
+func checkFailedGithub(hosting Hosting, redisClient *redis.Client) (Github, error) {
+
+	// Check if there is an URL that wasn't correctly retrieved.
+	// URL.value="false" => set hosting.URL to the one that one ("false")
+	keys, _ := redisClient.HKeys(hosting.ServiceName).Result()
+
+	// First launch.
+	if len(keys) == 0 {
+		return Github{
+			URL:       hosting.URL,
+			RateLimit: hosting.RateLimit,
+			BasicAuth: hosting.BasicAuth,
+		}, nil
+
+	}
+
+	// N launch. Check if some repo list was interrupted.
+	for _, key := range keys {
+
+		if redisClient.HGet(hosting.ServiceName, key).Val() == "failed" {
+			log.Debug("Found one interrupted URL. Starts from here: " + key)
+			return Github{
+				URL:       key,
+				RateLimit: hosting.RateLimit,
+				BasicAuth: hosting.BasicAuth,
+			}, nil
+
+		}
+	}
+
+	return Github{
 		URL:       hosting.URL,
 		RateLimit: hosting.RateLimit,
 		BasicAuth: hosting.BasicAuth,

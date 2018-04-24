@@ -36,7 +36,7 @@ func Process(hosting Hosting, repositories chan Repository) {
 
 		nextURL, err := hosting.ServiceInstance.GetRepositories(url, repositories)
 		if err != nil {
-			log.Errorf("error reading %s repository list: %v", url, err)
+			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			close(repositories)
 			return
 		}

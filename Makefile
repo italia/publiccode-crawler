@@ -10,6 +10,9 @@ run:
 run-all:
 	go run main.go all
 
+run-github:
+	go run main.go github
+
 run-version:
 	go run main.go version
 

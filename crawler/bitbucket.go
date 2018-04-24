@@ -20,7 +20,7 @@ type Bitbucket struct {
 	BasicAuth string `yaml:"basic-auth"`
 }
 
-type response struct {
+type bitbucketResponse struct {
 	Values []struct {
 		Name  string `json:"name"`
 		Links struct {
@@ -45,7 +45,7 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 	}
 
 	// Get List of repositories
-	body, status, err := httpclient.GetURL(url, headers)
+	body, status, _, err := httpclient.GetURL(url, headers)
 	if err != nil {
 		return url, err
 	}
@@ -55,7 +55,7 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 	}
 
 	// Fill response as list of values (repositories data).
-	var result response
+	var result bitbucketResponse
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return url, err
