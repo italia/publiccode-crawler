@@ -111,6 +111,15 @@ func (host Github) GetRepositories(url string, repositories chan Repository) (st
 			secondsAfterRetry, _ := strconv.Atoi(respHeaders.Get("Retry-After"))
 			time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			return url, nil
+
+			// else if rate limit excedees
+		} else if status.StatusCode == 403 {
+			retryEpoch, _ := strconv.Atoi(respHeaders.Get("x-ratelimit-reset"))
+			secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
+			log.Infof("Waiting: %s seconds. (The difference between x-ratelimit-reset Header and time.Now())", secondsAfterRetry)
+
+			time.Sleep(time.Second * time.Duration(secondsAfterRetry))
+			return url, nil
 		} else {
 			return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
 		}
