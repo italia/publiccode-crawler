@@ -1,0 +1,2 @@
+export BASICAUTH="elastic:elastic"
+export ELASTICSEARCH_URL=http://elasticsearch:9200
