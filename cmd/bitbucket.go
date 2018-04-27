@@ -41,7 +41,7 @@ Beware! May take days to complete.`,
 		if err != nil {
 			panic(fmt.Sprintf("error in parsing %s file: %v", hostingFile, err))
 		}
-		log.Debug("Loaded and parsed hosting.yml")
+		log.Info("Loaded and parsed hosting.yml")
 
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository)
@@ -59,11 +59,11 @@ Beware! May take days to complete.`,
 }
 
 func processRepositoriesBitbucket(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
-	log.Debug("Repositories are going to be processed...")
+	log.Info("Repositories are going to be processed...")
 	// Throttle requests.
 	// Time limits should be calibrated on more tests in order to avoid errors and bans.
 	// 1/100 can perform a number of request < bitbucket limit.
-	throttleRate := time.Second / 100
+	throttleRate := time.Second / 1000
 	throttle := time.Tick(throttleRate)
 
 	for repository := range repositories {

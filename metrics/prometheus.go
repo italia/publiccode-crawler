@@ -22,7 +22,7 @@ func PrometheusCounter(name, helpText string) prometheus.Counter {
 
 	go startPrometheusMetricsServer()
 
-	log.Debug("init Prometheus()")
+	log.Info("init Prometheus()")
 
 	return processedCounter
 }

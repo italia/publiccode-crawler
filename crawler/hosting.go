@@ -110,7 +110,7 @@ func checkFailedBitbucket(hosting Hosting, redisClient *redis.Client) (Bitbucket
 	for _, key := range keys {
 
 		if redisClient.HGet(hosting.ServiceName, key).Val() == "failed" {
-			log.Debug("Found one interrupted URL. Starts from here: " + key)
+			log.Info("Found one interrupted URL. Starts from here: " + key)
 			return Bitbucket{
 				URL:       key,
 				RateLimit: hosting.RateLimit,
@@ -148,7 +148,7 @@ func checkFailedGithub(hosting Hosting, redisClient *redis.Client) (Github, erro
 	for _, key := range keys {
 
 		if redisClient.HGet(hosting.ServiceName, key).Val() == "failed" {
-			log.Debug("Found one interrupted URL. Starts from here: " + key)
+			log.Info("Found one interrupted URL. Starts from here: " + key)
 			return Github{
 				URL:       key,
 				RateLimit: hosting.RateLimit,
@@ -186,7 +186,7 @@ func checkFailedGitlab(hosting Hosting, redisClient *redis.Client) (Gitlab, erro
 	for _, key := range keys {
 
 		if redisClient.HGet(hosting.ServiceName, key).Val() == "failed" {
-			log.Debug("Found one interrupted URL. Starts from here: " + key)
+			log.Info("Found one interrupted URL. Starts from here: " + key)
 			return Gitlab{
 				URL:       key,
 				RateLimit: hosting.RateLimit,

@@ -3,14 +3,12 @@ package crawler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
-	linkheader "github.com/tomnomnom/linkheader"
 )
 
 // Gitlab is a Crawler for the Gitlab hosting.
@@ -45,7 +43,6 @@ type gitlabResponse []struct {
 // GetRepositories retrieves the list of all repository from an hosting.
 // Return the URL from where it should restart (Next or actual if fails) and error.
 func (host Gitlab) GetRepositories(url string, repositories chan Repository) (string, error) {
-	fmt.Println("get repo:" + url)
 	// Set BasicAuth header
 	headers := make(map[string]string)
 	if host.BasicAuth != "" {
@@ -93,21 +90,11 @@ func (host Gitlab) GetRepositories(url string, repositories chan Repository) (st
 	}
 
 	// Return next url
-	parsedLink := parseHeaderLinkGitlab(respHeaders.Get("Link"))
+	parsedLink := httpclient.NextHeaderLink(respHeaders.Get("Link"))
+	if parsedLink == "" {
+		log.Info("Gitlab repositories status: end reached (no more ref=Next header). Restart from: " + host.URL)
+		return host.URL, nil
+	}
 
 	return parsedLink, nil
-}
-
-// parseHeaderLink parse the Gitlab Header Link to nect link of repositories.
-// original Link: <https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=2&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false>; rel="next", <https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=1&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false>; rel="first", <https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=21994&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false>; rel="last"
-// parsedLink: https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=2&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false
-func parseHeaderLinkGitlab(link string) string {
-	parsedLinks := linkheader.Parse(link)
-
-	for _, link := range parsedLinks {
-		if link.Rel == "next" {
-			return link.URL
-		}
-	}
-	return link
 }

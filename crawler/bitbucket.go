@@ -187,6 +187,7 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 		for len(repositories) != 0 {
 			time.Sleep(time.Second)
 		}
+		log.Info("Bitbucket repositories status: end reached. Restart from hosting value:" + host.URL)
 
 		// if wants to end the program when repo list ends (last page) decomment
 		// close(repositories)

@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/httpclient"
@@ -41,7 +40,7 @@ Beware! May take days to complete.`,
 		if err != nil {
 			panic(fmt.Sprintf("error in parsing %s file: %v", hostingFile, err))
 		}
-		log.Debug("Loaded and parsed hosting.yml")
+		log.Info("Loaded and parsed hosting.yml")
 
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository)
@@ -58,17 +57,10 @@ Beware! May take days to complete.`,
 }
 
 func processRepositories(repositories chan crawler.Repository, processedCounter prometheus.Counter) {
-	log.Debug("Repositories are going to be processed...")
-	// Throttle requests.
-	// Time limits should be calibrated on more tests in order to avoid errors and bans.
-	throttleRate := time.Second / 1000
-	throttle := time.Tick(throttleRate)
+	log.Info("Repositories are going to be processed...")
 
 	for repository := range repositories {
-		// Throttle down the calls.
-		<-throttle
 		go checkAvailability(repository.Name, repository.URL, repository.Source, repository.Headers, processedCounter)
-
 	}
 
 }

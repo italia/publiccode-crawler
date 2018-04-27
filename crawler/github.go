@@ -9,7 +9,6 @@ import (
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
-	"github.com/tomnomnom/linkheader"
 )
 
 // Github is a Crawler for the Github hosting.
@@ -138,21 +137,11 @@ func (host Github) GetRepositories(url string, repositories chan Repository) (st
 	}
 
 	// Return next url
-	parsedLink := parseHeaderLink(respHeaders.Get("Link"))
+	parsedLink := httpclient.NextHeaderLink(respHeaders.Get("Link"))
+	if parsedLink == "" {
+		log.Info("Github repositories status: end reached (no more ref=Next header). Restart from: " + host.URL)
+		return host.URL, nil
+	}
 
 	return parsedLink, nil
-}
-
-// parseHeaderLink parse the Github Header Link to nect link of repositories.
-// original Link: <https://api.github.com/repositories?since=1592>; rel="next", <https://api.github.com/repositories{?since}>; rel="first"
-// parsedLink: https://api.github.com/repositories?since=1592
-func parseHeaderLink(link string) string {
-	parsedLinks := linkheader.Parse(link)
-
-	for _, link := range parsedLinks {
-		if link.Rel == "next" {
-			return link.URL
-		}
-	}
-	return link
 }

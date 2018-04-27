@@ -8,6 +8,7 @@ import (
 
 	version "github.com/italia/developers-italia-backend/version"
 	log "github.com/sirupsen/logrus"
+	"github.com/tomnomnom/linkheader"
 )
 
 // ResponseStatus contains the status and statusCode of a response.
@@ -96,4 +97,20 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 			return body, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, nil
 		}
 	}
+}
+
+// NextHeaderLink parse the Github Header Link to next link of repositories.
+// original Link: <https://api.github.com/repositories?since=1592>; rel="next", <https://api.github.com/repositories{?since}>; rel="first"
+// parsedLink: https://api.github.com/repositories?since=1592
+func NextHeaderLink(linkHeader string) string {
+	parsedLinks := linkheader.Parse(linkHeader)
+
+	for _, link := range parsedLinks {
+		if link.Rel == "next" {
+			return link.URL
+		}
+	}
+
+	return ""
+
 }
