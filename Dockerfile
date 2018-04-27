@@ -27,4 +27,4 @@ EXPOSE 8081
 
 # ARG values are not allowed in ENTRYPOINT, pass NAME as ENV variable.
 ENV NAME=$NAME
-ENTRYPOINT ./$NAME github
+ENTRYPOINT ./$NAME gitlab
