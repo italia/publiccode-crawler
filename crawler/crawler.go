@@ -37,8 +37,10 @@ func Process(hosting Hosting, repositories chan Repository) {
 		nextURL, err := hosting.ServiceInstance.GetRepositories(url, repositories)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
-			close(repositories)
-			return
+			log.Errorf("Retry:", nextURL)
+			nextURL = url
+			//close(repositories): ok if only one repo. If more parallel it generates panics.
+			//return
 		}
 		// If reached, the repository list was successfully retrieved.
 		// Delete the repository url from redis.

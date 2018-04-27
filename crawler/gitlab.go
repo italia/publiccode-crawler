@@ -3,13 +3,14 @@ package crawler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
+	linkheader "github.com/tomnomnom/linkheader"
 )
 
 // Gitlab is a Crawler for the Gitlab hosting.
@@ -44,6 +45,7 @@ type gitlabResponse []struct {
 // GetRepositories retrieves the list of all repository from an hosting.
 // Return the URL from where it should restart (Next or actual if fails) and error.
 func (host Gitlab) GetRepositories(url string, repositories chan Repository) (string, error) {
+	fmt.Println("get repo:" + url)
 	// Set BasicAuth header
 	headers := make(map[string]string)
 	if host.BasicAuth != "" {
@@ -72,18 +74,22 @@ func (host Gitlab) GetRepositories(url string, repositories chan Repository) (st
 		repositories <- Repository{
 			Name:    v.PathWithNamespace,
 			URL:     "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
-			Source:  url,
+			Source:  "gitlab.com",
 			Headers: headers,
 		}
 	}
 
 	if len(respHeaders.Get("Link")) == 0 {
-		// If I want to restart when it ends:
-		// sourceURL = "https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2008-08-13"
-		// and comment the line "close(repositories)"
+		for len(repositories) != 0 {
+			time.Sleep(time.Second)
+		}
+		// if wants to end the program when repo list ends (last page) decomment
+		// close(repositories)
+		// return url, nil
 		log.Info("Gitlab repositories status: end reached.")
-		close(repositories)
-		return url, nil
+
+		// Restart.
+		return host.URL, nil
 	}
 
 	// Return next url
@@ -96,8 +102,12 @@ func (host Gitlab) GetRepositories(url string, repositories chan Repository) (st
 // original Link: <https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=2&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false>; rel="next", <https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=1&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false>; rel="first", <https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=21994&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false>; rel="last"
 // parsedLink: https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=2&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false
 func parseHeaderLinkGitlab(link string) string {
-	parsedLink := strings.Split(link, ";")[0]
-	parsedLink = parsedLink[1:][:len(parsedLink)-2]
+	parsedLinks := linkheader.Parse(link)
 
-	return parsedLink
+	for _, link := range parsedLinks {
+		if link.Rel == "next" {
+			return link.URL
+		}
+	}
+	return link
 }

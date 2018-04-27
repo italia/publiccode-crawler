@@ -134,6 +134,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/tomnomnom/linkheader"
+  packages = ["."]
+  revision = "6953a30d444317754766fccdd3f7f000edc874f6"
+  version = "0.1.0"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
@@ -177,6 +183,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "7bdddd1b5fd0cb16687016f990cb46f22c90bd5d7229e87a19100e15826bf00c"
+  inputs-digest = "e2ace5f45e11b573ad5efce1ce9a1300430219f93a70fa3189f94adc0ad3ced2"
   solver-name = "gps-cdcl"
   solver-version = 1

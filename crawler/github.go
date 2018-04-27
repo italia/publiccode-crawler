@@ -5,10 +5,11 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"strings"
+	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
+	"github.com/tomnomnom/linkheader"
 )
 
 // Github is a Crawler for the Github hosting.
@@ -118,18 +119,22 @@ func (host Github) GetRepositories(url string, repositories chan Repository) (st
 		repositories <- Repository{
 			Name:    v.FullName,
 			URL:     "https://raw.githubusercontent.com/" + v.FullName + "/master/" + os.Getenv("CRAWLED_FILENAME"),
-			Source:  url,
+			Source:  "github.com",
 			Headers: headers,
 		}
 	}
 
 	if len(respHeaders.Get("Link")) == 0 {
-		// If I want to restart when it ends:
-		// sourceURL = "https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2008-08-13"
-		// and comment the line "close(repositories)"
+		for len(repositories) != 0 {
+			time.Sleep(time.Second)
+		}
+		// if wants to end the program when repo list ends (last page) decomment
+		// close(repositories)
+		// return url, nil
 		log.Info("Github repositories status: end reached.")
-		close(repositories)
-		return url, nil
+
+		// Restart.
+		return host.URL, nil
 	}
 
 	// Return next url
@@ -142,8 +147,12 @@ func (host Github) GetRepositories(url string, repositories chan Repository) (st
 // original Link: <https://api.github.com/repositories?since=1592>; rel="next", <https://api.github.com/repositories{?since}>; rel="first"
 // parsedLink: https://api.github.com/repositories?since=1592
 func parseHeaderLink(link string) string {
-	parsedLink := strings.Split(link, ";")[0]
-	parsedLink = parsedLink[1:][:len(parsedLink)-2]
+	parsedLinks := linkheader.Parse(link)
 
-	return parsedLink
+	for _, link := range parsedLinks {
+		if link.Rel == "next" {
+			return link.URL
+		}
+	}
+	return link
 }

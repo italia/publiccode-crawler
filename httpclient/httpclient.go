@@ -20,7 +20,7 @@ type ResponseStatus struct {
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
 func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http.Header, error) {
 	var sleep time.Duration
-	const timeout = time.Duration(20 * time.Second)
+	const timeout = time.Duration(30 * time.Second)
 
 	client := http.Client{
 		// Request Timeout.
@@ -49,6 +49,7 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 
 		// Check if the request results in http RateLimit error.
 		if resp.StatusCode == http.StatusTooManyRequests {
+
 			if len(resp.Header.Get("Retry-After")) > 0 {
 				// If Retry-after is set, use that value.
 				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
@@ -61,6 +62,7 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 				time.Sleep(sleep)
 			}
 
+			// Check if the status code is Forbidden
 		} else if resp.StatusCode == http.StatusForbidden {
 
 			if len(resp.Header.Get("Retry-After")) > 0 {

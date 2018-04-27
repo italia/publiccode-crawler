@@ -44,7 +44,7 @@ Beware! May take days to complete.`,
 		log.Debug("Loaded and parsed hosting.yml")
 
 		// Initiate a channel of repositories.
-		repositories := make(chan crawler.Repository, 100)
+		repositories := make(chan crawler.Repository)
 
 		// For each host parsed from hosting, Process the repositories.
 		for _, hosting := range hostings {

@@ -44,7 +44,7 @@ Beware! May take days to complete.`,
 		log.Debug("Loaded and parsed hosting.yml")
 
 		// Initiate a channel of repositories.
-		repositories := make(chan crawler.Repository, 100)
+		repositories := make(chan crawler.Repository)
 
 		// For each host parsed from hosting, Process the repositories.
 		for _, hosting := range hostings {
@@ -53,6 +53,7 @@ Beware! May take days to complete.`,
 
 		// Process the repositories in order to retrieve publiccode.yml.
 		processRepositories(repositories, processedCounter)
+
 	},
 }
 
@@ -60,20 +61,19 @@ func processRepositories(repositories chan crawler.Repository, processedCounter 
 	log.Debug("Repositories are going to be processed...")
 	// Throttle requests.
 	// Time limits should be calibrated on more tests in order to avoid errors and bans.
-	// 1/100 can perform a number of request < bitbucket limit.
-	throttleRate := time.Second / 100
+	throttleRate := time.Second / 1000
 	throttle := time.Tick(throttleRate)
 
 	for repository := range repositories {
 		// Throttle down the calls.
 		<-throttle
-		go checkAvailability(repository.Name, repository.URL, repository.Headers, processedCounter)
+		go checkAvailability(repository.Name, repository.URL, repository.Source, repository.Headers, processedCounter)
 
 	}
 
 }
 
-func checkAvailability(fullName, url string, headers map[string]string, processedCounter prometheus.Counter) {
+func checkAvailability(fullName, url, source string, headers map[string]string, processedCounter prometheus.Counter) {
 	processedCounter.Inc()
 
 	body, status, _, err := httpclient.GetURL(url, headers)
@@ -82,13 +82,13 @@ func checkAvailability(fullName, url string, headers map[string]string, processe
 		// Save the file.
 		vendor, repo := splitFullName(fullName)
 		fileName := os.Getenv("CRAWLED_FILENAME")
-		saveFile(vendor, repo, fileName, body)
+		saveFile(source, vendor, repo, fileName, body)
 	}
 }
 
 // saveFile save the choosen <file_name> in ./data/<vendor>/<repo>/<file_name>
-func saveFile(vendor, repo, fileName string, data []byte) {
-	path := filepath.Join("./data", vendor, repo)
+func saveFile(source, vendor, repo, fileName string, data []byte) {
+	path := filepath.Join("./data", source, vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {

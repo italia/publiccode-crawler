@@ -3,7 +3,6 @@ package crawler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -22,7 +21,7 @@ type Bitbucket struct {
 	BasicAuth string `yaml:"basic-auth"`
 }
 
-type response struct {
+type bitbucketResponse struct {
 	Pagelen int `json:"pagelen"`
 	Values  []struct {
 		Scm     string `json:"scm"`
@@ -145,7 +144,6 @@ type response struct {
 // GetRepositories retrieves the list of all repository from an hosting.
 // Return the URL from where it should restart (Next or actual if fails) and error.
 func (host Bitbucket) GetRepositories(url string, repositories chan Repository) (string, error) {
-	fmt.Println("-> GetRepositories: " + url)
 	// Set BasicAuth header
 	headers := make(map[string]string)
 	if host.BasicAuth != "" {
@@ -163,7 +161,7 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 	}
 
 	// Fill response as list of values (repositories data).
-	var result response
+	var result bitbucketResponse
 	err = json.Unmarshal(body, &result)
 	if err != nil {
 		return url, err
@@ -176,7 +174,7 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 			repositories <- Repository{
 				Name:    v.FullName,
 				URL:     v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
-				Source:  url,
+				Source:  "bitbucket.com",
 				Headers: headers,
 			}
 
@@ -186,14 +184,16 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 
 	// Bitbucket end reached.
 	if len(result.Next) == 0 {
-		// If I want to restart when it ends:
-		// sourceURL = "https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2008-08-13"
-		// and comment the line "close(repositories)"
 		for len(repositories) != 0 {
 			time.Sleep(time.Second)
 		}
-		close(repositories)
-		return url, nil
+
+		// if wants to end the program when repo list ends (last page) decomment
+		// close(repositories)
+		// return url, nil
+
+		// Restart.
+		return host.URL, nil
 	}
 
 	// Return next url
