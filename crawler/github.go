@@ -5,9 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
@@ -105,24 +103,7 @@ func (host Github) GetRepositories(url string, repositories chan Repository) (st
 	}
 	if status.StatusCode != http.StatusOK {
 		log.Warnf("Request returned: %s", string(body))
-		// Github abuse rate limit management: https://developer.github.com/v3/guides/best-practices-for-integrators/#dealing-with-abuse-rate-limits
-		if len(respHeaders.Get("Retry-After")) > 0 {
-			log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", respHeaders.Get("Retry-After"))
-			secondsAfterRetry, _ := strconv.Atoi(respHeaders.Get("Retry-After"))
-			time.Sleep(time.Second * time.Duration(secondsAfterRetry))
-			return url, nil
-
-			// else if rate limit excedees
-		} else if status.StatusCode == 403 {
-			retryEpoch, _ := strconv.Atoi(respHeaders.Get("x-ratelimit-reset"))
-			secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
-			log.Infof("Waiting: %s seconds. (The difference between x-ratelimit-reset Header and time.Now())", secondsAfterRetry)
-
-			time.Sleep(time.Second * time.Duration(secondsAfterRetry))
-			return url, nil
-		} else {
-			return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
-		}
+		return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
 	}
 
 	// Fill response as list of values (repositories data).
@@ -136,7 +117,7 @@ func (host Github) GetRepositories(url string, repositories chan Repository) (st
 	for _, v := range results {
 		repositories <- Repository{
 			Name:    v.FullName,
-			URL:     v.URL + "/contents/" + os.Getenv("CRAWLED_FILENAME"),
+			URL:     "https://raw.githubusercontent.com/" + v.FullName + "/master/" + os.Getenv("CRAWLED_FILENAME"),
 			Source:  url,
 			Headers: headers,
 		}

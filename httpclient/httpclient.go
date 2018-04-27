@@ -3,6 +3,7 @@ package httpclient
 import (
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	version "github.com/italia/developers-italia-backend/version"
@@ -48,9 +49,37 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 
 		// Check if the request results in http RateLimit error.
 		if resp.StatusCode == http.StatusTooManyRequests {
-			sleep = sleep + (5 * time.Minute)
-			log.Info("Rate limit reached, sleep %v minutes\n", sleep)
-			time.Sleep(sleep)
+			if len(resp.Header.Get("Retry-After")) > 0 {
+				// If Retry-after is set, use that value.
+				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
+				secondsAfterRetry, _ := strconv.Atoi(resp.Header.Get("Retry-After"))
+				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
+			} else {
+				// Perform a generic additional wait.
+				sleep = sleep + (5 * time.Minute)
+				log.Info("Rate limit reached, sleep %v minutes\n", sleep)
+				time.Sleep(sleep)
+			}
+
+		} else if resp.StatusCode == http.StatusForbidden {
+
+			if len(resp.Header.Get("Retry-After")) > 0 {
+				// If Retry-after is set, use that value.
+				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
+				secondsAfterRetry, _ := strconv.Atoi(resp.Header.Get("Retry-After"))
+				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
+			} else if len(resp.Header.Get("x-ratelimit-reset")) > 0 {
+				retryEpoch, _ := strconv.Atoi(resp.Header.Get("x-ratelimit-reset"))
+				secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
+				log.Infof("Waiting: %s seconds. (The difference between x-ratelimit-reset Header and time.Now())", strconv.FormatInt(secondsAfterRetry, 10))
+				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
+			} else {
+				// Perform a generic additional wait.
+				sleep = sleep + (5 * time.Minute)
+				log.Info("Forbidden access, sleep %v minutes\n", sleep)
+				time.Sleep(sleep)
+			}
+
 		} else {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
