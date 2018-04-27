@@ -14,4 +14,4 @@ scrape_configs:
   scheme: http
   static_configs:
   - targets:
-    - spider:8081
+    - crawler:8081
