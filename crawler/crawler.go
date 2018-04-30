@@ -101,14 +101,14 @@ func saveFile(source , name string, data []byte) {
 	fileName := os.Getenv("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
-	path := filepath.Join("./data", source, vendor, repo)
+	path := filepath.Join("./data", source, vendor, repo, fileName)
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.MkdirAll(path, os.ModePerm)
 	}
 
-	err := ioutil.WriteFile(path+"/"+fileName, data, 0644)
+	err := ioutil.WriteFile(path, data, 0644)
 	if err != nil {
 		log.Error(err)
 	}
