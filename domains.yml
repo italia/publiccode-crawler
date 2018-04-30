@@ -19,7 +19,7 @@
 - id: 'gitlab.com'
   description: 'gitlab.com'
   client-api: 'gitlab'
-  url: 'https://gitlab.com'
+  url: 'https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=1&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false'
   rate-limit:
     req/h: 3600
     req/m: 60

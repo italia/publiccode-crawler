@@ -11,17 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Bitbucket is a Crawler for the Bitbucket API.
 type Bitbucket struct {
-	URL       string
-	RateLimit struct {
-		ReqH int `yaml:"req/h"`
-		ReqM int `yaml:"req/m"`
-	} `yaml:"rate-limit"`
-	BasicAuth string `yaml:"basic-auth"`
-}
-
-type bitbucketResponse struct {
 	Pagelen int `json:"pagelen"`
 	Values  []struct {
 		Scm     string `json:"scm"`
@@ -143,60 +133,60 @@ type bitbucketResponse struct {
 
 // GetRepositories retrieves the list of all repository from a domain.
 // Return the URL from where it should restart (Next or actual if fails) and error.
-func (host Bitbucket) GetRepositories(url string, repositories chan Repository) (string, error) {
-	// Set BasicAuth header
-	headers := make(map[string]string)
-	if host.BasicAuth != "" {
-		headers["Authorization"] = "Basic " + host.BasicAuth
-	}
+func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
+	return func(domain Domain, url string, repositories chan Repository) (string, error) {
+		// Set BasicAuth header
+		headers := make(map[string]string)
+		if domain.BasicAuth != "" {
+			headers["Authorization"] = "Basic " + domain.BasicAuth
+		}
 
-	// Get List of repositories
-	body, status, _, err := httpclient.GetURL(url, headers)
-	if err != nil {
-		return url, err
-	}
-	if status.StatusCode != http.StatusOK {
-		log.Warnf("Request returned: %s", string(body))
-		return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
-	}
+		// Get List of repositories
+		body, status, _, err := httpclient.GetURL(url, headers)
+		if err != nil {
+			return url, err
+		}
+		if status.StatusCode != http.StatusOK {
+			log.Warnf("Request returned: %s", string(body))
+			return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
+		}
 
-	// Fill response as list of values (repositories data).
-	var result bitbucketResponse
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return url, err
-	}
+		// Fill response as list of values (repositories data).
+		var result Bitbucket
+		err = json.Unmarshal(body, &result)
+		if err != nil {
+			return url, err
+		}
 
-	// Add repositories to the channel that will perform the check on everyone.
-	for _, v := range result.Values {
-		// If the repository was never used, the Mainbranch is empty ("")
-		if v.Mainbranch.Name != "" {
-			repositories <- Repository{
-				Name:       v.FullName,
-				FileRawURL: v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
-				Domain:     "bitbucket.com",
-				Headers:    headers,
+		// Add repositories to the channel that will perform the check on everyone.
+		for _, v := range result.Values {
+			// If the repository was never used, the Mainbranch is empty ("")
+			if v.Mainbranch.Name != "" {
+				repositories <- Repository{
+					Name:       v.FullName,
+					FileRawURL: v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
+					Domain:     "bitbucket.com",
+					Headers:    headers,
+				}
 			}
-
 		}
 
-	}
+		// Bitbucket end reached.
+		if len(result.Next) == 0 {
+			for len(repositories) != 0 {
+				time.Sleep(time.Second)
+			}
+			log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + domain.URL)
 
-	// Bitbucket end reached.
-	if len(result.Next) == 0 {
-		for len(repositories) != 0 {
-			time.Sleep(time.Second)
+			// if wants to end the program when repo list ends (last page) decomment
+			// close(repositories)
+			// return url, nil
+
+			// Restart.
+			return domain.URL, nil
 		}
-		log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + host.URL)
 
-		// if wants to end the program when repo list ends (last page) decomment
-		// close(repositories)
-		// return url, nil
-
-		// Restart.
-		return host.URL, nil
+		// Return next url
+		return result.Next, nil
 	}
-
-	// Return next url
-	return result.Next, nil
 }

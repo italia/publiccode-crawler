@@ -11,17 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Github is a Crawler for the Github API.
-type Github struct {
-	URL       string
-	RateLimit struct {
-		ReqH int `yaml:"req/h"`
-		ReqM int `yaml:"req/m"`
-	} `yaml:"rate-limit"`
-	BasicAuth string `yaml:"basic-auth"`
-}
-
-type githubResponse []struct {
+type Github []struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	FullName string `json:"full_name"`
@@ -89,59 +79,61 @@ type githubResponse []struct {
 
 // GetRepositories retrieves the list of all repository from a domain.
 // Return the URL from where it should restart (Next or actual if fails) and error.
-func (host Github) GetRepositories(url string, repositories chan Repository) (string, error) {
-	// Set BasicAuth header
-	headers := make(map[string]string)
-	if host.BasicAuth != "" {
-		headers["Authorization"] = "Basic " + host.BasicAuth
-	}
-
-	// Get List of repositories
-	body, status, respHeaders, err := httpclient.GetURL(url, headers)
-	if err != nil {
-		return url, err
-	}
-	if status.StatusCode != http.StatusOK {
-		log.Warnf("Request returned: %s", string(body))
-		return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
-	}
-
-	// Fill response as list of values (repositories data).
-	var results githubResponse
-	err = json.Unmarshal(body, &results)
-	if err != nil {
-		return url, err
-	}
-
-	// Add repositories to the channel that will perform the check on everyone.
-	for _, v := range results {
-		repositories <- Repository{
-			Name:       v.FullName,
-			FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/master/" + os.Getenv("CRAWLED_FILENAME"),
-			Domain:     "github.com",
-			Headers:    headers,
+func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
+	return func(domain Domain, url string, repositories chan Repository) (string, error) {
+		// Set BasicAuth header
+		headers := make(map[string]string)
+		if domain.BasicAuth != "" {
+			headers["Authorization"] = "Basic " + domain.BasicAuth
 		}
-	}
 
-	if len(respHeaders.Get("Link")) == 0 {
-		for len(repositories) != 0 {
-			time.Sleep(time.Second)
+		// Get List of repositories
+		body, status, respHeaders, err := httpclient.GetURL(url, headers)
+		if err != nil {
+			return url, err
 		}
-		// if wants to end the program when repo list ends (last page) decomment
-		// close(repositories)
-		// return url, nil
-		log.Info("Github repositories status: end reached.")
+		if status.StatusCode != http.StatusOK {
+			log.Warnf("Request returned: %s", string(body))
+			return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
+		}
 
-		// Restart.
-		return host.URL, nil
+		// Fill response as list of values (repositories data).
+		var results Github
+		err = json.Unmarshal(body, &results)
+		if err != nil {
+			return url, err
+		}
+
+		// Add repositories to the channel that will perform the check on everyone.
+		for _, v := range results {
+			repositories <- Repository{
+				Name:       v.FullName,
+				FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/master/" + os.Getenv("CRAWLED_FILENAME"),
+				Domain:     "github.com",
+				Headers:    headers,
+			}
+		}
+
+		if len(respHeaders.Get("Link")) == 0 {
+			for len(repositories) != 0 {
+				time.Sleep(time.Second)
+			}
+			// if wants to end the program when repo list ends (last page) decomment
+			// close(repositories)
+			// return url, nil
+			log.Info("Github repositories status: end reached.")
+
+			// Restart.
+			return domain.URL, nil
+		}
+
+		// Return next url
+		parsedLink := httpclient.NextHeaderLink(respHeaders.Get("Link"))
+		if parsedLink == "" {
+			log.Info("Github repositories status: end reached (no more ref=Next header). Restart from: " + domain.URL)
+			return domain.URL, nil
+		}
+
+		return parsedLink, nil
 	}
-
-	// Return next url
-	parsedLink := httpclient.NextHeaderLink(respHeaders.Get("Link"))
-	if parsedLink == "" {
-		log.Info("Github repositories status: end reached (no more ref=Next header). Restart from: " + host.URL)
-		return host.URL, nil
-	}
-
-	return parsedLink, nil
 }

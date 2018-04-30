@@ -19,7 +19,14 @@ Beware! May take days to complete.`,
 		domainID := args[0]
 
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile)
+
+		// Redis connection.
+		redisClient, err := crawler.RedisClientFactory("localhost:6379")
+		if err != nil {
+			panic(err)
+		}
+
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
 		if err != nil {
 			panic(err)
 		}

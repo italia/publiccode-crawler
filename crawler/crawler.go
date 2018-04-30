@@ -14,20 +14,18 @@ import (
 	"github.com/italia/developers-italia-backend/metrics"
 )
 
-// Crawler is the interface for every specific crawler instances.
-type Crawler interface {
-	GetRepositories(url string, repositories chan Repository) (string, error)
+// Repository is a single code repository.
+type Repository struct {
+	Name       string
+	FileRawURL string
+	Domain     string
+	Headers    map[string]string
 }
 
 // Process delegates the work to single domain crawlers.
 func ProcessDomain(domain Domain, repositories chan Repository) {
-	if domain.ServiceInstance == nil {
-		log.Warnf("Domain %s is not available.", domain.Id)
-		return
-	}
-
 	// Redis connection.
-	redisClient, err := redisClientFactory(os.Getenv("REDIS_URL"))
+	redisClient, err := RedisClientFactory("localhost:6379")
 	if err != nil {
 		log.Error(err)
 	}
@@ -42,7 +40,7 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 			log.Error(err)
 		}
 
-		nextURL, err := domain.ServiceInstance.GetRepositories(url, repositories)
+		nextURL, err := domain.processAndGetNextURL(url, repositories)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			log.Errorf("Retry:", nextURL)
