@@ -18,7 +18,8 @@ Beware! May take days to complete.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		domainID := args[0]
 
-		domainsFile := "domains.yml"
+		// Register client API plugins.
+		crawler.RegisterClientApis()
 
 		// Redis connection.
 		redisClient, err := crawler.RedisClientFactory("localhost:6379")
@@ -26,6 +27,7 @@ Beware! May take days to complete.`,
 			panic(err)
 		}
 
+		domainsFile := "domains.yml"
 		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
 		if err != nil {
 			panic(err)
