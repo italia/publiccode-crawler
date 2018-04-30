@@ -95,7 +95,7 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 		}
 		if status.StatusCode != http.StatusOK {
 			log.Warnf("Request returned: %s", string(body))
-			return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
+			return url, errors.New("request returned an incorrect http.Status: " + status.Status)
 		}
 
 		// Fill response as list of values (repositories data).

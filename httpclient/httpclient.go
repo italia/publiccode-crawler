@@ -50,7 +50,6 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 
 		// Check if the request results in http RateLimit error.
 		if resp.StatusCode == http.StatusTooManyRequests {
-
 			if len(resp.Header.Get("Retry-After")) > 0 {
 				// If Retry-after is set, use that value.
 				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
@@ -65,7 +64,6 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 
 			// Check if the status code is Forbidden
 		} else if resp.StatusCode == http.StatusForbidden {
-
 			if len(resp.Header.Get("Retry-After")) > 0 {
 				// If Retry-after is set, use that value.
 				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))

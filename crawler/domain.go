@@ -78,6 +78,10 @@ func (domain Domain) updateStartURL(redisClient *redis.Client) error {
 }
 
 func (domain Domain) processAndGetNextURL(url string, repositories chan Repository) (string, error) {
-	crawler := GetClientApiCrawler(domain.ClientApi)
+	crawler, err := GetClientApiCrawler(domain.ClientApi)
+	if err != nil {
+		return "", err
+	}
+
 	return crawler(domain, url, repositories)
 }
