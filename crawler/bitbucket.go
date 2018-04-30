@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Bitbucket is a Crawler for the Bitbucket API.
 type Bitbucket struct {
 	Pagelen int `json:"pagelen"`
 	Values  []struct {
@@ -148,7 +149,7 @@ func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Re
 		}
 		if status.StatusCode != http.StatusOK {
 			log.Warnf("Request returned: %s", string(body))
-			return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
+			return url, errors.New("request returned an incorrect http.Status: " + status.Status)
 		}
 
 		// Fill response as list of values (repositories data).
@@ -165,7 +166,7 @@ func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Re
 				repositories <- Repository{
 					Name:       v.FullName,
 					FileRawURL: v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
-					Domain:     "bitbucket.com",
+					Domain:     domain.Id,
 					Headers:    headers,
 				}
 			}
@@ -177,10 +178,6 @@ func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Re
 				time.Sleep(time.Second)
 			}
 			log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + domain.URL)
-
-			// if wants to end the program when repo list ends (last page) decomment
-			// close(repositories)
-			// return url, nil
 
 			// Restart.
 			return domain.URL, nil

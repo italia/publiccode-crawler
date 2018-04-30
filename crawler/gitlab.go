@@ -10,6 +10,7 @@ import (
 	"time"
 )
 
+// Gitlab is a Crawler for the Gitlab API.
 type Gitlab []struct {
 	ID                int           `json:"id"`
 	Description       string        `json:"description"`
@@ -49,19 +50,19 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 			return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
 		}
 
-	// Fill response as list of values (repositories data).
-	var results Gitlab
-	err = json.Unmarshal(body, &results)
-	if err != nil {
-		return url, err
-	}
+		// Fill response as list of values (repositories data).
+		var results Gitlab
+		err = json.Unmarshal(body, &results)
+		if err != nil {
+			return url, err
+		}
 
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
 			repositories <- Repository{
 				Name:       v.PathWithNamespace,
 				FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
-				Domain:     "gitlab.com",
+				Domain:     domain.Id,
 				Headers:    headers,
 			}
 		}

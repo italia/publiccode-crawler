@@ -74,7 +74,6 @@ func ProcessRepositories(repositories chan Repository) {
 		// Throttle down the calls.
 		<-throttle
 		go checkAvailability(repository, processedCounter)
-
 	}
 }
 

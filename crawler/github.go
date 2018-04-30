@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Github is a Crawler for the Github API.
 type Github []struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -109,7 +110,7 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 			repositories <- Repository{
 				Name:       v.FullName,
 				FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/master/" + os.Getenv("CRAWLED_FILENAME"),
-				Domain:     "github.com",
+				Domain:     domain.Id,
 				Headers:    headers,
 			}
 		}
