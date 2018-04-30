@@ -116,10 +116,10 @@ func (host Github) GetRepositories(url string, repositories chan Repository) (st
 	// Add repositories to the channel that will perform the check on everyone.
 	for _, v := range results {
 		repositories <- Repository{
-			Name:    v.FullName,
-			URL:     "https://raw.githubusercontent.com/" + v.FullName + "/master/" + os.Getenv("CRAWLED_FILENAME"),
-			Source:  "github.com",
-			Headers: headers,
+			Name:       v.FullName,
+			FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/master/" + os.Getenv("CRAWLED_FILENAME"),
+			Domain:     "github.com",
+			Headers:    headers,
 		}
 	}
 

@@ -1,11 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"io/ioutil"
 	"github.com/italia/developers-italia-backend/crawler"
-	"github.com/italia/developers-italia-backend/metrics"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -22,21 +18,10 @@ Beware! May take days to complete.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		serviceName := args[0]
 
-		// Init Prometheus for metrics.
-		processedCounter := metrics.PrometheusCounter(fmt.Sprintf("repository_processed_%s", serviceName), fmt.Sprintf("Number of repository processed on %s.", serviceName))
-
-		// Open and read hosting file list.
-		hostingFile := "hosting.yml"
-		data, err := ioutil.ReadFile(hostingFile)
+		hostings, err := crawler.ReadAndParseHosting()
 		if err != nil {
-			panic(fmt.Sprintf("error in reading %s file: %v", hostingFile, err))
+			panic(err)
 		}
-		// Parse hosting file list.
-		hostings, err := crawler.ParseHostingFile(data)
-		if err != nil {
-			panic(fmt.Sprintf("error in parsing %s file: %v", hostingFile, err))
-		}
-		log.Debug("Loaded and parsed hosting.yml")
 
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository)
@@ -49,6 +34,6 @@ Beware! May take days to complete.`,
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
-		crawler.ProcessRepositories(repositories, processedCounter)
+		crawler.ProcessRepositories(repositories)
 	},
 }

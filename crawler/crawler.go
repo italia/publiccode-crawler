@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"io/ioutil"
 	"strings"
+	"github.com/italia/developers-italia-backend/metrics"
 )
 
 // Crawler is the interface for every specific crawler instances.
@@ -60,8 +61,12 @@ func ProcessHosting(hosting Hosting, repositories chan Repository) {
 	}
 }
 
-func ProcessRepositories(repositories chan Repository, processedCounter prometheus.Counter) {
+func ProcessRepositories(repositories chan Repository) {
 	log.Debug("Repositories are going to be processed...")
+
+	// Init Prometheus for metrics.
+	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
+
 	// Throttle requests.
 	// Time limits should be calibrated on more tests in order to avoid errors and bans.
 	throttleRate := time.Second / 1000
@@ -70,26 +75,32 @@ func ProcessRepositories(repositories chan Repository, processedCounter promethe
 	for repository := range repositories {
 		// Throttle down the calls.
 		<-throttle
-		go checkAvailability(repository.Name, repository.URL, repository.Source, repository.Headers, processedCounter)
+		go checkAvailability(repository, processedCounter)
 
 	}
 }
 
-func checkAvailability(fullName, url, source string, headers map[string]string, processedCounter prometheus.Counter) {
+func checkAvailability(repository Repository, processedCounter prometheus.Counter) {
+	name := repository.Name
+	fileRawUrl := repository.FileRawURL
+	domain := repository.Domain
+	headers := repository.Headers
+
 	processedCounter.Inc()
 
-	body, status, _, err := httpclient.GetURL(url, headers)
+	body, status, _, err := httpclient.GetURL(fileRawUrl, headers)
 	// If it's available and no error returned.
 	if status.StatusCode == http.StatusOK && err == nil {
 		// Save the file.
-		vendor, repo := splitFullName(fullName)
-		fileName := os.Getenv("CRAWLED_FILENAME")
-		saveFile(source, vendor, repo, fileName, body)
+		saveFile(domain, name, body)
 	}
 }
 
-// saveFile save the choosen <file_name> in ./data/<vendor>/<repo>/<file_name>
-func saveFile(source, vendor, repo, fileName string, data []byte) {
+// saveFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<file_name>
+func saveFile(source , name string, data []byte) {
+	fileName := os.Getenv("CRAWLED_FILENAME")
+	vendor, repo := splitFullName(name)
+
 	path := filepath.Join("./data", source, vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.

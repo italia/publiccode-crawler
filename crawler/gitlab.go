@@ -69,10 +69,10 @@ func (host Gitlab) GetRepositories(url string, repositories chan Repository) (st
 	// Add repositories to the channel that will perform the check on everyone.
 	for _, v := range results {
 		repositories <- Repository{
-			Name:    v.PathWithNamespace,
-			URL:     "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
-			Source:  "gitlab.com",
-			Headers: headers,
+			Name:       v.PathWithNamespace,
+			FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+			Domain:     "gitlab.com",
+			Headers:    headers,
 		}
 	}
 

@@ -5,6 +5,9 @@ import (
 
 	"github.com/go-redis/redis"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	"errors"
+	"fmt"
 )
 
 // Hosting is a single hosting service.
@@ -22,14 +25,32 @@ type Hosting struct {
 
 // Repository is a single code repository.
 type Repository struct {
-	Name    string
-	URL     string
-	Source  string
-	Headers map[string]string
+	Name       string
+	FileRawURL string
+	Domain     string
+	Headers    map[string]string
 }
 
+func ReadAndParseHosting() ([]Hosting, error) {
+	// Open and read hosting file list.
+	hostingFile := "hosting.yml"
+	data, err := ioutil.ReadFile(hostingFile)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("error in reading %s file: %v", hostingFile, err))
+	}
+	// Parse hosting file list.
+	hostings, err := parseHostingFile(data)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("error in parsing %s file: %v", hostingFile, err))
+	}
+	log.Info("Loaded and parsed hosting.yml")
+
+	return hostings, nil
+}
+
+
 // ParseHostingFile parses the hosting file to build a slice of Hosting.
-func ParseHostingFile(data []byte) ([]Hosting, error) {
+func parseHostingFile(data []byte) ([]Hosting, error) {
 	hostings := []Hosting{}
 
 	// Unmarshal the yml in hostings list.
