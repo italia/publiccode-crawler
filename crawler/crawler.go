@@ -27,7 +27,7 @@ func ProcessHosting(hosting Hosting, repositories chan Repository) {
 	}
 
 	// Redis connection.
-	redisClient, err := redisClientFactory("localhost:6379")
+	redisClient, err := redisClientFactory(os.Getenv("REDIS_URL"))
 	if err != nil {
 		log.Error(err)
 	}

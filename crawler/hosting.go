@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"errors"
 	"fmt"
+	"os"
 )
 
 // Hosting is a single hosting service.
@@ -59,7 +60,7 @@ func parseHostingFile(data []byte) ([]Hosting, error) {
 		return nil, err
 	}
 	// Redis connection.
-	redisClient, err := redisClientFactory("localhost:6379")
+	redisClient, err := redisClientFactory(os.Getenv("REDIS_URL"))
 	if err != nil {
 		return hostings, err
 	}
