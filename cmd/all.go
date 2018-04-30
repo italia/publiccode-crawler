@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 func init() {
@@ -19,7 +20,7 @@ Beware! May take days to complete.`,
 		crawler.RegisterClientApis()
 
 		// Redis connection.
-		redisClient, err := crawler.RedisClientFactory("localhost:6379")
+		redisClient, err := crawler.RedisClientFactory(os.Getenv("REDIS_URL"))
 		if err != nil {
 			panic(err)
 		}

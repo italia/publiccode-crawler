@@ -25,7 +25,7 @@ type Repository struct {
 // Process delegates the work to single domain crawlers.
 func ProcessDomain(domain Domain, repositories chan Repository) {
 	// Redis connection.
-	redisClient, err := RedisClientFactory("localhost:6379")
+	redisClient, err := RedisClientFactory(os.Getenv("REDIS_URL"))
 	if err != nil {
 		log.Error(err)
 	}
