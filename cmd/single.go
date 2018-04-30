@@ -7,15 +7,18 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(allCmd)
+	rootCmd.AddCommand(singleCmd)
 }
 
-var allCmd = &cobra.Command{
-	Use:   "all",
-	Short: "Crawl publiccode.yml from domains.",
-	Long: `Start the crawler on every host written on domains.yml file.
+var singleCmd = &cobra.Command{
+	Use:   "single [domain id]",
+	Short: "Crawl publiccode.yml from [domain id].",
+	Long: `Start the crawler on [domain id] host defined on domains.yml file.
 Beware! May take days to complete.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		domainID := args[0]
+
 		// Register client API plugins.
 		crawler.RegisterClientApis()
 
@@ -36,10 +39,12 @@ Beware! May take days to complete.`,
 
 		// Process each domain service.
 		for _, domain := range domains {
-			go crawler.ProcessDomain(domain, repositories)
+			if domain.Id == domainID {
+				go crawler.ProcessDomain(domain, repositories)
+			}
 		}
 
-		// Process repositories in order to retrieve publiccode.yml.
+		// Process the repositories in order to retrieve publiccode.yml.
 		crawler.ProcessRepositories(repositories)
 	},
 }
