@@ -14,20 +14,18 @@ import (
 	"github.com/italia/developers-italia-backend/metrics"
 )
 
-// Crawler is the interface for every specific crawler instances.
-type Crawler interface {
-	GetRepositories(url string, repositories chan Repository) (string, error)
+// Repository is a single code repository.
+type Repository struct {
+	Name       string
+	FileRawURL string
+	Domain     string
+	Headers    map[string]string
 }
 
 // Process delegates the work to single domain crawlers.
 func ProcessDomain(domain Domain, repositories chan Repository) {
-	if domain.ServiceInstance == nil {
-		log.Warnf("Domain %s is not available.", domain.Id)
-		return
-	}
-
 	// Redis connection.
-	redisClient, err := redisClientFactory(os.Getenv("REDIS_URL"))
+	redisClient, err := RedisClientFactory(os.Getenv("REDIS_URL"))
 	if err != nil {
 		log.Error(err)
 	}
@@ -42,7 +40,7 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 			log.Error(err)
 		}
 
-		nextURL, err := domain.ServiceInstance.GetRepositories(url, repositories)
+		nextURL, err := domain.processAndGetNextURL(url, repositories)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			log.Errorf("Retry:", nextURL)
@@ -76,7 +74,6 @@ func ProcessRepositories(repositories chan Repository) {
 		// Throttle down the calls.
 		<-throttle
 		go checkAvailability(repository, processedCounter)
-
 	}
 }
 
@@ -101,14 +98,14 @@ func saveFile(source , name string, data []byte) {
 	fileName := os.Getenv("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
-	path := filepath.Join("./data", source, vendor, repo, fileName)
+	path := filepath.Join("./data", source, vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		os.MkdirAll(path, os.ModePerm)
 	}
 
-	err := ioutil.WriteFile(path, data, 0644)
+	err := ioutil.WriteFile(filepath.Join(path, fileName), data, 0644)
 	if err != nil {
 		log.Error(err)
 	}

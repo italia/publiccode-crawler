@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 func init() {
@@ -18,8 +19,17 @@ Beware! May take days to complete.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		domainID := args[0]
 
+		// Register client API plugins.
+		crawler.RegisterClientApis()
+
+		// Redis connection.
+		redisClient, err := crawler.RedisClientFactory(os.Getenv("REDIS_URL"))
+		if err != nil {
+			panic(err)
+		}
+
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile)
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
 		if err != nil {
 			panic(err)
 		}

@@ -5,7 +5,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-func redisClientFactory(URL string) (*redis.Client, error) {
+func RedisClientFactory(URL string) (*redis.Client, error) {
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     URL, // docker redis ip "redis:6379",
 		Password: "",  // no password set
