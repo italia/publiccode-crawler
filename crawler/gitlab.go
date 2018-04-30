@@ -30,8 +30,7 @@ type Gitlab []struct {
 	LastActivityAt    string        `json:"last_activity_at"`
 }
 
-// GetRepositories retrieves the list of all repository from a domain.
-// Return the URL from where it should restart (Next or actual if fails) and error.
+// RegisterGitlabAPI register the crawler function for Gitlab API.
 func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
 	return func(domain Domain, url string, repositories chan Repository) (string, error) {
 		// Set BasicAuth header

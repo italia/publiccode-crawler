@@ -132,8 +132,7 @@ type Bitbucket struct {
 	Next string `json:"next"`
 }
 
-// GetRepositories retrieves the list of all repository from a domain.
-// Return the URL from where it should restart (Next or actual if fails) and error.
+// RegisterBitbucketAPI register the crawler function for Bitbucket API.
 func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
 	return func(domain Domain, url string, repositories chan Repository) (string, error) {
 		// Set BasicAuth header

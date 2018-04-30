@@ -78,8 +78,7 @@ type Github []struct {
 	DeploymentsURL   string `json:"deployments_url"`
 }
 
-// GetRepositories retrieves the list of all repository from a domain.
-// Return the URL from where it should restart (Next or actual if fails) and error.
+// RegisterGithubAPI register the crawler function for Github API.
 func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
 	return func(domain Domain, url string, repositories chan Repository) (string, error) {
 		// Set BasicAuth header
