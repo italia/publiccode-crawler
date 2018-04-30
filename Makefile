@@ -4,20 +4,8 @@ include .env
 
 default: build
 
-run:
-	go run main.go single bitbucket
-
 run-all:
 	go run main.go all
-
-run-bitbucket:
-		go run main.go bitbucket
-
-run-github:
-	go run main.go github
-
-run-gitlab:
-		go run main.go gitlab
 
 run-version:
 	go run main.go version
