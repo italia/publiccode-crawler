@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Bitbucket is a Crawler for the Bitbucket hosting.
+// Bitbucket is a Crawler for the Bitbucket API.
 type Bitbucket struct {
 	URL       string
 	RateLimit struct {
@@ -141,7 +141,7 @@ type bitbucketResponse struct {
 	Next string `json:"next"`
 }
 
-// GetRepositories retrieves the list of all repository from an hosting.
+// GetRepositories retrieves the list of all repository from a domain.
 // Return the URL from where it should restart (Next or actual if fails) and error.
 func (host Bitbucket) GetRepositories(url string, repositories chan Repository) (string, error) {
 	// Set BasicAuth header
@@ -169,13 +169,13 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 
 	// Add repositories to the channel that will perform the check on everyone.
 	for _, v := range result.Values {
-		// If the repository was never used, the mainbrench name is empty ("")
+		// If the repository was never used, the Mainbranch is empty ("")
 		if v.Mainbranch.Name != "" {
 			repositories <- Repository{
-				Name:    v.FullName,
-				URL:     v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
-				Source:  "bitbucket.com",
-				Headers: headers,
+				Name:       v.FullName,
+				FileRawURL: v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
+				Domain:     "bitbucket.com",
+				Headers:    headers,
 			}
 
 		}
@@ -187,7 +187,7 @@ func (host Bitbucket) GetRepositories(url string, repositories chan Repository) 
 		for len(repositories) != 0 {
 			time.Sleep(time.Second)
 		}
-		log.Info("Bitbucket repositories status: end reached. Restart from hosting value:" + host.URL)
+		log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + host.URL)
 
 		// if wants to end the program when repo list ends (last page) decomment
 		// close(repositories)

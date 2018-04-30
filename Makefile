@@ -5,7 +5,7 @@ include .env
 default: build
 
 run:
-	go run main.go
+	go run main.go single bitbucket
 
 run-all:
 	go run main.go all

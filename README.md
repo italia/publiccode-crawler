@@ -59,7 +59,7 @@ to localhost.
 
 #### Crawler
 
-* Fill your hosting.yml file with configuration values (like specific host basic auth token)
+* Fill your domains.yml file with configuration values (like specific host basic auth token)
 
 ##### With docker-compose
 

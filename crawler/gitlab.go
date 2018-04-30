@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Gitlab is a Crawler for the Gitlab hosting.
+// Gitlab is a Crawler for the Gitlab API.
 type Gitlab struct {
 	URL       string
 	RateLimit struct {
@@ -40,7 +40,7 @@ type gitlabResponse []struct {
 	LastActivityAt    string        `json:"last_activity_at"`
 }
 
-// GetRepositories retrieves the list of all repository from an hosting.
+// GetRepositories retrieves the list of all repository from a domain.
 // Return the URL from where it should restart (Next or actual if fails) and error.
 func (host Gitlab) GetRepositories(url string, repositories chan Repository) (string, error) {
 	// Set BasicAuth header
@@ -69,10 +69,10 @@ func (host Gitlab) GetRepositories(url string, repositories chan Repository) (st
 	// Add repositories to the channel that will perform the check on everyone.
 	for _, v := range results {
 		repositories <- Repository{
-			Name:    v.PathWithNamespace,
-			URL:     "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
-			Source:  "gitlab.com",
-			Headers: headers,
+			Name:       v.PathWithNamespace,
+			FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+			Domain:     "gitlab.com",
+			Headers:    headers,
 		}
 	}
 

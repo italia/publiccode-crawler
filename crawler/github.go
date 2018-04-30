@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Github is a Crawler for the Github hosting.
+// Github is a Crawler for the Github API.
 type Github struct {
 	URL       string
 	RateLimit struct {
@@ -87,7 +87,7 @@ type githubResponse []struct {
 	DeploymentsURL   string `json:"deployments_url"`
 }
 
-// GetRepositories retrieves the list of all repository from an hosting.
+// GetRepositories retrieves the list of all repository from a domain.
 // Return the URL from where it should restart (Next or actual if fails) and error.
 func (host Github) GetRepositories(url string, repositories chan Repository) (string, error) {
 	// Set BasicAuth header
@@ -116,10 +116,10 @@ func (host Github) GetRepositories(url string, repositories chan Repository) (st
 	// Add repositories to the channel that will perform the check on everyone.
 	for _, v := range results {
 		repositories <- Repository{
-			Name:    v.FullName,
-			URL:     "https://raw.githubusercontent.com/" + v.FullName + "/master/" + os.Getenv("CRAWLED_FILENAME"),
-			Source:  "github.com",
-			Headers: headers,
+			Name:       v.FullName,
+			FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/master/" + os.Getenv("CRAWLED_FILENAME"),
+			Domain:     "github.com",
+			Headers:    headers,
 		}
 	}
 
