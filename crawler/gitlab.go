@@ -28,7 +28,7 @@ type gitlabResponse []struct {
 	NameWithNamespace string        `json:"name_with_namespace"`
 	Path              string        `json:"path"`
 	PathWithNamespace string        `json:"path_with_namespace"`
-	CreatedAt         time.Time     `json:"created_at"`
+	CreatedAt         string        `json:"created_at"`
 	DefaultBranch     string        `json:"default_branch"`
 	TagList           []interface{} `json:"tag_list"`
 	SSHURLToRepo      string        `json:"ssh_url_to_repo"`
@@ -37,7 +37,7 @@ type gitlabResponse []struct {
 	AvatarURL         interface{}   `json:"avatar_url"`
 	StarCount         int           `json:"star_count"`
 	ForksCount        int           `json:"forks_count"`
-	LastActivityAt    time.Time     `json:"last_activity_at"`
+	LastActivityAt    string        `json:"last_activity_at"`
 }
 
 // GetRepositories retrieves the list of all repository from an hosting.

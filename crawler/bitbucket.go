@@ -70,10 +70,10 @@ type bitbucketResponse struct {
 				Href string `json:"href"`
 			} `json:"pullrequests"`
 		} `json:"links"`
-		ForkPolicy string    `json:"fork_policy"`
-		UUID       string    `json:"uuid"`
-		Language   string    `json:"language"`
-		CreatedOn  time.Time `json:"created_on"`
+		ForkPolicy string `json:"fork_policy"`
+		UUID       string `json:"uuid"`
+		Language   string `json:"language"`
+		CreatedOn  string `json:"created_on"`
 		Mainbranch struct {
 			Type string `json:"type"`
 			Name string `json:"name"`
@@ -97,12 +97,12 @@ type bitbucketResponse struct {
 				} `json:"avatar"`
 			} `json:"links"`
 		} `json:"owner"`
-		UpdatedOn   time.Time `json:"updated_on"`
-		Size        int       `json:"size"`
-		Type        string    `json:"type"`
-		Slug        string    `json:"slug"`
-		IsPrivate   bool      `json:"is_private"`
-		Description string    `json:"description"`
+		UpdatedOn   string `json:"updated_on"`
+		Size        int    `json:"size"`
+		Type        string `json:"type"`
+		Slug        string `json:"slug"`
+		IsPrivate   bool   `json:"is_private"`
+		Description string `json:"description"`
 		Project     struct {
 			Key   string `json:"key"`
 			Type  string `json:"type"`
