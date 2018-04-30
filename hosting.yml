@@ -15,6 +15,5 @@
 - name: 'gitlab'
   url: 'https://gitlab.com'
   rate-limit:
-    req/h: 0
-    req/m: 0
-  basic-auth: ""
+    req/h: 3600
+    req/m: 60
