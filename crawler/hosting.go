@@ -1,8 +1,6 @@
 package crawler
 
 import (
-	"os"
-
 	"gopkg.in/yaml.v2"
 
 	"github.com/go-redis/redis"
@@ -40,7 +38,7 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 		return nil, err
 	}
 	// Redis connection.
-	redisClient, err := redisClientFactory(os.Getenv("REDIS_URL"))
+	redisClient, err := redisClientFactory("localhost:6379")
 	if err != nil {
 		return hostings, err
 	}
@@ -82,7 +80,6 @@ func ParseHostingFile(data []byte) ([]Hosting, error) {
 
 		default:
 			log.Warningf("implementation not found for service %s, skipping", hosting.ServiceName)
-
 		}
 	}
 
@@ -103,20 +100,17 @@ func checkFailedBitbucket(hosting Hosting, redisClient *redis.Client) (Bitbucket
 			RateLimit: hosting.RateLimit,
 			BasicAuth: hosting.BasicAuth,
 		}, nil
-
 	}
 
 	// N launch. Check if some repo list was interrupted.
 	for _, key := range keys {
-
 		if redisClient.HGet(hosting.ServiceName, key).Val() == "failed" {
-			log.Info("Found one interrupted URL. Starts from here: " + key)
+			log.Debugf("Found one interrupted URL. Starts from here: %s", key)
 			return Bitbucket{
 				URL:       key,
 				RateLimit: hosting.RateLimit,
 				BasicAuth: hosting.BasicAuth,
 			}, nil
-
 		}
 	}
 
@@ -141,20 +135,17 @@ func checkFailedGithub(hosting Hosting, redisClient *redis.Client) (Github, erro
 			RateLimit: hosting.RateLimit,
 			BasicAuth: hosting.BasicAuth,
 		}, nil
-
 	}
 
 	// N launch. Check if some repo list was interrupted.
 	for _, key := range keys {
-
 		if redisClient.HGet(hosting.ServiceName, key).Val() == "failed" {
-			log.Info("Found one interrupted URL. Starts from here: " + key)
+			log.Debugf("Found one interrupted URL. Starts from here: %s", key)
 			return Github{
 				URL:       key,
 				RateLimit: hosting.RateLimit,
 				BasicAuth: hosting.BasicAuth,
 			}, nil
-
 		}
 	}
 
@@ -179,20 +170,17 @@ func checkFailedGitlab(hosting Hosting, redisClient *redis.Client) (Gitlab, erro
 			RateLimit: hosting.RateLimit,
 			BasicAuth: hosting.BasicAuth,
 		}, nil
-
 	}
 
 	// N launch. Check if some repo list was interrupted.
 	for _, key := range keys {
-
 		if redisClient.HGet(hosting.ServiceName, key).Val() == "failed" {
-			log.Info("Found one interrupted URL. Starts from here: " + key)
+			log.Debugf("Found one interrupted URL. Starts from here: %s", key)
 			return Gitlab{
 				URL:       key,
 				RateLimit: hosting.RateLimit,
 				BasicAuth: hosting.BasicAuth,
 			}, nil
-
 		}
 	}
 

@@ -10,17 +10,20 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(allCmd)
+	rootCmd.AddCommand(singleCmd)
 }
 
-var allCmd = &cobra.Command{
-	Use:   "all",
-	Short: "Crawl publiccode.yml from hostings.",
-	Long: `Start the crawler on every host written on hosting.yml file.
+var singleCmd = &cobra.Command{
+	Use:   "single [hosting]",
+	Short: "Crawl publiccode.yml from [hosting].",
+	Long: `Start the crawler on [hosting] host defined on hosting.yml file.
 Beware! May take days to complete.`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		serviceName := args[0]
+
 		// Init Prometheus for metrics.
-		processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
+		processedCounter := metrics.PrometheusCounter(fmt.Sprintf("repository_processed_%s", serviceName), fmt.Sprintf("Number of repository processed on %s.", serviceName))
 
 		// Open and read hosting file list.
 		hostingFile := "hosting.yml"
@@ -33,14 +36,16 @@ Beware! May take days to complete.`,
 		if err != nil {
 			panic(fmt.Sprintf("error in parsing %s file: %v", hostingFile, err))
 		}
-		log.Info("Loaded and parsed hosting.yml")
+		log.Debug("Loaded and parsed hosting.yml")
 
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository)
 
-		// Process each hosting service.
+		// For each host parsed from hosting, Process the repositories.
 		for _, hosting := range hostings {
-			go crawler.ProcessHosting(hosting, repositories)
+			if hosting.ServiceName == serviceName {
+				go crawler.ProcessHosting(hosting, repositories)
+			}
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
