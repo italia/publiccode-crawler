@@ -1,18 +1,24 @@
-- name: 'github'
+- id: 'github.com'
+  description: 'github.com'
+  client-api: 'github'
   url: 'https://api.github.com/repositories'
   rate-limit:
     req/h: 5000
     req/m: 500
   basic-auth: ""
 
-- name: 'bitbucket'
+- id: 'bitbucket.com'
+  description: 'bitbucket.com'
+  client-api: 'bitbucket'
   url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2008-08-13'
   rate-limit:
     req/h: 60000
     req/m: 6000
   basic-auth: ""
 
-- name: 'gitlab'
+- id: 'gitlab.com'
+  description: 'gitlab.com'
+  client-api: 'gitlab'
   url: 'https://gitlab.com'
   rate-limit:
     req/h: 3600

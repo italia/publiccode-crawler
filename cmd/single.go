@@ -10,15 +10,16 @@ func init() {
 }
 
 var singleCmd = &cobra.Command{
-	Use:   "single [hosting]",
-	Short: "Crawl publiccode.yml from [hosting].",
-	Long: `Start the crawler on [hosting] host defined on hosting.yml file.
+	Use:   "single [domain id]",
+	Short: "Crawl publiccode.yml from [domain id].",
+	Long: `Start the crawler on [domain id] host defined on domains.yml file.
 Beware! May take days to complete.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		serviceName := args[0]
+		domainID := args[0]
 
-		hostings, err := crawler.ReadAndParseHosting()
+		domainsFile := "domains.yml"
+		domains, err := crawler.ReadAndParseDomains(domainsFile)
 		if err != nil {
 			panic(err)
 		}
@@ -26,10 +27,10 @@ Beware! May take days to complete.`,
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository)
 
-		// For each host parsed from hosting, Process the repositories.
-		for _, hosting := range hostings {
-			if hosting.ServiceName == serviceName {
-				go crawler.ProcessHosting(hosting, repositories)
+		// Process each domain service.
+		for _, domain := range domains {
+			if domain.Id == domainID {
+				go crawler.ProcessDomain(domain, repositories)
 			}
 		}
 

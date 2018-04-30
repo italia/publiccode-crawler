@@ -19,10 +19,10 @@ type Crawler interface {
 	GetRepositories(url string, repositories chan Repository) (string, error)
 }
 
-// Process delegates the work to single hosting crawlers.
-func ProcessHosting(hosting Hosting, repositories chan Repository) {
-	if hosting.ServiceInstance == nil {
-		log.Warnf("Hosting %s is not available.", hosting.ServiceName)
+// Process delegates the work to single domain crawlers.
+func ProcessDomain(domain Domain, repositories chan Repository) {
+	if domain.ServiceInstance == nil {
+		log.Warnf("Domain %s is not available.", domain.Id)
 		return
 	}
 
@@ -33,16 +33,16 @@ func ProcessHosting(hosting Hosting, repositories chan Repository) {
 	}
 
 	// Base starting URL.
-	url := hosting.URL
+	url := domain.URL
 
 	for {
 		// Set the value of nextURL on redis to "failed".
-		err = redisClient.HSet(hosting.ServiceName, url, "failed").Err()
+		err = redisClient.HSet(domain.Id, url, "failed").Err()
 		if err != nil {
 			log.Error(err)
 		}
 
-		nextURL, err := hosting.ServiceInstance.GetRepositories(url, repositories)
+		nextURL, err := domain.ServiceInstance.GetRepositories(url, repositories)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			log.Errorf("Retry:", nextURL)
@@ -52,7 +52,7 @@ func ProcessHosting(hosting Hosting, repositories chan Repository) {
 		}
 		// If reached, the repository list was successfully retrieved.
 		// Delete the repository url from redis.
-		err = redisClient.HDel(hosting.ServiceName, url).Err()
+		err = redisClient.HDel(domain.Id, url).Err()
 		if err != nil {
 			log.Error(err)
 		}

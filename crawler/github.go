@@ -11,7 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Github is a Crawler for the Github hosting.
+// Github is a Crawler for the Github API.
 type Github struct {
 	URL       string
 	RateLimit struct {
@@ -87,7 +87,7 @@ type githubResponse []struct {
 	DeploymentsURL   string `json:"deployments_url"`
 }
 
-// GetRepositories retrieves the list of all repository from an hosting.
+// GetRepositories retrieves the list of all repository from a domain.
 // Return the URL from where it should restart (Next or actual if fails) and error.
 func (host Github) GetRepositories(url string, repositories chan Repository) (string, error) {
 	// Set BasicAuth header

@@ -11,11 +11,12 @@ func init() {
 
 var allCmd = &cobra.Command{
 	Use:   "all",
-	Short: "Crawl publiccode.yml from hostings.",
-	Long: `Start the crawler on every host written on hosting.yml file.
+	Short: "Crawl publiccode.yml from domains.",
+	Long: `Start the crawler on every host written on domains.yml file.
 Beware! May take days to complete.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		hostings, err := crawler.ReadAndParseHosting()
+		domainsFile := "domains.yml"
+		domains, err := crawler.ReadAndParseDomains(domainsFile)
 		if err != nil {
 			panic(err)
 		}
@@ -23,9 +24,9 @@ Beware! May take days to complete.`,
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository)
 
-		// Process each hosting service.
-		for _, hosting := range hostings {
-			go crawler.ProcessHosting(hosting, repositories)
+		// Process each domain service.
+		for _, domain := range domains {
+			go crawler.ProcessDomain(domain, repositories)
 		}
 
 		// Process repositories in order to retrieve publiccode.yml.
