@@ -1,8 +1,11 @@
 {
   "Enable": [
+    "nakedret",
+    "dupl",
     "vet",
     "vetshadow",
     "gotype",
+    "goimports",
     "gotypex",
     "deadcode",
     "gocyclo",
@@ -16,6 +19,11 @@
     "interfacer",
     "unconvert",
     "goconst",
-    "gas"
-  ]
+    "gas",
+    "unparam",
+    "misspell",
+    "lll",
+    "safesql"
+  ],
+  "Exclude": ["vendor/.*", "publiccode/.*"]
 }
