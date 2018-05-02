@@ -59,6 +59,14 @@ type PublicCode struct {
 		Open        []string
 		Proprietary []string
 	}
+
+	ItRiuso struct {
+		Ipa string
+	}
+	ItPianotriennale struct {
+		UseSpid   string
+		UsePagopa string
+	}
 }
 
 // A Contact represents all the standard informations about a technical contact.

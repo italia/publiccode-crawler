@@ -61,6 +61,10 @@ func (p *parser) decoderec(prefix string, s map[interface{}]interface{}) (es Err
 			if err := p.decodeString(k, v); err != nil {
 				es = append(es, err)
 			}
+		case bool:
+			if err := p.decodeBool(k, v); err != nil {
+				es = append(es, err)
+			}
 		case []interface{}:
 			sl := []string{}
 			sli := make(map[interface{}]interface{})

@@ -71,6 +71,33 @@ func (p *parser) decodeString(key string, value string) (err error) {
 		return p.decodeArrString(key, []string{value})
 	case "dependencies/hardware":
 		return p.decodeArrString(key, []string{value})
+	case "it-riuso/ipa":
+		p.pc.ItRiuso.Ipa = value
+	case "it-pianotriennale/use-spid":
+		p.pc.ItPianotriennale.UseSpid = value
+	case "it-pianotriennale/use-pagopa":
+		p.pc.ItPianotriennale.UsePagopa = value
+	default:
+		return ErrorInvalidKey{key + " : String"}
+	}
+	return
+}
+
+func (p *parser) decodeBool(key string, boolValue bool) (err error) {
+	var value string
+	if boolValue {
+		value = "yes"
+	} else {
+		value = "no"
+	}
+
+	switch key {
+	case "it-riuso/ipa":
+		p.pc.ItRiuso.Ipa = value
+	case "it-pianotriennale/use-spid":
+		p.pc.ItPianotriennale.UseSpid = value
+	case "it-pianotriennale/use-pagopa":
+		p.pc.ItPianotriennale.UsePagopa = value
 	default:
 		return ErrorInvalidKey{key + " : String"}
 	}

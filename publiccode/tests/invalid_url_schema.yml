@@ -65,12 +65,12 @@ description:
   released: 2017-04-15                                  # Date of last stable software release
   platforms: web                    # or Windows, Mac, Linux, etc.
 
-# it-riuso:
-#   ipa: BF14X            # Codice IPA della PA che ha pubblicato questo repo (repo-owner)
+it-riuso:
+   ipa: BF14X            # Codice IPA della PA che ha pubblicato questo repo (repo-owner)
 #
-# it-pianotriennale:      # Aderenza al piano triennale. Chiave sotto namespace "ita-", quindi solo italiana
-#   use-spid: yes         # yes, no, or "n/a" se il software non ha un login
-#   use-pagopa: yes
+ it-pianotriennale:      # Aderenza al piano triennale. Chiave sotto namespace "ita-", quindi solo italiana
+   use-spid: "n/a"          # yes, no, or "n/a" se il software non ha un login
+   use-pagopa: yes
 #
 meta:                            # Meta information to help categorization of this software
   scope: it
