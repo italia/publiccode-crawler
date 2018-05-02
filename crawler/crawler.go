@@ -14,6 +14,14 @@ import (
 	publiccode "github.com/italia/developers-italia-backend/publiccode"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"github.com/prometheus/client_golang/prometheus"
+	"time"
+	"github.com/italia/developers-italia-backend/httpclient"
+	"net/http"
+	"path/filepath"
+	"io/ioutil"
+	"strings"
+	"github.com/italia/developers-italia-backend/metrics"
 )
 
 // Repository is a single code repository.
@@ -98,15 +106,14 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 	if status.StatusCode == http.StatusOK && err == nil {
 		// Save the file.
 		saveFile(domain, name, body)
+
 		// Validate file.
 		err := validateRemoteFile(body, fileRawUrl)
 		if err != nil {
 			log.Warn("Validator fails for: " + fileRawUrl)
 			log.Warn("Validator errors:" + err.Error())
 		}
-
 	}
-
 }
 
 // saveFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<file_name>
@@ -143,5 +150,5 @@ func validateRemoteFile(data []byte, url string) error {
 	var pc publiccode.PublicCode
 
 	return publiccode.Parse(data, &pc)
-
 }
+
