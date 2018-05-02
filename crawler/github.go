@@ -203,14 +203,14 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 		for _, v := range results {
 			repoInfos, u, err := getGithubRepoInfos(v.URL, headers)
 			if err != nil {
-				return u, err
-			}
-
-			repositories <- Repository{
-				Name:       v.FullName,
-				FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/" + repoInfos.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
-				Domain:     domain.Id,
-				Headers:    headers,
+				log.Warnf("Unable to retrieve GithubRepoInfos on %s: %s", u, err.Error())
+			} else {
+				repositories <- Repository{
+					Name:       v.FullName,
+					FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/" + repoInfos.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+					Domain:     domain.Id,
+					Headers:    headers,
+				}
 			}
 		}
 

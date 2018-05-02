@@ -50,6 +50,8 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 
 		// Check if the request results in http RateLimit error.
 		if resp.StatusCode == http.StatusTooManyRequests {
+			log.Infof("Response Status != 200: %s.", resp.Status)
+
 			if len(resp.Header.Get("Retry-After")) > 0 {
 				// If Retry-after is set, use that value.
 				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
@@ -64,32 +66,48 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 
 			// Check if the status code is Forbidden
 		} else if resp.StatusCode == http.StatusForbidden {
+			log.Infof("Response Status != 200: %s.", resp.Status)
+
 			if len(resp.Header.Get("Retry-After")) > 0 {
 				// If Retry-after is set, use that value.
 				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
 				secondsAfterRetry, _ := strconv.Atoi(resp.Header.Get("Retry-After"))
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			} else if len(resp.Header.Get("x-ratelimit-reset")) > 0 {
-				retryEpoch, _ := strconv.Atoi(resp.Header.Get("x-ratelimit-reset"))
-				secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
-				log.Infof("Waiting: %s seconds. (The difference between x-ratelimit-reset Header and time.Now())", strconv.FormatInt(secondsAfterRetry, 10))
-				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
+				// If X-rateLimit-remaining
+				if len(resp.Header.Get("X-rateLimit-remaining")) > 0 {
+					rateLimit, _ := strconv.Atoi(resp.Header.Get("X-rateLimit-remaining"))
+					if rateLimit != 0 {
+						// In this case there is another StatusForbidden and i should skip
+						// TODO: skip
+						// E.g.: time="2018-05-02T14:04:20Z" level=debug msg="ON https://api.github.com/repos/reinh/dm:\n  {\"message\":\"Repository access blocked\",\"block\":{\"reason\":\"unavailable\",\"created_at\":\"2014-01-31T22:32:14Z\",\"html_url\":\"https://github.com/tos\"}}\n"
+						log.Errorf("Forbidden error on %s.", URL)
+						return nil, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, err
+
+					} else {
+						retryEpoch, _ := strconv.Atoi(resp.Header.Get("x-ratelimit-reset"))
+						secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
+						log.Infof("Waiting %s seconds. (The difference between x-ratelimit-reset Header and time.Now())", strconv.FormatInt(secondsAfterRetry, 10))
+						time.Sleep(time.Second * time.Duration(secondsAfterRetry))
+					}
+				}
 			} else {
 				// Perform a generic additional wait.
 				sleep = sleep + (5 * time.Minute)
-				log.Info("Forbidden access, sleep %v minutes\n", sleep)
+				log.Infof("Forbidden access, sleep %v minutes\n", sleep)
 				time.Sleep(sleep)
 			}
 
 		} else {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
+				log.Errorf("Error reading resp.Body Body in httpclient.go")
 				return nil, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, err
 			}
 
 			err = resp.Body.Close()
 			if err != nil {
-				log.Info("Error closing Body in httpclient.go\n")
+				log.Errorf("Error closing resp.Body in httpclient.go")
 			}
 
 			return body, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, nil
