@@ -17,6 +17,14 @@ type ResponseStatus struct {
 	StatusCode int    // e.g. 200
 }
 
+const (
+	userAgent = "Golang_italia_backend_bot"
+
+	headerRetryAfter    = "Retry-After"
+	headerRateReset     = "X-RateLimit-Reset"
+	headerRateRemaining = "X-RateLimit-Remaining"
+)
+
 // GetURL retrieves data, status and response headers from an URL.
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
 func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http.Header, error) {
@@ -40,7 +48,7 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 		}
 
 		// Set special user agent for bot. Note: in github reqs the User-Agent must be set.
-		req.Header.Add("User-Agent", "Golang_italia_backend_bot/"+version.VERSION)
+		req.Header.Add("User-Agent", userAgent+"/"+version.VERSION)
 
 		// Perform the request.
 		resp, err := client.Do(req)
@@ -50,12 +58,11 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 
 		// Check if the request results in http RateLimit error.
 		if resp.StatusCode == http.StatusTooManyRequests {
-			log.Infof("Response Status != 200: %s.", resp.Status)
 
-			if len(resp.Header.Get("Retry-After")) > 0 {
+			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
-				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
-				secondsAfterRetry, _ := strconv.Atoi(resp.Header.Get("Retry-After"))
+				log.Infof("Waiting: %s seconds. (The value of %s)", retryAfter, headerRetryAfter)
+				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			} else {
 				// Perform a generic additional wait.
@@ -64,30 +71,28 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 				time.Sleep(sleep)
 			}
 
-			// Check if the status code is Forbidden
+			// Check if the request result in http Forbidden status
 		} else if resp.StatusCode == http.StatusForbidden {
-			log.Infof("Response Status != 200: %s.", resp.Status)
 
-			if len(resp.Header.Get("Retry-After")) > 0 {
+			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
-				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
-				secondsAfterRetry, _ := strconv.Atoi(resp.Header.Get("Retry-After"))
+				log.Infof("Waiting: %s seconds. (The value of %s)", retryAfter, headerRetryAfter)
+				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
-			} else if len(resp.Header.Get("x-ratelimit-reset")) > 0 {
+
+			} else if reset := resp.Header.Get(headerRateReset); reset != "" {
 				// If X-rateLimit-remaining
-				if len(resp.Header.Get("X-rateLimit-remaining")) > 0 {
-					rateLimit, _ := strconv.Atoi(resp.Header.Get("X-rateLimit-remaining"))
-					if rateLimit != 0 {
-						// In this case there is another StatusForbidden and i should skip
-						// TODO: skip
-						// E.g.: time="2018-05-02T14:04:20Z" level=debug msg="ON https://api.github.com/repos/reinh/dm:\n  {\"message\":\"Repository access blocked\",\"block\":{\"reason\":\"unavailable\",\"created_at\":\"2014-01-31T22:32:14Z\",\"html_url\":\"https://github.com/tos\"}}\n"
+				if remaining := resp.Header.Get(headerRateRemaining); reset != "" {
+					rateRemaining, _ := strconv.Atoi(remaining)
+					if rateRemaining != 0 {
+						// In this case there is another StatusForbidden and i should skip.
 						log.Errorf("Forbidden error on %s.", URL)
 						return nil, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, err
 
 					} else {
-						retryEpoch, _ := strconv.Atoi(resp.Header.Get("x-ratelimit-reset"))
+						retryEpoch, _ := strconv.Atoi(reset)
 						secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
-						log.Infof("Waiting %s seconds. (The difference between x-ratelimit-reset Header and time.Now())", strconv.FormatInt(secondsAfterRetry, 10))
+						log.Infof("Waiting %s seconds. (The difference between header %s and time.Now())", strconv.FormatInt(secondsAfterRetry, 10), headerRateReset)
 						time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 					}
 				}
