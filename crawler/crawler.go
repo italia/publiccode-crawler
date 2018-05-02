@@ -3,15 +3,16 @@ package crawler
 import (
 	"os"
 
-	log "github.com/sirupsen/logrus"
-	"github.com/prometheus/client_golang/prometheus"
-	"time"
-	"github.com/italia/developers-italia-backend/httpclient"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
-	"io/ioutil"
 	"strings"
+	"time"
+
+	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
+	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Repository is a single code repository.
@@ -94,7 +95,7 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 }
 
 // saveFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<file_name>
-func saveFile(source , name string, data []byte) {
+func saveFile(source, name string, data []byte) {
 	fileName := os.Getenv("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
@@ -116,4 +117,3 @@ func splitFullName(fullName string) (string, string) {
 	s := strings.Split(fullName, "/")
 	return s[0], s[1]
 }
-
