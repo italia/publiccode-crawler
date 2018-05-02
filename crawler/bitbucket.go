@@ -3,7 +3,6 @@ package crawler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -12,17 +11,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Bitbucket is a Crawler for the Bitbucket hosting.
+// Bitbucket is a Crawler for the Bitbucket API.
 type Bitbucket struct {
-	URL       string
-	RateLimit struct {
-		ReqH int `yaml:"req/h"`
-		ReqM int `yaml:"req/m"`
-	} `yaml:"rate-limit"`
-	BasicAuth string `yaml:"basic-auth"`
-}
-
-type response struct {
 	Pagelen int `json:"pagelen"`
 	Values  []struct {
 		Scm     string `json:"scm"`
@@ -71,10 +61,10 @@ type response struct {
 				Href string `json:"href"`
 			} `json:"pullrequests"`
 		} `json:"links"`
-		ForkPolicy string    `json:"fork_policy"`
-		UUID       string    `json:"uuid"`
-		Language   string    `json:"language"`
-		CreatedOn  time.Time `json:"created_on"`
+		ForkPolicy string `json:"fork_policy"`
+		UUID       string `json:"uuid"`
+		Language   string `json:"language"`
+		CreatedOn  string `json:"created_on"`
 		Mainbranch struct {
 			Type string `json:"type"`
 			Name string `json:"name"`
@@ -98,12 +88,12 @@ type response struct {
 				} `json:"avatar"`
 			} `json:"links"`
 		} `json:"owner"`
-		UpdatedOn   time.Time `json:"updated_on"`
-		Size        int       `json:"size"`
-		Type        string    `json:"type"`
-		Slug        string    `json:"slug"`
-		IsPrivate   bool      `json:"is_private"`
-		Description string    `json:"description"`
+		UpdatedOn   string `json:"updated_on"`
+		Size        int    `json:"size"`
+		Type        string `json:"type"`
+		Slug        string `json:"slug"`
+		IsPrivate   bool   `json:"is_private"`
+		Description string `json:"description"`
 		Project     struct {
 			Key   string `json:"key"`
 			Type  string `json:"type"`
@@ -142,60 +132,57 @@ type response struct {
 	Next string `json:"next"`
 }
 
-// GetRepositories retrieves the list of all repository from an hosting.
-// Return the URL from where it should restart (Next or actual if fails) and error.
-func (host Bitbucket) GetRepositories(url string, repositories chan Repository) (string, error) {
-	fmt.Println("-> GetRepositories: " + url)
-	// Set BasicAuth header
-	headers := make(map[string]string)
-	if host.BasicAuth != "" {
-		headers["Authorization"] = "Basic " + host.BasicAuth
-	}
+// RegisterBitbucketAPI register the crawler function for Bitbucket API.
+func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
+	return func(domain Domain, url string, repositories chan Repository) (string, error) {
+		// Set BasicAuth header
+		headers := make(map[string]string)
+		if domain.BasicAuth != "" {
+			headers["Authorization"] = "Basic " + domain.BasicAuth
+		}
 
-	// Get List of repositories
-	body, status, err := httpclient.GetURL(url, headers)
-	if err != nil {
-		return url, err
-	}
-	if status.StatusCode != http.StatusOK {
-		log.Warnf("Request returned: %s", string(body))
-		return url, errors.New("requets returned an incorrect http.Status: " + status.Status)
-	}
+		// Get List of repositories
+		body, status, _, err := httpclient.GetURL(url, headers)
+		if err != nil {
+			return url, err
+		}
+		if status.StatusCode != http.StatusOK {
+			log.Warnf("Request returned: %s", string(body))
+			return url, errors.New("request returned an incorrect http.Status: " + status.Status)
+		}
 
-	// Fill response as list of values (repositories data).
-	var result response
-	err = json.Unmarshal(body, &result)
-	if err != nil {
-		return url, err
-	}
+		// Fill response as list of values (repositories data).
+		var result Bitbucket
+		err = json.Unmarshal(body, &result)
+		if err != nil {
+			return url, err
+		}
 
-	// Add repositories to the channel that will perform the check on everyone.
-	for _, v := range result.Values {
-		// If the repository was never used, the mainbrench name is empty ("")
-		if v.Mainbranch.Name != "" {
-			repositories <- Repository{
-				Name:    v.FullName,
-				URL:     v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
-				Source:  url,
-				Headers: headers,
+		// Add repositories to the channel that will perform the check on everyone.
+		for _, v := range result.Values {
+			// If the repository was never used, the Mainbranch is empty ("")
+			if v.Mainbranch.Name != "" {
+				repositories <- Repository{
+					Name:       v.FullName,
+					FileRawURL: v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
+					Domain:     domain.Id,
+					Headers:    headers,
+				}
 			}
-
 		}
 
-	}
+		// Bitbucket end reached.
+		if len(result.Next) == 0 {
+			for len(repositories) != 0 {
+				time.Sleep(time.Second)
+			}
+			log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + domain.URL)
 
-	// Bitbucket end reached.
-	if len(result.Next) == 0 {
-		// If I want to restart when it ends:
-		// sourceURL = "https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2008-08-13"
-		// and comment the line "close(repositories)"
-		for len(repositories) != 0 {
-			time.Sleep(time.Second)
+			// Restart.
+			return domain.URL, nil
 		}
-		close(repositories)
-		return url, nil
-	}
 
-	// Return next url
-	return result.Next, nil
+		// Return next url
+		return result.Next, nil
+	}
 }

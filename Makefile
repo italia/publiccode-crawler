@@ -4,9 +4,6 @@ include .env
 
 default: build
 
-run:
-	go run main.go
-
 run-all:
 	go run main.go all
 
