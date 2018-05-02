@@ -11,17 +11,9 @@ import (
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
-	publiccode "github.com/italia/developers-italia-backend/publiccode"
+	"github.com/italia/developers-italia-backend/publiccode"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
-	"github.com/prometheus/client_golang/prometheus"
-	"time"
-	"github.com/italia/developers-italia-backend/httpclient"
-	"net/http"
-	"path/filepath"
-	"io/ioutil"
-	"strings"
-	"github.com/italia/developers-italia-backend/metrics"
 )
 
 // Repository is a single code repository.
@@ -151,4 +143,3 @@ func validateRemoteFile(data []byte, url string) error {
 
 	return publiccode.Parse(data, &pc)
 }
-
