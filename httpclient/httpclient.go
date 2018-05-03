@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -35,6 +36,8 @@ const (
 // GetURL retrieves data, status and response headers from an URL.
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
 func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
+	expBackoffAttemps := 0
+
 	var sleep time.Duration
 	const timeout = time.Duration(30 * time.Second)
 
@@ -80,8 +83,11 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			} else {
-				// Perform a generic additional wait.
-				sleep = sleep + (5 * time.Minute)
+				// Calculate ExpBackoff
+				expBackoffWait := (math.Pow(2, float64(expBackoffAttemps)) - 1) / 2
+				// Perform a backoff sleep time.
+				sleep = time.Duration(expBackoffWait) * time.Second
+				expBackoffAttemps = expBackoffAttemps + 1
 				log.Info("Rate limit reached, sleep %v minutes\n", sleep)
 				time.Sleep(sleep)
 			}
