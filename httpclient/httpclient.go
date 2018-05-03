@@ -115,7 +115,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			} else {
 				// Calculate ExpBackoff
-				expBackoffWait := (math.Pow(2, float64(expBackoffAttemps)) - 1) / 2
+				expBackoffWait := expBackoffCalc(expBackoffAttemps)
 				// Perform a backoff sleep time.
 				sleep = time.Duration(expBackoffWait) * time.Second
 				expBackoffAttemps = expBackoffAttemps + 1
@@ -153,7 +153,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 				}
 			} else {
 				// Calculate ExpBackoff
-				expBackoffWait := (math.Pow(2, float64(expBackoffAttemps)) - 1) / 2
+				expBackoffWait := expBackoffCalc(expBackoffAttemps)
 				// Perform a backoff sleep time.
 				sleep = time.Duration(expBackoffWait) * time.Second
 				expBackoffAttemps = expBackoffAttemps + 1
@@ -164,7 +164,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 		} else {
 			// Generic invalid status code.
 			// Calculate ExpBackoff
-			expBackoffWait := (math.Pow(2, float64(expBackoffAttemps)) - 1) / 2
+			expBackoffWait := expBackoffCalc(expBackoffAttemps)
 			// Perform a backoff sleep time.
 			sleep = time.Duration(expBackoffWait) * time.Second
 			expBackoffAttemps = expBackoffAttemps + 1
@@ -187,5 +187,9 @@ func NextHeaderLink(linkHeader string) string {
 	}
 
 	return ""
+}
 
+// expBackoffCalc calculate the exponential backoff given .
+func expBackoffCalc(attemps int) float64 {
+	return (math.Pow(2, float64(attemps)) - 1) / 2
 }
