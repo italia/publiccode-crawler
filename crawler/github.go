@@ -227,7 +227,8 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 			log.Info("Github repositories status: end reached.")
 
 			// Restart.
-			return domain.URL, nil
+			// return domain.URL, nil
+			return "", nil
 		}
 
 		// Return next url

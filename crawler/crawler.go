@@ -47,7 +47,7 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 		nextURL, err := domain.processAndGetNextURL(url, repositories)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
-			log.Errorf("Retry:", nextURL)
+			log.Errorf("Retry: %s", nextURL)
 			nextURL = url
 			//close(repositories): ok if only one repo. If more parallel it generates panics.
 			//return
@@ -60,8 +60,8 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 		}
 
 		// If end is reached, url and nextURL contains the same value.
-		if url == nextURL {
-			log.Infof("Repositories status: end reached at %s.", url)
+		if nextURL == "" {
+			log.Infof("Url: %s - is the last one.", url)
 			return
 		}
 		// Update url to nextURL.

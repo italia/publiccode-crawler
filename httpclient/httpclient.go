@@ -2,6 +2,7 @@ package httpclient
 
 import (
 	"io/ioutil"
+	"math"
 	"net/http"
 	"strconv"
 	"time"
@@ -35,6 +36,8 @@ const (
 // GetURL retrieves data, status and response headers from an URL.
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
 func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
+	expBackoffAttemps := 0
+
 	var sleep time.Duration
 	const timeout = time.Duration(30 * time.Second)
 
@@ -71,7 +74,40 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 			}, err
 		}
 
-		// Check if the request results in http RateLimit error.
+		// Check if the request results in http notFound.
+		if resp.StatusCode == http.StatusNotFound {
+			return HttpResponse{
+				Body:    nil,
+				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+				Headers: resp.Header,
+			}, nil
+
+			// Check if the request results in http OK.
+		}
+		if resp.StatusCode == http.StatusOK {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Errorf(err.Error())
+				return HttpResponse{
+					Body:    nil,
+					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+					Headers: resp.Header,
+				}, err
+			}
+
+			err = resp.Body.Close()
+			if err != nil {
+				log.Errorf(err.Error())
+			}
+
+			return HttpResponse{
+				Body:    body,
+				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+				Headers: resp.Header,
+			}, nil
+
+			// Check if the request results in http RateLimit error.
+		}
 		if resp.StatusCode == http.StatusTooManyRequests {
 
 			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
@@ -80,8 +116,11 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			} else {
-				// Perform a generic additional wait.
-				sleep = sleep + (5 * time.Minute)
+				// Calculate ExpBackoff
+				expBackoffWait := expBackoffCalc(expBackoffAttemps)
+				// Perform a backoff sleep time.
+				sleep = time.Duration(expBackoffWait) * time.Second
+				expBackoffAttemps = expBackoffAttemps + 1
 				log.Info("Rate limit reached, sleep %v minutes\n", sleep)
 				time.Sleep(sleep)
 			}
@@ -115,33 +154,24 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 					}
 				}
 			} else {
-				// Perform a generic additional wait.
-				sleep = sleep + (5 * time.Minute)
-				log.Infof("Forbidden access, sleep %v minutes\n", sleep)
+				// Calculate ExpBackoff
+				expBackoffWait := expBackoffCalc(expBackoffAttemps)
+				// Perform a backoff sleep time.
+				sleep = time.Duration(expBackoffWait) * time.Second
+				expBackoffAttemps = expBackoffAttemps + 1
+				log.Infof("Forbidden access to %s : sleep %v minutes\n", URL, sleep)
 				time.Sleep(sleep)
 			}
 
 		} else {
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Errorf("Error reading resp.Body Body in httpclient.go")
-				return HttpResponse{
-					Body:    nil,
-					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
-					Headers: resp.Header,
-				}, err
-			}
-
-			err = resp.Body.Close()
-			if err != nil {
-				log.Errorf("Error closing resp.Body in httpclient.go")
-			}
-
-			return HttpResponse{
-				Body:    body,
-				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
-				Headers: resp.Header,
-			}, nil
+			// Generic invalid status code.
+			// Calculate ExpBackoff
+			expBackoffWait := expBackoffCalc(expBackoffAttemps)
+			// Perform a backoff sleep time.
+			sleep = time.Duration(expBackoffWait) * time.Second
+			expBackoffAttemps = expBackoffAttemps + 1
+			log.Infof("Invalid status code on %s : sleep %v minutes\n", URL, sleep)
+			time.Sleep(sleep)
 		}
 	}
 }
@@ -159,5 +189,9 @@ func NextHeaderLink(linkHeader string) string {
 	}
 
 	return ""
+}
 
+// expBackoffCalc calculate the exponential backoff given .
+func expBackoffCalc(attemps int) float64 {
+	return (math.Pow(2, float64(attemps)) - 1) / 2
 }
