@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"os"
+	"sync"
 
 	"io/ioutil"
 	"net/http"
@@ -27,7 +28,9 @@ type Repository struct {
 }
 
 // Process delegates the work to single domain crawlers.
-func ProcessDomain(domain Domain, repositories chan Repository, domainsStatus chan int) {
+func ProcessDomain(domain Domain, repositories chan Repository, wg sync.WaitGroup) {
+	// Defer waiting group close.
+	defer wg.Done()
 	// Redis connection.
 	redisClient, err := RedisClientFactory(os.Getenv("REDIS_URL"))
 	if err != nil {
@@ -60,7 +63,6 @@ func ProcessDomain(domain Domain, repositories chan Repository, domainsStatus ch
 		// If end is reached, nextUrl is empty.
 		if nextURL == "" {
 			log.Infof("Url: %s - is the last one.", url)
-			<-domainsStatus
 			return
 		}
 		// Update url to nextURL.
@@ -68,7 +70,7 @@ func ProcessDomain(domain Domain, repositories chan Repository, domainsStatus ch
 	}
 }
 
-func ProcessRepositories(repositories chan Repository, domainsStatus chan int) {
+func ProcessRepositories(repositories chan Repository, wg sync.WaitGroup) {
 	log.Debug("Repositories are going to be processed...")
 
 	// Init Prometheus for metrics.
@@ -83,13 +85,8 @@ func ProcessRepositories(repositories chan Repository, domainsStatus chan int) {
 		// Throttle down the calls.
 		<-throttle
 		go checkAvailability(repository, processedCounter)
-
-		// All the domains ended the process.
-		if len(domainsStatus) == 0 {
-			close(domainsStatus)
-			close(repositories)
-		}
 	}
+
 }
 
 func checkAvailability(repository Repository, processedCounter prometheus.Counter) {
