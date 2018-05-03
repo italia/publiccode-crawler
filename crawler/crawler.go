@@ -61,7 +61,7 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 
 		// If end is reached, url and nextURL contains the same value.
 		if url == nextURL {
-			log.Info("Bitbucket repositories status: end reached.")
+			log.Infof("Repositories status: end reached at %s.", url)
 			return
 		}
 		// Update url to nextURL.

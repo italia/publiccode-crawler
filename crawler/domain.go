@@ -61,7 +61,7 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 // updateStartURL checks if a repository list previously failed to be retrieved.
 func (domain *Domain) updateStartURL(redisClient *redis.Client) error {
 	// Check if there is an URL that wasn't correctly retrieved.
-	// URL.value="false" => set domain.URL to that one
+	// URL.value="failed" => set domain.URL to that one
 	keys, err := redisClient.HKeys(domain.Id).Result()
 	if err != nil {
 		return err
