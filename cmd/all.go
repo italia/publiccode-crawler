@@ -33,7 +33,7 @@ Beware! May take days to complete.`,
 		}
 
 		// Initiate a channel of repositories.
-		repositories := make(chan crawler.Repository)
+		repositories := make(chan crawler.Repository, 100)
 
 		// Process each domain service.
 		for _, domain := range domains {

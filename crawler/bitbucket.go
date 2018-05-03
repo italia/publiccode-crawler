@@ -142,18 +142,18 @@ func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Re
 		}
 
 		// Get List of repositories
-		body, status, _, err := httpclient.GetURL(url, headers)
+		resp, err := httpclient.GetURL(url, headers)
 		if err != nil {
 			return url, err
 		}
-		if status.StatusCode != http.StatusOK {
-			log.Warnf("Request returned: %s", string(body))
-			return url, errors.New("request returned an incorrect http.Status: " + status.Status)
+		if resp.Status.Code != http.StatusOK {
+			log.Warnf("Request returned: %s", string(resp.Body))
+			return url, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
 		var result Bitbucket
-		err = json.Unmarshal(body, &result)
+		err = json.Unmarshal(resp.Body, &result)
 		if err != nil {
 			return url, err
 		}

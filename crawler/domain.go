@@ -3,11 +3,12 @@ package crawler
 import (
 	"gopkg.in/yaml.v2"
 
-	"github.com/go-redis/redis"
-	log "github.com/sirupsen/logrus"
-	"io/ioutil"
 	"errors"
 	"fmt"
+	"io/ioutil"
+
+	"github.com/go-redis/redis"
+	log "github.com/sirupsen/logrus"
 )
 
 // Domain is a single code hosting service.
@@ -16,7 +17,7 @@ type Domain struct {
 	Description string `yaml:"description"`
 	ClientApi   string `yaml:"client-api"`
 	URL         string `yaml:"url"`
-	RateLimit struct {
+	RateLimit   struct {
 		ReqH int `yaml:"req/h"`
 		ReqM int `yaml:"req/m"`
 	} `yaml:"rate-limit"`
@@ -37,8 +38,8 @@ func ReadAndParseDomains(domainsFile string, redisClient *redis.Client) ([]Domai
 	log.Info("Loaded and parsed domains.yml")
 
 	// Update the start URL if a failed one found in Redis.
-	for _, domain := range domains {
-		domain.updateStartURL(redisClient)
+	for i, _ := range domains {
+		domains[i].updateStartURL(redisClient)
 	}
 
 	return domains, nil
@@ -58,7 +59,7 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 }
 
 // updateStartURL checks if a repository list previously failed to be retrieved.
-func (domain Domain) updateStartURL(redisClient *redis.Client) error {
+func (domain *Domain) updateStartURL(redisClient *redis.Client) error {
 	// Check if there is an URL that wasn't correctly retrieved.
 	// URL.value="false" => set domain.URL to that one
 	keys, err := redisClient.HKeys(domain.Id).Result()

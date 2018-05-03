@@ -11,7 +11,9 @@ import (
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
+
 	"github.com/italia/developers-italia-backend/publiccode"
+
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -93,14 +95,14 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 
 	processedCounter.Inc()
 
-	body, status, _, err := httpclient.GetURL(fileRawUrl, headers)
+	resp, err := httpclient.GetURL(fileRawUrl, headers)
 	// If it's available and no error returned.
-	if status.StatusCode == http.StatusOK && err == nil {
+	if resp.Status.Code == http.StatusOK && err == nil {
 		// Save the file.
-		saveFile(domain, name, body)
+		saveFile(domain, name, resp.Body)
 
 		// Validate file.
-		err := validateRemoteFile(body, fileRawUrl)
+		err := validateRemoteFile(resp.Body, fileRawUrl)
 		if err != nil {
 			log.Warn("Validator fails for: " + fileRawUrl)
 			log.Warn("Validator errors:" + err.Error())

@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func init() {
@@ -35,7 +36,7 @@ Beware! May take days to complete.`,
 		}
 
 		// Initiate a channel of repositories.
-		repositories := make(chan crawler.Repository)
+		repositories := make(chan crawler.Repository, 100)
 
 		// Process each domain service.
 		for _, domain := range domains {

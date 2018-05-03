@@ -11,15 +11,30 @@ import (
 	"github.com/tomnomnom/linkheader"
 )
 
+// HttpResponse wraps body, Status and Headers from the http.Response.
+type HttpResponse struct {
+	Body    []byte
+	Status  ResponseStatus
+	Headers http.Header
+}
+
 // ResponseStatus contains the status and statusCode of a response.
 type ResponseStatus struct {
-	Status     string // e.g. "200 OK"
-	StatusCode int    // e.g. 200
+	Text string // e.g. "200 OK"
+	Code int    // e.g. 200
 }
+
+const (
+	userAgent = "Golang_italia_backend_bot"
+
+	headerRetryAfter    = "Retry-After"
+	headerRateReset     = "X-RateLimit-Reset"
+	headerRateRemaining = "X-RateLimit-Remaining"
+)
 
 // GetURL retrieves data, status and response headers from an URL.
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
-func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http.Header, error) {
+func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 	var sleep time.Duration
 	const timeout = time.Duration(30 * time.Second)
 
@@ -31,7 +46,11 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 	for {
 		req, err := http.NewRequest("GET", URL, nil)
 		if err != nil {
-			return nil, ResponseStatus{Status: err.Error(), StatusCode: -1}, nil, err
+			return HttpResponse{
+				Body:    nil,
+				Status:  ResponseStatus{Text: err.Error(), Code: -1},
+				Headers: nil,
+			}, err
 		}
 
 		// Set headers.
@@ -40,20 +59,25 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 		}
 
 		// Set special user agent for bot. Note: in github reqs the User-Agent must be set.
-		req.Header.Add("User-Agent", "Golang_italia_backend_bot/"+version.VERSION)
+		req.Header.Add("User-Agent", userAgent+"/"+version.VERSION)
 
 		// Perform the request.
 		resp, err := client.Do(req)
 		if err != nil {
-			return nil, ResponseStatus{Status: err.Error(), StatusCode: -1}, nil, err
+			return HttpResponse{
+				Body:    nil,
+				Status:  ResponseStatus{Text: err.Error(), Code: -1},
+				Headers: nil,
+			}, err
 		}
 
 		// Check if the request results in http RateLimit error.
 		if resp.StatusCode == http.StatusTooManyRequests {
-			if len(resp.Header.Get("Retry-After")) > 0 {
+
+			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
-				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
-				secondsAfterRetry, _ := strconv.Atoi(resp.Header.Get("Retry-After"))
+				log.Infof("Waiting: %s seconds. (The value of %s)", retryAfter, headerRetryAfter)
+				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			} else {
 				// Perform a generic additional wait.
@@ -62,37 +86,62 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 				time.Sleep(sleep)
 			}
 
-			// Check if the status code is Forbidden
+			// Check if the request result in http Forbidden status
 		} else if resp.StatusCode == http.StatusForbidden {
-			if len(resp.Header.Get("Retry-After")) > 0 {
+
+			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
-				log.Infof("Waiting: %s seconds. (The value of Header Retry-After)", resp.Header.Get("Retry-After"))
-				secondsAfterRetry, _ := strconv.Atoi(resp.Header.Get("Retry-After"))
+				log.Infof("Waiting: %s seconds. (The value of %s)", retryAfter, headerRetryAfter)
+				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
-			} else if len(resp.Header.Get("x-ratelimit-reset")) > 0 {
-				retryEpoch, _ := strconv.Atoi(resp.Header.Get("x-ratelimit-reset"))
-				secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
-				log.Infof("Waiting: %s seconds. (The difference between x-ratelimit-reset Header and time.Now())", strconv.FormatInt(secondsAfterRetry, 10))
-				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
+
+			} else if reset := resp.Header.Get(headerRateReset); reset != "" {
+				// If X-rateLimit-remaining
+				if remaining := resp.Header.Get(headerRateRemaining); reset != "" {
+					rateRemaining, _ := strconv.Atoi(remaining)
+					if rateRemaining != 0 {
+						// In this case there is another StatusForbidden and i should skip.
+						log.Errorf("Forbidden error on %s.", URL)
+						return HttpResponse{
+							Body:    nil,
+							Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+							Headers: resp.Header,
+						}, err
+					} else {
+						retryEpoch, _ := strconv.Atoi(reset)
+						secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
+						log.Infof("Waiting %s seconds. (The difference between header %s and time.Now())", strconv.FormatInt(secondsAfterRetry, 10), headerRateReset)
+						time.Sleep(time.Second * time.Duration(secondsAfterRetry))
+					}
+				}
 			} else {
 				// Perform a generic additional wait.
 				sleep = sleep + (5 * time.Minute)
-				log.Info("Forbidden access, sleep %v minutes\n", sleep)
+				log.Infof("Forbidden access, sleep %v minutes\n", sleep)
 				time.Sleep(sleep)
 			}
 
 		} else {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				return nil, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, err
+				log.Errorf("Error reading resp.Body Body in httpclient.go")
+				return HttpResponse{
+					Body:    nil,
+					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+					Headers: resp.Header,
+				}, err
 			}
 
 			err = resp.Body.Close()
 			if err != nil {
-				log.Info("Error closing Body in httpclient.go\n")
+				log.Errorf("Error closing resp.Body in httpclient.go")
 			}
 
-			return body, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, nil
+			return HttpResponse{
+				Body:    body,
+				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+				Headers: resp.Header,
+			}, nil
 		}
 	}
 }
