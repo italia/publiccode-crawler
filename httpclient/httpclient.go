@@ -83,7 +83,8 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 			}, nil
 
 			// Check if the request results in http OK.
-		} else if resp.StatusCode == http.StatusOK {
+		}
+		if resp.StatusCode == http.StatusOK {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				log.Errorf("Error reading resp.Body Body in httpclient.go")
@@ -106,7 +107,8 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 			}, nil
 
 			// Check if the request results in http RateLimit error.
-		} else if resp.StatusCode == http.StatusTooManyRequests {
+		}
+		if resp.StatusCode == http.StatusTooManyRequests {
 
 			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
