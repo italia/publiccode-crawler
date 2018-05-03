@@ -11,6 +11,9 @@ import (
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
+
+	"github.com/italia/developers-italia-backend/publiccode"
+
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -55,6 +58,12 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 		if err != nil {
 			log.Error(err)
 		}
+
+		// If end is reached, url and nextURL contains the same value.
+		if url == nextURL {
+			log.Info("Bitbucket repositories status: end reached.")
+			return
+		}
 		// Update url to nextURL.
 		url = nextURL
 	}
@@ -91,6 +100,13 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 	if resp.Status.Code == http.StatusOK && err == nil {
 		// Save the file.
 		saveFile(domain, name, resp.Body)
+
+		// Validate file.
+		err := validateRemoteFile(resp.Body, fileRawUrl)
+		if err != nil {
+			log.Warn("Validator fails for: " + fileRawUrl)
+			log.Warn("Validator errors:" + err.Error())
+		}
 	}
 }
 
@@ -116,4 +132,16 @@ func saveFile(source, name string, data []byte) {
 func splitFullName(fullName string) (string, string) {
 	s := strings.Split(fullName, "/")
 	return s[0], s[1]
+}
+
+// validateRemoteFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<file_name>
+func validateRemoteFile(data []byte, url string) error {
+	fileName := os.Getenv("CRAWLED_FILENAME")
+	// Parse data into pc struct and validate.
+	baseURL := strings.TrimSuffix(url, fileName)
+	// Set remore URL for remote validation (it will check files availability).
+	publiccode.BaseDir = baseURL
+	var pc publiccode.PublicCode
+
+	return publiccode.Parse(data, &pc)
 }
