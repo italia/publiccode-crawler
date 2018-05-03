@@ -1,13 +1,14 @@
 package crawler
 
 import (
-	"github.com/italia/developers-italia-backend/httpclient"
-	"net/http"
-	"github.com/prometheus/common/log"
-	"errors"
 	"encoding/json"
+	"errors"
+	"net/http"
 	"os"
 	"time"
+
+	"github.com/italia/developers-italia-backend/httpclient"
+	"github.com/prometheus/common/log"
 )
 
 // Gitlab is a Crawler for the Gitlab API.
@@ -40,18 +41,18 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 		}
 
 		// Get List of repositories
-		body, status, respHeaders, err := httpclient.GetURL(url, headers)
+		resp, err := httpclient.GetURL(url, headers)
 		if err != nil {
 			return url, err
 		}
-		if status.StatusCode != http.StatusOK {
-			log.Warnf("Request returned: %s", string(body))
-			return url, errors.New("request returned an incorrect http.Status: " + status.Status)
+		if resp.Status.Code != http.StatusOK {
+			log.Warnf("Request returned: %s", string(resp.Body))
+			return url, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
 		var results Gitlab
-		err = json.Unmarshal(body, &results)
+		err = json.Unmarshal(resp.Body, &results)
 		if err != nil {
 			return url, err
 		}
@@ -66,7 +67,7 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 			}
 		}
 
-		if len(respHeaders.Get("Link")) == 0 {
+		if len(resp.Headers.Get("Link")) == 0 {
 			for len(repositories) != 0 {
 				time.Sleep(time.Second)
 			}
@@ -80,7 +81,7 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 		}
 
 		// Return next url
-		parsedLink := httpclient.NextHeaderLink(respHeaders.Get("Link"))
+		parsedLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
 		if parsedLink == "" {
 			log.Info("Gitlab repositories status: end reached (no more ref=Next header). Restart from: " + domain.URL)
 			return domain.URL, nil

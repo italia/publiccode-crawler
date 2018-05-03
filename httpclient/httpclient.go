@@ -11,10 +11,17 @@ import (
 	"github.com/tomnomnom/linkheader"
 )
 
+// HttpResponse wraps body, Status and Headers from the http.Response.
+type HttpResponse struct {
+	Body    []byte
+	Status  ResponseStatus
+	Headers http.Header
+}
+
 // ResponseStatus contains the status and statusCode of a response.
 type ResponseStatus struct {
-	Status     string // e.g. "200 OK"
-	StatusCode int    // e.g. 200
+	Text string // e.g. "200 OK"
+	Code int    // e.g. 200
 }
 
 const (
@@ -27,7 +34,7 @@ const (
 
 // GetURL retrieves data, status and response headers from an URL.
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
-func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http.Header, error) {
+func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 	var sleep time.Duration
 	const timeout = time.Duration(30 * time.Second)
 
@@ -39,7 +46,11 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 	for {
 		req, err := http.NewRequest("GET", URL, nil)
 		if err != nil {
-			return nil, ResponseStatus{Status: err.Error(), StatusCode: -1}, nil, err
+			return HttpResponse{
+				Body:    nil,
+				Status:  ResponseStatus{Text: err.Error(), Code: -1},
+				Headers: nil,
+			}, err
 		}
 
 		// Set headers.
@@ -53,7 +64,11 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 		// Perform the request.
 		resp, err := client.Do(req)
 		if err != nil {
-			return nil, ResponseStatus{Status: err.Error(), StatusCode: -1}, nil, err
+			return HttpResponse{
+				Body:    nil,
+				Status:  ResponseStatus{Text: err.Error(), Code: -1},
+				Headers: nil,
+			}, err
 		}
 
 		// Check if the request results in http RateLimit error.
@@ -87,8 +102,11 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 					if rateRemaining != 0 {
 						// In this case there is another StatusForbidden and i should skip.
 						log.Errorf("Forbidden error on %s.", URL)
-						return nil, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, err
-
+						return HttpResponse{
+							Body:    nil,
+							Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+							Headers: resp.Header,
+						}, err
 					} else {
 						retryEpoch, _ := strconv.Atoi(reset)
 						secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
@@ -107,7 +125,11 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				log.Errorf("Error reading resp.Body Body in httpclient.go")
-				return nil, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, err
+				return HttpResponse{
+					Body:    nil,
+					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+					Headers: resp.Header,
+				}, err
 			}
 
 			err = resp.Body.Close()
@@ -115,7 +137,11 @@ func GetURL(URL string, headers map[string]string) ([]byte, ResponseStatus, http
 				log.Errorf("Error closing resp.Body in httpclient.go")
 			}
 
-			return body, ResponseStatus{Status: resp.Status, StatusCode: resp.StatusCode}, resp.Header, nil
+			return HttpResponse{
+				Body:    body,
+				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+				Headers: resp.Header,
+			}, nil
 		}
 	}
 }

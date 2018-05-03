@@ -86,11 +86,11 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 
 	processedCounter.Inc()
 
-	body, status, _, err := httpclient.GetURL(fileRawUrl, headers)
+	resp, err := httpclient.GetURL(fileRawUrl, headers)
 	// If it's available and no error returned.
-	if status.StatusCode == http.StatusOK && err == nil {
+	if resp.Status.Code == http.StatusOK && err == nil {
 		// Save the file.
-		saveFile(domain, name, body)
+		saveFile(domain, name, resp.Body)
 	}
 }
 

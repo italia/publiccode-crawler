@@ -1,9 +1,10 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/spf13/cobra"
-	"os"
 )
 
 func init() {

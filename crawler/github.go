@@ -183,18 +183,18 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 		}
 
 		// Get List of repositories
-		body, status, respHeaders, err := httpclient.GetURL(url, headers)
+		resp, err := httpclient.GetURL(url, headers)
 		if err != nil {
 			return url, err
 		}
-		if status.StatusCode != http.StatusOK {
-			log.Warnf("Request returned: %s", string(body))
-			return url, errors.New("request returned an incorrect http.Status: " + status.Status)
+		if resp.Status.Code != http.StatusOK {
+			log.Warnf("Request returned: %s", string(resp.Body))
+			return url, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
 		var results Github
-		err = json.Unmarshal(body, &results)
+		err = json.Unmarshal(resp.Body, &results)
 		if err != nil {
 			return url, err
 		}
@@ -214,7 +214,7 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 			}
 		}
 
-		if len(respHeaders.Get("Link")) == 0 {
+		if len(resp.Headers.Get("Link")) == 0 {
 			for len(repositories) != 0 {
 				time.Sleep(time.Second)
 			}
@@ -228,7 +228,7 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 		}
 
 		// Return next url
-		parsedLink := httpclient.NextHeaderLink(respHeaders.Get("Link"))
+		parsedLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
 		if parsedLink == "" {
 			log.Info("Github repositories status: end reached (no more ref=Next header). Restart from: " + domain.URL)
 			return domain.URL, nil
@@ -240,18 +240,18 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 
 func getGithubRepoInfos(URL string, headers map[string]string) (GithubRepo, string, error) {
 	// Get List of repositories
-	body, status, _, err := httpclient.GetURL(URL, headers)
+	resp, err := httpclient.GetURL(URL, headers)
 	if err != nil {
 		return GithubRepo{}, URL, err
 	}
-	if status.StatusCode != http.StatusOK {
-		log.Warnf("Request for single Github repository returned: %s", string(body))
-		return GithubRepo{}, URL, errors.New("request returned an incorrect http.Status: " + status.Status)
+	if resp.Status.Code != http.StatusOK {
+		log.Warnf("Request for single Github repository returned: %s", string(resp.Body))
+		return GithubRepo{}, URL, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 	}
 
 	// Fill response as list of values (repositories data).
 	var results GithubRepo
-	err = json.Unmarshal(body, &results)
+	err = json.Unmarshal(resp.Body, &results)
 	if err != nil {
 		return GithubRepo{}, URL, err
 	}
