@@ -87,7 +87,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 		if resp.StatusCode == http.StatusOK {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
-				log.Errorf("Error reading resp.Body Body in httpclient.go")
+				log.Errorf(err.Error())
 				return HttpResponse{
 					Body:    nil,
 					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
@@ -97,7 +97,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 
 			err = resp.Body.Close()
 			if err != nil {
-				log.Errorf("Error closing resp.Body in httpclient.go")
+				log.Errorf(err.Error())
 			}
 
 			return HttpResponse{
