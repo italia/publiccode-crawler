@@ -61,7 +61,7 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 		for _, v := range results {
 			repositories <- Repository{
 				Name:       v.PathWithNamespace,
-				FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+				FileRawURL: "https://gitlab.com/blob" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
 				Domain:     domain.Id,
 				Headers:    headers,
 			}
