@@ -21,7 +21,7 @@ type Domain struct {
 		ReqH int `yaml:"req/h"`
 		ReqM int `yaml:"req/m"`
 	} `yaml:"rate-limit"`
-	BasicAuth string `yaml:"basic-auth"`
+	BasicAuth []string `yaml:"basic-auth"`
 }
 
 func ReadAndParseDomains(domainsFile string, redisClient *redis.Client) ([]Domain, error) {

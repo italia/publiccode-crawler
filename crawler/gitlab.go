@@ -3,6 +3,7 @@ package crawler
 import (
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -36,8 +37,10 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 	return func(domain Domain, url string, repositories chan Repository) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
-		if domain.BasicAuth != "" {
-			headers["Authorization"] = "Basic " + domain.BasicAuth
+		if domain.BasicAuth != nil {
+			rand.Seed(time.Now().Unix())
+			n := rand.Int() % len(domain.BasicAuth)
+			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
 		// Get List of repositories
