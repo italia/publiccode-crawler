@@ -154,13 +154,13 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 					}
 				}
 			} else {
-				// Calculate ExpBackoff
-				expBackoffWait := expBackoffCalc(expBackoffAttemps)
-				// Perform a backoff sleep time.
-				sleep = time.Duration(expBackoffWait) * time.Second
-				expBackoffAttemps = expBackoffAttemps + 1
-				log.Infof("Forbidden access to %s : sleep %v minutes\n", URL, sleep)
-				time.Sleep(sleep)
+				// Generic forbidden.
+				log.Errorf("Forbidden error on %s.", URL)
+				return HttpResponse{
+					Body:    nil,
+					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+					Headers: resp.Header,
+				}, err
 			}
 
 		} else {

@@ -221,21 +221,20 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 			for len(repositories) != 0 {
 				time.Sleep(time.Second)
 			}
-			// if wants to end the program when repo list ends (last page) decomment
-			// close(repositories)
-			// return url, nil
 			log.Info("Github repositories status: end reached.")
 
-			// Restart.
-			// return domain.URL, nil
+			// If Restart: uncomment next line.
+			// return "domain.URL", nil
 			return "", nil
 		}
 
 		// Return next url
 		parsedLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
 		if parsedLink == "" {
-			log.Info("Github repositories status: end reached (no more ref=Next header). Restart from: " + domain.URL)
-			return domain.URL, nil
+			log.Info("Github repositories status: end reached (no more ref=Next header).")
+			// If Restart: uncomment next line.
+			// return "domain.URL", nil
+			return "", nil
 		}
 
 		return parsedLink, nil

@@ -181,8 +181,8 @@ func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Re
 			}
 			log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + domain.URL)
 
-			// Restart.
-			// return domain.URL, nil
+			// If Restart: uncomment next line.
+			// return "domain.URL", nil
 			return "", nil
 
 		}

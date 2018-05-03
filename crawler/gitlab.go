@@ -78,12 +78,9 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 			for len(repositories) != 0 {
 				time.Sleep(time.Second)
 			}
-			// if wants to end the program when repo list ends (last page) decomment
-			// close(repositories)
-			// return url, nil
 			log.Info("Gitlab repositories status: end reached.")
 
-			// Restart.
+			// If Restart: uncomment next line.
 			// return "domain.URL", nil
 			return "", nil
 

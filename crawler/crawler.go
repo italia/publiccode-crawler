@@ -27,7 +27,7 @@ type Repository struct {
 }
 
 // Process delegates the work to single domain crawlers.
-func ProcessDomain(domain Domain, repositories chan Repository) {
+func ProcessDomain(domain Domain, repositories chan Repository, domainsStatus chan int) {
 	// Redis connection.
 	redisClient, err := RedisClientFactory(os.Getenv("REDIS_URL"))
 	if err != nil {
@@ -49,8 +49,6 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			log.Errorf("Retry: %s", nextURL)
 			nextURL = url
-			//close(repositories): ok if only one repo. If more parallel it generates panics.
-			//return
 		}
 		// If reached, the repository list was successfully retrieved.
 		// Delete the repository url from redis.
@@ -59,9 +57,10 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 			log.Error(err)
 		}
 
-		// If end is reached, url and nextURL contains the same value.
+		// If end is reached, nextUrl is empty.
 		if nextURL == "" {
 			log.Infof("Url: %s - is the last one.", url)
+			<-domainsStatus
 			return
 		}
 		// Update url to nextURL.
@@ -69,7 +68,7 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 	}
 }
 
-func ProcessRepositories(repositories chan Repository) {
+func ProcessRepositories(repositories chan Repository, domainsStatus chan int) {
 	log.Debug("Repositories are going to be processed...")
 
 	// Init Prometheus for metrics.
@@ -84,6 +83,12 @@ func ProcessRepositories(repositories chan Repository) {
 		// Throttle down the calls.
 		<-throttle
 		go checkAvailability(repository, processedCounter)
+
+		// All the domains ended the process.
+		if len(domainsStatus) == 0 {
+			close(domainsStatus)
+			close(repositories)
+		}
 	}
 }
 

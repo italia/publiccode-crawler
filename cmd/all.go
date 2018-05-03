@@ -34,13 +34,16 @@ Beware! May take days to complete.`,
 
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository, 100)
+		// Initiate a channel for domains status.
+		domainsStatus := make(chan int, len(domains))
 
 		// Process each domain service.
 		for _, domain := range domains {
-			go crawler.ProcessDomain(domain, repositories)
+			domainsStatus <- 1
+			go crawler.ProcessDomain(domain, repositories, domainsStatus)
 		}
 
 		// Process repositories in order to retrieve publiccode.yml.
-		crawler.ProcessRepositories(repositories)
+		crawler.ProcessRepositories(repositories, domainsStatus)
 	},
 }
