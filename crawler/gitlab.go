@@ -34,6 +34,8 @@ type Gitlab []struct {
 // RegisterGitlabAPI register the crawler function for Gitlab API.
 func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
 	return func(domain Domain, url string, repositories chan Repository) (string, error) {
+		log.Debugf("RegisterGitlabAPI: %s ")
+
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != "" {
@@ -59,11 +61,13 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
-			repositories <- Repository{
-				Name:       v.PathWithNamespace,
-				FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
-				Domain:     domain.Id,
-				Headers:    headers,
+			if v.DefaultBranch != "" {
+				repositories <- Repository{
+					Name:       v.PathWithNamespace,
+					FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+					Domain:     domain.Id,
+					Headers:    headers,
+				}
 			}
 		}
 
@@ -77,7 +81,9 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 			log.Info("Gitlab repositories status: end reached.")
 
 			// Restart.
-			return domain.URL, nil
+			// return "domain.URL", nil
+			return "", nil
+
 		}
 
 		// Return next url

@@ -74,8 +74,39 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 			}, err
 		}
 
-		// Check if the request results in http RateLimit error.
-		if resp.StatusCode == http.StatusTooManyRequests {
+		// Check if the request results in http notFound.
+		if resp.StatusCode == http.StatusNotFound {
+			return HttpResponse{
+				Body:    nil,
+				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+				Headers: resp.Header,
+			}, nil
+
+			// Check if the request results in http OK.
+		} else if resp.StatusCode == http.StatusOK {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Errorf("Error reading resp.Body Body in httpclient.go")
+				return HttpResponse{
+					Body:    nil,
+					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+					Headers: resp.Header,
+				}, err
+			}
+
+			err = resp.Body.Close()
+			if err != nil {
+				log.Errorf("Error closing resp.Body in httpclient.go")
+			}
+
+			return HttpResponse{
+				Body:    body,
+				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
+				Headers: resp.Header,
+			}, nil
+
+			// Check if the request results in http RateLimit error.
+		} else if resp.StatusCode == http.StatusTooManyRequests {
 
 			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
@@ -121,33 +152,24 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 					}
 				}
 			} else {
-				// Perform a generic additional wait.
-				sleep = sleep + (5 * time.Minute)
-				log.Infof("Forbidden access, sleep %v minutes\n", sleep)
+				// Calculate ExpBackoff
+				expBackoffWait := (math.Pow(2, float64(expBackoffAttemps)) - 1) / 2
+				// Perform a backoff sleep time.
+				sleep = time.Duration(expBackoffWait) * time.Second
+				expBackoffAttemps = expBackoffAttemps + 1
+				log.Infof("Forbidden access to %s : sleep %v minutes\n", URL, sleep)
 				time.Sleep(sleep)
 			}
 
 		} else {
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Errorf("Error reading resp.Body Body in httpclient.go")
-				return HttpResponse{
-					Body:    nil,
-					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
-					Headers: resp.Header,
-				}, err
-			}
-
-			err = resp.Body.Close()
-			if err != nil {
-				log.Errorf("Error closing resp.Body in httpclient.go")
-			}
-
-			return HttpResponse{
-				Body:    body,
-				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
-				Headers: resp.Header,
-			}, nil
+			// Generic invalid status code.
+			// Calculate ExpBackoff
+			expBackoffWait := (math.Pow(2, float64(expBackoffAttemps)) - 1) / 2
+			// Perform a backoff sleep time.
+			sleep = time.Duration(expBackoffWait) * time.Second
+			expBackoffAttemps = expBackoffAttemps + 1
+			log.Infof("Invalid status code on %s : sleep %v minutes\n", URL, sleep)
+			time.Sleep(sleep)
 		}
 	}
 }
