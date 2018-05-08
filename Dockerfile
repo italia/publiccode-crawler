@@ -16,9 +16,7 @@ ADD . /go/src/$PROJECT
 # RUN cd /go/src/$PROJECT && go get -u github.com/golang/dep/cmd/dep && dep ensure
 
 # Compile .so plugins
-RUN cd /go/src/$PROJECT/plugins && go build -buildmode=plugin -o out/github.so github/plugin.go
-RUN cd /go/src/$PROJECT/plugins && go build -buildmode=plugin -o out/gitlab.so gitlab/plugin.go
-RUN cd /go/src/$PROJECT/plugins && go build -buildmode=plugin -o out/bitbucket.so bitbucket/plugin.go
+RUN cd /go/src/$PROJECT && chmod +x build_plugins.sh && sh ./build_plugins.sh
 
 # Compile project
 RUN cd /go/src/$PROJECT && go build -ldflags "-X github.com/italia/developers-italia-backend/version.VERSION=${VERSION}" -o $NAME
