@@ -21,7 +21,7 @@ Beware! May take days to complete.`,
 		domainID := args[0]
 
 		// Register client API plugins.
-		crawler.RegisterClientApis()
+		crawler.RegisterCrawlers()
 
 		// Redis connection.
 		redisClient, err := crawler.RedisClientFactory(os.Getenv("REDIS_URL"))
