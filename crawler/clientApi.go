@@ -3,11 +3,12 @@ package crawler
 import (
 	"errors"
 	"fmt"
-	"plugin"
-	"github.com/prometheus/common/log"
-	"path/filepath"
 	"os"
 	"path"
+	"path/filepath"
+	"plugin"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // Crawler is the interface for crawler plugins.
@@ -26,7 +27,7 @@ const (
 
 // RegisterCrawlers registers all founded crawler plugins.
 func RegisterCrawlers() {
-	clientApis = make(map[string] Handler)
+	clientApis = make(map[string]Handler)
 
 	files, err := getPluginFiles()
 	if err != nil {
@@ -52,7 +53,7 @@ func GetClientApiCrawler(clientApi string) (Handler, error) {
 }
 
 // GetPlugins returns a list of all registered plugins.
-func GetPlugins() map[string] Handler {
+func GetPlugins() map[string]Handler {
 	return clientApis
 }
 
