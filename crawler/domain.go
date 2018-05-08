@@ -86,5 +86,5 @@ func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, reposi
 		return "", err
 	}
 
-	return crawler(domain, url, wg, repositories)
+	return crawler(domain, url, repositories, wg)
 }

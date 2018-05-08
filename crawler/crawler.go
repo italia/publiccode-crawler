@@ -26,6 +26,8 @@ type Repository struct {
 	Headers    map[string]string
 }
 
+type Handler func(domain Domain, url string, repositories chan Repository, wg *sync.WaitGroup) (string, error)
+
 // Process delegates the work to single domain crawlers.
 func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	// Redis connection.
@@ -36,7 +38,6 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGro
 
 	// Base starting URL.
 	url := domain.URL
-
 	for {
 		// Set the value of nextURL on redis to "failed".
 		err = redisClient.HSet(domain.Id, url, "failed").Err()
