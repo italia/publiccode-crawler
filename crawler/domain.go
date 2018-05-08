@@ -1,6 +1,8 @@
 package crawler
 
 import (
+	"sync"
+
 	"gopkg.in/yaml.v2"
 
 	"errors"
@@ -78,11 +80,11 @@ func (domain *Domain) updateStartURL(redisClient *redis.Client) error {
 	return nil
 }
 
-func (domain Domain) processAndGetNextURL(url string, repositories chan Repository) (string, error) {
+func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
 	crawler, err := GetClientApiCrawler(domain.ClientApi)
 	if err != nil {
 		return "", err
 	}
 
-	return crawler(domain, url, repositories)
+	return crawler(domain, url, wg, repositories)
 }

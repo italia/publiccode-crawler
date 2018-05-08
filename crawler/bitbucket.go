@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
@@ -134,8 +135,8 @@ type Bitbucket struct {
 }
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
-func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
-	return func(domain Domain, url string, repositories chan Repository) (string, error) {
+func RegisterBitbucketAPI() func(domain Domain, url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
+	return func(domain Domain, url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -179,7 +180,7 @@ func RegisterBitbucketAPI() func(domain Domain, url string, repositories chan Re
 			for len(repositories) != 0 {
 				time.Sleep(time.Second)
 			}
-			log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + domain.URL)
+			log.Info("Bitbucket repositories status: end reached.")
 
 			// If Restart: uncomment next line.
 			// return "domain.URL", nil

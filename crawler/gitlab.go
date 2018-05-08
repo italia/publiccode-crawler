@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
@@ -33,8 +34,8 @@ type Gitlab []struct {
 }
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
-func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
-	return func(domain Domain, url string, repositories chan Repository) (string, error) {
+func RegisterGitlabAPI() func(domain Domain, url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
+	return func(domain Domain, url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
 		log.Debugf("RegisterGitlabAPI: %s ")
 
 		// Set BasicAuth header
@@ -89,7 +90,7 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 		// Return next url
 		parsedLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
 		if parsedLink == "" {
-			log.Info("Gitlab repositories status: end reached (no more ref=Next header). Restart from: " + domain.URL)
+			log.Info("Gitlab repositories status: end reached (no more ref=Next header).")
 			return domain.URL, nil
 		}
 

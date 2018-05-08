@@ -41,10 +41,14 @@ Beware! May take days to complete.`,
 		// Process each domain service.
 		for _, domain := range domains {
 			wg.Add(1)
-			go crawler.ProcessDomain(domain, repositories, wg)
+			go crawler.ProcessDomain(domain, repositories, &wg)
 		}
 
+		// Goroutine that constatly check if all the processes are terminated.
+		go crawler.WaitingLoop(repositories, &wg)
+
 		// Process repositories in order to retrieve publiccode.yml.
-		crawler.ProcessRepositories(repositories, wg)
+		crawler.ProcessRepositories(repositories, &wg)
+
 	},
 }

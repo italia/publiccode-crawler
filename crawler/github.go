@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
@@ -175,8 +176,8 @@ type GithubRepo struct {
 }
 
 // RegisterGithubAPI register the crawler function for Github API.
-func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
-	return func(domain Domain, url string, repositories chan Repository) (string, error) {
+func RegisterGithubAPI() func(domain Domain, url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
+	return func(domain Domain, url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -234,6 +235,8 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 			log.Info("Github repositories status: end reached (no more ref=Next header).")
 			// If Restart: uncomment next line.
 			// return "domain.URL", nil
+
+			// Wait until all the repositories are processed.
 			return "", nil
 		}
 

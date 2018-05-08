@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
@@ -28,9 +27,7 @@ type Repository struct {
 }
 
 // Process delegates the work to single domain crawlers.
-func ProcessDomain(domain Domain, repositories chan Repository, wg sync.WaitGroup) {
-	// Defer waiting group close.
-	defer wg.Done()
+func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	// Redis connection.
 	redisClient, err := RedisClientFactory(os.Getenv("REDIS_URL"))
 	if err != nil {
@@ -47,7 +44,7 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg sync.WaitGrou
 			log.Error(err)
 		}
 
-		nextURL, err := domain.processAndGetNextURL(url, repositories)
+		nextURL, err := domain.processAndGetNextURL(url, wg, repositories)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			log.Errorf("Retry: %s", nextURL)
@@ -63,6 +60,7 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg sync.WaitGrou
 		// If end is reached, nextUrl is empty.
 		if nextURL == "" {
 			log.Infof("Url: %s - is the last one.", url)
+			wg.Done()
 			return
 		}
 		// Update url to nextURL.
@@ -70,26 +68,21 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg sync.WaitGrou
 	}
 }
 
-func ProcessRepositories(repositories chan Repository, wg sync.WaitGroup) {
+func ProcessRepositories(repositories chan Repository, wg *sync.WaitGroup) {
 	log.Debug("Repositories are going to be processed...")
 
 	// Init Prometheus for metrics.
 	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
-	// Throttle requests.
-	// Time limits should be calibrated on more tests in order to avoid errors and bans.
-	throttleRate := time.Second / 1000
-	throttle := time.Tick(throttleRate)
-
 	for repository := range repositories {
-		// Throttle down the calls.
-		<-throttle
-		go checkAvailability(repository, processedCounter)
+
+		wg.Add(1)
+		go checkAvailability(repository, wg, processedCounter)
 	}
 
 }
 
-func checkAvailability(repository Repository, processedCounter prometheus.Counter) {
+func checkAvailability(repository Repository, wg *sync.WaitGroup, processedCounter prometheus.Counter) {
 	name := repository.Name
 	fileRawUrl := repository.FileRawURL
 	domain := repository.Domain
@@ -110,6 +103,9 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 			log.Warn("Validator errors:" + err.Error())
 		}
 	}
+
+	// Defer waiting group close.
+	wg.Done()
 }
 
 // saveFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<file_name>
@@ -146,4 +142,10 @@ func validateRemoteFile(data []byte, url string) error {
 	var pc publiccode.PublicCode
 
 	return publiccode.Parse(data, &pc)
+}
+
+// WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
+func WaitingLoop(repositories chan Repository, wg *sync.WaitGroup) {
+	wg.Wait()
+	close(repositories)
 }
