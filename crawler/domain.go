@@ -13,15 +13,12 @@ import (
 
 // Domain is a single code hosting service.
 type Domain struct {
-	Id          string `yaml:"id"`
-	Description string `yaml:"description"`
-	ClientApi   string `yaml:"client-api"`
-	URL         string `yaml:"url"`
-	RateLimit   struct {
-		ReqH int `yaml:"req/h"`
-		ReqM int `yaml:"req/m"`
-	} `yaml:"rate-limit"`
-	BasicAuth []string `yaml:"basic-auth"`
+	Id          string   `yaml:"id"`
+	Description string   `yaml:"description"`
+	ClientApi   string   `yaml:"client-api"`
+	URL         string   `yaml:"url"`
+	RawBaseUrl  string   `yaml:"rawBaseUrl"`
+	BasicAuth   []string `yaml:"basic-auth"`
 }
 
 func ReadAndParseDomains(domainsFile string, redisClient *redis.Client) ([]Domain, error) {

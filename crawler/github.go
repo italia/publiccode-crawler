@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
@@ -276,11 +277,15 @@ func RegisterSingleGithubAPI() func(domain Domain, link string, repositories cha
 			return err
 		}
 
+		// Join file raw URL.
+		u, err = url.Parse(domain.RawBaseUrl)
+		u.Path = path.Join(u.Path, result.FullName, result.DefaultBranch, os.Getenv("CRAWLED_FILENAME"))
+
 		// If the repository was never used, the Mainbranch is empty ("")
 		if result.DefaultBranch != "" {
 			repositories <- Repository{
 				Name:       result.FullName,
-				FileRawURL: "https://raw.githubusercontent.com/" + result.FullName + "/" + result.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+				FileRawURL: u.String(),
 				Domain:     domain.Id,
 				Headers:    headers,
 			}

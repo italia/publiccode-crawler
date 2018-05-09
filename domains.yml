@@ -2,9 +2,7 @@
   description: 'github.com'
   client-api: 'github'
   url: 'https://api.github.com/repositories'
-  rate-limit:
-    req/h: 5000
-    req/m: 500
+  rawBaseUrl: 'https://raw.githubusercontent.com/'
   basic-auth:
     - ""
     - ""
@@ -13,9 +11,7 @@
   description: 'bitbucket.com'
   client-api: 'bitbucket'
   url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2008-08-13'
-  rate-limit:
-    req/h: 60000
-    req/m: 6000
+  rawBaseUrl: 'https://bitbucket.org'
   basic-auth:
     - ""
 
@@ -23,6 +19,4 @@
   description: 'gitlab.com'
   client-api: 'gitlab'
   url: 'https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=1&per_page=20&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false'
-  rate-limit:
-    req/h: 3600
-    req/m: 60
+  rawBaseUrl: 'https://gitlab.com'

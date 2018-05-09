@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
@@ -320,11 +321,15 @@ func RegisterSingleBitbucketAPI() func(domain Domain, link string, repositories 
 			return err
 		}
 
+		// Join file raw URL.
+		u, err = url.Parse(domain.RawBaseUrl)
+		u.Path = path.Join(u.Path, result.FullName, "raw", result.Mainbranch.Name, os.Getenv("CRAWLED_FILENAME"))
+
 		// If the repository was never used, the Mainbranch is empty ("")
 		if result.Mainbranch.Name != "" {
 			repositories <- Repository{
 				Name:       result.FullName,
-				FileRawURL: result.Links.HTML.Href + "/raw/" + result.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
+				FileRawURL: u.String(),
 				Domain:     domain.Id,
 				Headers:    headers,
 			}
