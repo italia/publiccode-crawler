@@ -18,7 +18,7 @@ var allCmd = &cobra.Command{
 Beware! May take days to complete.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Register client API plugins.
-		crawler.RegisterCrawlers()
+		crawler.RegisterClientApis()
 
 		// Redis connection.
 		redisClient, err := crawler.RedisClientFactory(os.Getenv("REDIS_URL"))

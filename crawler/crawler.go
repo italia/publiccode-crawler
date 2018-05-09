@@ -26,8 +26,6 @@ type Repository struct {
 	Headers    map[string]string
 }
 
-type Handler func(domain Domain, url string, repositories chan Repository) (string, error)
-
 // Process delegates the work to single domain crawlers.
 func ProcessDomain(domain Domain, repositories chan Repository) {
 	// Redis connection.
@@ -38,6 +36,7 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 
 	// Base starting URL.
 	url := domain.URL
+
 	for {
 		// Set the value of nextURL on redis to "failed".
 		err = redisClient.HSet(domain.Id, url, "failed").Err()
@@ -68,6 +67,17 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 		// Update url to nextURL.
 		url = nextURL
 	}
+}
+
+// ProcessSingleDomain delegates the work to single domain crawlers.
+func ProcessSingleDomain(url string, domain Domain, repositories chan Repository) error {
+
+	err := domain.processSingleRepo(url, repositories)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func ProcessRepositories(repositories chan Repository) {

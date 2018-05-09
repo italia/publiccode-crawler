@@ -86,3 +86,12 @@ func (domain Domain) processAndGetNextURL(url string, repositories chan Reposito
 
 	return crawler(domain, url, repositories)
 }
+
+func (domain Domain) processSingleRepo(url string, repositories chan Repository) error {
+	crawler, err := GetSingleClientApiCrawler(domain.ClientApi)
+	if err != nil {
+		return err
+	}
+
+	return crawler(domain, url, repositories)
+}
