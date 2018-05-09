@@ -48,8 +48,6 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			log.Errorf("Retry: %s", nextURL)
 			nextURL = url
-			//close(repositories): ok if only one repo. If more parallel it generates panics.
-			//return
 		}
 		// If reached, the repository list was successfully retrieved.
 		// Delete the repository url from redis.

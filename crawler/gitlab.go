@@ -13,7 +13,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
-// Gitlab is a Crawler for the Gitlab API.
+// Gitlab represent a complete result for the Gitlab API respose from all repositories list.
 type Gitlab []struct {
 	ID                int           `json:"id"`
 	Description       string        `json:"description"`
@@ -33,6 +33,7 @@ type Gitlab []struct {
 	LastActivityAt    string        `json:"last_activity_at"`
 }
 
+// GitlabRepo represent a complete for the Gitlab API respose from a single repository.
 type GitlabRepo struct {
 	ID                int           `json:"id"`
 	Description       string        `json:"description"`

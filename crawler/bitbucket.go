@@ -13,7 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Bitbucket is a Crawler for the Bitbucket API.
+// Bitbucket represent a complete result for the Bitbucket API respose from all repositories list.
 type Bitbucket struct {
 	Pagelen int `json:"pagelen"`
 	Values  []struct {
@@ -134,7 +134,7 @@ type Bitbucket struct {
 	Next string `json:"next"`
 }
 
-// BitbucketRepo single repo API response.
+// BitbucketRepo represent a complete for the Bitbucket API respose from a single repository.
 type BitbucketRepo struct {
 	Scm     string `json:"scm"`
 	Website string `json:"website"`

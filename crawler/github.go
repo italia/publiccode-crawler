@@ -13,7 +13,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Github is a Crawler for the Github API.
+// Github represent a complete result for the Github API respose from all repositories list.
 type Github []struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -80,7 +80,7 @@ type Github []struct {
 	DeploymentsURL   string `json:"deployments_url"`
 }
 
-// GithubRepo contains all the infos about a specific repo.
+// GithubRepo represent a complete for the Github API respose from a single repository.
 type GithubRepo struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`

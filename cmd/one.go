@@ -31,6 +31,7 @@ var oneCmd = &cobra.Command{
 			panic(err)
 		}
 
+		// Read and parse list of domains.
 		domainsFile := "domains.yml"
 		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
 		if err != nil {
