@@ -34,3 +34,4 @@ data
 
 # Elasticsearch scripts
 elasticsearch/scripts/config.sh
+elasticsearch/php/config.inc
