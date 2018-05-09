@@ -1,23 +1,22 @@
 package cmd
 
 import (
-	"fmt"
-	"net/url"
 	"os"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
 func init() {
-	rootCmd.AddCommand(exactCmd)
+	rootCmd.AddCommand(oneCmd)
 }
 
-var exactCmd = &cobra.Command{
-	Use:   "exact [domain ID] [repo url]",
-	Short: "Crawl publiccode.yml from exact [repo url] using [domain ID] configs.",
-	Long: `Crawl publiccode.yml from exact [repo url] using [domain ID] configs.
-	The domainID should be `,
+var oneCmd = &cobra.Command{
+	Use:   "one [domain ID] [repo url]",
+	Short: "Crawl publiccode.yml from one single [repo url] using [domain ID] configs.",
+	Long: `Crawl publiccode.yml from one [repo url] using [domain ID] configs.
+	The domainID should be one in the domains.yml list`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		domainID := args[0]
@@ -46,29 +45,17 @@ var exactCmd = &cobra.Command{
 
 			// get the correct domain ID
 			if domain.Id == domainID {
-				u, err := url.Parse(repo)
-				if err != nil {
-					fmt.Println(err)
-				}
 
-				// Clear the url.
-				fullName := u.Path
-				if u.Path[:1] == "/" {
-					fullName = fullName[1:]
-				}
-				if u.Path[len(u.Path)-1:] == "/" {
-					fullName = fullName[:len(u.Path)-2]
-				}
-
-				err = crawler.ProcessSingleDomain(repo, domain, repositories)
+				err = crawler.ProcessSingleRepository(repo, domain, repositories)
 				if err != nil {
-					panic(err)
+					log.Error(err)
+					return
 				}
 
 			}
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
-		crawler.ProcessRepositories(repositories)
+		crawler.ProcessURLs(domains, repositories)
 	},
 }

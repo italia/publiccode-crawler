@@ -28,4 +28,4 @@ EXPOSE 8081
 
 # ARG values are not allowed in ENTRYPOINT, pass NAME as ENV variable.
 ENV NAME=$NAME
-ENTRYPOINT ./$NAME exact bitbucket.com https://bitbucket.org/marco-capobussi/publiccode-example
+ENTRYPOINT ./$NAME all

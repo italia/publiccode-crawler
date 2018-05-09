@@ -45,7 +45,7 @@ Beware! May take days to complete.`,
 			}
 		}
 
-		// Process the repositories in order to retrieve publiccode.yml.
-		crawler.ProcessRepositories(repositories)
+		// Process the repositories URLs in order to retrieve publiccode.yml.
+		crawler.ProcessURLs(domains, repositories)
 	},
 }

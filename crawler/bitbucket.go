@@ -134,6 +134,7 @@ type Bitbucket struct {
 	Next string `json:"next"`
 }
 
+// BitbucketRepo single repo API response.
 type BitbucketRepo struct {
 	Scm     string `json:"scm"`
 	Website string `json:"website"`

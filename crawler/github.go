@@ -5,6 +5,7 @@ import (
 	"errors"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -239,6 +240,55 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 		}
 
 		return parsedLink, nil
+	}
+}
+
+// RegisterSingleBitbucketAPI register the crawler function for single Bitbucket API.
+func RegisterSingleGithubAPI() func(domain Domain, link string, repositories chan Repository) error {
+	return func(domain Domain, link string, repositories chan Repository) error {
+		// Set BasicAuth header
+		headers := make(map[string]string)
+		if domain.BasicAuth != nil {
+			rand.Seed(time.Now().Unix())
+			n := rand.Int() % len(domain.BasicAuth)
+			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
+		}
+
+		u, err := url.Parse(link)
+		if err != nil {
+			log.Error(err)
+		}
+
+		// Clear the url.
+		fullName := u.Path
+		if u.Path[:1] == "/" {
+			fullName = fullName[1:]
+		}
+		if u.Path[len(u.Path)-1:] == "/" {
+			fullName = fullName[:len(u.Path)-2]
+		}
+
+		fullURL := "https://api.github.com/repos/" + fullName
+
+		// Fill response as list of values (repositories data).
+		result, _, err := getGithubRepoInfos(fullURL, headers)
+		if err != nil {
+			return err
+		}
+
+		// If the repository was never used, the Mainbranch is empty ("")
+		if result.DefaultBranch != "" {
+			repositories <- Repository{
+				Name:       result.FullName,
+				FileRawURL: "https://raw.githubusercontent.com/" + result.FullName + "/" + result.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+				Domain:     domain.Id,
+				Headers:    headers,
+			}
+		} else {
+			return errors.New("Repository is empty.")
+		}
+
+		return nil
 	}
 }
 

@@ -7,14 +7,13 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/italia/developers-italia-backend/publiccode"
 
-	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -69,8 +68,8 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 	}
 }
 
-// ProcessSingleDomain delegates the work to single domain crawlers.
-func ProcessSingleDomain(url string, domain Domain, repositories chan Repository) error {
+// ProcessSingleRepository process a single repository given his url and domain.
+func ProcessSingleRepository(url string, domain Domain, repositories chan Repository) error {
 
 	err := domain.processSingleRepo(url, repositories)
 	if err != nil {
@@ -80,20 +79,14 @@ func ProcessSingleDomain(url string, domain Domain, repositories chan Repository
 	return nil
 }
 
-func ProcessRepositories(repositories chan Repository) {
+func ProcessURLs(domains []Domain, repositories chan Repository) {
 	log.Debug("Repositories are going to be processed...")
 
 	// Init Prometheus for metrics.
 	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
-	// Throttle requests.
-	// Time limits should be calibrated on more tests in order to avoid errors and bans.
-	throttleRate := time.Second / 1000
-	throttle := time.Tick(throttleRate)
-
+	// Process the repository URLs.
 	for repository := range repositories {
-		// Throttle down the calls.
-		<-throttle
 		go checkAvailability(repository, processedCounter)
 	}
 }
@@ -104,6 +97,7 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 	domain := repository.Domain
 	headers := repository.Headers
 
+	// Increase repository counter.
 	processedCounter.Inc()
 
 	resp, err := httpclient.GetURL(fileRawUrl, headers)
