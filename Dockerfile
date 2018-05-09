@@ -28,6 +28,10 @@ EXPOSE 8081
 
 # ARG values are not allowed in ENTRYPOINT, pass NAME as ENV variable.
 ENV NAME=$NAME
+ENTRYPOINT ./$NAME all
+# ENTRYPOINT ./$NAME single github.com
+# ENTRYPOINT ./$NAME single gitlab.com
+# ENTRYPOINT ./$NAME single bitbucket.com 
 # ENTRYPOINT ./$NAME one github.com https://github.com/r3vit/publiccode.yml-validator
 # ENTRYPOINT ./$NAME one gitlab.com https://gitlab.com/r3vit/publiccode-example
 # ENTRYPOINT ./$NAME one bitbucket.com https://bitbucket.org/marco-capobussi/publiccode-example

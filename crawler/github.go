@@ -177,8 +177,8 @@ type GithubRepo struct {
 }
 
 // RegisterGithubAPI register the crawler function for Github API.
-func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
-	return func(domain Domain, url string, repositories chan Repository) (string, error) {
+func RegisterGithubAPI() func(domain Domain, link string, repositories chan Repository) (string, error) {
+	return func(domain Domain, link string, repositories chan Repository) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -188,20 +188,20 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 		}
 
 		// Get List of repositories
-		resp, err := httpclient.GetURL(url, headers)
+		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
-			return url, err
+			return link, err
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return url, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
 		var results Github
 		err = json.Unmarshal(resp.Body, &results)
 		if err != nil {
-			return url, err
+			return link, err
 		}
 
 		// Add repositories to the channel that will perform the check on everyone.
@@ -210,9 +210,17 @@ func RegisterGithubAPI() func(domain Domain, url string, repositories chan Repos
 			if err != nil {
 				log.Warnf("Unable to retrieve GithubRepoInfos on %s: %s", u, err.Error())
 			} else {
+
+				// Join file raw URL.
+				u, err := url.Parse(domain.RawBaseUrl)
+				if err != nil {
+					return link, err
+				}
+				u.Path = path.Join(u.Path, v.FullName, repoInfos.DefaultBranch, os.Getenv("CRAWLED_FILENAME"))
+
 				repositories <- Repository{
 					Name:       v.FullName,
-					FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/" + repoInfos.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+					FileRawURL: u.String(),
 					Domain:     domain.Id,
 					Headers:    headers,
 				}
@@ -279,6 +287,9 @@ func RegisterSingleGithubAPI() func(domain Domain, link string, repositories cha
 
 		// Join file raw URL.
 		u, err = url.Parse(domain.RawBaseUrl)
+		if err != nil {
+			return err
+		}
 		u.Path = path.Join(u.Path, result.FullName, result.DefaultBranch, os.Getenv("CRAWLED_FILENAME"))
 
 		// If the repository was never used, the Mainbranch is empty ("")

@@ -55,8 +55,8 @@ type GitlabRepo struct {
 }
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
-func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repository) (string, error) {
-	return func(domain Domain, url string, repositories chan Repository) (string, error) {
+func RegisterGitlabAPI() func(domain Domain, link string, repositories chan Repository) (string, error) {
+	return func(domain Domain, link string, repositories chan Repository) (string, error) {
 		log.Debugf("RegisterGitlabAPI: %s ")
 
 		// Set BasicAuth header
@@ -68,28 +68,36 @@ func RegisterGitlabAPI() func(domain Domain, url string, repositories chan Repos
 		}
 
 		// Get List of repositories
-		resp, err := httpclient.GetURL(url, headers)
+		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
-			return url, err
+			return link, err
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return url, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
 		var results Gitlab
 		err = json.Unmarshal(resp.Body, &results)
 		if err != nil {
-			return url, err
+			return link, err
 		}
 
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
+
+			// Join file raw URL.
+			u, err := url.Parse(domain.RawBaseUrl)
+			if err != nil {
+				return link, err
+			}
+			u.Path = path.Join(u.Path, v.PathWithNamespace, "raw", v.DefaultBranch, os.Getenv("CRAWLED_FILENAME"))
+
 			if v.DefaultBranch != "" {
 				repositories <- Repository{
 					Name:       v.PathWithNamespace,
-					FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+					FileRawURL: u.String(),
 					Domain:     domain.Id,
 					Headers:    headers,
 				}
@@ -147,7 +155,7 @@ func RegisterSingleGitlabAPI() func(domain Domain, link string, repositories cha
 			fullName = fullName[:len(u.Path)-2]
 		}
 
-		fullURL := "https://gitlab.com/api/v4/projects/" + url.QueryEscape(fullName)
+		fullURL := domain.RawBaseUrl + "/api/v4/projects/" + url.QueryEscape(fullName)
 
 		// Get single Repo
 		resp, err := httpclient.GetURL(fullURL, headers)
@@ -168,6 +176,9 @@ func RegisterSingleGitlabAPI() func(domain Domain, link string, repositories cha
 
 		// Join file raw URL.
 		u, err = url.Parse(domain.RawBaseUrl)
+		if err != nil {
+			return err
+		}
 		u.Path = path.Join(u.Path, result.PathWithNamespace, "raw", result.DefaultBranch, os.Getenv("CRAWLED_FILENAME"))
 
 		// If the repository was never used, the Mainbranch is empty ("")
