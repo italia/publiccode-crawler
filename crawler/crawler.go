@@ -28,6 +28,8 @@ type Repository struct {
 	Headers    map[string]string
 }
 
+// File is a generic structure for saveToES() function.
+// TODO: Will be replaced with a parsed publiccode.PublicCode whith proper mapping.
 type File struct {
 	Source string `json:"source"`
 	Name   string `json:"name"`
@@ -58,8 +60,6 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			log.Errorf("Retry: %s", nextURL)
 			nextURL = url
-			//close(repositories): ok if only one repo. If more parallel it generates panics.
-			//return
 		}
 		// If reached, the repository list was successfully retrieved.
 		// Delete the repository url from redis.
@@ -107,13 +107,15 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 	resp, err := httpclient.GetURL(fileRawUrl, headers)
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
-		// Save the file.
-		saveFile(domain, name, resp.Body)
+		// Save to file.
+		saveToFile(domain, name, resp.Body)
 
-		// Save on ES
-		saveES(domain, name, resp.Body)
+		// Save to ES.
+		saveToES(domain, name, resp.Body)
 
 		// Validate file.
+		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
+		// TODO: now validation is ulesess because we test on .gitignore file.
 		// err := validateRemoteFile(resp.Body, fileRawUrl)
 		// if err != nil {
 		// 	log.Warn("Validator fails for: " + fileRawUrl)
@@ -122,8 +124,8 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 	}
 }
 
-// saveFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<file_name>
-func saveFile(source, name string, data []byte) {
+// saveToFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<file_name>.
+func saveToFile(source, name string, data []byte) {
 	fileName := os.Getenv("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
@@ -159,11 +161,17 @@ func validateRemoteFile(data []byte, url string) error {
 }
 
 // saveES save the chosen <file_name> in elasticsearch
-func saveES(source, name string, data []byte) {
-	index := os.Getenv("CRAWLED_FILENAME")
-	// Starting with elastic.v5, you must pass a context to execute each service
+func saveToES(source, name string, data []byte) {
+	const (
+		index = "publiccode" // Elasticsearch index.
+		// Elasticsearch mapping for publiccode. Checkout elasticsearch/mappings/software.json
+		// TODO: Mapping must reflect the publiccode.PublicCode structure.
+		mapping = ""
+	)
+	// Starting with elastic.v5, you must pass a context to execute each service.
 	ctx := context.Background()
-	// Create a client
+
+	// Create a client.
 	client, err := elastic.NewClient(
 		elastic.SetURL(os.Getenv("ELASTIC_URL")),
 		elastic.SetSniff(false),
@@ -178,20 +186,21 @@ func saveES(source, name string, data []byte) {
 	// Use the IndexExists service to check if a specified index exists.
 	exists, err := client.IndexExists(index).Do(ctx)
 	if err != nil {
-		// Handle error
 		log.Error(err)
 	}
 
 	if !exists {
-		// Create a new index
+		// Create a new index.
+		// TODO: When mapping will be available: client.CreateIndex(index).BodyString(mapping).Do(ctx).
 		_, err = client.CreateIndex(index).Do(ctx)
 		if err != nil {
 			log.Error(err)
 		}
 	}
-	// Add a document to the index
+	// Add a document to the index.
 	file := File{Source: source, Name: name, Data: string(data)}
 
+	// Put publiccode data in ES.
 	put, err := client.Index().
 		Index(index).
 		Type("doc").
