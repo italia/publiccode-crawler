@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"context"
 	"os"
 
 	"io/ioutil"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
+	elastic "github.com/olivere/elastic"
 
 	"github.com/italia/developers-italia-backend/publiccode"
 
@@ -24,6 +26,12 @@ type Repository struct {
 	FileRawURL string
 	Domain     string
 	Headers    map[string]string
+}
+
+type File struct {
+	Source string `json:"source"`
+	Name   string `json:"name"`
+	Data   string `json:"data"`
 }
 
 type Handler func(domain Domain, url string, repositories chan Repository) (string, error)
@@ -102,12 +110,15 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 		// Save the file.
 		saveFile(domain, name, resp.Body)
 
+		// Save on ES
+		saveES(domain, name, resp.Body)
+
 		// Validate file.
-		err := validateRemoteFile(resp.Body, fileRawUrl)
-		if err != nil {
-			log.Warn("Validator fails for: " + fileRawUrl)
-			log.Warn("Validator errors:" + err.Error())
-		}
+		// err := validateRemoteFile(resp.Body, fileRawUrl)
+		// if err != nil {
+		// 	log.Warn("Validator fails for: " + fileRawUrl)
+		// 	log.Warn("Validator errors:" + err.Error())
+		// }
 	}
 }
 
@@ -145,4 +156,51 @@ func validateRemoteFile(data []byte, url string) error {
 	var pc publiccode.PublicCode
 
 	return publiccode.Parse(data, &pc)
+}
+
+// saveES save the chosen <file_name> in elasticsearch
+func saveES(source, name string, data []byte) {
+	index := os.Getenv("CRAWLED_FILENAME")
+	// Starting with elastic.v5, you must pass a context to execute each service
+	ctx := context.Background()
+	// Create a client
+	client, err := elastic.NewClient(
+		elastic.SetURL(os.Getenv("ELASTIC_URL")),
+		elastic.SetSniff(false),
+		elastic.SetBasicAuth(os.Getenv("ELASTIC_USER"), os.Getenv("ELASTIC_PWD")))
+	if err != nil {
+		log.Error(err)
+	}
+	if elastic.IsConnErr(err) {
+		log.Error("Elasticsearch connection problem: %v", err)
+	}
+
+	// Use the IndexExists service to check if a specified index exists.
+	exists, err := client.IndexExists(index).Do(ctx)
+	if err != nil {
+		// Handle error
+		log.Error(err)
+	}
+
+	if !exists {
+		// Create a new index
+		_, err = client.CreateIndex(index).Do(ctx)
+		if err != nil {
+			log.Error(err)
+		}
+	}
+	// Add a document to the index
+	file := File{Source: source, Name: name, Data: string(data)}
+
+	put, err := client.Index().
+		Index(index).
+		Type("doc").
+		Id(source + "/" + name).
+		BodyJson(file).
+		Do(ctx)
+	if err != nil {
+		log.Error(err)
+	}
+	log.Debugf("Indexed file %s to index %s, type %s", put.Id, put.Index, put.Type)
+
 }

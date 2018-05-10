@@ -38,4 +38,4 @@ EXPOSE 8081
 ENV NAME=$NAME
 RUN chmod +x ./$NAME
 
-ENTRYPOINT ./$NAME all
+ENTRYPOINT ./$NAME single github.com
