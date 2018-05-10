@@ -93,11 +93,13 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 		saveFile(domain, name, resp.Body)
 
 		// Validate file.
-		err := validateRemoteFile(resp.Body, fileRawUrl)
-		if err != nil {
-			log.Warn("Validator fails for: " + fileRawUrl)
-			log.Warn("Validator errors:" + err.Error())
-		}
+		// TODO: uncomment these lines when needs to validate publiccode.yml
+		// TODO: now validation is ulesess because we test on .gitignore file.
+		// err := validateRemoteFile(resp.Body, fileRawUrl)
+		// if err != nil {
+		// 	log.Warn("Validator fails for: " + fileRawUrl)
+		// 	log.Warn("Validator errors:" + err.Error())
+		// }
 	}
 }
 
