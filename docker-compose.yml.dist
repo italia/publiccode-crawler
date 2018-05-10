@@ -14,8 +14,9 @@ services:
       - "traefik.enable=true"
       - 'traefik.backend=elasticsearch'
       - 'traefik.port=9200'
-      - 'traefik.frontend.rule=Host:elasticsearch.${PROJECT_BASE_URL};Method:GET'
+      - 'traefik.frontend.rule=Host:elasticsearch.${PROJECT_BASE_URL};Path:/publiccode/_search;Method:GET,OPTIONS,POST'
       - "traefik.frontend.headers.customRequestHeaders=Authorization: Basic ${ELASTIC_BASIC_AUTH_TOKEN}"
+      - "traefik.frontend.headers.customResponseHeaders.Access-Control-Allow-Origin = '*'"
       - "traefik.frontend.rateLimit.extractorFunc=client.ip"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.period=60s"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.average=100"
@@ -75,6 +76,19 @@ services:
     image: redis:4.0
     networks:
       - web
+
+  httpd:
+    image: wodby/php-apache:2.4-3.0.5
+    container_name: ${NAME}_httpd
+    networks:
+      - web
+    labels:
+      - "traefik.enable=true"
+      - 'traefik.backend=httpd'
+      - 'traefik.port=80'
+      - 'traefik.frontend.rule=Host:web.${PROJECT_BASE_URL}'
+    volumes:
+      - "./elasticsearch/html:/var/www/html"
 
 # De-comment next lines after build a local image for the crawler.
 #  crawler:
