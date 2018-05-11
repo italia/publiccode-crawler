@@ -89,7 +89,6 @@ services:
       - "./elasticsearch/php:/var/www/php"
     environment:
       PHP_SENDMAIL_PATH: /usr/sbin/sendmail -t -i -S mailhog:1025
-      PHP_XDEBUG: 0
       PHP_XDEBUG_IDEKEY: phpstorm
       PHP_MAX_EXECUTION_TIME: 120
       PHP_MEMORY_LIMIT: 512M

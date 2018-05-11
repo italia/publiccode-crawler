@@ -1,8 +1,8 @@
-# Popolate ElasticSearch index
+# Popolate the ElasticSearch index
 
 In this directory there is a php script that generate a handfull of documents and puts them in elasticsearch.
 
-## Populate elsticsearch index
+## Populate the elsticsearch index
 
 * copy `config.inc.dist` to `config.inc`
 ```
@@ -14,7 +14,7 @@ $ cp config.inc.dist config.inc
 $ docker exec -it developers-italia-backend_php /bin/bash
 $ cd /var/www/php/
 ```
-* install elasticsearch php library
+* install the elasticsearch php library
 ```
 $ composer install
 ```
