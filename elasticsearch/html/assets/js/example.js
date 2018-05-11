@@ -1,7 +1,11 @@
+/**
+ * Elasticsearch connection parameters are loaded by /assets/js/config.js
+ */
+
 $( document ).ready(function() {
   var client = new elasticsearch.Client({
-    host: 'http://elasticsearch.developers.loc',
-    log: 'trace'
+    // log: 'trace'
+    'host': host
   });
 
   $('#es-automplete-input').on('input', null, client, executeAutoCompleteESQuery);
