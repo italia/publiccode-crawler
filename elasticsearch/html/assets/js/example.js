@@ -16,6 +16,8 @@ $( document ).ready(function() {
   $('#es-tags-list').on('click', null, client, activateTermFilter);
   $('#es-pa-type-list').on('click', null, client, activateTermFilter);
   $('#es-term-active').on('click', null, client, deActivateTermFilter);
+  $('input[name=sort-by-date]').on('change', null, client, onSortChange);
+  
 });
 
 function executeAutoCompleteESQuery(event) {
@@ -92,6 +94,7 @@ function executeSearchESQuery(client) {
     
   };
   var filter = [];
+  var sort = [];
   /*** execute full text query ***/
 
   var must = {
@@ -228,6 +231,14 @@ function executeSearchESQuery(client) {
     query.query.bool.must = must;    
   }
 
+  // Sort
+  if ($('input[name=sort-by-date]:checked').val() !== undefined) {
+    sort.push({
+      'released' : {'order' : $('input[name=sort-by-date]:checked').val() }
+    });
+  }
+
+  query.sort = sort;
   console.log("EXECUTE THIS QUERY:");
   console.log(query);
 
@@ -287,4 +298,16 @@ function getAllFilterTerms(client) {
     },
     function(error){console.log(error);}
   );
+}
+
+/**
+ * Sort Results
+ */
+
+function onSortChange(event) {
+  event.preventDefault();
+  client = event.data;
+
+  console.log("SORT CHANGE");
+  executeSearchESQuery(client);
 }
