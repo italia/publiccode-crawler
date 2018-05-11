@@ -3,6 +3,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <title>Elasticsearch test DI</title>
+    <link type="text/css" rel="stylesheet" href="/assets/css/style.css" media="all" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
     <script src="/assets/utils/node_modules/elasticsearch-browser/elasticsearch.js"></script>
     <script src="/assets/js/config.js"></script>
@@ -15,6 +16,23 @@
       <h2>Autocomplete</h2>
       <div><input type="text" id="es-automplete-input"></div>
       <div id="es-automplete-results"></div>
+    </div>
+    <div>
+      <h2>Full text Search</h2>
+      <div><input type="text" id="es-search-input"> <button id="es-search-button">Cerca</button></div>
+      <div id="es-term-active"></div>
+    </div>
+    <div>
+      <h2>Filter query per TAG</h2>
+      <div id="es-tags-list"></div>
+    </div>
+    <div>
+      <h2>Filter query per Pa Type</h2>
+      <div id="es-pa-type-list"></div>
+    </div>
+    <div>
+      <h2>results</h2>
+      <div id="es-results"></div>
     </div>
   </body>
 </html>
