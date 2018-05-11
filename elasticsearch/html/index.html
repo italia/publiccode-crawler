@@ -20,6 +20,20 @@
     <div>
       <h2>Full text Search</h2>
       <div><input type="text" id="es-search-input"> <button id="es-search-button">Cerca</button></div>
+      <div>
+        <h4>Sort Results</h4>
+        <div>
+          <span>Sort by <b>date</b></span>
+          <div>
+            <input type="radio" id="sort-by-date-asc" name="sort-by-date" value="asc">
+            <label for="sort-by-name-asc">Asc</label>
+
+            <input type="radio" id="sort-by-date-desc" name="sort-by-date" value="desc">
+            <label for="sort-by-name-desc">Desc</label>
+          </div>
+        </div>
+      </div>
+      <h4>Filter active</h4>
       <div id="es-term-active"></div>
     </div>
     <div>
