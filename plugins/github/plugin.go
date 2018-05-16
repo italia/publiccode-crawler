@@ -14,8 +14,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Github is a Crawler for the Github API.
-type Github []struct {
+// Github represent a complete result for the Github API respose from all repositories list.
+type Github []GithubRepoList
+type GithubRepoList struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	FullName string `json:"full_name"`
@@ -210,19 +211,15 @@ func (p plugin) Register() crawler.Handler {
 			return url, err
 		}
 
+		// Throttle requests.
+		// Time limits should be calibrated on more tests in order to avoid errors and bans.
+		throttleRate := time.Second / 20
+		throttle := time.Tick(throttleRate)
+
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
-			repoInfos, u, err := getGithubRepoInfos(v.URL, headers)
-			if err != nil {
-				log.Warnf("Unable to retrieve GithubRepoInfos on %s: %s", u, err.Error())
-			} else {
-				repositories <- crawler.Repository{
-					Name:       v.FullName,
-					FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/" + repoInfos.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
-					Domain:     domain.Id,
-					Headers:    headers,
-				}
-			}
+			<-throttle
+			go ExecResult(v, url, domain, headers, repositories)
 		}
 
 		if len(resp.Headers.Get("Link")) == 0 {
@@ -248,6 +245,21 @@ func (p plugin) Register() crawler.Handler {
 		}
 
 		return parsedLink, nil
+	}
+}
+
+func ExecResult(v GithubRepoList, link string, domain crawler.Domain, headers map[string]string, repositories chan crawler.Repository) {
+	repoInfos, u, err := getGithubRepoInfos(v.URL, headers)
+	if err != nil {
+		log.Warnf("Unable to retrieve GithubRepoInfos on %s: %s", u, err.Error())
+	} else {
+		repositories <- crawler.Repository{
+			Name:       v.FullName,
+			FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/" + repoInfos.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+			Domain:     domain.Id,
+			Headers:    headers,
+		}
+
 	}
 }
 

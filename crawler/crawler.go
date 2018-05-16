@@ -76,7 +76,6 @@ func ProcessRepositories(repositories chan Repository, wg *sync.WaitGroup) {
 	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
 	for repository := range repositories {
-
 		wg.Add(1)
 		go checkAvailability(repository, wg, processedCounter)
 	}

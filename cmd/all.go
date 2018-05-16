@@ -34,7 +34,7 @@ Beware! May take days to complete.`,
 		}
 
 		// Initiate a channel of repositories.
-		repositories := make(chan crawler.Repository, 100)
+		repositories := make(chan crawler.Repository, 1000)
 		// Prepare WaitGroup.
 		var wg sync.WaitGroup
 
