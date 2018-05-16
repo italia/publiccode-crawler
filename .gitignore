@@ -34,3 +34,10 @@ data
 
 # Elasticsearch scripts
 elasticsearch/scripts/config.sh
+elasticsearch/php/config.inc
+
+# Elasticsearch test query web application
+elasticsearch/html/assets/utils/node_modules
+
+# Elasticsearch js tests
+elasticsearch/html/assets/js/config.js

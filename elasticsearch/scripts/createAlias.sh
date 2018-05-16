@@ -27,4 +27,4 @@ generate_create_msg() {
 EOF
 }
 
-curl -u "$BASICAUTH" -X POST "$ELASTICSEARCH_URL/_aliases" -H 'Content-Type: application/json' -d"$(generate_update_msg)"
+curl -u "$BASICAUTH" -X POST "$ELASTICSEARCH_URL/_aliases" -H 'Content-Type: application/json' -d"$(generate_create_msg)"

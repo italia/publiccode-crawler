@@ -2,10 +2,10 @@ package crawler
 
 import (
 	"os"
+	"time"
 
 	"net/http"
 	"strings"
-	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
@@ -74,14 +74,7 @@ func ProcessRepositories(repositories chan Repository) {
 	// Init Prometheus for metrics.
 	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
-	// Throttle requests.
-	// Time limits should be calibrated on more tests in order to avoid errors and bans.
-	throttleRate := time.Second / 1000
-	throttle := time.Tick(throttleRate)
-
 	for repository := range repositories {
-		// Throttle down the calls.
-		<-throttle
 		go checkAvailability(repository, fileTimestamp, processedCounter)
 	}
 }
