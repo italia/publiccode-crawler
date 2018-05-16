@@ -112,7 +112,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 
 			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
-				log.Infof("Waiting: %s seconds. (The value of %s)", retryAfter, headerRetryAfter)
+				log.Infof("Waiting: %s seconds for %s. (The value of %s)", retryAfter, URL, headerRetryAfter)
 				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			} else {
@@ -121,7 +121,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 				// Perform a backoff sleep time.
 				sleep = time.Duration(expBackoffWait) * time.Second
 				expBackoffAttemps = expBackoffAttemps + 1
-				log.Info("Rate limit reached, sleep %v minutes\n", sleep)
+				log.Info("Rate limit reached, sleep %v \n", sleep)
 				time.Sleep(sleep)
 			}
 
@@ -130,7 +130,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 
 			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
-				log.Infof("Waiting: %s seconds. (The value of %s)", retryAfter, headerRetryAfter)
+				log.Infof("Waiting: %s seconds for %s. (The value of %s)", retryAfter, URL, headerRetryAfter)
 				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 
@@ -159,7 +159,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 				// Perform a backoff sleep time.
 				sleep = time.Duration(expBackoffWait) * time.Second
 				expBackoffAttemps = expBackoffAttemps + 1
-				log.Infof("Forbidden access to %s : sleep %v minutes\n", URL, sleep)
+				log.Infof("Forbidden access to %s : sleep %v \n", URL, sleep)
 				time.Sleep(sleep)
 			}
 
@@ -170,7 +170,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 			// Perform a backoff sleep time.
 			sleep = time.Duration(expBackoffWait) * time.Second
 			expBackoffAttemps = expBackoffAttemps + 1
-			log.Infof("Invalid status code on %s : sleep %v minutes\n", URL, sleep)
+			log.Infof("Invalid status code on %s : sleep %v \n", URL, sleep)
 			time.Sleep(sleep)
 		}
 	}

@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
@@ -50,8 +49,6 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			log.Errorf("Retry: %s", nextURL)
 			nextURL = url
-			//close(repositories): ok if only one repo. If more parallel it generates panics.
-			//return
 		}
 		// If reached, the repository list was successfully retrieved.
 		// Delete the repository url from redis.
@@ -76,14 +73,7 @@ func ProcessRepositories(repositories chan Repository) {
 	// Init Prometheus for metrics.
 	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
-	// Throttle requests.
-	// Time limits should be calibrated on more tests in order to avoid errors and bans.
-	throttleRate := time.Second / 1000
-	throttle := time.Tick(throttleRate)
-
 	for repository := range repositories {
-		// Throttle down the calls.
-		<-throttle
 		go checkAvailability(repository, processedCounter)
 	}
 }
@@ -103,11 +93,13 @@ func checkAvailability(repository Repository, processedCounter prometheus.Counte
 		saveFile(domain, name, resp.Body)
 
 		// Validate file.
-		err := validateRemoteFile(resp.Body, fileRawUrl)
-		if err != nil {
-			log.Warn("Validator fails for: " + fileRawUrl)
-			log.Warn("Validator errors:" + err.Error())
-		}
+		// TODO: uncomment these lines when needs to validate publiccode.yml
+		// TODO: now validation is ulesess because we test on .gitignore file.
+		// err := validateRemoteFile(resp.Body, fileRawUrl)
+		// if err != nil {
+		// 	log.Warn("Validator fails for: " + fileRawUrl)
+		// 	log.Warn("Validator errors:" + err.Error())
+		// }
 	}
 }
 
