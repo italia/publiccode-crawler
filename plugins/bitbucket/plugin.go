@@ -6,22 +6,23 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
+	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
-	"github.com/italia/developers-italia-backend/crawler"
 )
 
 // Bitbucket is a Crawler for the Bitbucket API.
 type Bitbucket struct {
 	Pagelen int `json:"pagelen"`
-	Values []struct {
+	Values  []struct {
 		Scm     string `json:"scm"`
 		Website string `json:"website"`
 		HasWiki bool   `json:"has_wiki"`
 		Name    string `json:"name"`
-		Links struct {
+		Links   struct {
 			Watchers struct {
 				Href string `json:"href"`
 			} `json:"watchers"`
@@ -73,12 +74,12 @@ type Bitbucket struct {
 		} `json:"mainbranch"`
 		FullName  string `json:"full_name"`
 		HasIssues bool   `json:"has_issues"`
-		Owner struct {
+		Owner     struct {
 			Username    string `json:"username"`
 			DisplayName string `json:"display_name"`
 			Type        string `json:"type"`
 			UUID        string `json:"uuid"`
-			Links struct {
+			Links       struct {
 				Self struct {
 					Href string `json:"href"`
 				} `json:"self"`
@@ -96,10 +97,10 @@ type Bitbucket struct {
 		Slug        string `json:"slug"`
 		IsPrivate   bool   `json:"is_private"`
 		Description string `json:"description"`
-		Project struct {
-			Key  string `json:"key"`
-			Type string `json:"type"`
-			UUID string `json:"uuid"`
+		Project     struct {
+			Key   string `json:"key"`
+			Type  string `json:"type"`
+			UUID  string `json:"uuid"`
 			Links struct {
 				Self struct {
 					Href string `json:"href"`
@@ -142,7 +143,7 @@ func (p plugin) GetId() string {
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
 func (p plugin) Register() crawler.Handler {
-	return func(domain crawler.Domain, url string, repositories chan crawler.Repository) (string, error) {
+	return func(domain crawler.Domain, url string, repositories chan crawler.Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -186,10 +187,10 @@ func (p plugin) Register() crawler.Handler {
 			for len(repositories) != 0 {
 				time.Sleep(time.Second)
 			}
-			log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + domain.URL)
+			log.Info("Bitbucket repositories status: end reached.")
 
-			// Restart.
-			// return domain.URL, nil
+			// If Restart: uncomment next line.
+			// return "domain.URL", nil
 			return "", nil
 
 		}
