@@ -49,10 +49,10 @@ Beware! May take days to complete.`,
 			}
 		}
 
-		// Goroutine that constatly check if all the processes are terminated.
-		go crawler.WaitingLoop(repositories, &wg)
-
 		// Process the repositories in order to retrieve publiccode.yml.
-		crawler.ProcessRepositories(repositories, &wg)
+		go crawler.ProcessRepositories(repositories, &wg)
+
+		// Wait until all the domains and repositories are processed.
+		crawler.WaitingLoop(repositories, &wg)
 	},
 }
