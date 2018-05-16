@@ -176,7 +176,7 @@ func (p plugin) Register() crawler.Handler {
 				repositories <- crawler.Repository{
 					Name:       v.FullName,
 					FileRawURL: v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
-					Domain:     domain.Id,
+					Domain:     domain,
 					Headers:    headers,
 				}
 			}

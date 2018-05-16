@@ -27,8 +27,17 @@ Beware! May take days to complete.`,
 			panic(err)
 		}
 
+		// Elastic connection.
+		elasticClient, err := crawler.ElasticClientFactory(
+			os.Getenv("ELASTIC_URL"),
+			os.Getenv("ELASTIC_USER"),
+			os.Getenv("ELASTIC_PWD"))
+		if err != nil {
+			panic(err)
+		}
+
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, elasticClient)
 		if err != nil {
 			panic(err)
 		}
@@ -45,7 +54,7 @@ Beware! May take days to complete.`,
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
-		go crawler.ProcessRepositories(repositories, &wg)
+		go crawler.ProcessRepositories(repositories, &wg, elasticClient)
 
 		// Wait until all the domains and repositories are processed.
 		crawler.WaitingLoop(repositories, &wg)

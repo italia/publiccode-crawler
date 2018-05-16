@@ -3,15 +3,14 @@ package crawler
 import (
 	"os"
 	"sync"
-	"time"
 
 	"net/http"
 	"strings"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
+	"github.com/olivere/elastic"
 
-	"github.com/italia/developers-italia-backend/persistency"
 	"github.com/italia/developers-italia-backend/publiccode"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -22,7 +21,7 @@ import (
 type Repository struct {
 	Name       string
 	FileRawURL string
-	Domain     string
+	Domain     Domain
 	Headers    map[string]string
 }
 
@@ -39,8 +38,8 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGro
 	// Base starting URL.
 	url := domain.URL
 	for {
-		// Set the value of nextURL on redis to "failed".
-		err = redisClient.HSet(domain.Id, url, "failed").Err()
+		// Set the value of nextURL on redis to domain.Index that describe the current execution.
+		err = redisClient.HSet(domain.Id, url, domain.Index).Err()
 		if err != nil {
 			log.Error(err)
 		}
@@ -61,6 +60,8 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGro
 		// If end is reached, nextUrl is empty.
 		if nextURL == "" {
 			log.Infof("Url: %s - is the last one.", url)
+
+			// WaitingGroupd
 			wg.Done()
 			return
 		}
@@ -69,21 +70,19 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGro
 	}
 }
 
-func ProcessRepositories(repositories chan Repository, wg *sync.WaitGroup) {
+func ProcessRepositories(repositories chan Repository, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	log.Debug("Repositories are going to be processed...")
-	fileTimestamp := time.Now().Unix() // Add unique timestamp to repo retrieve.
-
 	// Init Prometheus for metrics.
 	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
 	for repository := range repositories {
 		wg.Add(1)
-		go checkAvailability(repository, wg, fileTimestamp, processedCounter)
+		go checkAvailability(repository, wg, processedCounter, elasticClient)
 	}
 
 }
 
-func checkAvailability(repository Repository, wg *sync.WaitGroup, fileTimestamp int64, processedCounter prometheus.Counter) {
+func checkAvailability(repository Repository, wg *sync.WaitGroup, processedCounter prometheus.Counter, elasticClient *elastic.Client) {
 	name := repository.Name
 	fileRawUrl := repository.FileRawURL
 	domain := repository.Domain
@@ -96,10 +95,10 @@ func checkAvailability(repository Repository, wg *sync.WaitGroup, fileTimestamp 
 	if resp.Status.Code == http.StatusOK && err == nil {
 
 		// Save to file.
-		persistency.SaveToFile(domain, name, resp.Body, fileTimestamp)
+		SaveToFile(domain, name, resp.Body)
 
 		// Save to ES.
-		persistency.SaveToES(domain, name, resp.Body, fileTimestamp)
+		SaveToES(domain, name, resp.Body, elasticClient)
 
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.

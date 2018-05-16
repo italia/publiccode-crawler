@@ -74,7 +74,7 @@ func (p plugin) Register() crawler.Handler {
 				repositories <- crawler.Repository{
 					Name:       v.PathWithNamespace,
 					FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
-					Domain:     domain.Id,
+					Domain:     domain,
 					Headers:    headers,
 				}
 			}

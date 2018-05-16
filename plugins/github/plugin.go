@@ -256,7 +256,7 @@ func ExecResult(v GithubRepoList, link string, domain crawler.Domain, headers ma
 		repositories <- crawler.Repository{
 			Name:       v.FullName,
 			FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/" + repoInfos.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
-			Domain:     domain.Id,
+			Domain:     domain,
 			Headers:    headers,
 		}
 

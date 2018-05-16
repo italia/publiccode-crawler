@@ -1,21 +1,20 @@
-package persistency
+package crawler
 
 import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
 
 // SaveToFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<crawler_timestamp>_<file_name>.
-func SaveToFile(source, name string, data []byte, fileTimestamp int64) {
-	fileName := strconv.FormatInt(fileTimestamp, 10) + "_" + os.Getenv("CRAWLED_FILENAME")
+func SaveToFile(domain Domain, name string, data []byte) {
+	fileName := domain.Index + "_" + os.Getenv("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
-	path := filepath.Join("./data", source, vendor, repo)
+	path := filepath.Join("./data", domain.Id, vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
