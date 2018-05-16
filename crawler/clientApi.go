@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"plugin"
 
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 // Crawler is the interface for crawler plugins.
