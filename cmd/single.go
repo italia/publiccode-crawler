@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/spf13/cobra"
@@ -37,15 +38,21 @@ Beware! May take days to complete.`,
 
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository, 1000)
+		// Prepare WaitGroup.
+		var wg sync.WaitGroup
 
 		// Process each domain service.
 		for _, domain := range domains {
 			if domain.Id == domainID {
-				go crawler.ProcessDomain(domain, repositories)
+				wg.Add(1)
+				go crawler.ProcessDomain(domain, repositories, &wg)
 			}
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
-		crawler.ProcessRepositories(repositories)
+		go crawler.ProcessRepositories(repositories, &wg)
+
+		// Wait until all the domains and repositories are processed.
+		crawler.WaitingLoop(repositories, &wg)
 	},
 }

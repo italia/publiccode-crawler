@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"os"
+	"sync"
 	"time"
 
 	"net/http"
@@ -25,10 +26,10 @@ type Repository struct {
 	Headers    map[string]string
 }
 
-type Handler func(domain Domain, url string, repositories chan Repository) (string, error)
+type Handler func(domain Domain, url string, repositories chan Repository, wg *sync.WaitGroup) (string, error)
 
 // Process delegates the work to single domain crawlers.
-func ProcessDomain(domain Domain, repositories chan Repository) {
+func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	// Redis connection.
 	redisClient, err := RedisClientFactory(os.Getenv("REDIS_URL"))
 	if err != nil {
@@ -44,7 +45,7 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 			log.Error(err)
 		}
 
-		nextURL, err := domain.processAndGetNextURL(url, repositories)
+		nextURL, err := domain.processAndGetNextURL(url, wg, repositories)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
 			log.Errorf("Retry: %s", nextURL)
@@ -57,9 +58,10 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 			log.Error(err)
 		}
 
-		// If end is reached, url and nextURL contains the same value.
+		// If end is reached, nextUrl is empty.
 		if nextURL == "" {
 			log.Infof("Url: %s - is the last one.", url)
+			wg.Done()
 			return
 		}
 		// Update url to nextURL.
@@ -67,7 +69,7 @@ func ProcessDomain(domain Domain, repositories chan Repository) {
 	}
 }
 
-func ProcessRepositories(repositories chan Repository) {
+func ProcessRepositories(repositories chan Repository, wg *sync.WaitGroup) {
 	log.Debug("Repositories are going to be processed...")
 	fileTimestamp := time.Now().Unix() // Add unique timestamp to repo retrieve.
 
@@ -75,11 +77,13 @@ func ProcessRepositories(repositories chan Repository) {
 	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
 	for repository := range repositories {
-		go checkAvailability(repository, fileTimestamp, processedCounter)
+		wg.Add(1)
+		go checkAvailability(repository, wg, fileTimestamp, processedCounter)
 	}
+
 }
 
-func checkAvailability(repository Repository, fileTimestamp int64, processedCounter prometheus.Counter) {
+func checkAvailability(repository Repository, wg *sync.WaitGroup, fileTimestamp int64, processedCounter prometheus.Counter) {
 	name := repository.Name
 	fileRawUrl := repository.FileRawURL
 	domain := repository.Domain
@@ -106,6 +110,9 @@ func checkAvailability(repository Repository, fileTimestamp int64, processedCoun
 		// 	log.Warn("Validator errors:" + err.Error())
 		// }
 	}
+
+	// Defer waiting group close.
+	wg.Done()
 }
 
 // validateRemoteFile validate the remote file
@@ -118,4 +125,10 @@ func validateRemoteFile(data []byte, url string) error {
 	var pc publiccode.PublicCode
 
 	return publiccode.Parse(data, &pc)
+}
+
+// WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
+func WaitingLoop(repositories chan Repository, wg *sync.WaitGroup) {
+	wg.Wait()
+	close(repositories)
 }

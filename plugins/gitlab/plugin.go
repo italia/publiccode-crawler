@@ -6,11 +6,12 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
+	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/prometheus/common/log"
-	"github.com/italia/developers-italia-backend/crawler"
 )
 
 // Gitlab is a Crawler for the Gitlab API.
@@ -41,7 +42,7 @@ func (p plugin) GetId() string {
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
 func (p plugin) Register() crawler.Handler {
-	return func(domain crawler.Domain, url string, repositories chan crawler.Repository) (string, error) {
+	return func(domain crawler.Domain, url string, repositories chan crawler.Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -83,12 +84,9 @@ func (p plugin) Register() crawler.Handler {
 			for len(repositories) != 0 {
 				time.Sleep(time.Second)
 			}
-			// if wants to end the program when repo list ends (last page) decomment
-			// close(repositories)
-			// return url, nil
 			log.Info("Gitlab repositories status: end reached.")
 
-			// Restart.
+			// If Restart: uncomment next line.
 			// return "domain.URL", nil
 			return "", nil
 
@@ -97,7 +95,7 @@ func (p plugin) Register() crawler.Handler {
 		// Return next url
 		parsedLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
 		if parsedLink == "" {
-			log.Info("Gitlab repositories status: end reached (no more ref=Next header). Restart from: " + domain.URL)
+			log.Info("Gitlab repositories status: end reached (no more ref=Next header).")
 			return domain.URL, nil
 		}
 

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
@@ -184,7 +185,7 @@ func (p plugin) GetId() string {
 
 // RegisterGithubAPI register the crawler function for Github API.
 func (p plugin) Register() crawler.Handler {
-	return func(domain crawler.Domain, url string, repositories chan crawler.Repository) (string, error) {
+	return func(domain crawler.Domain, url string, repositories chan crawler.Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -225,21 +226,22 @@ func (p plugin) Register() crawler.Handler {
 			for len(repositories) != 0 {
 				time.Sleep(time.Second)
 			}
-			// if wants to end the program when repo list ends (last page) decomment
-			// close(repositories)
-			// return url, nil
 			log.Info("Github repositories status: end reached.")
 
-			// Restart.
-			// return domain.URL, nil
+			// If Restart: uncomment next line.
+			// return "domain.URL", nil
 			return "", nil
 		}
 
 		// Return next url
 		parsedLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
 		if parsedLink == "" {
-			log.Info("Github repositories status: end reached (no more ref=Next header). Restart from: " + domain.URL)
-			return domain.URL, nil
+			log.Info("Github repositories status: end reached (no more ref=Next header).")
+			// If Restart: uncomment next line.
+			// return "domain.URL", nil
+
+			// Wait until all the repositories are processed.
+			return "", nil
 		}
 
 		return parsedLink, nil
