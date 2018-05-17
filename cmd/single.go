@@ -10,8 +10,10 @@ import (
 
 func init() {
 	rootCmd.AddCommand(singleCmd)
+	singleCmd.Flags().BoolVarP(&interruptedUrls, "ignore", "i", false, "Ignore interrupted urls.")
 }
 
+var interruptedUrls bool
 var singleCmd = &cobra.Command{
 	Use:   "single [domain id]",
 	Short: "Crawl publiccode.yml from [domain id].",
@@ -31,7 +33,7 @@ Beware! May take days to complete.`,
 		}
 
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, interruptedUrls)
 		if err != nil {
 			panic(err)
 		}

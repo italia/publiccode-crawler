@@ -10,6 +10,7 @@ import (
 
 func init() {
 	rootCmd.AddCommand(allCmd)
+	allCmd.Flags().BoolVarP(&interruptedUrls, "ignore", "i", false, "Ignore interrupted urls.")
 }
 
 var allCmd = &cobra.Command{
@@ -28,7 +29,7 @@ Beware! May take days to complete.`,
 		}
 
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, interruptedUrls)
 		if err != nil {
 			panic(err)
 		}
