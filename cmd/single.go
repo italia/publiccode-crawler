@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/spf13/cobra"
 )
 
@@ -45,6 +46,9 @@ Beware! May take days to complete.`,
 		for _, domain := range domains {
 			if domain.Id == domainID {
 				wg.Add(1)
+				// Register single domain metrics.
+				metrics.RegisterPrometheusCounter(domain.Id, "Counter for "+domain.Id)
+				// Start the process of repositories list.
 				go crawler.ProcessDomain(domain, repositories, &wg)
 			}
 		}

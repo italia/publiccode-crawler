@@ -14,7 +14,6 @@ import (
 
 	"github.com/italia/developers-italia-backend/publiccode"
 
-	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -74,21 +73,23 @@ func ProcessRepositories(repositories chan Repository, wg *sync.WaitGroup) {
 
 	// Init Prometheus for metrics.
 	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.")
+	metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.")
+	metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.")
 
 	for repository := range repositories {
 		wg.Add(1)
-		go checkAvailability(repository, wg, metrics.GetCounter("repository_processed"))
+		go checkAvailability(repository, wg)
 	}
 
 }
 
-func checkAvailability(repository Repository, wg *sync.WaitGroup, processedCounter prometheus.Counter) {
+func checkAvailability(repository Repository, wg *sync.WaitGroup) {
 	name := repository.Name
 	fileRawUrl := repository.FileRawURL
 	domain := repository.Domain
 	headers := repository.Headers
 
-	processedCounter.Inc()
+	metrics.GetCounter("repository_processed").Inc()
 	metrics.GetCounter(repository.Domain).Inc()
 
 	resp, err := httpclient.GetURL(fileRawUrl, headers)
@@ -125,6 +126,9 @@ func saveFile(source, name string, data []byte) {
 	if err != nil {
 		log.Error(err)
 	}
+
+	// Update counter for file saved.
+	metrics.GetCounter("repository_file_saved").Inc()
 }
 
 // splitFullName split a git FullName format to vendor and repo strings.
@@ -142,7 +146,15 @@ func validateRemoteFile(data []byte, url string) error {
 	publiccode.BaseDir = baseURL
 	var pc publiccode.PublicCode
 
-	return publiccode.Parse(data, &pc)
+	err := publiccode.Parse(data, &pc)
+
+	if err != nil {
+		return err
+	}
+
+	metrics.GetCounter("repository_file_saved_valid").Inc()
+	return err
+
 }
 
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.

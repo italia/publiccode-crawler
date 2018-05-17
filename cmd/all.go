@@ -44,7 +44,7 @@ Beware! May take days to complete.`,
 		for _, domain := range domains {
 			wg.Add(1)
 			// Register single domain metrics.
-			metrics.RegisterPrometheusCounter(domain.Id, "Counter of "+domain.Id)
+			metrics.RegisterPrometheusCounter(domain.Id, "Counter for "+domain.Id)
 			// Start the process of repositories list.
 			go crawler.ProcessDomain(domain, repositories, &wg)
 		}
