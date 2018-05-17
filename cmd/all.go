@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"os"
 	"sync"
 
@@ -48,7 +49,7 @@ Beware! May take days to complete.`,
 		if err != nil {
 			panic(err)
 		}
-
+		elasticClient.Alias().Add("publiccode", index).Do(context.Background())
 		log.Debugf("Index %s", index)
 
 		// Initiate a channel of repositories.
@@ -66,6 +67,6 @@ Beware! May take days to complete.`,
 		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
 
 		// Wait until all the domains and repositories are processed.
-		crawler.WaitingLoop(repositories, index, &wg)
+		crawler.WaitingLoop(repositories, index, &wg, elasticClient)
 	},
 }

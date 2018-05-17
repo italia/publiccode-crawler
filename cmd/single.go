@@ -68,6 +68,6 @@ Beware! May take days to complete.`,
 		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
 
 		// Wait until all the domains and repositories are processed.
-		crawler.WaitingLoop(repositories, index, &wg)
+		crawler.WaitingLoop(repositories, index, &wg, elasticClient)
 	},
 }
