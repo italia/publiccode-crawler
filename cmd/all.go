@@ -49,6 +49,20 @@ Beware! May take days to complete.`,
 		if err != nil {
 			panic(err)
 		}
+
+		// Use the IndexExists service to check if a specified index exists.
+		exists, err := elasticClient.IndexExists(index).Do(context.Background())
+		if err != nil {
+			log.Error(err)
+		}
+		if !exists {
+			// Create a new index.
+			// TODO: When mapping will be available: client.CreateIndex(index).BodyString(mapping).Do(ctx).
+			_, err = elasticClient.CreateIndex(index).Do(context.Background())
+			if err != nil {
+				log.Error(err)
+			}
+		}
 		elasticClient.Alias().Add("publiccode", index).Do(context.Background())
 		log.Debugf("Index %s", index)
 

@@ -157,7 +157,7 @@ func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup,
 	wg.Wait()
 	log.Debugf("Index END! %s", index)
 	// WIP: if reached, all the domains are ended, so I should do the switch on Alias
-	elasticClient.Alias().Add("publiccode", index).Do(context.Background())
+	elasticClient.Alias().Remove("publiccode", index).Do(context.Background())
 
 	close(repositories)
 }
