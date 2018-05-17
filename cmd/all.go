@@ -5,6 +5,8 @@ import (
 	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/metrics"
+
 	"github.com/spf13/cobra"
 )
 
@@ -41,11 +43,17 @@ Beware! May take days to complete.`,
 		// Process each domain service.
 		for _, domain := range domains {
 			wg.Add(1)
+			// Register single domain metrics.
+			metrics.RegisterPrometheusCounter(domain.Id, "Counter of "+domain.Id)
+			// Start the process of repositories list.
 			go crawler.ProcessDomain(domain, repositories, &wg)
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
 		go crawler.ProcessRepositories(repositories, &wg)
+
+		// Start metrics server.
+		go metrics.StartPrometheusMetricsServer()
 
 		// Wait until all the domains and repositories are processed.
 		crawler.WaitingLoop(repositories, &wg)

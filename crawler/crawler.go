@@ -73,11 +73,11 @@ func ProcessRepositories(repositories chan Repository, wg *sync.WaitGroup) {
 	log.Debug("Repositories are going to be processed...")
 
 	// Init Prometheus for metrics.
-	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
+	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.")
 
 	for repository := range repositories {
 		wg.Add(1)
-		go checkAvailability(repository, wg, processedCounter)
+		go checkAvailability(repository, wg, metrics.GetCounter("repository_processed"))
 	}
 
 }
@@ -89,6 +89,7 @@ func checkAvailability(repository Repository, wg *sync.WaitGroup, processedCount
 	headers := repository.Headers
 
 	processedCounter.Inc()
+	metrics.GetCounter(repository.Domain).Inc()
 
 	resp, err := httpclient.GetURL(fileRawUrl, headers)
 	// If it's available and no error returned.
