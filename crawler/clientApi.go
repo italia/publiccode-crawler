@@ -19,6 +19,7 @@ type Crawler interface {
 
 var (
 	clientApis map[string]Handler
+	Index      string
 )
 
 const (

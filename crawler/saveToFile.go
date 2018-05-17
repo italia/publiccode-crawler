@@ -10,8 +10,8 @@ import (
 )
 
 // SaveToFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<crawler_timestamp>_<file_name>.
-func SaveToFile(domain Domain, name string, data []byte) {
-	fileName := domain.Index + "_" + os.Getenv("CRAWLED_FILENAME")
+func SaveToFile(domain Domain, name string, data []byte, index string) {
+	fileName := index + "_" + os.Getenv("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
 	path := filepath.Join("./data", domain.Id, vendor, repo)

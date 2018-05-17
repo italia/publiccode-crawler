@@ -1,12 +1,16 @@
 package crawler
 
 import (
+	"context"
 	"os"
+	"strconv"
 	"sync"
+	"time"
 
 	"net/http"
 	"strings"
 
+	"github.com/go-redis/redis"
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/olivere/elastic"
@@ -27,6 +31,28 @@ type Repository struct {
 
 type Handler func(domain Domain, url string, repositories chan Repository, wg *sync.WaitGroup) (string, error)
 
+// UpdateIndex return an old index if found on redis. A new index if no one is found.
+func UpdateIndex(domains []Domain, redisClient *redis.Client) (string, error) {
+	for i, _ := range domains {
+		// Check if there is an URL that wasn't correctly retrieved.
+		keys, err := redisClient.HKeys(domains[i].Id).Result()
+		if err != nil {
+			return "", err
+		}
+		// If some repository is left the Idex sould remain the last one saved.
+		for _, key := range keys {
+			if redisClient.HGet(domains[i].Id, key).Val() != "" {
+				Index = redisClient.HGet(domains[i].Id, key).Val()
+				return Index, nil
+			}
+		}
+	}
+
+	// If reached there will be a new index.
+	Index = strconv.FormatInt(time.Now().Unix(), 10)
+	return Index, nil
+}
+
 // Process delegates the work to single domain crawlers.
 func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	// Redis connection.
@@ -39,7 +65,7 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGro
 	url := domain.URL
 	for {
 		// Set the value of nextURL on redis to domain.Index that describe the current execution.
-		err = redisClient.HSet(domain.Id, url, domain.Index).Err()
+		err = redisClient.HSet(domain.Id, url, Index).Err()
 		if err != nil {
 			log.Error(err)
 		}
@@ -70,19 +96,19 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGro
 	}
 }
 
-func ProcessRepositories(repositories chan Repository, wg *sync.WaitGroup, elasticClient *elastic.Client) {
+func ProcessRepositories(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	log.Debug("Repositories are going to be processed...")
 	// Init Prometheus for metrics.
 	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
 
 	for repository := range repositories {
 		wg.Add(1)
-		go checkAvailability(repository, wg, processedCounter, elasticClient)
+		go checkAvailability(repository, index, wg, processedCounter, elasticClient)
 	}
 
 }
 
-func checkAvailability(repository Repository, wg *sync.WaitGroup, processedCounter prometheus.Counter, elasticClient *elastic.Client) {
+func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, processedCounter prometheus.Counter, elasticClient *elastic.Client) {
 	name := repository.Name
 	fileRawUrl := repository.FileRawURL
 	domain := repository.Domain
@@ -95,10 +121,10 @@ func checkAvailability(repository Repository, wg *sync.WaitGroup, processedCount
 	if resp.Status.Code == http.StatusOK && err == nil {
 
 		// Save to file.
-		SaveToFile(domain, name, resp.Body)
+		SaveToFile(domain, name, resp.Body, index)
 
 		// Save to ES.
-		SaveToES(domain, name, resp.Body, elasticClient)
+		SaveToES(domain, name, resp.Body, index, elasticClient)
 
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
@@ -127,7 +153,11 @@ func validateRemoteFile(data []byte, url string) error {
 }
 
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
-func WaitingLoop(repositories chan Repository, wg *sync.WaitGroup) {
+func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	wg.Wait()
+	log.Debugf("Index END! %s", index)
+	// WIP: if reached, all the domains are ended, so I should do the switch on Alias
+	elasticClient.Alias().Add("publiccode", index).Do(context.Background())
+
 	close(repositories)
 }

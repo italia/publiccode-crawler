@@ -45,6 +45,12 @@ Beware! May take days to complete.`,
 			panic(err)
 		}
 
+		// Index for current running id.
+		index, err := crawler.UpdateIndex(domains, redisClient)
+		if err != nil {
+			panic(err)
+		}
+
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository, 1000)
 		// Prepare WaitGroup.
@@ -59,9 +65,9 @@ Beware! May take days to complete.`,
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
-		go crawler.ProcessRepositories(repositories, &wg, elasticClient)
+		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
 
 		// Wait until all the domains and repositories are processed.
-		crawler.WaitingLoop(repositories, &wg)
+		crawler.WaitingLoop(repositories, index, &wg)
 	},
 }
