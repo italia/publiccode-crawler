@@ -12,6 +12,7 @@ import (
 
 func init() {
 	rootCmd.AddCommand(allCmd)
+	allCmd.Flags().BoolVarP(&restartCrawling, "restart", "r", false, "Ignore interrupted jobs and restart from the beginning.")
 }
 
 var allCmd = &cobra.Command{
@@ -30,7 +31,7 @@ Beware! May take days to complete.`,
 		}
 
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, restartCrawling)
 		if err != nil {
 			panic(err)
 		}

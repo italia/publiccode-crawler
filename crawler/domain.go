@@ -26,7 +26,7 @@ type Domain struct {
 	BasicAuth []string `yaml:"basic-auth"`
 }
 
-func ReadAndParseDomains(domainsFile string, redisClient *redis.Client) ([]Domain, error) {
+func ReadAndParseDomains(domainsFile string, redisClient *redis.Client, ignoreInterrupted bool) ([]Domain, error) {
 	// Open and read domains file list.
 	data, err := ioutil.ReadFile(domainsFile)
 	if err != nil {
@@ -38,6 +38,13 @@ func ReadAndParseDomains(domainsFile string, redisClient *redis.Client) ([]Domai
 		return nil, errors.New(fmt.Sprintf("error in parsing %s file: %v", domainsFile, err))
 	}
 	log.Info("Loaded and parsed domains.yml")
+
+	if ignoreInterrupted {
+		// Delete redis entries.
+		for _, domain := range domains {
+			redisClient.Del(domain.Id)
+		}
+	}
 
 	// Update the start URL if a failed one found in Redis.
 	for i, _ := range domains {

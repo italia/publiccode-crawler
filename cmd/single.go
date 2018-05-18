@@ -11,8 +11,10 @@ import (
 
 func init() {
 	rootCmd.AddCommand(singleCmd)
+	singleCmd.Flags().BoolVarP(&restartCrawling, "restart", "r", false, "Ignore interrupted jobs and restart from the beginning.")
 }
 
+var restartCrawling bool
 var singleCmd = &cobra.Command{
 	Use:   "single [domain id]",
 	Short: "Crawl publiccode.yml from [domain id].",
@@ -32,7 +34,7 @@ Beware! May take days to complete.`,
 		}
 
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, restartCrawling)
 		if err != nil {
 			panic(err)
 		}
