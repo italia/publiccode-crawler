@@ -46,7 +46,7 @@ Beware! May take days to complete.`,
 		}
 
 		// Index for current running id.
-		index, err := crawler.UpdateIndex(domains, redisClient)
+		index, err := crawler.UpdateIndex(domains, redisClient, elasticClient)
 		if err != nil {
 			panic(err)
 		}

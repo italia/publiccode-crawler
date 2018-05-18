@@ -31,8 +31,24 @@ type Repository struct {
 
 type Handler func(domain Domain, url string, repositories chan Repository, wg *sync.WaitGroup) (string, error)
 
+func AddIndex(index string, elasticClient *elastic.Client) {
+	// Use the IndexExists service to check if a specified index exists.
+	exists, err := elasticClient.IndexExists(index).Do(context.Background())
+	if err != nil {
+		log.Error(err)
+	}
+	if !exists {
+		// Create a new index.
+		// TODO: When mapping will be available: client.CreateIndex(index).BodyString(mapping).Do(ctx).
+		_, err = elasticClient.CreateIndex(index).Do(context.Background())
+		if err != nil {
+			log.Error(err)
+		}
+	}
+}
+
 // UpdateIndex return an old index if found on redis. A new index if no one is found.
-func UpdateIndex(domains []Domain, redisClient *redis.Client) (string, error) {
+func UpdateIndex(domains []Domain, redisClient *redis.Client, elasticClient *elastic.Client) (string, error) {
 	for i, _ := range domains {
 		// Check if there is an URL that wasn't correctly retrieved.
 		keys, err := redisClient.HKeys(domains[i].Id).Result()
@@ -43,6 +59,7 @@ func UpdateIndex(domains []Domain, redisClient *redis.Client) (string, error) {
 		for _, key := range keys {
 			if redisClient.HGet(domains[i].Id, key).Val() != "" {
 				Index = redisClient.HGet(domains[i].Id, key).Val()
+				AddIndex(Index, elasticClient)
 				return Index, nil
 			}
 		}
@@ -50,6 +67,7 @@ func UpdateIndex(domains []Domain, redisClient *redis.Client) (string, error) {
 
 	// If reached there will be a new index.
 	Index = strconv.FormatInt(time.Now().Unix(), 10)
+	AddIndex(Index, elasticClient)
 	return Index, nil
 }
 
@@ -155,9 +173,22 @@ func validateRemoteFile(data []byte, url string) error {
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
 func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	wg.Wait()
-	log.Debugf("Index END! %s", index)
-	// WIP: if reached, all the domains are ended, so I should do the switch on Alias
-	elasticClient.Alias().Remove("publiccode", index).Do(context.Background())
+
+	// Remove old aliases.
+	res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	aliasService := elasticClient.Alias()
+	indices := res.IndicesByAlias("publiccode")
+	for _, name := range indices {
+		log.Debugf("Remove alias from %s to %s", "publiccode", name)
+		aliasService.Remove(name, "publiccode").Do(context.Background())
+	}
+
+	// Add an alias to the new index.
+	log.Debugf("Add alias from %s to %s", index, "publiccode")
+	aliasService.Add(index, "publiccode").Do(context.Background())
 
 	close(repositories)
 }
