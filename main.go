@@ -16,7 +16,7 @@ func main() {
 	viper.AddConfigPath(".")
 	err := viper.ReadInConfig()
 	if err != nil {
-		panic(fmt.Errorf("fatal error config file: %s \n", err))
+		panic(fmt.Errorf("fatal error reding config file: %s", err))
 	}
 
 	cmd.Execute()
