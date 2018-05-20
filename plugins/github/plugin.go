@@ -5,13 +5,13 @@ import (
 	"errors"
 	"math/rand"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Github represent a complete result for the Github API respose from all repositories list.
@@ -255,7 +255,7 @@ func ExecResult(v GithubRepoList, link string, domain crawler.Domain, headers ma
 	} else {
 		repositories <- crawler.Repository{
 			Name:       v.FullName,
-			FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/" + repoInfos.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+			FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/" + repoInfos.DefaultBranch + "/" + viper.GetString("CRAWLED_FILENAME"),
 			Domain:     domain.Id,
 			Headers:    headers,
 		}

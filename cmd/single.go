@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	"os"
 	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -28,7 +28,7 @@ Beware! May take days to complete.`,
 		crawler.RegisterCrawlers()
 
 		// Redis connection.
-		redisClient, err := crawler.RedisClientFactory(os.Getenv("REDIS_URL"))
+		redisClient, err := crawler.RedisClientFactory(viper.GetString("REDIS_URL"))
 		if err != nil {
 			panic(err)
 		}
