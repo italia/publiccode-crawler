@@ -15,6 +15,7 @@ import (
 	"github.com/italia/developers-italia-backend/publiccode"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Repository is a single code repository.
@@ -30,7 +31,7 @@ type Handler func(domain Domain, url string, repositories chan Repository, wg *s
 // Process delegates the work to single domain crawlers.
 func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	// Redis connection.
-	redisClient, err := RedisClientFactory(os.Getenv("REDIS_URL"))
+	redisClient, err := RedisClientFactory(viper.GetString("REDIS_URL"))
 	if err != nil {
 		log.Error(err)
 	}
@@ -112,7 +113,7 @@ func checkAvailability(repository Repository, wg *sync.WaitGroup) {
 
 // saveFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<file_name>
 func saveFile(source, name string, data []byte) {
-	fileName := os.Getenv("CRAWLED_FILENAME")
+	fileName := viper.GetString("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
 	path := filepath.Join("./data", source, vendor, repo)
@@ -139,7 +140,7 @@ func splitFullName(fullName string) (string, string) {
 
 // validateRemoteFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<file_name>
 func validateRemoteFile(data []byte, url string) error {
-	fileName := os.Getenv("CRAWLED_FILENAME")
+	fileName := viper.GetString("CRAWLED_FILENAME")
 	// Parse data into pc struct and validate.
 	baseURL := strings.TrimSuffix(url, fileName)
 	// Set remore URL for remote validation (it will check files availability).

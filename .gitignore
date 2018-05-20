@@ -29,6 +29,9 @@ docker-compose.yml
 # Env
 .env
 
+# Configurations
+config.toml
+
 # Downloaded files
 data
 

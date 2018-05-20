@@ -5,13 +5,13 @@ import (
 	"errors"
 	"math/rand"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Bitbucket is a Crawler for the Bitbucket API.
@@ -175,7 +175,7 @@ func (p plugin) Register() crawler.Handler {
 			if v.Mainbranch.Name != "" {
 				repositories <- crawler.Repository{
 					Name:       v.FullName,
-					FileRawURL: v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + os.Getenv("CRAWLED_FILENAME"),
+					FileRawURL: v.Links.HTML.Href + "/raw/" + v.Mainbranch.Name + "/" + viper.GetString("CRAWLED_FILENAME"),
 					Domain:     domain.Id,
 					Headers:    headers,
 				}

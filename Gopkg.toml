@@ -3,3 +3,7 @@ required = ["gopkg.in/alecthomas/gometalinter.v2", "gopkg.in/yaml.v2"]
 [[constraint]]
   name = "github.com/spf13/cobra"
   version = "0.0.2"
+
+[[constraint]]
+  name = "github.com/spf13/viper"
+  version = "1.0.2"
