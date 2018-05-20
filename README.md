@@ -46,7 +46,9 @@ networks:
 * default Kibana user and password are `kibana`
 * basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
-##### 4) add mapping in `/etc/hosts` for exposed services
+##### 4) rename config.toml.example to config.toml and fill the variables with your values
+
+##### 5) add mapping in `/etc/hosts` for exposed services
 
 For example, if `PROJECT_BASE_URL` in `.env` is `developers.loc`, add (if your Docker daemon is listening on localhost):
 
@@ -57,7 +59,7 @@ For example, if `PROJECT_BASE_URL` in `.env` is `developers.loc`, add (if your D
 Or use a local DNS (like [dnsmasq](https://en.wikipedia.org/wiki/Dnsmasq)) to resolve all DNS request to `.loc` domains
 to localhost.
 
-##### 5) start the Docker stack: `make up`
+##### 6) start the Docker stack: `make up`
 
 #### Crawler
 

@@ -1,0 +1,9 @@
+
+.es-term {
+  padding: 5px;
+  margin: 0px 5px;
+}
+
+.es-term:hover {
+  cursor: pointer;
+}

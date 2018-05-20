@@ -1,15 +1,21 @@
 package cmd
 
 import (
-	"os"
+	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/prometheus/common/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/italia/developers-italia-backend/metrics"
 )
 
 func init() {
 	rootCmd.AddCommand(singleCmd)
+	singleCmd.Flags().BoolVarP(&restartCrawling, "restart", "r", false, "Ignore interrupted jobs and restart from the beginning.")
 }
+
+var restartCrawling bool
 
 var singleCmd = &cobra.Command{
 	Use:   "single [domain id]",
@@ -20,33 +26,64 @@ Beware! May take days to complete.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		domainID := args[0]
 
-		// Register client API plugins.
-		crawler.RegisterClientApis()
-
 		// Redis connection.
-		redisClient, err := crawler.RedisClientFactory(os.Getenv("REDIS_URL"))
+		redisClient, err := crawler.RedisClientFactory(viper.GetString("REDIS_URL"))
+		if err != nil {
+			panic(err)
+		}
+
+		// Elastic connection.
+		elasticClient, err := crawler.ElasticClientFactory(
+			viper.GetString("ELASTIC_URL"),
+			viper.GetString("ELASTIC_USER"),
+			viper.GetString("ELASTIC_PWD"))
 		if err != nil {
 			panic(err)
 		}
 
 		// Read and parse list of domains.
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, restartCrawling)
 		if err != nil {
 			panic(err)
 		}
 
+		// Index for current running id.
+		index, err := crawler.UpdateIndex(domains, redisClient, elasticClient)
+		if err != nil {
+			panic(err)
+		}
+
+		log.Debugf("Index %s", index)
+
 		// Initiate a channel of repositories.
-		repositories := make(chan crawler.Repository, 100)
+		repositories := make(chan crawler.Repository, 1000)
+		// Prepare WaitGroup.
+		var wg sync.WaitGroup
+
+		// Register Prometheus metrics.
+		metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", index)
+		metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", index)
+		metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", index)
+		metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", index)
 
 		// Process each domain service.
 		for _, domain := range domains {
 			if domain.Id == domainID {
-				go crawler.ProcessDomain(domain, repositories)
+				wg.Add(1)
+
+				// Register Prometheus metrics.
+				metrics.RegisterPrometheusCounter("repository_"+domain.Id+"_processed", "Counter for "+domain.Id, index)
+
+				// Start the process of repositories list.
+				go crawler.ProcessDomain(domain, redisClient, repositories, index, &wg)
 			}
 		}
 
-		// Process the repositories URLs in order to retrieve publiccode.yml.
-		crawler.ProcessURLs(domains, repositories)
+		// Process the repositories in order to retrieve publiccode.yml.
+		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+
+		// Wait until all the domains and repositories are processed.
+		crawler.WaitingLoop(repositories, index, &wg, elasticClient)
 	},
 }

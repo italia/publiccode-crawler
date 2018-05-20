@@ -12,6 +12,7 @@ import (
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
+	"sync"
 )
 
 // Github represent a complete result for the Github API respose from all repositories list.
@@ -177,8 +178,8 @@ type GithubRepo struct {
 }
 
 // RegisterGithubAPI register the crawler function for Github API.
-func RegisterGithubAPI() func(domain Domain, link string, repositories chan Repository) (string, error) {
-	return func(domain Domain, link string, repositories chan Repository) (string, error) {
+func RegisterGithubAPI() Handler {
+	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -221,7 +222,7 @@ func RegisterGithubAPI() func(domain Domain, link string, repositories chan Repo
 				repositories <- Repository{
 					Name:       v.FullName,
 					FileRawURL: u.String(),
-					Domain:     domain.Id,
+					Domain:     domain,
 					Headers:    headers,
 				}
 			}
@@ -253,7 +254,7 @@ func RegisterGithubAPI() func(domain Domain, link string, repositories chan Repo
 }
 
 // RegisterSingleBitbucketAPI register the crawler function for single Bitbucket API.
-func RegisterSingleGithubAPI() func(domain Domain, link string, repositories chan Repository) error {
+func RegisterSingleGithubAPI() SingleHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
@@ -297,11 +298,11 @@ func RegisterSingleGithubAPI() func(domain Domain, link string, repositories cha
 			repositories <- Repository{
 				Name:       result.FullName,
 				FileRawURL: u.String(),
-				Domain:     domain.Id,
+				Domain:     domain,
 				Headers:    headers,
 			}
 		} else {
-			return errors.New("Repository is empty.")
+			return errors.New("repository is empty")
 		}
 
 		return nil

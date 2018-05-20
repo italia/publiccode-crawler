@@ -12,6 +12,7 @@ import (
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/prometheus/common/log"
+	"sync"
 )
 
 // Gitlab represent a complete result for the Gitlab API respose from all repositories list.
@@ -55,8 +56,8 @@ type GitlabRepo struct {
 }
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
-func RegisterGitlabAPI() func(domain Domain, link string, repositories chan Repository) (string, error) {
-	return func(domain Domain, link string, repositories chan Repository) (string, error) {
+func RegisterGitlabAPI() Handler {
+	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		log.Debugf("RegisterGitlabAPI: %s ")
 
 		// Set BasicAuth header
@@ -98,7 +99,7 @@ func RegisterGitlabAPI() func(domain Domain, link string, repositories chan Repo
 				repositories <- Repository{
 					Name:       v.PathWithNamespace,
 					FileRawURL: u.String(),
-					Domain:     domain.Id,
+					Domain:     domain,
 					Headers:    headers,
 				}
 			}
@@ -131,7 +132,7 @@ func RegisterGitlabAPI() func(domain Domain, link string, repositories chan Repo
 }
 
 // RegisterSingleGitlabAPI register the crawler function for single Bitbucket API.
-func RegisterSingleGitlabAPI() func(domain Domain, link string, repositories chan Repository) error {
+func RegisterSingleGitlabAPI() SingleHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
@@ -186,11 +187,11 @@ func RegisterSingleGitlabAPI() func(domain Domain, link string, repositories cha
 			repositories <- Repository{
 				Name:       result.PathWithNamespace,
 				FileRawURL: u.String(),
-				Domain:     domain.Id,
+				Domain:     domain,
 				Headers:    headers,
 			}
 		} else {
-			return errors.New("Repository is: empty")
+			return errors.New("repository is: empty")
 		}
 
 		return nil

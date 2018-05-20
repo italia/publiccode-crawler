@@ -1,6 +1,8 @@
 package crawler
 
 import (
+	"sync"
+
 	"gopkg.in/yaml.v2"
 
 	"errors"
@@ -13,15 +15,20 @@ import (
 
 // Domain is a single code hosting service.
 type Domain struct {
-	Id          string   `yaml:"id"`
-	Description string   `yaml:"description"`
-	ClientApi   string   `yaml:"client-api"`
-	URL         string   `yaml:"url"`
+	// Domains.yml data
+	Id          string `yaml:"id"`
+	Description string `yaml:"description"`
+	ClientApi   string `yaml:"client-api"`
+	URL         string `yaml:"url"`
 	RawBaseUrl  string   `yaml:"rawBaseUrl"`
-	BasicAuth   []string `yaml:"basic-auth"`
+	RateLimit   struct {
+		ReqH int `yaml:"req/h"`
+		ReqM int `yaml:"req/m"`
+	} `yaml:"rate-limit"`
+	BasicAuth []string `yaml:"basic-auth"`
 }
 
-func ReadAndParseDomains(domainsFile string, redisClient *redis.Client) ([]Domain, error) {
+func ReadAndParseDomains(domainsFile string, redisClient *redis.Client, ignoreInterrupted bool) ([]Domain, error) {
 	// Open and read domains file list.
 	data, err := ioutil.ReadFile(domainsFile)
 	if err != nil {
@@ -34,9 +41,16 @@ func ReadAndParseDomains(domainsFile string, redisClient *redis.Client) ([]Domai
 	}
 	log.Info("Loaded and parsed domains.yml")
 
+	if ignoreInterrupted {
+		// Delete redis entries.
+		for _, domain := range domains {
+			redisClient.Del(domain.Id)
+		}
+	}
+
 	// Update the start URL if a failed one found in Redis.
 	for i, _ := range domains {
-		domains[i].updateStartURL(redisClient)
+		domains[i].updateDomainState(redisClient)
 	}
 
 	return domains, nil
@@ -56,7 +70,7 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 }
 
 // updateStartURL checks if a repository list previously failed to be retrieved.
-func (domain *Domain) updateStartURL(redisClient *redis.Client) error {
+func (domain *Domain) updateDomainState(redisClient *redis.Client) error {
 	// Check if there is an URL that wasn't correctly retrieved.
 	// URL.value="failed" => set domain.URL to that one
 	keys, err := redisClient.HKeys(domain.Id).Result()
@@ -66,8 +80,8 @@ func (domain *Domain) updateStartURL(redisClient *redis.Client) error {
 
 	// N launch. Check if some repo list was interrupted.
 	for _, key := range keys {
-		if redisClient.HGet(domain.Id, key).Val() == "failed" {
-			log.Debugf("Found one interrupted URL. Starts from here: %s", key)
+		if redisClient.HGet(domain.Id, key).Val() != "" {
+			log.Debugf("Found one interrupted URL. Starts from here: %s with Index: %s", key, redisClient.HGet(domain.Id, key).Val())
 			domain.URL = key
 		}
 	}
@@ -75,13 +89,13 @@ func (domain *Domain) updateStartURL(redisClient *redis.Client) error {
 	return nil
 }
 
-func (domain Domain) processAndGetNextURL(url string, repositories chan Repository) (string, error) {
+func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
 	crawler, err := GetClientApiCrawler(domain.ClientApi)
 	if err != nil {
 		return "", err
 	}
 
-	return crawler(domain, url, repositories)
+	return crawler(domain, url, repositories, wg)
 }
 
 func (domain Domain) processSingleRepo(url string, repositories chan Repository) error {
