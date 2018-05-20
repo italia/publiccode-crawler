@@ -6,6 +6,8 @@ import (
 	"github.com/italia/developers-italia-backend/crawler"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"sync"
 )
 
 func init() {
@@ -31,22 +33,37 @@ var oneCmd = &cobra.Command{
 			panic(err)
 		}
 
-		// Read and parse list of domains.
-		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient)
+		// Elastic connection.
+		elasticClient, err := crawler.ElasticClientFactory(
+			viper.GetString("ELASTIC_URL"),
+			viper.GetString("ELASTIC_USER"),
+			viper.GetString("ELASTIC_PWD"))
 		if err != nil {
 			panic(err)
 		}
 
+		// Read and parse list of domains.
+		domainsFile := "domains.yml"
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, false)
+		if err != nil {
+			panic(err)
+		}
+
+		// Retrieve the current index
+		// TODO: implement this
+		index := ""
+
+		log.Debugf("Index %s", index)
+
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository, 1)
+		// Prepare WaitGroup.
+		var wg sync.WaitGroup
 
 		// Process each domain service.
 		for _, domain := range domains {
-
 			// get the correct domain ID
 			if domain.Id == domainID {
-
 				err = crawler.ProcessSingleRepository(repo, domain, repositories)
 				if err != nil {
 					log.Error(err)
@@ -57,6 +74,6 @@ var oneCmd = &cobra.Command{
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
-		crawler.ProcessURLs(domains, repositories)
+		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
 	},
 }
