@@ -2,7 +2,6 @@ package crawler
 
 import (
 	"context"
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -17,8 +16,8 @@ import (
 
 	"github.com/italia/developers-italia-backend/publiccode"
 
-	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Repository is a single code repository.
@@ -74,7 +73,7 @@ func UpdateIndex(domains []Domain, redisClient *redis.Client, elasticClient *ela
 // Process delegates the work to single domain crawlers.
 func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	// Redis connection.
-	redisClient, err := RedisClientFactory(os.Getenv("REDIS_URL"))
+	redisClient, err := RedisClientFactory(viper.GetString("REDIS_URL"))
 	if err != nil {
 		log.Error(err)
 	}
@@ -117,22 +116,25 @@ func ProcessDomain(domain Domain, repositories chan Repository, wg *sync.WaitGro
 func ProcessRepositories(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	log.Debug("Repositories are going to be processed...")
 	// Init Prometheus for metrics.
-	processedCounter := metrics.PrometheusCounter("repository_processed", "Number of repository processed.")
+	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.")
+	metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.")
+	metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.")
 
 	for repository := range repositories {
 		wg.Add(1)
-		go checkAvailability(repository, index, wg, processedCounter, elasticClient)
+		go checkAvailability(repository, index, wg, elasticClient)
 	}
 
 }
 
-func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, processedCounter prometheus.Counter, elasticClient *elastic.Client) {
+func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	name := repository.Name
 	fileRawUrl := repository.FileRawURL
 	domain := repository.Domain
 	headers := repository.Headers
 
-	processedCounter.Inc()
+	metrics.GetCounter("repository_processed").Inc()
+	metrics.GetCounter(repository.Domain.Id).Inc()
 
 	resp, err := httpclient.GetURL(fileRawUrl, headers)
 	// If it's available and no error returned.
@@ -160,14 +162,22 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 
 // validateRemoteFile validate the remote file
 func validateRemoteFile(data []byte, url string) error {
-	fileName := os.Getenv("CRAWLED_FILENAME")
+	fileName := viper.GetString("CRAWLED_FILENAME")
 	// Parse data into pc struct and validate.
 	baseURL := strings.TrimSuffix(url, fileName)
 	// Set remore URL for remote validation (it will check files availability).
 	publiccode.BaseDir = baseURL
 	var pc publiccode.PublicCode
 
-	return publiccode.Parse(data, &pc)
+	err := publiccode.Parse(data, &pc)
+
+	if err != nil {
+		return err
+	}
+
+	metrics.GetCounter("repository_file_saved_valid").Inc()
+	return err
+
 }
 
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.

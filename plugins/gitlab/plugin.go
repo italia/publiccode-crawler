@@ -5,13 +5,13 @@ import (
 	"errors"
 	"math/rand"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/prometheus/common/log"
+	"github.com/spf13/viper"
 )
 
 // Gitlab is a Crawler for the Gitlab API.
@@ -73,7 +73,7 @@ func (p plugin) Register() crawler.Handler {
 			if v.DefaultBranch != "" {
 				repositories <- crawler.Repository{
 					Name:       v.PathWithNamespace,
-					FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + os.Getenv("CRAWLED_FILENAME"),
+					FileRawURL: "https://gitlab.com/" + v.PathWithNamespace + "/raw/" + v.DefaultBranch + "/" + viper.GetString("CRAWLED_FILENAME"),
 					Domain:     domain,
 					Headers:    headers,
 				}

@@ -1,16 +1,21 @@
 package cmd
 
 import (
-	"os"
 	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/metrics"
+	"github.com/prometheus/common/log"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
 	rootCmd.AddCommand(singleCmd)
+	singleCmd.Flags().BoolVarP(&restartCrawling, "restart", "r", false, "Ignore interrupted jobs and restart from the beginning.")
 }
+
+var restartCrawling bool
 
 var singleCmd = &cobra.Command{
 	Use:   "single [domain id]",
@@ -25,22 +30,22 @@ Beware! May take days to complete.`,
 		crawler.RegisterCrawlers()
 
 		// Redis connection.
-		redisClient, err := crawler.RedisClientFactory(os.Getenv("REDIS_URL"))
+		redisClient, err := crawler.RedisClientFactory(viper.GetString("REDIS_URL"))
 		if err != nil {
 			panic(err)
 		}
 
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
-			os.Getenv("ELASTIC_URL"),
-			os.Getenv("ELASTIC_USER"),
-			os.Getenv("ELASTIC_PWD"))
+			viper.GetString("ELASTIC_URL"),
+			viper.GetString("ELASTIC_USER"),
+			viper.GetString("ELASTIC_PWD"))
 		if err != nil {
 			panic(err)
 		}
 
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, elasticClient)
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, restartCrawling)
 		if err != nil {
 			panic(err)
 		}
@@ -51,6 +56,8 @@ Beware! May take days to complete.`,
 			panic(err)
 		}
 
+		log.Debugf("Index %s", index)
+
 		// Initiate a channel of repositories.
 		repositories := make(chan crawler.Repository, 1000)
 		// Prepare WaitGroup.
@@ -60,6 +67,9 @@ Beware! May take days to complete.`,
 		for _, domain := range domains {
 			if domain.Id == domainID {
 				wg.Add(1)
+				// Register single domain metrics.
+				metrics.RegisterPrometheusCounter(domain.Id, "Counter for "+domain.Id)
+				// Start the process of repositories list.
 				go crawler.ProcessDomain(domain, repositories, &wg)
 			}
 		}

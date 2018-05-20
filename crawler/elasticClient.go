@@ -42,7 +42,7 @@ func (r *ElasticRetrier) Retry(ctx context.Context, retry int, req *http.Request
 
 	// Stop after 8 retries: 2m
 	if retry >= 8 {
-		return 0, false, errors.New("Elasticsearch or network down")
+		return 0, false, errors.New("elasticsearch or network down")
 	}
 
 	// Let the backoff strategy decide how long to wait and whether to stop
