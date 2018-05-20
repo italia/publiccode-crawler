@@ -1,2 +1,0 @@
-REDIS_URL = "localhost:6379"
-CRAWLED_FILENAME = ".gitignore"
