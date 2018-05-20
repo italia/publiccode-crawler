@@ -15,7 +15,8 @@ func ElasticClientFactory(URL, user, password string) (*elastic.Client, error) {
 		elastic.SetURL(URL),
 		elastic.SetRetrier(NewESRetrier()),
 		elastic.SetSniff(false),
-		elastic.SetBasicAuth(user, password))
+		elastic.SetBasicAuth(user, password),
+		elastic.SetHealthcheckTimeoutStartup(60*time.Second))
 	if err != nil {
 		return nil, err
 	}

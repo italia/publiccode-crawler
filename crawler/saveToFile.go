@@ -7,11 +7,13 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/italia/developers-italia-backend/metrics"
+	"github.com/spf13/viper"
 )
 
 // SaveToFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<crawler_timestamp>_<file_name>.
 func SaveToFile(domain Domain, name string, data []byte, index string) {
-	fileName := index + "_" + os.Getenv("CRAWLED_FILENAME")
+	fileName := index + "_" + viper.GetString("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
 	path := filepath.Join("./data", domain.Id, vendor, repo)
@@ -25,6 +27,8 @@ func SaveToFile(domain Domain, name string, data []byte, index string) {
 	if err != nil {
 		log.Error(err)
 	}
+
+	metrics.GetCounter("repository_file_saved", index).Inc()
 }
 
 // splitFullName split a git FullName format to vendor and repo strings.

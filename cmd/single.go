@@ -4,10 +4,10 @@ import (
 	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler"
-	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/prometheus/common/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/italia/developers-italia-backend/metrics"
 )
 
 func init() {
@@ -25,9 +25,6 @@ Beware! May take days to complete.`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		domainID := args[0]
-
-		// Register client API plugins.
-		crawler.RegisterCrawlers()
 
 		// Redis connection.
 		redisClient, err := crawler.RedisClientFactory(viper.GetString("REDIS_URL"))
@@ -63,14 +60,22 @@ Beware! May take days to complete.`,
 		// Prepare WaitGroup.
 		var wg sync.WaitGroup
 
+		// Register Prometheus metrics.
+		metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", index)
+		metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", index)
+		metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", index)
+		metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", index)
+
 		// Process each domain service.
 		for _, domain := range domains {
 			if domain.Id == domainID {
 				wg.Add(1)
-				// Register single domain metrics.
-				metrics.RegisterPrometheusCounter(domain.Id, "Counter for "+domain.Id)
+
+				// Register Prometheus metrics.
+				metrics.RegisterPrometheusCounter("repository_"+domain.Id+"_processed", "Counter for "+domain.Id, index)
+
 				// Start the process of repositories list.
-				go crawler.ProcessDomain(domain, repositories, &wg)
+				go crawler.ProcessDomain(domain, redisClient, repositories, index, &wg)
 			}
 		}
 

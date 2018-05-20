@@ -2,14 +2,14 @@ package crawler
 
 import (
 	"context"
-	"os"
 
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
+	"github.com/italia/developers-italia-backend/metrics"
 )
 
 // File is a generic structure for saveToES() function.
-// TODO: Will be replaced with a parsed publiccode.PublicCode whith proper mapping.
+// TODO: Will be replaced with a parsed publiccode.PublicCode whit proper mapping.
 type File struct {
 	Source string `json:"source"`
 	Name   string `json:"name"`
@@ -27,32 +27,11 @@ func SaveToES(domain Domain, name string, data []byte, index string, elasticClie
 	// Starting with elastic.v5, you must pass a context to execute each service.
 	ctx := context.Background()
 
-	client, err := ElasticClientFactory(
-		os.Getenv("ELASTIC_URL"),
-		os.Getenv("ELASTIC_USER"),
-		os.Getenv("ELASTIC_PWD"))
-	if err != nil {
-		log.Error(err)
-	}
-	// Use the IndexExists service to check if a specified index exists.
-	exists, err := client.IndexExists(index).Do(ctx)
-	if err != nil {
-		log.Error(err)
-	}
-
-	if !exists {
-		// Create a new index.
-		// TODO: When mapping will be available: client.CreateIndex(index).BodyString(mapping).Do(ctx).
-		_, err = client.CreateIndex(index).Do(ctx)
-		if err != nil {
-			log.Error(err)
-		}
-	}
 	// Add a document to the index.
 	file := File{Source: domain.Id, Name: name, Data: string(data)}
 
 	// Put publiccode data in ES.
-	put, err := client.Index().
+	put, err := elasticClient.Index().
 		Index(index).
 		Type("doc").
 		Id(domain.Id + "/" + name + "_" + index).
@@ -61,6 +40,8 @@ func SaveToES(domain Domain, name string, data []byte, index string, elasticClie
 	if err != nil {
 		log.Error(err)
 	}
-	log.Debugf("Indexed file %s to index %s, type %s", put.Id, put.Index, put.Type)
 
+	metrics.GetCounter("repository_file_indexed", index).Inc()
+
+	log.Debugf("Indexed file %s to index %s, type %s", put.Id, put.Index, put.Type)
 }
