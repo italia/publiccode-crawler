@@ -5,10 +5,10 @@ include .env
 default: build
 
 run-all:
-	go run main.go all
+	go run -race main.go all
 
 run-version:
-	go run main.go version
+	go run -race main.go version
 
 build:
 	docker build -t italia/${NAME}:${VERSION} \

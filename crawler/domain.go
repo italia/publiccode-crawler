@@ -15,6 +15,7 @@ import (
 
 // Domain is a single code hosting service.
 type Domain struct {
+	// Domains.yml data
 	Id          string `yaml:"id"`
 	Description string `yaml:"description"`
 	ClientApi   string `yaml:"client-api"`
@@ -48,7 +49,7 @@ func ReadAndParseDomains(domainsFile string, redisClient *redis.Client, ignoreIn
 
 	// Update the start URL if a failed one found in Redis.
 	for i, _ := range domains {
-		domains[i].updateStartURL(redisClient)
+		domains[i].updateDomainState(redisClient)
 	}
 
 	return domains, nil
@@ -68,7 +69,7 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 }
 
 // updateStartURL checks if a repository list previously failed to be retrieved.
-func (domain *Domain) updateStartURL(redisClient *redis.Client) error {
+func (domain *Domain) updateDomainState(redisClient *redis.Client) error {
 	// Check if there is an URL that wasn't correctly retrieved.
 	// URL.value="failed" => set domain.URL to that one
 	keys, err := redisClient.HKeys(domain.Id).Result()
@@ -78,8 +79,8 @@ func (domain *Domain) updateStartURL(redisClient *redis.Client) error {
 
 	// N launch. Check if some repo list was interrupted.
 	for _, key := range keys {
-		if redisClient.HGet(domain.Id, key).Val() == "failed" {
-			log.Debugf("Found one interrupted URL. Starts from here: %s", key)
+		if redisClient.HGet(domain.Id, key).Val() != "" {
+			log.Debugf("Found one interrupted URL. Starts from here: %s with Index: %s", key, redisClient.HGet(domain.Id, key).Val())
 			domain.URL = key
 		}
 	}
