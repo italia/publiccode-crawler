@@ -6,13 +6,14 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"time"
 
+	"sync"
+
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/prometheus/common/log"
-	"sync"
+	"github.com/spf13/viper"
 )
 
 // Gitlab represent a complete result for the Gitlab API respose from all repositories list.
@@ -93,7 +94,7 @@ func RegisterGitlabAPI() Handler {
 			if err != nil {
 				return link, err
 			}
-			u.Path = path.Join(u.Path, v.PathWithNamespace, "raw", v.DefaultBranch, os.Getenv("CRAWLED_FILENAME"))
+			u.Path = path.Join(u.Path, v.PathWithNamespace, "raw", v.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 			if v.DefaultBranch != "" {
 				repositories <- Repository{
@@ -180,7 +181,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		if err != nil {
 			return err
 		}
-		u.Path = path.Join(u.Path, result.PathWithNamespace, "raw", result.DefaultBranch, os.Getenv("CRAWLED_FILENAME"))
+		u.Path = path.Join(u.Path, result.PathWithNamespace, "raw", result.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 		// If the repository was never used, the Mainbranch is empty ("")
 		if result.DefaultBranch != "" {

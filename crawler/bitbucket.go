@@ -6,13 +6,14 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"time"
 
+	"sync"
+
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
-	"sync"
+	"github.com/spf13/viper"
 )
 
 // Bitbucket represent a complete result for the Bitbucket API respose from all repositories list.
@@ -255,7 +256,7 @@ func RegisterBitbucketAPI() Handler {
 			if err != nil {
 				return link, err
 			}
-			u.Path = path.Join(u.Path, "raw", v.Mainbranch.Name, os.Getenv("CRAWLED_FILENAME"))
+			u.Path = path.Join(u.Path, "raw", v.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
 			// If the repository was never used, the Mainbranch is empty ("")
 			if v.Mainbranch.Name != "" {
@@ -335,7 +336,7 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		if err != nil {
 			return err
 		}
-		u.Path = path.Join(u.Path, result.FullName, "raw", result.Mainbranch.Name, os.Getenv("CRAWLED_FILENAME"))
+		u.Path = path.Join(u.Path, result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
 		// If the repository was never used, the Mainbranch is empty ("")
 		if result.Mainbranch.Name != "" {

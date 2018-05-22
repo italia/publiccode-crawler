@@ -6,13 +6,14 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"os"
 	"path"
 	"time"
 
+	"sync"
+
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
-	"sync"
+	"github.com/spf13/viper"
 )
 
 // Github represent a complete result for the Github API respose from all repositories list.
@@ -217,7 +218,7 @@ func RegisterGithubAPI() Handler {
 				if err != nil {
 					return link, err
 				}
-				u.Path = path.Join(u.Path, v.FullName, repoInfos.DefaultBranch, os.Getenv("CRAWLED_FILENAME"))
+				u.Path = path.Join(u.Path, v.FullName, repoInfos.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 				repositories <- Repository{
 					Name:       v.FullName,
@@ -291,7 +292,7 @@ func RegisterSingleGithubAPI() SingleHandler {
 		if err != nil {
 			return err
 		}
-		u.Path = path.Join(u.Path, result.FullName, result.DefaultBranch, os.Getenv("CRAWLED_FILENAME"))
+		u.Path = path.Join(u.Path, result.FullName, result.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 		// If the repository was never used, the Mainbranch is empty ("")
 		if result.DefaultBranch != "" {

@@ -20,7 +20,7 @@ type Domain struct {
 	Description string `yaml:"description"`
 	ClientApi   string `yaml:"client-api"`
 	URL         string `yaml:"url"`
-	RawBaseUrl  string   `yaml:"rawBaseUrl"`
+	RawBaseUrl  string `yaml:"rawBaseUrl"`
 	RateLimit   struct {
 		ReqH int `yaml:"req/h"`
 		ReqM int `yaml:"req/m"`

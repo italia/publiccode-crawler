@@ -4,8 +4,8 @@
   url: 'https://api.github.com/repositories?since=129403500'
   rawBaseUrl: 'https://raw.githubusercontent.com/'
   basic-auth:
-    - ""
-    - ""
+    - "Z2l0aDAwMUBjZC5taW50ZW1haWwuY29tOmdpdGgwMDFAY2QubWludGVtYWlsLmNvbQ=="
+    - "Z2l0aDAwMkBjZC5taW50ZW1haWwuY29tOmdpdGgwMDJAY2QubWludGVtYWlsLmNvbQ=="
 
 - id: 'bitbucket.com'
   description: 'bitbucket.com'
@@ -13,7 +13,7 @@
   url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2018-04-22'
   rawBaseUrl: 'https://bitbucket.org'
   basic-auth:
-    - ""
+    - "Yml0YjAwMUBjZC5taW50ZW1haWwuY29tOmJpdGIwMDFAY2QubWludGVtYWlsLmNvbQ=="
 
 - id: 'gitlab.com'
   description: 'gitlab.com'

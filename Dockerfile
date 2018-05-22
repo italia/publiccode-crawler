@@ -12,6 +12,8 @@ ADD . /go/src/$PROJECT
 
 # Dep ensure. Uncomment if you don't have a ./vendor folder for go deps.
 # RUN cd /go/src/$PROJECT && go get -u github.com/golang/dep/cmd/dep && dep ensure
+
+# Compile project
 RUN cd /go/src/$PROJECT && go build -ldflags "-X github.com/italia/developers-italia-backend/version.VERSION=${VERSION}" -o $NAME
 
 # final stage
@@ -24,14 +26,11 @@ RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 WORKDIR /app
 COPY --from=build-env /go/src/$PROJECT/$NAME /app/
 COPY --from=build-env /go/src/$PROJECT/domains.yml /app/
+COPY --from=build-env /go/src/$PROJECT/config.toml /app/
 EXPOSE 8081
 
 # ARG values are not allowed in ENTRYPOINT, pass NAME as ENV variable.
 ENV NAME=$NAME
-ENTRYPOINT ./$NAME all
-# ENTRYPOINT ./$NAME single github.com
-# ENTRYPOINT ./$NAME single gitlab.com
-# ENTRYPOINT ./$NAME single bitbucket.com 
-# ENTRYPOINT ./$NAME one github.com https://github.com/r3vit/publiccode.yml-validator
-# ENTRYPOINT ./$NAME one gitlab.com https://gitlab.com/r3vit/publiccode-example
-# ENTRYPOINT ./$NAME one bitbucket.com https://bitbucket.org/marco-capobussi/publiccode-example
+RUN chmod +x ./$NAME
+
+ENTRYPOINT ./$NAME one github.com https://github.com/r3vit/publiccode.yml-validator

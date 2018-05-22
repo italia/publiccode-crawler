@@ -4,28 +4,27 @@ import (
 	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/prometheus/common/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/italia/developers-italia-backend/metrics"
 )
 
+var restartCrawling bool
+var domainToCrawl string
+
 func init() {
-	rootCmd.AddCommand(singleCmd)
-	singleCmd.Flags().BoolVarP(&restartCrawling, "restart", "r", false, "Ignore interrupted jobs and restart from the beginning.")
+	rootCmd.AddCommand(crawlCmd)
+	crawlCmd.Flags().BoolVarP(&restartCrawling, "restart", "r", false, "Ignore interrupted jobs and restart from the beginning.")
+	crawlCmd.Flags().StringVarP(&domainToCrawl, "domain", "d", "", "Import repositories only from this domain.")
 }
 
-var restartCrawling bool
-
-var singleCmd = &cobra.Command{
-	Use:   "single [domain id]",
-	Short: "Crawl publiccode.yml from [domain id].",
-	Long: `Start the crawler on [domain id] host defined on domains.yml file.
+var crawlCmd = &cobra.Command{
+	Use:   "crawl",
+	Short: "Crawl publiccode.yml from domains.",
+	Long: `Start the crawler on every host written on domains.yml file.
 Beware! May take days to complete.`,
-	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		domainID := args[0]
-
 		// Redis connection.
 		redisClient, err := crawler.RedisClientFactory(viper.GetString("REDIS_URL"))
 		if err != nil {
@@ -69,7 +68,8 @@ Beware! May take days to complete.`,
 
 		// Process each domain service.
 		for _, domain := range domains {
-			if domain.Id == domainID {
+			// If domainToCrawl is empty crawl all domains, otherwise crawl only the one with Id equals to domainToCrawl.
+			if (domainToCrawl == "") || (domainToCrawl != "" && domain.Id == domainToCrawl) {
 				wg.Add(1)
 
 				// Register Prometheus metrics.
@@ -82,6 +82,9 @@ Beware! May take days to complete.`,
 
 		// Process the repositories in order to retrieve publiccode.yml.
 		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+
+		// Start the metrics server.
+		go metrics.StartPrometheusMetricsServer()
 
 		// Wait until all the domains and repositories are processed.
 		crawler.WaitingLoop(repositories, index, &wg, elasticClient)

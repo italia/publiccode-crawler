@@ -1,13 +1,13 @@
 package cmd
 
 import (
-	"os"
+	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"sync"
 )
 
 func init() {
@@ -28,7 +28,7 @@ var oneCmd = &cobra.Command{
 		crawler.RegisterClientApis()
 
 		// Redis connection.
-		redisClient, err := crawler.RedisClientFactory(os.Getenv("REDIS_URL"))
+		redisClient, err := crawler.RedisClientFactory(viper.GetString("REDIS_URL"))
 		if err != nil {
 			panic(err)
 		}
@@ -49,9 +49,11 @@ var oneCmd = &cobra.Command{
 			panic(err)
 		}
 
-		// Retrieve the current index
-		// TODO: implement this
-		index := ""
+		// Index for current running id.
+		index, err := crawler.UpdateIndex(domains, redisClient, elasticClient)
+		if err != nil {
+			panic(err)
+		}
 
 		log.Debugf("Index %s", index)
 
@@ -59,6 +61,12 @@ var oneCmd = &cobra.Command{
 		repositories := make(chan crawler.Repository, 1)
 		// Prepare WaitGroup.
 		var wg sync.WaitGroup
+
+		// Register Prometheus metrics.
+		metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", index)
+		metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", index)
+		metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", index)
+		metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", index)
 
 		// Process each domain service.
 		for _, domain := range domains {
@@ -74,6 +82,12 @@ var oneCmd = &cobra.Command{
 		}
 
 		// Process the repositories in order to retrieve publiccode.yml.
-		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+
+		// Start the metrics server.
+		go metrics.StartPrometheusMetricsServer()
+
+		// Wait until all the domains and repositories are processed.
+		crawler.WaitingLoop(repositories, index, &wg, elasticClient)
 	},
 }
