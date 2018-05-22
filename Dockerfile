@@ -6,9 +6,7 @@ ARG VERSION
 
 RUN apk update && \
     apk upgrade && \
-    apk add --no-cache git && \
-    apk add --no-cache gcc && \
-    apk add --no-cache musl-dev
+    apk add git
 
 ADD . /go/src/$PROJECT
 
@@ -35,4 +33,4 @@ EXPOSE 8081
 ENV NAME=$NAME
 RUN chmod +x ./$NAME
 
-ENTRYPOINT ./$NAME crawl
+ENTRYPOINT ./$NAME one github.com https://github.com/r3vit/publiccode.yml-validator

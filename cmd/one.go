@@ -5,26 +5,28 @@ import (
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/metrics"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var restartCrawling bool
-var domainToCrawl string
-
 func init() {
-	rootCmd.AddCommand(crawlCmd)
-	crawlCmd.Flags().BoolVarP(&restartCrawling, "restart", "r", false, "Ignore interrupted jobs and restart from the beginning.")
-	crawlCmd.Flags().StringVarP(&domainToCrawl, "domain", "d", "", "Import repositories only from this domain.")
+	rootCmd.AddCommand(oneCmd)
 }
 
-var crawlCmd = &cobra.Command{
-	Use:   "crawl",
-	Short: "Crawl publiccode.yml from domains.",
-	Long: `Start the crawler on every host written on domains.yml file.
-Beware! May take days to complete.`,
+var oneCmd = &cobra.Command{
+	Use:   "one [domain ID] [repo url]",
+	Short: "Crawl publiccode.yml from one single [repo url] using [domain ID] configs.",
+	Long: `Crawl publiccode.yml from one [repo url] using [domain ID] configs.
+	The domainID should be one in the domains.yml list`,
+	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		domainID := args[0]
+		repo := args[1]
+
+		// Register client API plugins.
+		crawler.RegisterClientApis()
+
 		// Redis connection.
 		redisClient, err := crawler.RedisClientFactory(viper.GetString("REDIS_URL"))
 		if err != nil {
@@ -42,7 +44,7 @@ Beware! May take days to complete.`,
 
 		// Read and parse list of domains.
 		domainsFile := "domains.yml"
-		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, restartCrawling)
+		domains, err := crawler.ReadAndParseDomains(domainsFile, redisClient, false)
 		if err != nil {
 			panic(err)
 		}
@@ -56,7 +58,7 @@ Beware! May take days to complete.`,
 		log.Debugf("Index %s", index)
 
 		// Initiate a channel of repositories.
-		repositories := make(chan crawler.Repository, 1000)
+		repositories := make(chan crawler.Repository, 1)
 		// Prepare WaitGroup.
 		var wg sync.WaitGroup
 
@@ -68,15 +70,14 @@ Beware! May take days to complete.`,
 
 		// Process each domain service.
 		for _, domain := range domains {
-			// If domainToCrawl is empty crawl all domains, otherwise crawl only the one with Id equals to domainToCrawl.
-			if (domainToCrawl == "") || (domainToCrawl != "" && domain.Id == domainToCrawl) {
-				wg.Add(1)
+			// get the correct domain ID
+			if domain.Id == domainID {
+				err = crawler.ProcessSingleRepository(repo, domain, repositories)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 
-				// Register Prometheus metrics.
-				metrics.RegisterPrometheusCounter("repository_"+domain.Id+"_processed", "Counter for "+domain.Id, index)
-
-				// Start the process of repositories list.
-				go crawler.ProcessDomain(domain, redisClient, repositories, index, &wg)
 			}
 		}
 

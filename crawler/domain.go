@@ -20,6 +20,7 @@ type Domain struct {
 	Description string `yaml:"description"`
 	ClientApi   string `yaml:"client-api"`
 	URL         string `yaml:"url"`
+	RawBaseUrl  string `yaml:"rawBaseUrl"`
 	RateLimit   struct {
 		ReqH int `yaml:"req/h"`
 		ReqM int `yaml:"req/m"`
@@ -95,4 +96,13 @@ func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, reposi
 	}
 
 	return crawler(domain, url, repositories, wg)
+}
+
+func (domain Domain) processSingleRepo(url string, repositories chan Repository) error {
+	crawler, err := GetSingleClientApiCrawler(domain.ClientApi)
+	if err != nil {
+		return err
+	}
+
+	return crawler(domain, url, repositories)
 }

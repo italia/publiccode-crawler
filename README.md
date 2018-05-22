@@ -73,7 +73,7 @@ to localhost.
 
 ##### As golang app
 
-* start the crawler: `make run-all`
+* start the crawler: `make crawl`
 
 ### Copyright
 

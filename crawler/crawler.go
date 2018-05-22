@@ -82,6 +82,7 @@ func UpdateIndex(domains []Domain, redisClient *redis.Client, elasticClient *ela
 func ProcessDomain(domain Domain, redisClient *redis.Client, repositories chan Repository, index string, wg *sync.WaitGroup) {
 	// Base starting URL.
 	url := domain.URL
+
 	for {
 		// Set the value of nextURL on redis to domain.Index that describe the current execution.
 		err := redisClient.HSet(domain.Id, url, index).Err()
@@ -113,6 +114,17 @@ func ProcessDomain(domain Domain, redisClient *redis.Client, repositories chan R
 		// Update url to nextURL.
 		url = nextURL
 	}
+}
+
+// ProcessSingleRepository process a single repository given his url and domain.
+func ProcessSingleRepository(url string, domain Domain, repositories chan Repository) error {
+
+	err := domain.processSingleRepo(url, repositories)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func ProcessRepositories(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {

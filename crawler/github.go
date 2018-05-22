@@ -5,8 +5,11 @@ import (
 	"errors"
 	"math/rand"
 	"net/http"
-	"sync"
+	"net/url"
+	"path"
 	"time"
+
+	"sync"
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	log "github.com/sirupsen/logrus"
@@ -14,8 +17,7 @@ import (
 )
 
 // Github represent a complete result for the Github API respose from all repositories list.
-type Github []GithubRepoList
-type GithubRepoList struct {
+type Github []struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	FullName string `json:"full_name"`
@@ -81,7 +83,7 @@ type GithubRepoList struct {
 	DeploymentsURL   string `json:"deployments_url"`
 }
 
-// GithubRepo contains all the infos about a specific repo.
+// GithubRepo represent a complete for the Github API respose from a single repository.
 type GithubRepo struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -178,7 +180,7 @@ type GithubRepo struct {
 
 // RegisterGithubAPI register the crawler function for Github API.
 func RegisterGithubAPI() Handler {
-	return func(domain Domain, url string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
+	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -188,71 +190,123 @@ func RegisterGithubAPI() Handler {
 		}
 
 		// Get List of repositories
-		resp, err := httpclient.GetURL(url, headers)
+		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
-			return url, err
+			return link, err
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return url, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
 		var results Github
 		err = json.Unmarshal(resp.Body, &results)
 		if err != nil {
-			return url, err
+			return link, err
 		}
-
-		// Throttle requests.
-		// Time limits should be calibrated on more tests in order to avoid errors and bans.
-		throttleRate := time.Second / 20
-		throttle := time.Tick(throttleRate)
 
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
-			<-throttle
-			go ExecResult(v, url, domain, headers, repositories)
+			repoInfos, u, err := getGithubRepoInfos(v.URL, headers)
+			if err != nil {
+				log.Warnf("Unable to retrieve GithubRepoInfos on %s: %s", u, err.Error())
+			} else {
+
+				// Join file raw URL.
+				u, err := url.Parse(domain.RawBaseUrl)
+				if err != nil {
+					return link, err
+				}
+				u.Path = path.Join(u.Path, v.FullName, repoInfos.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
+
+				repositories <- Repository{
+					Name:       v.FullName,
+					FileRawURL: u.String(),
+					Domain:     domain,
+					Headers:    headers,
+				}
+			}
 		}
 
 		if len(resp.Headers.Get("Link")) == 0 {
 			for len(repositories) != 0 {
 				time.Sleep(time.Second)
 			}
+			// if wants to end the program when repo list ends (last page) decomment
+			// close(repositories)
+			// return url, nil
 			log.Info("Github repositories status: end reached.")
 
-			// If Restart: uncomment next line.
-			// return "domain.URL", nil
+			// Restart.
+			// return domain.URL, nil
 			return "", nil
 		}
 
 		// Return next url
 		parsedLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
 		if parsedLink == "" {
-			log.Info("Github repositories status: end reached (no more ref=Next header).")
-			// If Restart: uncomment next line.
-			// return "domain.URL", nil
-
-			// Wait until all the repositories are processed.
-			return "", nil
+			log.Info("Github repositories status: end reached (no more ref=Next header). Restart from: " + domain.URL)
+			return domain.URL, nil
 		}
 
 		return parsedLink, nil
 	}
 }
 
-func ExecResult(v GithubRepoList, link string, domain Domain, headers map[string]string, repositories chan Repository) {
-	repoInfos, u, err := getGithubRepoInfos(v.URL, headers)
-	if err != nil {
-		log.Warnf("Unable to retrieve GithubRepoInfos on %s: %s", u, err.Error())
-	} else {
-		repositories <- Repository{
-			Name:       v.FullName,
-			FileRawURL: "https://raw.githubusercontent.com/" + v.FullName + "/" + repoInfos.DefaultBranch + "/" + viper.GetString("CRAWLED_FILENAME"),
-			Domain:     domain,
-			Headers:    headers,
+// RegisterSingleBitbucketAPI register the crawler function for single Bitbucket API.
+func RegisterSingleGithubAPI() SingleHandler {
+	return func(domain Domain, link string, repositories chan Repository) error {
+		// Set BasicAuth header
+		headers := make(map[string]string)
+		if domain.BasicAuth != nil {
+			rand.Seed(time.Now().Unix())
+			n := rand.Int() % len(domain.BasicAuth)
+			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
+		u, err := url.Parse(link)
+		if err != nil {
+			log.Error(err)
+		}
+
+		// Clear the url.
+		fullName := u.Path
+		if u.Path[:1] == "/" {
+			fullName = fullName[1:]
+		}
+		if u.Path[len(u.Path)-1:] == "/" {
+			fullName = fullName[:len(u.Path)-2]
+		}
+
+		fullURL := "https://api.github.com/repos/" + fullName
+
+		// Fill response as list of values (repositories data).
+		result, _, err := getGithubRepoInfos(fullURL, headers)
+		if err != nil {
+			return err
+		}
+
+		// Join file raw URL.
+		u, err = url.Parse(domain.RawBaseUrl)
+		if err != nil {
+			return err
+		}
+		u.Path = path.Join(u.Path, result.FullName, result.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
+
+		// If the repository was never used, the Mainbranch is empty ("")
+		if result.DefaultBranch != "" {
+			repositories <- Repository{
+				Name:       result.FullName,
+				FileRawURL: u.String(),
+				Domain:     domain,
+				Headers:    headers,
+			}
+		} else {
+			return errors.New("repository is empty")
+		}
+
+		return nil
 	}
 }
 
