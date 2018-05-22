@@ -191,6 +191,20 @@ func NextHeaderLink(linkHeader string) string {
 	return ""
 }
 
+// HeaderLink parse the Github Header Link to "next"/"last"/"first"/"prev" link of repositories.
+// HeaderLink("next", link) or HeaderLink("prev", link) or HeaderLink("last", link)
+func HeaderLink(command, linkHeader string) string {
+	parsedLinks := linkheader.Parse(linkHeader)
+
+	for _, link := range parsedLinks {
+		if link.Rel == command {
+			return link.URL
+		}
+	}
+
+	return ""
+}
+
 // expBackoffCalc calculate the exponential backoff given .
 func expBackoffCalc(attemps int) float64 {
 	return (math.Pow(2, float64(attemps)) - 1) / 2
