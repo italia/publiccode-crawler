@@ -112,8 +112,6 @@ services:
 
 # De-comment next lines after build a local image for the crawler.
 #  crawler:
-#    environment:
-#      - "CRAWLED_FILENAME=${CRAWLED_FILENAME}"
 #    container_name: "${NAME}_crawler"
 #    image: italia/developers-italia-backend:0.0.1
 #    ports:
