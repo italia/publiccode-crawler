@@ -137,29 +137,12 @@ type GitlabGroups struct {
 			FullPath string      `json:"full_path"`
 			ParentID interface{} `json:"parent_id"`
 		} `json:"namespace"`
-		ForkedFromProject struct {
-			ID                int           `json:"id"`
-			Description       string        `json:"description"`
-			Name              string        `json:"name"`
-			NameWithNamespace string        `json:"name_with_namespace"`
-			Path              string        `json:"path"`
-			PathWithNamespace string        `json:"path_with_namespace"`
-			CreatedAt         time.Time     `json:"created_at"`
-			DefaultBranch     string        `json:"default_branch"`
-			TagList           []interface{} `json:"tag_list"`
-			SSHURLToRepo      string        `json:"ssh_url_to_repo"`
-			HTTPURLToRepo     string        `json:"http_url_to_repo"`
-			WebURL            string        `json:"web_url"`
-			AvatarURL         interface{}   `json:"avatar_url"`
-			StarCount         int           `json:"star_count"`
-			ForksCount        int           `json:"forks_count"`
-			LastActivityAt    time.Time     `json:"last_activity_at"`
-		} `json:"forked_from_project,omitempty"`
-		ImportStatus     string      `json:"import_status"`
-		OpenIssuesCount  int         `json:"open_issues_count,omitempty"`
-		PublicJobs       bool        `json:"public_jobs"`
-		CiConfigPath     interface{} `json:"ci_config_path"`
-		SharedWithGroups []struct {
+		ForkedFromProject GitlabRepo  `json:"forked_from_project,omitempty"`
+		ImportStatus      string      `json:"import_status"`
+		OpenIssuesCount   int         `json:"open_issues_count,omitempty"`
+		PublicJobs        bool        `json:"public_jobs"`
+		CiConfigPath      interface{} `json:"ci_config_path"`
+		SharedWithGroups  []struct {
 			GroupID          int    `json:"group_id"`
 			GroupName        string `json:"group_name"`
 			GroupAccessLevel int    `json:"group_access_level"`

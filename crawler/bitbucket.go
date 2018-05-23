@@ -23,52 +23,11 @@ import (
 type Bitbucket struct {
 	Pagelen int `json:"pagelen"`
 	Values  []struct {
-		Scm     string `json:"scm"`
-		Website string `json:"website"`
-		HasWiki bool   `json:"has_wiki"`
-		Name    string `json:"name"`
-		Links   struct {
-			Watchers struct {
-				Href string `json:"href"`
-			} `json:"watchers"`
-			Branches struct {
-				Href string `json:"href"`
-			} `json:"branches"`
-			Tags struct {
-				Href string `json:"href"`
-			} `json:"tags"`
-			Commits struct {
-				Href string `json:"href"`
-			} `json:"commits"`
-			Clone []struct {
-				Href string `json:"href"`
-				Name string `json:"name"`
-			} `json:"clone"`
-			Self struct {
-				Href string `json:"href"`
-			} `json:"self"`
-			Source struct {
-				Href string `json:"href"`
-			} `json:"source"`
-			HTML struct {
-				Href string `json:"href"`
-			} `json:"html"`
-			Avatar struct {
-				Href string `json:"href"`
-			} `json:"avatar"`
-			Hooks struct {
-				Href string `json:"href"`
-			} `json:"hooks"`
-			Forks struct {
-				Href string `json:"href"`
-			} `json:"forks"`
-			Downloads struct {
-				Href string `json:"href"`
-			} `json:"downloads"`
-			Pullrequests struct {
-				Href string `json:"href"`
-			} `json:"pullrequests"`
-		} `json:"links"`
+		Scm        string `json:"scm"`
+		Website    string `json:"website"`
+		HasWiki    bool   `json:"has_wiki"`
+		Name       string `json:"name"`
+		Links      Links  `json:"links"`
 		ForkPolicy string `json:"fork_policy"`
 		UUID       string `json:"uuid"`
 		Language   string `json:"language"`
@@ -142,52 +101,11 @@ type Bitbucket struct {
 
 // BitbucketRepo is the complete result for the Bitbucket API respose from a single repository.
 type BitbucketRepo struct {
-	Scm     string `json:"scm"`
-	Website string `json:"website"`
-	HasWiki bool   `json:"has_wiki"`
-	Name    string `json:"name"`
-	Links   struct {
-		Watchers struct {
-			Href string `json:"href"`
-		} `json:"watchers"`
-		Branches struct {
-			Href string `json:"href"`
-		} `json:"branches"`
-		Tags struct {
-			Href string `json:"href"`
-		} `json:"tags"`
-		Commits struct {
-			Href string `json:"href"`
-		} `json:"commits"`
-		Clone []struct {
-			Href string `json:"href"`
-			Name string `json:"name"`
-		} `json:"clone"`
-		Self struct {
-			Href string `json:"href"`
-		} `json:"self"`
-		Source struct {
-			Href string `json:"href"`
-		} `json:"source"`
-		HTML struct {
-			Href string `json:"href"`
-		} `json:"html"`
-		Avatar struct {
-			Href string `json:"href"`
-		} `json:"avatar"`
-		Hooks struct {
-			Href string `json:"href"`
-		} `json:"hooks"`
-		Forks struct {
-			Href string `json:"href"`
-		} `json:"forks"`
-		Downloads struct {
-			Href string `json:"href"`
-		} `json:"downloads"`
-		Pullrequests struct {
-			Href string `json:"href"`
-		} `json:"pullrequests"`
-	} `json:"links"`
+	Scm        string    `json:"scm"`
+	Website    string    `json:"website"`
+	HasWiki    bool      `json:"has_wiki"`
+	Name       string    `json:"name"`
+	Links      Links     `json:"links"`
 	ForkPolicy string    `json:"fork_policy"`
 	UUID       string    `json:"uuid"`
 	Language   string    `json:"language"`
@@ -221,6 +139,50 @@ type BitbucketRepo struct {
 	Slug        string    `json:"slug"`
 	IsPrivate   bool      `json:"is_private"`
 	Description string    `json:"description"`
+}
+
+// Repository links.
+type Links struct {
+	Watchers struct {
+		Href string `json:"href"`
+	} `json:"watchers"`
+	Branches struct {
+		Href string `json:"href"`
+	} `json:"branches"`
+	Tags struct {
+		Href string `json:"href"`
+	} `json:"tags"`
+	Commits struct {
+		Href string `json:"href"`
+	} `json:"commits"`
+	Clone []struct {
+		Href string `json:"href"`
+		Name string `json:"name"`
+	} `json:"clone"`
+	Self struct {
+		Href string `json:"href"`
+	} `json:"self"`
+	Source struct {
+		Href string `json:"href"`
+	} `json:"source"`
+	HTML struct {
+		Href string `json:"href"`
+	} `json:"html"`
+	Avatar struct {
+		Href string `json:"href"`
+	} `json:"avatar"`
+	Hooks struct {
+		Href string `json:"href"`
+	} `json:"hooks"`
+	Forks struct {
+		Href string `json:"href"`
+	} `json:"forks"`
+	Downloads struct {
+		Href string `json:"href"`
+	} `json:"downloads"`
+	Pullrequests struct {
+		Href string `json:"href"`
+	} `json:"pullrequests"`
 }
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
