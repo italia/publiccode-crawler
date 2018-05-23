@@ -18,6 +18,7 @@ type Domain struct {
 	Id          string   `yaml:"id"`
 	Description string   `yaml:"description"`
 	ClientApi   string   `yaml:"client-api"`
+	ApiBaseUrl  string   `yaml:"apiBaseUrl"`
 	RawBaseUrl  string   `yaml:"rawBaseUrl"`
 	BasicAuth   []string `yaml:"basic-auth"`
 }
@@ -50,26 +51,6 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 
 	return domains, nil
 }
-
-// // updateStartURL checks if a repository list previously failed to be retrieved.
-// func (domain *Domain) updateDomainState(redisClient *redis.Client) error {
-// 	// Check if there is an URL that wasn't correctly retrieved.
-// 	// URL.value="failed" => set domain.URL to that one
-// 	keys, err := redisClient.HKeys(domain.Id).Result()
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	// N launch. Check if some repo list was interrupted.
-// 	for _, key := range keys {
-// 		if redisClient.HGet(domain.Id, key).Val() != "" {
-// 			log.Debugf("Found one interrupted URL. Starts from here: %s with Index: %s", key, redisClient.HGet(domain.Id, key).Val())
-// 			domain.URL = key
-// 		}
-// 	}
-//
-// 	return nil
-// }
 
 func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
 	crawler, err := GetClientApiCrawler(domain.ClientApi)

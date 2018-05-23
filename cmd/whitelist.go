@@ -6,6 +6,7 @@ import (
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func init() {
@@ -18,14 +19,14 @@ var whitelistCmd = &cobra.Command{
 	Long:  `Start the crawler on whitelist.yml file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		// // Elastic connection.
-		// elasticClient, err := crawler.ElasticClientFactory(
-		// 	viper.GetString("ELASTIC_URL"),
-		// 	viper.GetString("ELASTIC_USER"),
-		// 	viper.GetString("ELASTIC_PWD"))
-		// if err != nil {
-		// 	panic(err)
-		// }
+		// Elastic connection.
+		elasticClient, err := crawler.ElasticClientFactory(
+			viper.GetString("ELASTIC_URL"),
+			viper.GetString("ELASTIC_USER"),
+			viper.GetString("ELASTIC_PWD"))
+		if err != nil {
+			panic(err)
+		}
 
 		// Read and parse list of domains.
 		domainsFile := "domains.yml"
@@ -51,11 +52,13 @@ var whitelistCmd = &cobra.Command{
 
 		// Process every item in whitelist
 		for _, pa := range whitelist {
-			crawler.ProcessPA(pa, domains, repositories, index, &wg)
+			wg.Add(1)
+			go crawler.ProcessPA(pa, domains, repositories, index, &wg)
 		}
-		//
-		// go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+
+		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
 		//
 		//go crawler.WaitingLoop(repositories, index, wg, elasticClient)
 
+		wg.Wait()
 	}}

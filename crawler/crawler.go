@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"github.com/italia/developers-italia-backend/httpclient"
-	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/olivere/elastic"
 
 	log "github.com/sirupsen/logrus"
@@ -30,21 +29,17 @@ func ProcessRepositories(repositories chan Repository, index string, wg *sync.Wa
 }
 
 func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
-	// name := repository.Name
+	name := repository.Name
 	fileRawUrl := repository.FileRawURL
-	// domain := repository.Domain
+	domain := repository.Domain
 	headers := repository.Headers
-
-	metrics.GetCounter("repository_processed", index).Inc()
-	metrics.GetCounter("repository_"+repository.Domain.Id+"_processed", index).Inc()
 
 	resp, err := httpclient.GetURL(fileRawUrl, headers)
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
 
 		// Save to file.
-		//SaveToFile(domain, name, resp.Body, index)
-		log.Debug("-> Save to File.")
+		SaveToFile(domain, name, resp.Body, index)
 
 		// Save to ES.
 		//SaveToES(domain, name, resp.Body, index, elasticClient)
@@ -70,7 +65,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 	for _, repository := range pa.Repositories {
 		for _, domain := range domains {
 			// if repository API is the domain
-			if domain.Id == repository.API {
+			if domain.ClientApi == repository.API {
 				for _, org := range repository.Organizations {
 					log.Debugf("ProcessPADomain: %s - API: %s", org, repository.API)
 					ProcessPADomain(org, domain, repositories, index, wg)
@@ -78,12 +73,23 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 			}
 		}
 	}
+	wg.Done()
 
 }
 
 func ProcessPADomain(org string, domain Domain, repositories chan Repository, index string, wg *sync.WaitGroup) {
+	var url string
 	// Starting URL.
-	url := "https://api.github.com/orgs/" + org + "/repos"
+	// TODO: refactoring
+	if domain.ClientApi == "github" {
+		url = domain.ApiBaseUrl + org + "/repos"
+	}
+	if domain.ClientApi == "gitlab" {
+		url = domain.ApiBaseUrl + org
+	}
+	if domain.ClientApi == "bitbucket" {
+		url = domain.ApiBaseUrl + org + "/?pagelen=100"
+	}
 
 	for {
 		log.Debugf("processAndGetNextURL handler:%s", url)

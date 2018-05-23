@@ -271,13 +271,10 @@ func RegisterBitbucketAPI() Handler {
 
 		// Bitbucket end reached.
 		if len(result.Next) == 0 {
-			for len(repositories) != 0 {
-				time.Sleep(time.Second)
-			}
-			log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + domain.URL)
+			// for len(repositories) != 0 {
+			// 	time.Sleep(time.Second)
+			// }
 
-			// Restart.
-			// return domain.URL, nil
 			return "", nil
 
 		}
@@ -287,69 +284,69 @@ func RegisterBitbucketAPI() Handler {
 	}
 }
 
-// RegisterSingleBitbucketAPI register the crawler function for single Bitbucket API.
-func RegisterSingleBitbucketAPI() SingleHandler {
-	return func(domain Domain, link string, repositories chan Repository) error {
-		// Set BasicAuth header
-		headers := make(map[string]string)
-		if domain.BasicAuth != nil {
-			rand.Seed(time.Now().Unix())
-			n := rand.Int() % len(domain.BasicAuth)
-			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
-		}
-
-		u, err := url.Parse(link)
-		if err != nil {
-			log.Error(err)
-		}
-
-		// Clear the url.
-		fullName := u.Path
-		if u.Path[:1] == "/" {
-			fullName = fullName[1:]
-		}
-		if u.Path[len(u.Path)-1:] == "/" {
-			fullName = fullName[:len(u.Path)-2]
-		}
-
-		fullURL := "https://api.bitbucket.org/2.0/repositories/" + fullName
-
-		// Get single Repo
-		resp, err := httpclient.GetURL(fullURL, headers)
-		if err != nil {
-			return err
-		}
-		if resp.Status.Code != http.StatusOK {
-			log.Warnf("Request returned: %s", string(resp.Body))
-			return errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
-		}
-
-		// Fill response as list of values (repositories data).
-		var result BitbucketRepo
-		err = json.Unmarshal(resp.Body, &result)
-		if err != nil {
-			return err
-		}
-
-		// Join file raw URL.
-		u, err = url.Parse(domain.RawBaseUrl)
-		if err != nil {
-			return err
-		}
-		u.Path = path.Join(u.Path, result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
-
-		// If the repository was never used, the Mainbranch is empty ("")
-		if result.Mainbranch.Name != "" {
-			repositories <- Repository{
-				Name:       result.FullName,
-				FileRawURL: u.String(),
-				Domain:     domain,
-				Headers:    headers,
-			}
-		} else {
-			return errors.New("repository is: empty")
-		}
-
-		return nil
-	}
-}
+// // RegisterSingleBitbucketAPI register the crawler function for single Bitbucket API.
+// func RegisterSingleBitbucketAPI() SingleHandler {
+// 	return func(domain Domain, link string, repositories chan Repository) error {
+// 		// Set BasicAuth header
+// 		headers := make(map[string]string)
+// 		if domain.BasicAuth != nil {
+// 			rand.Seed(time.Now().Unix())
+// 			n := rand.Int() % len(domain.BasicAuth)
+// 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
+// 		}
+//
+// 		u, err := url.Parse(link)
+// 		if err != nil {
+// 			log.Error(err)
+// 		}
+//
+// 		// Clear the url.
+// 		fullName := u.Path
+// 		if u.Path[:1] == "/" {
+// 			fullName = fullName[1:]
+// 		}
+// 		if u.Path[len(u.Path)-1:] == "/" {
+// 			fullName = fullName[:len(u.Path)-2]
+// 		}
+//
+// 		fullURL := "https://api.bitbucket.org/2.0/repositories/" + fullName
+//
+// 		// Get single Repo
+// 		resp, err := httpclient.GetURL(fullURL, headers)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		if resp.Status.Code != http.StatusOK {
+// 			log.Warnf("Request returned: %s", string(resp.Body))
+// 			return errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+// 		}
+//
+// 		// Fill response as list of values (repositories data).
+// 		var result BitbucketRepo
+// 		err = json.Unmarshal(resp.Body, &result)
+// 		if err != nil {
+// 			return err
+// 		}
+//
+// 		// Join file raw URL.
+// 		u, err = url.Parse(domain.RawBaseUrl)
+// 		if err != nil {
+// 			return err
+// 		}
+// 		u.Path = path.Join(u.Path, result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
+//
+// 		// If the repository was never used, the Mainbranch is empty ("")
+// 		if result.Mainbranch.Name != "" {
+// 			repositories <- Repository{
+// 				Name:       result.FullName,
+// 				FileRawURL: u.String(),
+// 				Domain:     domain,
+// 				Headers:    headers,
+// 			}
+// 		} else {
+// 			return errors.New("repository is: empty")
+// 		}
+//
+// 		return nil
+// 	}
+// }

@@ -3,20 +3,22 @@
 - codiceIPA: 'example-iPA' # iPA code.
   name: 'Comune di Esempio sul Naviglio' # Referred name.
   repositories:
-    - api: "github.com" # API specification. Refers to domains.yml
+    - api: 'github' # API specification. Refers to domains.yml
       organizations: # List of organizations links for the API.
-        - "italia"
+        - 'italia'
 
 - codiceIPA: 'generic-iPA'
-  name: "Pubblica utilità 4.0 Gov"
+  name: 'Pubblica utilità 4.0 Gov'
   repositories:
-    - api: "github.com"
+    - api: 'github'
       organizations:
-        - "italia"
-        - "publiccodenet"
-    # - api: "bitbucket.com"
-    #   organizations:
-    #     - "wellnet-team"
-    # - api: "gitlab.com"
-    #   organizations:
-    #     - "gitlab-org"
+        - 'italia'
+        - 'publiccodenet'
+    - api: 'bitbucket'
+      organizations:
+        - 'wellnet-team'
+        - 'blowmeaway'
+    - api: 'gitlab'
+      organizations:
+        - 'cerfacs'
+        - 'gitlab-org'

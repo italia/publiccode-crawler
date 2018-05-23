@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/spf13/viper"
 )
 
@@ -28,7 +27,7 @@ func SaveToFile(domain Domain, name string, data []byte, index string) {
 		log.Error(err)
 	}
 
-	metrics.GetCounter("repository_file_saved", index).Inc()
+	//metrics.GetCounter("repository_file_saved", index).Inc()
 }
 
 // splitFullName split a git FullName format to vendor and repo strings.

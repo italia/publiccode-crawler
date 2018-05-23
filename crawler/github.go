@@ -125,8 +125,6 @@ type GithubOrgs []struct {
 // "" empty instead.
 func RegisterGithubAPI() Handler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
-		log.Debugf("GithubAPI handler:%s", link)
-
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
