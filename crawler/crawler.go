@@ -120,63 +120,6 @@ func ProcessPADomain(org string, domain Domain, repositories chan Repository, in
 	}
 }
 
-// // Process delegates the work to single domain crawlers.
-// func ProcessDomain(domain Domain, redisClient *redis.Client, repositories chan Repository, index string, wg *sync.WaitGroup) {
-// 	// Base starting URL.
-// 	url := domain.URL
-//
-// 	for {
-// 		// Set the value of nextURL on redis to domain.Index that describe the current execution.
-// 		err := redisClient.HSet(domain.Id, url, index).Err()
-// 		if err != nil {
-// 			log.Error(err)
-// 		}
-//
-// 		nextURL, err := domain.processAndGetNextURL(url, wg, repositories)
-// 		if err != nil {
-// 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
-// 			log.Errorf("Retry: %s", nextURL)
-// 			nextURL = url
-// 		}
-// 		// If reached, the repository list was successfully retrieved.
-// 		// Delete the repository url from redis.
-// 		err = redisClient.HDel(domain.Id, url).Err()
-// 		if err != nil {
-// 			log.Error(err)
-// 		}
-//
-// 		// If end is reached, nextUrl is empty.
-// 		if nextURL == "" {
-// 			log.Infof("Url: %s - is the last one.", url)
-//
-// 			// WaitingGroupd
-// 			wg.Done()
-// 			return
-// 		}
-// 		// Update url to nextURL.
-// 		url = nextURL
-// 	}
-// }
-
-// // validateRemoteFile validate the remote file
-// func validateRemoteFile(data []byte, url, index string) error {
-// 	fileName := viper.GetString("CRAWLED_FILENAME")
-// 	// Parse data into pc struct and validate.
-// 	baseURL := strings.TrimSuffix(url, fileName)
-// 	// Set remore URL for remote validation (it will check files availability).
-// 	publiccode.BaseDir = baseURL
-// 	var pc publiccode.PublicCode
-//
-// 	err := publiccode.Parse(data, &pc)
-//
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	metrics.GetCounter("repository_file_saved_valid", index).Inc()
-// 	return err
-//
-// }
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
 func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	wg.Wait()
@@ -200,63 +143,13 @@ func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup,
 	close(repositories)
 }
 
-//
-// func addIndex(index string, elasticClient *elastic.Client) error {
-// 	// Use the IndexExists service to check if a specified index exists.
-// 	exists, err := elasticClient.IndexExists(index).Do(context.Background())
-// 	if err != nil {
-// 		return err
-// 	}
-// 	if !exists {
-// 		// Create a new index.
-// 		// TODO: When mapping will be available: client.CreateIndex(index).BodyString(mapping).Do(ctx).
-// 		_, err = elasticClient.CreateIndex(index).Do(context.Background())
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-//
-// 	return nil
-// }
-//
-// // UpdateIndex return an old index if found on redis. A new index if no one is found.
-// func UpdateIndex(domains []Domain, redisClient *redis.Client, elasticClient *elastic.Client) (string, error) {
-// 	for i, _ := range domains {
-// 		// Check if there is an URL that wasn't correctly retrieved.
-// 		keys, err := redisClient.HKeys(domains[i].Id).Result()
-// 		if err != nil {
-// 			return "", err
-// 		}
-// 		// If some repository is left the index should remain the last one saved.
-// 		for _, key := range keys {
-// 			if redisClient.HGet(domains[i].Id, key).Val() != "" {
-// 				index := redisClient.HGet(domains[i].Id, key).Val()
-// 				addIndex(index, elasticClient)
-// 				if err != nil {
-// 					return "", err
-// 				}
-//
-// 				return index, nil
-// 			}
-// 		}
-// 	}
+// ProcessSingleRepository process a single repository given his url and domain.
+func ProcessSingleRepository(url string, domain Domain, repositories chan Repository) error {
 
-// 	// If reached there will be a new index.
-// 	index := strconv.FormatInt(time.Now().Unix(), 10)
-// 	err := addIndex(index, elasticClient)
-// 	if err != nil {
-// 		return "", err
-// 	}
-//
-// 	return index, nil
-// }
-// // ProcessSingleRepository process a single repository given his url and domain.
-// func ProcessSingleRepository(url string, domain Domain, repositories chan Repository) error {
-//
-// 	err := domain.processSingleRepo(url, repositories)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	return nil
-// }
+	err := domain.processSingleRepo(url, repositories)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

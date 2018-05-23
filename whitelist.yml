@@ -20,5 +20,5 @@
         - 'blowmeaway'
     - api: 'gitlab'
       organizations:
-        - 'cerfacs'
         - 'gitlab-org'
+        - 'cerfacs'

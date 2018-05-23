@@ -34,4 +34,5 @@ EXPOSE 8081
 ENV NAME=$NAME
 RUN chmod +x ./$NAME
 
+#ENTRYPOINT ./$NAME one github.com https://github.com/italia/developers-italia-backend
 ENTRYPOINT ./$NAME whitelist

@@ -31,7 +31,7 @@ func SaveToES(domain Domain, name string, data []byte, index string, elasticClie
 	file := File{Source: domain.Id, Name: name, Data: string(data)}
 
 	// Put publiccode data in ES.
-	put, err := elasticClient.Index().
+	_, err := elasticClient.Index().
 		Index(index).
 		Type("doc").
 		Id(domain.Id + "/" + name + "_" + index).
@@ -43,5 +43,5 @@ func SaveToES(domain Domain, name string, data []byte, index string, elasticClie
 
 	metrics.GetCounter("repository_file_indexed", index).Inc()
 
-	log.Debugf("Indexed file %s to index %s, type %s", put.Id, put.Index, put.Type)
+	//log.Debugf("Indexed file %s to index %s, type %s", put.Id, put.Index, put.Type)
 }

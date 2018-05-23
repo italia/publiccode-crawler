@@ -39,7 +39,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 	expBackoffAttemps := 0
 
 	var sleep time.Duration
-	const timeout = time.Duration(30 * time.Second)
+	const timeout = time.Duration(60 * time.Second)
 
 	client := http.Client{
 		// Request Timeout.

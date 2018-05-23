@@ -11,8 +11,11 @@ import (
 	"github.com/spf13/viper"
 )
 
+var iPAToCrawl string
+
 func init() {
 	rootCmd.AddCommand(whitelistCmd)
+	whitelistCmd.Flags().StringVarP(&iPAToCrawl, "ipa", "i", "", "Crawl a single ipa from whitelist.yml.")
 }
 
 var whitelistCmd = &cobra.Command{
@@ -62,16 +65,19 @@ var whitelistCmd = &cobra.Command{
 		// Process every item in whitelist
 		for _, pa := range whitelist {
 			wg.Add(1)
-			// Start the process of PA repositories.
-			go crawler.ProcessPA(pa, domains, repositories, index, &wg)
+			// If iPAToCrawl is empty crawl all domains, otherwise crawl only the one with CodiceIPA equals to iPAToCrawl.
+			if (iPAToCrawl == "") || (iPAToCrawl != "" && pa.CodiceIPA == iPAToCrawl) {
+				go crawler.ProcessPA(pa, domains, repositories, index, &wg)
+			}
 		}
 
 		// Start the metrics server.
 		go metrics.StartPrometheusMetricsServer()
 
-		// Process the repositories in order to retrieve the file.
-		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+		// WaitingLoop check and close the repositories channel
+		go crawler.WaitingLoop(repositories, index, &wg, elasticClient)
 
-		crawler.WaitingLoop(repositories, index, &wg, elasticClient)
+		// Process the repositories in order to retrieve the file.
+		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
 
 	}}
