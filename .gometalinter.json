@@ -22,7 +22,6 @@
     "gas",
     "unparam",
     "misspell",
-    "lll",
     "safesql"
   ],
   "Exclude": ["vendor/.*", "publiccode/.*"]
