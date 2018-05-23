@@ -89,7 +89,7 @@ func ProcessPADomain(org string, domain Domain, repositories chan Repository, in
 	var url string
 
 	// Starting URL. Generate using go templates.
-	url = domain.ApiBaseUrl
+	url = domain.ApiOrgURL
 	data := struct{ OrgName string }{OrgName: org}
 	// Create a new template and parse the Url into it.
 	t := template.Must(template.New("url").Parse(url))

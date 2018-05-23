@@ -1,15 +1,19 @@
 - id: 'github.com'
   description: 'The leading software development platform: github.com'
+
   client-api: 'github'
-  apiBaseUrl: 'https://api.github.com/orgs/{{.OrgName}}/repos'
+  apiOrgUrl: 'https://api.github.com/orgs/{{.OrgName}}/repos'
+  apiRepoUrl: 'https://api.github.com/repos/{{.Name}}'
   rawBaseUrl: 'https://raw.githubusercontent.com'
   basic-auth:
     - ''
 
 - id: 'bitbucket.com'
   description: 'General Git solution for professional teams: bitbucket.com'
+
   client-api: 'bitbucket'
-  apiBaseUrl: 'https://api.bitbucket.org/2.0/repositories/{{.OrgName}}/?pagelen=100'
+  apiOrgUrl: 'https://api.bitbucket.org/2.0/repositories/{{.OrgName}}/?pagelen=100'
+  apiRepoUrl: 'https://api.bitbucket.org/2.0/repositories/{{.Name}}'
   rawBaseUrl: 'https://bitbucket.org'
   basic-auth:
     - ''
@@ -17,7 +21,8 @@
 - id: 'gitlab.com'
   description: 'The only single product for the complete DevOps lifecycle: gitlab.com'
   client-api: 'gitlab'
-  apiBaseUrl: 'https://gitlab.com/api/v4/groups/{{.OrgName}}'
+  apiOrgUrl: 'https://gitlab.com/api/v4/groups/{{.OrgName}}'
+  apiRepoUrl: 'https://gitlab.com/api/v4/projects/{{.Name}}'
   rawBaseUrl: 'https://gitlab.com'
   basic-auth:
     - ''

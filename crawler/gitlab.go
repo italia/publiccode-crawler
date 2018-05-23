@@ -1,8 +1,10 @@
 package crawler
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"html/template"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -309,7 +311,16 @@ func RegisterSingleGitlabAPI() SingleHandler {
 			fullName = fullName[:len(u.Path)-2]
 		}
 
-		fullURL := domain.RawBaseUrl + "/api/v4/projects/" + url.QueryEscape(fullName)
+		var fullURL string
+		// Starting URL. Generate using go templates.
+		fullURL = domain.ApiRepoURL
+		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
+		// Create a new template and parse the Url into it.
+		t := template.Must(template.New("url").Parse(fullURL))
+		buf := new(bytes.Buffer)
+		// Execute the template: add "data" data in "url".
+		t.Execute(buf, data)
+		fullURL = buf.String()
 
 		// Get single Repo
 		resp, err := httpclient.GetURL(fullURL, headers)

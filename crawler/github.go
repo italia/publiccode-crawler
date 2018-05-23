@@ -1,8 +1,10 @@
 package crawler
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
+	"html/template"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -299,7 +301,16 @@ func RegisterSingleGithubAPI() SingleHandler {
 			fullName = fullName[:len(u.Path)-2]
 		}
 
-		fullURL := "https://api.github.com/repos/" + fullName
+		var fullURL string
+		// Starting URL. Generate using go templates.
+		fullURL = domain.ApiRepoURL
+		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
+		// Create a new template and parse the Url into it.
+		t := template.Must(template.New("url").Parse(fullURL))
+		buf := new(bytes.Buffer)
+		// Execute the template: add "data" data in "url".
+		t.Execute(buf, data)
+		fullURL = buf.String()
 
 		// Fill response as list of values (repositories data).
 		result, _, err := getGithubRepoInfos(fullURL, headers)

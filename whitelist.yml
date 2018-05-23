@@ -22,3 +22,31 @@
       organizations:
         - 'gitlab-org'
         - 'cerfacs'
+
+
+- codiceIPA: 'abba'
+  name: 'Nome'
+  repositories:
+    - api: 'github'
+      organizations:
+        - 'italia'
+        - 'publiccodenet'
+        - 'docker'
+        - 'ArchiveTeam'
+        - 'recursecenter'
+        - 'google'
+        - 'go'
+        - 'cryptography-training'
+    - api: 'bitbucket'
+      organizations:
+        - 'wellnet-team'
+        - 'blowmeaway'
+        - 'soft'
+    - api: 'gitlab'
+      organizations:
+        - 'MicroRL'
+        - 'blockninja'
+        - 'blocklaunch'
+        - 'blockheads'
+        - 'Blockmatrix'
+        - 'cerfacs'
