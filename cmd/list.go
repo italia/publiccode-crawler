@@ -1,9 +1,11 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
+	"strconv"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -24,16 +26,26 @@ var listCmd = &cobra.Command{
 			panic(err)
 		}
 
+		var data [][]string
+
 		// Process every item in whitelist
 		for _, pa := range whitelist {
 			// and Print
-			fmt.Printf("%s \t %s\n", pa.Name, pa.CodiceIPA)
+			data = append(data, []string{pa.CodiceIPA, pa.Name, "", ""})
 			for _, repository := range pa.Repositories {
-				fmt.Printf("\t%s\n", repository.API)
-				for _, orgs := range repository.Organizations {
-					fmt.Printf("\t\t- %s\n", orgs)
+				data = append(data, []string{pa.CodiceIPA, pa.Name, repository.API, ""})
+				for _, org := range repository.Organizations {
+					data = append(data, []string{pa.CodiceIPA, pa.Name, repository.API, org})
 				}
 			}
 		}
+
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"iPA", "Description", "API", "Org"})
+		table.SetFooter([]string{"Total Public Administrations: " + strconv.Itoa(len(whitelist)), "", "", ""})
+		table.SetAutoMergeCells(true)
+		table.SetRowLine(true)
+		table.AppendBulk(data)
+		table.Render()
 
 	}}
