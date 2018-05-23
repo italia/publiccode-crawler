@@ -53,6 +53,7 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 }
 
 func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
+
 	crawler, err := GetClientApiCrawler(domain.ClientApi)
 	if err != nil {
 		return "", err

@@ -24,7 +24,7 @@ func RegisterClientApis() {
 	clientApis["bitbucket"] = RegisterBitbucketAPI()
 	clientApis["github"] = RegisterGithubAPI()
 	clientApis["gitlab"] = RegisterGitlabAPI()
-	//
+
 	// // Client APIs for single repository.
 	// clientSingleApi["bitbucket.com"] = RegisterSingleBitbucketAPI()
 	// clientSingleApi["github.com"] = RegisterSingleGithubAPI()

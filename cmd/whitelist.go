@@ -1,10 +1,12 @@
 package cmd
 
 import (
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -48,17 +50,28 @@ var whitelistCmd = &cobra.Command{
 		var wg sync.WaitGroup
 
 		// Index for actual process.
-		index := time.Now().String()
+		index := strconv.FormatInt(time.Now().Unix(), 10)
+
+		// Register Prometheus metrics.
+		metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", index)
+		metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", index)
+		metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", index)
+		// Uncomment when validating publiccode.yml
+		//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", index)
 
 		// Process every item in whitelist
 		for _, pa := range whitelist {
 			wg.Add(1)
+			// Start the process of PA repositories.
 			go crawler.ProcessPA(pa, domains, repositories, index, &wg)
 		}
 
-		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
-		//
-		//go crawler.WaitingLoop(repositories, index, wg, elasticClient)
+		// Start the metrics server.
+		go metrics.StartPrometheusMetricsServer()
 
-		wg.Wait()
+		// Process the repositories in order to retrieve the file.
+		go crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+
+		crawler.WaitingLoop(repositories, index, &wg, elasticClient)
+
 	}}

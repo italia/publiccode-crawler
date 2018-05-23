@@ -3,9 +3,9 @@ package crawler
 import (
 	"context"
 
+	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
-	"github.com/italia/developers-italia-backend/metrics"
 )
 
 // File is a generic structure for saveToES() function.

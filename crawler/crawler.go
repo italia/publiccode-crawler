@@ -1,11 +1,13 @@
 package crawler
 
 import (
+	"context"
 	"sync"
 
 	"net/http"
 
 	"github.com/italia/developers-italia-backend/httpclient"
+	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/olivere/elastic"
 
 	log "github.com/sirupsen/logrus"
@@ -34,6 +36,9 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	domain := repository.Domain
 	headers := repository.Headers
 
+	// Increment counter for the number of repositories processed.
+	metrics.GetCounter("repository_processed", index).Inc()
+
 	resp, err := httpclient.GetURL(fileRawUrl, headers)
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
@@ -42,8 +47,8 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		SaveToFile(domain, name, resp.Body, index)
 
 		// Save to ES.
-		//SaveToES(domain, name, resp.Body, index, elasticClient)
-		log.Debug("-> Save to ES.")
+		SaveToES(domain, name, resp.Body, index, elasticClient)
+
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
 		// TODO: now validation is useless because we test on .gitignore file.
@@ -68,6 +73,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 			if domain.ClientApi == repository.API {
 				for _, org := range repository.Organizations {
 					log.Debugf("ProcessPADomain: %s - API: %s", org, repository.API)
+					wg.Add(1)
 					ProcessPADomain(org, domain, repositories, index, wg)
 				}
 			}
@@ -79,6 +85,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 
 func ProcessPADomain(org string, domain Domain, repositories chan Repository, index string, wg *sync.WaitGroup) {
 	var url string
+
 	// Starting URL.
 	// TODO: refactoring
 	if domain.ClientApi == "github" {
@@ -105,7 +112,7 @@ func ProcessPADomain(org string, domain Domain, repositories chan Repository, in
 			log.Infof("Url: %s - is the last one.", url)
 
 			// WaitingGroupd
-			// wg.Done()
+			wg.Done()
 			return
 		}
 		// Update url to nextURL.
@@ -170,28 +177,29 @@ func ProcessPADomain(org string, domain Domain, repositories chan Repository, in
 // 	return err
 //
 // }
-// // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
-// func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
-// 	wg.Wait()
-//
-// 	// Remove old aliases.
-// 	res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	aliasService := elasticClient.Alias()
-// 	indices := res.IndicesByAlias("publiccode")
-// 	for _, name := range indices {
-// 		log.Debugf("Remove alias from %s to %s", "publiccode", name)
-// 		aliasService.Remove(name, "publiccode").Do(context.Background())
-// 	}
-//
-// 	// Add an alias to the new index.
-// 	log.Debugf("Add alias from %s to %s", index, "publiccode")
-// 	aliasService.Add(index, "publiccode").Do(context.Background())
-//
-// 	close(repositories)
-// }
+// WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
+func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
+	wg.Wait()
+
+	// Remove old aliases.
+	res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
+	if err != nil {
+		panic(err)
+	}
+	aliasService := elasticClient.Alias()
+	indices := res.IndicesByAlias("publiccode")
+	for _, name := range indices {
+		log.Debugf("Remove alias from %s to %s", "publiccode", name)
+		aliasService.Remove(name, "publiccode").Do(context.Background())
+	}
+
+	// Add an alias to the new index.
+	log.Debugf("Add alias from %s to %s", index, "publiccode")
+	aliasService.Add(index, "publiccode").Do(context.Background())
+
+	close(repositories)
+}
+
 //
 // func addIndex(index string, elasticClient *elastic.Client) error {
 // 	// Use the IndexExists service to check if a specified index exists.
