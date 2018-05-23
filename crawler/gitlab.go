@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Gitlab represent a complete result for the Gitlab API respose from the groups call.
+// GitlabGroups is the complete result from the Gitlab API respose.
 type GitlabGroups struct {
 	ID                   int    `json:"id"`
 	WebURL               string `json:"web_url"`
@@ -184,7 +184,7 @@ type GitlabGroups struct {
 	SharedRunnersMinutesLimit int         `json:"shared_runners_minutes_limit"`
 }
 
-// GitlabRepo represent a complete for the Gitlab API respose from a single repository.
+// GitlabRepo is a complete result from the Gitlab API respose for a single repository.
 type GitlabRepo struct {
 	ID                int           `json:"id"`
 	Description       string        `json:"description"`
@@ -209,7 +209,7 @@ func RegisterGitlabAPI() Handler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		log.Debugf("RegisterGitlabAPI: %s ")
 
-		// Set BasicAuth header
+		// Set BasicAuth header.
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
 			rand.Seed(time.Now().Unix())
@@ -217,7 +217,7 @@ func RegisterGitlabAPI() Handler {
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
-		// Get List of repositories
+		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
 			return link, err

@@ -10,18 +10,21 @@ import (
 )
 
 func init() {
-	rootCmd.AddCommand(pluginsCmd)
+	rootCmd.AddCommand(clientsCmd)
 }
 
-var pluginsCmd = &cobra.Command{
+var clientsCmd = &cobra.Command{
 	Use:   "clients",
 	Short: "List existing clients.",
 	Long:  `List existing clients registered in the crawler.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Retrieve crawler clients.
 		clients := crawler.GetClients()
 
+		// Prepare data table.
 		var data [][]string
 
+		// Iterate over the crawler clients.
 		for id, _ := range clients {
 			data = append(data, []string{id})
 		}

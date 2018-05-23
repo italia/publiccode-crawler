@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// GithubOrgs represent a complete result for the Github API respose from /orgs/<orgNamee>/repos .
+// GithubOrgs is the complete result from the Github API respose for /orgs/<orgNamee>/repos.
 type GithubOrgs []struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -122,7 +122,7 @@ type GithubOrgs []struct {
 	} `json:"permissions"`
 }
 
-// GithubRepo represent a complete for the Github API respose from a single repository.
+// GithubRepo is a complete result from the Github API respose for a single repository.
 type GithubRepo struct {
 	ID       int    `json:"id"`
 	Name     string `json:"name"`
@@ -219,8 +219,8 @@ type GithubRepo struct {
 
 // RegisterGithubAPI register the crawler function for Github API.
 // It get the list of repositories on "link" url.
-// If the header "Link" is available return the next page to process.
-// "" empty instead.
+// If a next page is available return its url.
+// Otherwise returns an empty ("") string.
 func RegisterGithubAPI() Handler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
@@ -231,7 +231,7 @@ func RegisterGithubAPI() Handler {
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
-		// Get List of repositories
+		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
 			return link, err
@@ -265,7 +265,7 @@ func RegisterGithubAPI() Handler {
 			}
 		}
 
-		// Return next url
+		// Return next url.
 		nextLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
 
 		// if last page for this organization, the nextLink is empty.
@@ -277,10 +277,12 @@ func RegisterGithubAPI() Handler {
 	}
 }
 
-// RegisterSingleBitbucketAPI register the crawler function for single Bitbucket API.
+// RegisterSingleBitbucketAPI register the crawler function for single repository Github API.
+// Return nil if the repository was successfully added to repositories channel.
+// Otherwise return the generated error.
 func RegisterSingleGithubAPI() SingleHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
-		// Set BasicAuth header
+		// Set BasicAuth header.
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
 			rand.Seed(time.Now().Unix())
@@ -296,9 +298,8 @@ func RegisterSingleGithubAPI() SingleHandler {
 		// Clear the url.
 		fullName := strings.Trim(u.Path, "/")
 
-		var fullURL string
-		// Starting URL. Generate using go templates.
-		fullURL = domain.ApiRepoURL
+		// Generate fullURL using go templates. It will replace {{.Name}} with fullName.
+		fullURL := domain.ApiRepoURL
 		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
 		// Create a new template and parse the Url into it.
 		t := template.Must(template.New("url").Parse(fullURL))
@@ -320,7 +321,7 @@ func RegisterSingleGithubAPI() SingleHandler {
 		}
 		u.Path = path.Join(u.Path, result.FullName, result.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
-		// If the repository was never used, the Mainbranch is empty ("")
+		// If the repository was never used, the Mainbranch is empty ("").
 		if result.DefaultBranch != "" {
 			repositories <- Repository{
 				Name:       result.FullName,
@@ -336,22 +337,24 @@ func RegisterSingleGithubAPI() SingleHandler {
 	}
 }
 
+// getGithubRepoInfos retrieve single repository info GithubRepo.
 func getGithubRepoInfos(URL string, headers map[string]string) (GithubRepo, string, error) {
-	// Get List of repositories
+	var results GithubRepo
+
+	// Get List of repositories.
 	resp, err := httpclient.GetURL(URL, headers)
 	if err != nil {
-		return GithubRepo{}, URL, err
+		return results, URL, err
 	}
 	if resp.Status.Code != http.StatusOK {
 		log.Warnf("Request for single Github repository returned: %s", string(resp.Body))
-		return GithubRepo{}, URL, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+		return results, URL, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 	}
 
 	// Fill response as list of values (repositories data).
-	var results GithubRepo
 	err = json.Unmarshal(resp.Body, &results)
 	if err != nil {
-		return GithubRepo{}, URL, err
+		return results, URL, err
 	}
 
 	return results, URL, nil

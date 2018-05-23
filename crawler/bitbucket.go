@@ -19,7 +19,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Bitbucket represent a complete result for the Bitbucket API respose from all repositories list.
+// Bitbucket is the complete result for the Bitbucket API respose from all repositories list.
 type Bitbucket struct {
 	Pagelen int `json:"pagelen"`
 	Values  []struct {
@@ -140,7 +140,7 @@ type Bitbucket struct {
 	Next string `json:"next"`
 }
 
-// BitbucketRepo represent a complete for the Bitbucket API respose from a single repository.
+// BitbucketRepo is the complete result for the Bitbucket API respose from a single repository.
 type BitbucketRepo struct {
 	Scm     string `json:"scm"`
 	Website string `json:"website"`
@@ -226,7 +226,7 @@ type BitbucketRepo struct {
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
 func RegisterBitbucketAPI() Handler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
-		// Set BasicAuth header
+		// Set BasicAuth header.
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
 			rand.Seed(time.Now().Unix())
@@ -234,7 +234,7 @@ func RegisterBitbucketAPI() Handler {
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
-		// Get List of repositories
+		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
 			return link, err
@@ -261,7 +261,7 @@ func RegisterBitbucketAPI() Handler {
 			}
 			u.Path = path.Join(u.Path, "raw", v.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
-			// If the repository was never used, the Mainbranch is empty ("")
+			// If the repository was never used, the Mainbranch is empty ("").
 			if v.Mainbranch.Name != "" {
 				repositories <- Repository{
 					Name:       v.FullName,
@@ -277,12 +277,12 @@ func RegisterBitbucketAPI() Handler {
 			return "", nil
 		}
 
-		// Return next url
+		// Return next url.
 		return result.Next, nil
 	}
 }
 
-// RegisterSingleBitbucketAPI register the crawler function for single Bitbucket API.
+// RegisterSingleBitbucketAPI register the crawler function for single Bitbucket repository.
 func RegisterSingleBitbucketAPI() SingleHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header
@@ -292,7 +292,7 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 			n := rand.Int() % len(domain.BasicAuth)
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
-
+		// Parse link as URL.
 		u, err := url.Parse(link)
 		if err != nil {
 			log.Error(err)
@@ -301,9 +301,8 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		// Clear the url. Trim slash.
 		fullName := strings.Trim(u.Path, "/")
 
-		var fullURL string
-		// Starting URL. Generate using go templates.
-		fullURL = domain.ApiRepoURL
+		// Generate fullURL using go templates. It will replace {{.Name}} with fullName.
+		fullURL := domain.ApiRepoURL
 		data := struct{ Name string }{Name: fullName}
 		// Create a new template and parse the Url into it.
 		t := template.Must(template.New("url").Parse(fullURL))
@@ -336,7 +335,7 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		}
 		u.Path = path.Join(u.Path, result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
-		// If the repository was never used, the Mainbranch is empty ("")
+		// If the repository was never used, the Mainbranch is empty ("").
 		if result.Mainbranch.Name != "" {
 			repositories <- Repository{
 				Name:       result.FullName,

@@ -18,17 +18,18 @@ var domainsCmd = &cobra.Command{
 	Short: "List all the Domains.",
 	Long:  `List all the Domains from domains.yml`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		// Read and parse the whitelist.
 		domainsFile := "domains.yml"
 		domains, err := crawler.ReadAndParseDomains(domainsFile)
 		if err != nil {
 			panic(err)
 		}
-
+		// Prepare data table.
 		var data [][]string
 
+		// Process every item in domains.
 		for _, domain := range domains {
+			// Check if basicAuth is set.
 			basicAuth := "no"
 			if len(domain.BasicAuth) > 0 {
 				basicAuth = "yes"

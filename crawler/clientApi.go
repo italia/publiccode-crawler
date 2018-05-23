@@ -24,13 +24,14 @@ func RegisterClientApis() {
 	clientApis["github"] = RegisterGithubAPI()
 	clientApis["gitlab"] = RegisterGitlabAPI()
 
-	// Client APIs for single repository.
+	// Client APIs for a single repository.
 	clientSingleApi["bitbucket"] = RegisterSingleBitbucketAPI()
 	clientSingleApi["github"] = RegisterSingleGithubAPI()
 	clientSingleApi["gitlab"] = RegisterSingleGitlabAPI()
 
 }
 
+// GetClientApiCrawler checks if the api client for the requested organization clientApi exists and return its handler.
 func GetClientApiCrawler(clientApi string) (Handler, error) {
 	if crawler, ok := clientApis[clientApi]; ok {
 		return crawler, nil
@@ -39,6 +40,7 @@ func GetClientApiCrawler(clientApi string) (Handler, error) {
 	}
 }
 
+// GetSingleClientApiCrawler checks if the api client for the requested singlle repository clientApi exists and return its handler.
 func GetSingleClientApiCrawler(clientApi string) (SingleHandler, error) {
 	if crawler, ok := clientSingleApi[clientApi]; ok {
 		return crawler, nil
@@ -47,7 +49,7 @@ func GetSingleClientApiCrawler(clientApi string) (SingleHandler, error) {
 	}
 }
 
-// GetClients returns a list of all registered plugins.
+// GetClients returns a list of all registered clientApi.
 func GetClients() map[string]Handler {
 	return clientApis
 }

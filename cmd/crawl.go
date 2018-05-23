@@ -62,7 +62,7 @@ var crawlCmd = &cobra.Command{
 		// Uncomment when validating publiccode.yml
 		//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", index)
 
-		// Process every item in whitelist
+		// Process every item in whitelist.
 		for _, pa := range whitelist {
 			wg.Add(1)
 			// If iPAToCrawl is empty crawl all domains, otherwise crawl only the one with CodiceIPA equals to iPAToCrawl.

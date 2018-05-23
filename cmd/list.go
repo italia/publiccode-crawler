@@ -18,7 +18,6 @@ var listCmd = &cobra.Command{
 	Short: "List all the Public Administrations in the whitelist.",
 	Long:  `List all the Public Administrations in whitelist.yml file.`,
 	Run: func(cmd *cobra.Command, args []string) {
-
 		// Read and parse the whitelist.
 		whitelistFile := "whitelist.yml"
 		whitelist, err := crawler.ReadAndParseWhitelist(whitelistFile)
@@ -26,11 +25,12 @@ var listCmd = &cobra.Command{
 			panic(err)
 		}
 
+		// Prepare data table.
 		var data [][]string
 
-		// Process every item in whitelist
+		// Process every item in whitelist.
 		for _, pa := range whitelist {
-			// and Print
+			// And add to data table.
 			data = append(data, []string{pa.CodiceIPA, pa.Name, "", ""})
 			for _, repository := range pa.Repositories {
 				data = append(data, []string{pa.CodiceIPA, pa.Name, repository.API, ""})

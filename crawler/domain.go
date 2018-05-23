@@ -24,6 +24,7 @@ type Domain struct {
 	BasicAuth   []string `yaml:"basic-auth"`
 }
 
+// ReadAndParseDomains read domainsFile and return the parsed content in a Domain slice.
 func ReadAndParseDomains(domainsFile string) ([]Domain, error) {
 	// Open and read domains file list.
 	data, err := ioutil.ReadFile(domainsFile)

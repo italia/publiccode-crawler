@@ -23,6 +23,7 @@ var oneCmd = &cobra.Command{
 	The domainID should be one in the domains.yml list`,
 	Args: cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Read args from command.
 		domainID := args[0]
 		repo := args[1]
 

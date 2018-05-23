@@ -15,7 +15,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Repository is a single code repository.
+// Repository is a single code repository. FileRawURL contains the direct url to the raw file.
 type Repository struct {
 	Name       string
 	FileRawURL string
@@ -23,6 +23,7 @@ type Repository struct {
 	Headers    map[string]string
 }
 
+// ProcessRepositories process the repositories channel and check the availability of the file.
 func ProcessRepositories(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	log.Debug("Repositories are going to be processed...")
 
@@ -32,6 +33,7 @@ func ProcessRepositories(repositories chan Repository, index string, wg *sync.Wa
 	}
 }
 
+// checkAvailability looks for the fileRawUrl and, if found, save it.
 func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	name := repository.Name
 	fileRawUrl := repository.FileRawURL
@@ -65,7 +67,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	wg.Done()
 }
 
-// Process delegates the work to single PA crawlers.
+// ProcessPA delegates the work to single PA crawlers.
 func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index string, wg *sync.WaitGroup) {
 	log.Debugf("ProcessPA: %s", pa.CodiceIPA)
 	// range over repositories.
@@ -85,11 +87,10 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 
 }
 
+// ProcessPADomain starts from the org page and process all the next.
 func ProcessPADomain(org string, domain Domain, repositories chan Repository, index string, wg *sync.WaitGroup) {
-	var url string
-
-	// Starting URL. Generate using go templates.
-	url = domain.ApiOrgURL
+	// Generate url using go templates. It will replace {{.OrgName}} with "org".
+	url := domain.ApiOrgURL
 	data := struct{ OrgName string }{OrgName: org}
 	// Create a new template and parse the Url into it.
 	t := template.Must(template.New("url").Parse(url))
@@ -98,6 +99,7 @@ func ProcessPADomain(org string, domain Domain, repositories chan Repository, in
 	t.Execute(buf, data)
 	url = buf.String()
 
+	// Process the pages until the end is reached.
 	for {
 		log.Debugf("processAndGetNextURL handler:%s", url)
 		nextURL, err := domain.processAndGetNextURL(url, wg, repositories)
@@ -109,9 +111,7 @@ func ProcessPADomain(org string, domain Domain, repositories chan Repository, in
 
 		// If end is reached, nextUrl is empty.
 		if nextURL == "" {
-			log.Infof("Url: %s - is the last one.", url)
-
-			// WaitingGroupd
+			log.Infof("Url: %s - is the last one for %s.", url, org)
 			wg.Done()
 			return
 		}
@@ -121,6 +121,7 @@ func ProcessPADomain(org string, domain Domain, repositories chan Repository, in
 }
 
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
+// It also switch the alias for elasticsearch index.
 func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	wg.Wait()
 

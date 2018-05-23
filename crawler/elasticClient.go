@@ -10,6 +10,7 @@ import (
 	"github.com/prometheus/common/log"
 )
 
+// ElasticClientFactory returns an elastic Client.
 func ElasticClientFactory(URL, user, password string) (*elastic.Client, error) {
 	client, err := elastic.NewClient(
 		elastic.SetURL(URL),
@@ -41,12 +42,12 @@ func NewESRetrier() *ElasticRetrier {
 func (r *ElasticRetrier) Retry(ctx context.Context, retry int, req *http.Request, resp *http.Response, err error) (time.Duration, bool, error) {
 	log.Warn("Elasticsearch connection problem. Retry.")
 
-	// Stop after 8 retries: 2m
+	// Stop after 8 retries: 2m.
 	if retry >= 8 {
 		return 0, false, errors.New("elasticsearch or network down")
 	}
 
-	// Let the backoff strategy decide how long to wait and whether to stop
+	// Let the backoff strategy decide how long to wait and whether to stop.
 	wait, stop := r.backoff.Next(retry)
 	return wait, stop, nil
 }
