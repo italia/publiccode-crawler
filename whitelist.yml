@@ -7,25 +7,29 @@
       organizations: # List of organizations links for the API.
         - 'italia'
 
-- codiceIPA: 'generic-iPA'
-  name: 'Pubblica utilità 4.0 Gov'
+- codiceIPA: 'example-Github-iPA' 
+  name: 'Comune di Github sul Naviglio'
   repositories:
     - api: 'github'
       organizations:
-        - 'italia'
-        - 'publiccodenet'
-    - api: 'bitbucket'
-      organizations:
-        - 'wellnet-team'
-        - 'blowmeaway'
+        - 'google'
+
+- codiceIPA: 'example-Gitlab-iPA'
+  name: 'Comune di Gitlab sul Naviglio'
+  repositories:
     - api: 'gitlab'
       organizations:
         - 'gitlab-org'
-        - 'cerfacs'
 
+- codiceIPA: 'example-Bitbucket-iPA'
+  name: 'Comune di Bitbucket sul Naviglio'
+  repositories:
+    - api: 'bitbucket'
+      organizations:
+        - 'soft'
 
-- codiceIPA: 'abba'
-  name: 'Nome'
+- codiceIPA: 'abb_0577'
+  name: 'Comune di Abb'
   repositories:
     - api: 'github'
       organizations:
@@ -34,8 +38,6 @@
         - 'docker'
         - 'ArchiveTeam'
         - 'recursecenter'
-        - 'google'
-        - 'go'
         - 'cryptography-training'
     - api: 'bitbucket'
       organizations:
