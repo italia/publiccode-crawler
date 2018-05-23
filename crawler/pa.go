@@ -48,13 +48,3 @@ func parseWhitelistFile(data []byte) ([]PA, error) {
 
 	return whitelist, nil
 }
-
-//
-// func (domain Domain) processSingleRepo(url string, repositories chan Repository) error {
-// 	crawler, err := GetSingleClientApiCrawler(domain.ClientApi)
-// 	if err != nil {
-// 		return err
-// 	}
-//
-// 	return crawler(domain, url, repositories)
-// }

@@ -43,5 +43,6 @@ func SaveToES(domain Domain, name string, data []byte, index string, elasticClie
 
 	metrics.GetCounter("repository_file_indexed", index).Inc()
 
-	//log.Debugf("Indexed file %s to index %s, type %s", put.Id, put.Index, put.Type)
+	// put, err := elasticClient.Index(). for "put" data.
+	// log.Debugf("Indexed file %s to index %s, type %s", put.Id, put.Index, put.Type)
 }

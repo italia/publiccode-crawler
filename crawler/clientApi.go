@@ -28,6 +28,7 @@ func RegisterClientApis() {
 	clientSingleApi["bitbucket"] = RegisterSingleBitbucketAPI()
 	clientSingleApi["github"] = RegisterSingleGithubAPI()
 	clientSingleApi["gitlab"] = RegisterSingleGitlabAPI()
+
 }
 
 func GetClientApiCrawler(clientApi string) (Handler, error) {

@@ -1,21 +1,23 @@
 - id: 'github.com'
-  description: 'The famous github.com'
-  client-api: 'github.com'
+  description: 'The leading software development platform: github.com'
+  client-api: 'github'
+  apiBaseUrl: 'https://api.github.com/orgs/{{.OrgName}}/repos'
   rawBaseUrl: 'https://raw.githubusercontent.com'
   basic-auth:
-    - "Z2l0aDAwMUBjZC5taW50ZW1haWwuY29tOmdpdGgwMDFAY2QubWludGVtYWlsLmNvbQ=="
-    - "Z2l0aDAwMkBjZC5taW50ZW1haWwuY29tOmdpdGgwMDJAY2QubWludGVtYWlsLmNvbQ=="
-#
-# - id: 'bitbucket.com'
-#   description: 'bitbucket.com'
-#   client-api: 'bitbucket'
-#   url: 'https://api.bitbucket.org/2.0/repositories?pagelen=100&after=2018-04-22'
-#   rawBaseUrl: 'https://bitbucket.org'
-#   basic-auth:
-#     - ""
-#
-# - id: 'gitlab.com'
-#   description: 'gitlab.com'
-#   client-api: 'gitlab'
-#   url: 'https://gitlab.com/api/v4/projects?archived=false&membership=false&order_by=created_at&owned=false&page=1&per_page=100&simple=false&sort=desc&starred=false&statistics=false&with_custom_attributes=false&with_issues_enabled=false&with_merge_requests_enabled=false'
-#   rawBaseUrl: 'https://gitlab.com'
+    - ''
+
+- id: 'bitbucket.com'
+  description: 'General Git solution for professional teams: bitbucket.com'
+  client-api: 'bitbucket'
+  apiBaseUrl: 'https://api.bitbucket.org/2.0/repositories/{{.OrgName}}/?pagelen=100'
+  rawBaseUrl: 'https://bitbucket.org'
+  basic-auth:
+    - ''
+
+- id: 'gitlab.com'
+  description: 'The only single product for the complete DevOps lifecycle: gitlab.com'
+  client-api: 'gitlab'
+  apiBaseUrl: 'https://gitlab.com/api/v4/groups/{{.OrgName}}'
+  rawBaseUrl: 'https://gitlab.com'
+  basic-auth:
+    - ''

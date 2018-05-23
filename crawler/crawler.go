@@ -1,7 +1,9 @@
 package crawler
 
 import (
+	"bytes"
 	"context"
+	"html/template"
 	"sync"
 
 	"net/http"
@@ -86,17 +88,15 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 func ProcessPADomain(org string, domain Domain, repositories chan Repository, index string, wg *sync.WaitGroup) {
 	var url string
 
-	// Starting URL.
-	// TODO: refactoring
-	if domain.ClientApi == "github" {
-		url = domain.ApiBaseUrl + org + "/repos"
-	}
-	if domain.ClientApi == "gitlab" {
-		url = domain.ApiBaseUrl + org
-	}
-	if domain.ClientApi == "bitbucket" {
-		url = domain.ApiBaseUrl + org + "/?pagelen=100"
-	}
+	// Starting URL. Generate using go templates.
+	url = domain.ApiBaseUrl
+	data := struct{ OrgName string }{OrgName: org}
+	// Create a new template and parse the Url into it.
+	t := template.Must(template.New("url").Parse(url))
+	buf := new(bytes.Buffer)
+	// Execute the template: add "data" data in "url".
+	t.Execute(buf, data)
+	url = buf.String()
 
 	for {
 		log.Debugf("processAndGetNextURL handler:%s", url)
