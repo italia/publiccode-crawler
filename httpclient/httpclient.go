@@ -36,7 +36,7 @@ const (
 // GetURL retrieves data, status and response headers from an URL.
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
 func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
-	expBackoffAttemps := 0
+	expBackoffAttempts := 0
 
 	var sleep time.Duration
 	const timeout = time.Duration(60 * time.Second)
@@ -117,10 +117,10 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			} else {
 				// Calculate ExpBackoff
-				expBackoffWait := expBackoffCalc(expBackoffAttemps)
+				expBackoffWait := expBackoffCalc(expBackoffAttempts)
 				// Perform a backoff sleep time.
 				sleep = time.Duration(expBackoffWait) * time.Second
-				expBackoffAttemps = expBackoffAttemps + 1
+				expBackoffAttempts = expBackoffAttempts + 1
 				log.Info("Rate limit reached, sleep %v \n", sleep)
 				time.Sleep(sleep)
 			}
@@ -166,10 +166,10 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 		} else {
 			// Generic invalid status code.
 			// Calculate ExpBackoff
-			expBackoffWait := expBackoffCalc(expBackoffAttemps)
+			expBackoffWait := expBackoffCalc(expBackoffAttempts)
 			// Perform a backoff sleep time.
 			sleep = time.Duration(expBackoffWait) * time.Second
-			expBackoffAttemps = expBackoffAttemps + 1
+			expBackoffAttempts = expBackoffAttempts + 1
 			log.Infof("Invalid status code on %s : sleep %v \n", URL, sleep)
 			time.Sleep(sleep)
 		}
@@ -206,6 +206,6 @@ func HeaderLink(command, linkHeader string) string {
 }
 
 // expBackoffCalc calculate the exponential backoff given.
-func expBackoffCalc(attemps int) float64 {
-	return (math.Pow(2, float64(attemps)) - 1) / 2
+func expBackoffCalc(attempts int) float64 {
+	return (math.Pow(2, float64(attempts)) - 1) / 2
 }
