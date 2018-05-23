@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"sync"
@@ -297,14 +298,8 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 			log.Error(err)
 		}
 
-		// Clear the url.
-		fullName := u.Path
-		if u.Path[:1] == "/" {
-			fullName = fullName[1:]
-		}
-		if u.Path[len(u.Path)-1:] == "/" {
-			fullName = fullName[:len(u.Path)-2]
-		}
+		// Clear the url. Trim slash.
+		fullName := strings.Trim(u.Path, "/")
 
 		var fullURL string
 		// Starting URL. Generate using go templates.
