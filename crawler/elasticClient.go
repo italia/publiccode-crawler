@@ -22,7 +22,7 @@ func ElasticClientFactory(URL, user, password string) (*elastic.Client, error) {
 		return nil, err
 	}
 	if elastic.IsConnErr(err) {
-		log.Error("Elasticsearch connection problem: %v", err)
+		log.Errorf("Elasticsearch connection problem: %v", err)
 		return nil, err
 	}
 
