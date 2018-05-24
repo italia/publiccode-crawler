@@ -34,14 +34,12 @@ var crawlCmd = &cobra.Command{
 		}
 
 		// Read and parse list of domains.
-		domainsFile := "domains.yml"
 		domains, err := crawler.ReadAndParseDomains(domainsFile)
 		if err != nil {
 			panic(err)
 		}
 
 		// Read and parse the whitelist.
-		whitelistFile := "whitelist.yml"
 		whitelist, err := crawler.ReadAndParseWhitelist(whitelistFile)
 		if err != nil {
 			panic(err)

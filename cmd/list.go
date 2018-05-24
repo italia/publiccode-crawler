@@ -19,7 +19,6 @@ var listCmd = &cobra.Command{
 	Long:  `List all the Public Administrations in whitelist.yml file.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Read and parse the whitelist.
-		whitelistFile := "whitelist.yml"
 		whitelist, err := crawler.ReadAndParseWhitelist(whitelistFile)
 		if err != nil {
 			panic(err)

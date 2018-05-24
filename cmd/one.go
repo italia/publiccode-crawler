@@ -40,7 +40,6 @@ var oneCmd = &cobra.Command{
 		}
 
 		// Read and parse list of domains.
-		domainsFile := "domains.yml"
 		domains, err := crawler.ReadAndParseDomains(domainsFile)
 		if err != nil {
 			panic(err)
