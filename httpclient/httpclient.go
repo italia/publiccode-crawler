@@ -1,14 +1,11 @@
 package httpclient
 
 import (
-	"io/ioutil"
 	"math"
 	"net/http"
-	"strconv"
 	"time"
 
 	version "github.com/italia/developers-italia-backend/version"
-	log "github.com/sirupsen/logrus"
 	"github.com/tomnomnom/linkheader"
 )
 
@@ -19,26 +16,14 @@ type HTTPResponse struct {
 	Headers http.Header
 }
 
-// ResponseStatus contains the status and statusCode of a response.
-type ResponseStatus struct {
-	Text string // e.g. "200 OK"
-	Code int    // e.g. 200
-}
-
 const (
 	userAgent = "Golang_italia_backend_bot"
-
-	headerRetryAfter    = "Retry-After"
-	headerRateReset     = "X-RateLimit-Reset"
-	headerRateRemaining = "X-RateLimit-Remaining"
 )
 
 // GetURL retrieves data, status and response headers from an URL.
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
 func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 	expBackoffAttempts := 0
-
-	var sleep time.Duration
 	const timeout = time.Duration(60 * time.Second)
 
 	client := http.Client{
@@ -51,7 +36,7 @@ func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 		if err != nil {
 			return HTTPResponse{
 				Body:    nil,
-				Status:  ResponseStatus{Text: err.Error(), Code: -1},
+				Status:  ResponseStatus{Text: err.Error() + URL, Code: -1},
 				Headers: nil,
 			}, err
 		}
@@ -69,123 +54,51 @@ func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 		if err != nil {
 			return HTTPResponse{
 				Body:    nil,
-				Status:  ResponseStatus{Text: err.Error(), Code: -1},
+				Status:  ResponseStatus{Text: err.Error() + URL, Code: -1},
 				Headers: nil,
 			}, err
 		}
 
 		// Check if the request results in http notFound.
 		if resp.StatusCode == http.StatusNotFound {
-			return HTTPResponse{
-				Body:    nil,
-				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
-				Headers: resp.Header,
-			}, nil
-
-			// Check if the request results in http OK.
+			return statusNotFound(resp)
 		}
+
+		// Check if the request results in http OK.
 		if resp.StatusCode == http.StatusOK {
-			body, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				log.Errorf(err.Error())
-				return HTTPResponse{
-					Body:    nil,
-					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
-					Headers: resp.Header,
-				}, err
-			}
-
-			err = resp.Body.Close()
-			if err != nil {
-				log.Errorf(err.Error())
-			}
-
-			return HTTPResponse{
-				Body:    body,
-				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
-				Headers: resp.Header,
-			}, nil
-
-			// Check if the request results in http RateLimit error.
+			return statusOK(resp)
 		}
+		// Check if the request results in http RateLimit error.
 		if resp.StatusCode == http.StatusTooManyRequests {
-
-			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
-				// If Retry-after is set, use that value.
-				log.Infof("Waiting: %s seconds for %s. (The value of %s)", retryAfter, URL, headerRetryAfter)
-				secondsAfterRetry, err := strconv.Atoi(retryAfter)
-				if err != nil {
-					log.Warn(err)
-				}
-				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
-			} else {
-				// Calculate ExpBackoff
-				expBackoffWait := expBackoffCalc(expBackoffAttempts)
-				// Perform a backoff sleep time.
-				sleep = time.Duration(expBackoffWait) * time.Second
-				expBackoffAttempts = expBackoffAttempts + 1
-				log.Info("Rate limit reached, sleep %v \n", sleep)
-				time.Sleep(sleep)
-			}
-
-			// Check if the request result in http Forbidden status
-		} else if resp.StatusCode == http.StatusForbidden {
-
-			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
-				// If Retry-after is set, use that value.
-				log.Infof("Waiting: %s seconds for %s. (The value of %s)", retryAfter, URL, headerRetryAfter)
-				secondsAfterRetry, err := strconv.Atoi(retryAfter)
-				if err != nil {
-					log.Warn(err)
-				}
-				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
-
-			} else if reset := resp.Header.Get(headerRateReset); reset != "" {
-				// If X-rateLimit-remaining
-				if remaining := resp.Header.Get(headerRateRemaining); reset != "" {
-					rateRemaining, err := strconv.Atoi(remaining)
-					if err != nil {
-						log.Warn(err)
-					}
-					if rateRemaining != 0 {
-						// In this case there is another StatusForbidden and i should skip.
-						log.Errorf("Forbidden error on %s.", URL)
-						return HTTPResponse{
-							Body:    nil,
-							Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
-							Headers: resp.Header,
-						}, err
-					}
-
-					retryEpoch, err := strconv.Atoi(reset)
-					if err != nil {
-						log.Warn(err)
-					}
-					secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
-					log.Infof("Waiting %s seconds. (The difference between header %s and time.Now())", strconv.FormatInt(secondsAfterRetry, 10), headerRateReset)
-					time.Sleep(time.Second * time.Duration(secondsAfterRetry))
-
-				}
-			} else {
-				// Generic forbidden.
-				log.Errorf("Forbidden error on %s.", URL)
+			expBackoffAttempts, err = statusTooManyRequests(resp, expBackoffAttempts)
+			if err != nil {
 				return HTTPResponse{
 					Body:    nil,
-					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
-					Headers: resp.Header,
+					Status:  ResponseStatus{Text: err.Error() + URL, Code: -1},
+					Headers: nil,
 				}, err
 			}
 
-		} else {
-			// Generic invalid status code.
-			// Calculate ExpBackoff
-			expBackoffWait := expBackoffCalc(expBackoffAttempts)
-			// Perform a backoff sleep time.
-			sleep = time.Duration(expBackoffWait) * time.Second
-			expBackoffAttempts = expBackoffAttempts + 1
-			log.Infof("Invalid status code on %s : sleep %v \n", URL, sleep)
-			time.Sleep(sleep)
 		}
+		// Check if the request result in http Forbidden status
+		if resp.StatusCode == http.StatusForbidden {
+			expBackoffAttempts, err = statusForbidden(resp, expBackoffAttempts)
+			if err != nil {
+				return HTTPResponse{
+					Body:    nil,
+					Status:  ResponseStatus{Text: err.Error() + URL, Code: -1},
+					Headers: nil,
+				}, err
+			}
+		}
+
+		// Generic invalid status code.
+		return HTTPResponse{
+			Body:    nil,
+			Status:  ResponseStatus{Text: "Invalid Status Code: " + URL, Code: -1},
+			Headers: nil,
+		}, err
+
 	}
 }
 

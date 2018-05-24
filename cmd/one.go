@@ -62,7 +62,7 @@ var oneCmd = &cobra.Command{
 		// Process each domain service.
 		for _, domain := range domains {
 			// get the correct domain ID
-			if domain.Id == domainID {
+			if domain.ID == domainID {
 				log.Debugf("Processing domain: %s - Repo: %s", domainID, repo)
 				err = crawler.ProcessSingleRepository(repo, domain, repositories)
 				if err != nil {
