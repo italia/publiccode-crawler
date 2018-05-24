@@ -101,7 +101,7 @@ func statusForbidden(resp *http.Response, expBackoffAttempts int) (int, error) {
 			}
 			if rateRemaining != 0 {
 				// In this case there is another StatusForbidden and i should skip.
-				return expBackoffAttempts, fmt.Errorf("Forbidden resource.")
+				return expBackoffAttempts, fmt.Errorf("forbidden resource")
 			}
 
 			retryEpoch, err := strconv.Atoi(reset)
@@ -116,6 +116,6 @@ func statusForbidden(resp *http.Response, expBackoffAttempts int) (int, error) {
 	}
 
 	// Generic forbidden.
-	return expBackoffAttempts, fmt.Errorf("Forbidden resource.")
+	return expBackoffAttempts, fmt.Errorf("forbidden resource")
 
 }
