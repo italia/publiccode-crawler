@@ -140,7 +140,7 @@ type BitbucketRepo struct {
 	Description string    `json:"description"`
 }
 
-// Repository links.
+// Links is the list of Links associated to the repository.
 type Links struct {
 	Watchers struct {
 		Href string `json:"href"`
@@ -267,7 +267,7 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		fullName := strings.Trim(u.Path, "/")
 
 		// Generate fullURL using go templates. It will replace {{.Name}} with fullName.
-		fullURL := domain.ApiRepoURL
+		fullURL := domain.APIRepoURL
 		data := struct{ Name string }{Name: fullName}
 		// Create a new template and parse the Url into it.
 		t := template.Must(template.New("url").Parse(fullURL))
@@ -294,7 +294,7 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		}
 
 		// Join file raw URL.
-		u, err = url.Parse(domain.RawBaseUrl)
+		u, err = url.Parse(domain.RawBaseURL)
 		if err != nil {
 			return err
 		}

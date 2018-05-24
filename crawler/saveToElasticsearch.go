@@ -16,7 +16,7 @@ type File struct {
 	Data   string `json:"data"`
 }
 
-// SaveES save the chosen <file_name> in elasticsearch
+// SaveToES save the chosen data []byte in elasticsearch
 func SaveToES(domain Domain, name string, data []byte, index string, elasticClient *elastic.Client) {
 	const (
 		// Elasticsearch mapping for publiccode. Checkout elasticsearch/mappings/software.json
@@ -28,13 +28,13 @@ func SaveToES(domain Domain, name string, data []byte, index string, elasticClie
 	ctx := context.Background()
 
 	// Add a document to the index.
-	file := File{Source: domain.Id, Name: name, Data: string(data)}
+	file := File{Source: domain.ID, Name: name, Data: string(data)}
 
 	// Put publiccode data in ES.
 	_, err := elasticClient.Index().
 		Index(index).
 		Type("doc").
-		Id(domain.Id + "/" + name + "_" + index).
+		Id(domain.ID + "/" + name + "_" + index).
 		BodyJson(file).
 		Do(ctx)
 	if err != nil {

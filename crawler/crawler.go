@@ -35,17 +35,17 @@ func ProcessRepositories(repositories chan Repository, index string, wg *sync.Wa
 	}
 }
 
-// checkAvailability looks for the fileRawUrl and, if found, save it.
+// checkAvailability looks for the FileRawURL and, if found, save it.
 func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	name := repository.Name
-	fileRawUrl := repository.FileRawURL
+	FileRawURL := repository.FileRawURL
 	domain := repository.Domain
 	headers := repository.Headers
 
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", index).Inc()
 
-	resp, err := httpclient.GetURL(fileRawUrl, headers)
+	resp, err := httpclient.GetURL(FileRawURL, headers)
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
 
@@ -58,9 +58,9 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
 		// TODO: now validation is useless because we test on .gitignore file.
-		// err := validateRemoteFile(resp.Body, fileRawUrl, index)
+		// err := validateRemoteFile(resp.Body, FileRawURL, index)
 		// if err != nil {
-		// 	log.Warn("Validator fails for: " + fileRawUrl)
+		// 	log.Warn("Validator fails for: " + FileRawURL)
 		// 	log.Warn("Validator errors:" + err.Error())
 		// }
 	}
@@ -76,7 +76,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 	for _, repository := range pa.Repositories {
 		for _, domain := range domains {
 			// if repository API is the domain
-			if domain.ClientApi == repository.API {
+			if domain.ClientAPI == repository.API {
 				for _, org := range repository.Organizations {
 					log.Debugf("ProcessPADomain: %s - API: %s", org, repository.API)
 					wg.Add(1)
@@ -92,7 +92,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 // ProcessPADomain starts from the org page and process all the next.
 func ProcessPADomain(org string, domain Domain, repositories chan Repository, index string, wg *sync.WaitGroup) {
 	// Generate url using go templates. It will replace {{.OrgName}} with "org".
-	url := domain.ApiOrgURL
+	url := domain.APIOrgURL
 	data := struct{ OrgName string }{OrgName: org}
 	// Create a new template and parse the Url into it.
 	t := template.Must(template.New("url").Parse(url))

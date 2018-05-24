@@ -33,7 +33,7 @@ var domainsCmd = &cobra.Command{
 			if len(domain.BasicAuth) > 0 {
 				basicAuth = "yes"
 			}
-			data = append(data, []string{domain.Id, domain.Description, domain.ClientApi, basicAuth})
+			data = append(data, []string{domain.Id, domain.Description, domain.ClientAPI, basicAuth})
 
 		}
 

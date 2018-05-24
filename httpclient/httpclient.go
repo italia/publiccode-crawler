@@ -12,8 +12,8 @@ import (
 	"github.com/tomnomnom/linkheader"
 )
 
-// HttpResponse wraps body, Status and Headers from the http.Response.
-type HttpResponse struct {
+// HTTPResponse wraps body, Status and Headers from the http.Response.
+type HTTPResponse struct {
 	Body    []byte
 	Status  ResponseStatus
 	Headers http.Header
@@ -35,7 +35,7 @@ const (
 
 // GetURL retrieves data, status and response headers from an URL.
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
-func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
+func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 	expBackoffAttempts := 0
 
 	var sleep time.Duration
@@ -49,7 +49,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 	for {
 		req, err := http.NewRequest("GET", URL, nil)
 		if err != nil {
-			return HttpResponse{
+			return HTTPResponse{
 				Body:    nil,
 				Status:  ResponseStatus{Text: err.Error(), Code: -1},
 				Headers: nil,
@@ -67,7 +67,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 		// Perform the request.
 		resp, err := client.Do(req)
 		if err != nil {
-			return HttpResponse{
+			return HTTPResponse{
 				Body:    nil,
 				Status:  ResponseStatus{Text: err.Error(), Code: -1},
 				Headers: nil,
@@ -76,7 +76,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 
 		// Check if the request results in http notFound.
 		if resp.StatusCode == http.StatusNotFound {
-			return HttpResponse{
+			return HTTPResponse{
 				Body:    nil,
 				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
 				Headers: resp.Header,
@@ -88,7 +88,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 			body, err := ioutil.ReadAll(resp.Body)
 			if err != nil {
 				log.Errorf(err.Error())
-				return HttpResponse{
+				return HTTPResponse{
 					Body:    nil,
 					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
 					Headers: resp.Header,
@@ -100,7 +100,7 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 				log.Errorf(err.Error())
 			}
 
-			return HttpResponse{
+			return HTTPResponse{
 				Body:    body,
 				Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
 				Headers: resp.Header,
@@ -150,25 +150,26 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 					if rateRemaining != 0 {
 						// In this case there is another StatusForbidden and i should skip.
 						log.Errorf("Forbidden error on %s.", URL)
-						return HttpResponse{
+						return HTTPResponse{
 							Body:    nil,
 							Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
 							Headers: resp.Header,
 						}, err
-					} else {
-						retryEpoch, err := strconv.Atoi(reset)
-						if err != nil {
-							log.Warn(err)
-						}
-						secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
-						log.Infof("Waiting %s seconds. (The difference between header %s and time.Now())", strconv.FormatInt(secondsAfterRetry, 10), headerRateReset)
-						time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 					}
+
+					retryEpoch, err := strconv.Atoi(reset)
+					if err != nil {
+						log.Warn(err)
+					}
+					secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
+					log.Infof("Waiting %s seconds. (The difference between header %s and time.Now())", strconv.FormatInt(secondsAfterRetry, 10), headerRateReset)
+					time.Sleep(time.Second * time.Duration(secondsAfterRetry))
+
 				}
 			} else {
 				// Generic forbidden.
 				log.Errorf("Forbidden error on %s.", URL)
-				return HttpResponse{
+				return HTTPResponse{
 					Body:    nil,
 					Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
 					Headers: resp.Header,

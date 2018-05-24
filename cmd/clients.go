@@ -25,7 +25,7 @@ var clientsCmd = &cobra.Command{
 		var data [][]string
 
 		// Iterate over the crawler clients.
-		for id, _ := range clients {
+		for id := range clients {
 			data = append(data, []string{id})
 		}
 

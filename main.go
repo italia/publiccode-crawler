@@ -21,7 +21,7 @@ func main() {
 	}
 
 	// Register client APIs.
-	crawler.RegisterClientApis()
+	crawler.RegisterClientAPIs()
 
 	cmd.Execute()
 }

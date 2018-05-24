@@ -28,7 +28,7 @@ var oneCmd = &cobra.Command{
 		repo := args[1]
 
 		// Register client API plugins.
-		crawler.RegisterClientApis()
+		crawler.RegisterClientAPIs()
 
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(

@@ -3,7 +3,6 @@ package crawler
 import (
 	"gopkg.in/yaml.v2"
 
-	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -20,16 +19,17 @@ type PA struct {
 	} `yaml:"repositories"`
 }
 
+// ReadAndParseWhitelist read the whitelist and return the parsed content in a slice of PA.
 func ReadAndParseWhitelist(whitelistFile string) ([]PA, error) {
 	// Open and read whitelist file.
 	data, err := ioutil.ReadFile(whitelistFile)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error in reading %s file: %v", whitelistFile, err))
+		return nil, fmt.Errorf("error in reading %s file: %v", whitelistFile, err)
 	}
 	// Parse whitelist file.
 	whitelist, err := parseWhitelistFile(data)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error in parsing %s file: %v", whitelistFile, err))
+		return nil, fmt.Errorf("error in parsing %s file: %v", whitelistFile, err)
 	}
 	log.Infof("Loaded and parsed %s", whitelistFile)
 

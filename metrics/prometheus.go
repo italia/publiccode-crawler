@@ -30,16 +30,16 @@ func GetCounter(name, namespace string) prometheus.Counter {
 	return registeredCounters[name]
 }
 
-// PrometheusCounter create a new Counter of given name with help text.
+// RegisterPrometheusCounter register a new Counter of given name with help text.
 func RegisterPrometheusCounter(name, helpText, namespace string) {
 	// Validate and fix name (replace invalid chars with underscore "_").
 	name = validateAndFix(name, validPrometheusName)
 
 	// Add counter in the map.
 	registeredCounters[name] = prometheus.NewCounter(prometheus.CounterOpts{
-		Name: name,
-		Namespace: "publiccode_crawler_"+namespace,
-		Help: helpText,
+		Name:      name,
+		Namespace: "publiccode_crawler_" + namespace,
+		Help:      helpText,
 	})
 	// Register counter in Prometheus service.
 	err := prometheus.Register(registeredCounters[name])
@@ -48,7 +48,7 @@ func RegisterPrometheusCounter(name, helpText, namespace string) {
 	}
 }
 
-// StartPrometheusMetricServer starts a metric server handling
+// StartPrometheusMetricsServer starts a metric server handling
 // "/metrics" on "localhost:8081" exposing the registered metrics.
 func StartPrometheusMetricsServer() {
 	http.Handle("/metrics", promhttp.Handler())

@@ -237,7 +237,7 @@ func RegisterGithubAPI() Handler {
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
 			// Join file raw URL.
-			u, err := url.Parse(domain.RawBaseUrl)
+			u, err := url.Parse(domain.RawBaseURL)
 			if err != nil {
 				return link, err
 			}
@@ -263,7 +263,7 @@ func RegisterGithubAPI() Handler {
 	}
 }
 
-// RegisterSingleBitbucketAPI register the crawler function for single repository Github API.
+// RegisterSingleGithubAPI register the crawler function for single repository Github API.
 // Return nil if the repository was successfully added to repositories channel.
 // Otherwise return the generated error.
 func RegisterSingleGithubAPI() SingleHandler {
@@ -287,7 +287,7 @@ func RegisterSingleGithubAPI() SingleHandler {
 		fullName := strings.Trim(u.Path, "/")
 
 		// Generate fullURL using go templates. It will replace {{.Name}} with fullName.
-		fullURL := domain.ApiRepoURL
+		fullURL := domain.APIRepoURL
 		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
 		// Create a new template and parse the Url into it.
 		t := template.Must(template.New("url").Parse(fullURL))
@@ -303,7 +303,7 @@ func RegisterSingleGithubAPI() SingleHandler {
 		}
 
 		// Join file raw URL.
-		u, err = url.Parse(domain.RawBaseUrl)
+		u, err = url.Parse(domain.RawBaseURL)
 		if err != nil {
 			return err
 		}

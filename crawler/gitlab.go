@@ -222,7 +222,7 @@ func RegisterGitlabAPI() Handler {
 		for _, v := range results.Projects {
 			log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
 			// Join file raw URL.
-			u, err := url.Parse(domain.RawBaseUrl)
+			u, err := url.Parse(domain.RawBaseURL)
 			if err != nil {
 				return link, err
 			}
@@ -241,7 +241,7 @@ func RegisterGitlabAPI() Handler {
 		for _, v := range results.SharedProjects {
 			log.Debugf("Gitlab SharedProjects %s", v.PathWithNamespace)
 			// Join file raw URL.
-			u, err := url.Parse(domain.RawBaseUrl)
+			u, err := url.Parse(domain.RawBaseURL)
 			if err != nil {
 				return link, err
 			}
@@ -294,7 +294,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 
 		var fullURL string
 		// Starting URL. Generate using go templates.
-		fullURL = domain.ApiRepoURL
+		fullURL = domain.APIRepoURL
 		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
 		// Create a new template and parse the Url into it.
 		t := template.Must(template.New("url").Parse(fullURL))
@@ -321,7 +321,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		}
 
 		// Join file raw URL.
-		u, err = url.Parse(domain.RawBaseUrl)
+		u, err = url.Parse(domain.RawBaseURL)
 		if err != nil {
 			return err
 		}

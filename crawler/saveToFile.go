@@ -16,7 +16,7 @@ func SaveToFile(domain Domain, name string, data []byte, index string) {
 	fileName := index + "_" + viper.GetString("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
-	path := filepath.Join("./data", domain.Id, vendor, repo)
+	path := filepath.Join("./data", domain.ID, vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {

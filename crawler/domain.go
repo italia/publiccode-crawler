@@ -5,7 +5,6 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -15,12 +14,12 @@ import (
 // Domain is a single code hosting service.
 type Domain struct {
 	// Domains.yml data
-	Id          string   `yaml:"id"`
+	ID          string   `yaml:"id"`
 	Description string   `yaml:"description"`
-	ClientApi   string   `yaml:"client-api"`
-	ApiOrgURL   string   `yaml:"apiOrgUrl"`
-	ApiRepoURL  string   `yaml:"apiRepoUrl"`
-	RawBaseUrl  string   `yaml:"rawBaseUrl"`
+	ClientAPI   string   `yaml:"client-api"`
+	APIOrgURL   string   `yaml:"apiOrgUrl"`
+	APIRepoURL  string   `yaml:"apiRepoUrl"`
+	RawBaseURL  string   `yaml:"rawBaseUrl"`
 	BasicAuth   []string `yaml:"basic-auth"`
 }
 
@@ -29,12 +28,12 @@ func ReadAndParseDomains(domainsFile string) ([]Domain, error) {
 	// Open and read domains file list.
 	data, err := ioutil.ReadFile(domainsFile)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error in reading %s file: %v", domainsFile, err))
+		return nil, fmt.Errorf("error in reading %s file: %v", domainsFile, err)
 	}
 	// Parse domains file list.
 	domains, err := parseDomainsFile(data)
 	if err != nil {
-		return nil, errors.New(fmt.Sprintf("error in parsing %s file: %v", domainsFile, err))
+		return nil, fmt.Errorf("error in parsing %s file: %v", domainsFile, err)
 	}
 	log.Infof("Loaded and parsed %s", domainsFile)
 
@@ -55,7 +54,7 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 }
 
 func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
-	crawler, err := GetClientApiCrawler(domain.ClientApi)
+	crawler, err := GetClientAPICrawler(domain.ClientAPI)
 	if err != nil {
 		return "", err
 	}
@@ -64,7 +63,7 @@ func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, reposi
 }
 
 func (domain Domain) processSingleRepo(url string, repositories chan Repository) error {
-	crawler, err := GetSingleClientApiCrawler(domain.ClientApi)
+	crawler, err := GetSingleClientAPICrawler(domain.ClientAPI)
 	if err != nil {
 		return err
 	}
