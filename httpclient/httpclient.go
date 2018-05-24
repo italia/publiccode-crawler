@@ -113,7 +113,10 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
 				log.Infof("Waiting: %s seconds for %s. (The value of %s)", retryAfter, URL, headerRetryAfter)
-				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
+				secondsAfterRetry, err := strconv.Atoi(retryAfter)
+				if err != nil {
+					log.Warn(err)
+				}
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			} else {
 				// Calculate ExpBackoff
@@ -131,13 +134,19 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 			if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 				// If Retry-after is set, use that value.
 				log.Infof("Waiting: %s seconds for %s. (The value of %s)", retryAfter, URL, headerRetryAfter)
-				secondsAfterRetry, _ := strconv.Atoi(retryAfter)
+				secondsAfterRetry, err := strconv.Atoi(retryAfter)
+				if err != nil {
+					log.Warn(err)
+				}
 				time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 
 			} else if reset := resp.Header.Get(headerRateReset); reset != "" {
 				// If X-rateLimit-remaining
 				if remaining := resp.Header.Get(headerRateRemaining); reset != "" {
-					rateRemaining, _ := strconv.Atoi(remaining)
+					rateRemaining, err := strconv.Atoi(remaining)
+					if err != nil {
+						log.Warn(err)
+					}
 					if rateRemaining != 0 {
 						// In this case there is another StatusForbidden and i should skip.
 						log.Errorf("Forbidden error on %s.", URL)
@@ -147,7 +156,10 @@ func GetURL(URL string, headers map[string]string) (HttpResponse, error) {
 							Headers: resp.Header,
 						}, err
 					} else {
-						retryEpoch, _ := strconv.Atoi(reset)
+						retryEpoch, err := strconv.Atoi(reset)
+						if err != nil {
+							log.Warn(err)
+						}
 						secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
 						log.Infof("Waiting %s seconds. (The difference between header %s and time.Now())", strconv.FormatInt(secondsAfterRetry, 10), headerRateReset)
 						time.Sleep(time.Second * time.Duration(secondsAfterRetry))
