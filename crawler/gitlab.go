@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"html/template"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"path"
@@ -195,8 +194,10 @@ func RegisterGitlabAPI() Handler {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
-			rand.Seed(time.Now().Unix())
-			n := rand.Int() % len(domain.BasicAuth)
+			n, err := generateRandomInt(len(domain.BasicAuth))
+			if err != nil {
+				return link, err
+			}
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
@@ -276,8 +277,10 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
-			rand.Seed(time.Now().Unix())
-			n := rand.Int() % len(domain.BasicAuth)
+			n, err := generateRandomInt(len(domain.BasicAuth))
+			if err != nil {
+				return err
+			}
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 

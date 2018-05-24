@@ -31,7 +31,7 @@ func ReadAndParseWhitelist(whitelistFile string) ([]PA, error) {
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("error in parsing %s file: %v", whitelistFile, err))
 	}
-	log.Info("Loaded and parsed whitelist.yml")
+	log.Infof("Loaded and parsed %s", whitelistFile)
 
 	return whitelist, nil
 }

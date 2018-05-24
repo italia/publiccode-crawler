@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"html/template"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"path"
@@ -19,7 +18,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Bitbucket is the complete result for the Bitbucket API respose from all repositories list.
+// Bitbucket is the complete response for the Bitbucket all repositories list.
 type Bitbucket struct {
 	Pagelen int `json:"pagelen"`
 	Values  []struct {
@@ -99,7 +98,7 @@ type Bitbucket struct {
 	Next string `json:"next"`
 }
 
-// BitbucketRepo is the complete result for the Bitbucket API respose from a single repository.
+// BitbucketRepo is the complete response for the Bitbucket single repository.
 type BitbucketRepo struct {
 	Scm        string    `json:"scm"`
 	Website    string    `json:"website"`
@@ -191,8 +190,10 @@ func RegisterBitbucketAPI() Handler {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
-			rand.Seed(time.Now().Unix())
-			n := rand.Int() % len(domain.BasicAuth)
+			n, err := generateRandomInt(len(domain.BasicAuth))
+			if err != nil {
+				return link, err
+			}
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
@@ -250,8 +251,10 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
-			rand.Seed(time.Now().Unix())
-			n := rand.Int() % len(domain.BasicAuth)
+			n, err := generateRandomInt(len(domain.BasicAuth))
+			if err != nil {
+				return err
+			}
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 		// Parse link as URL.

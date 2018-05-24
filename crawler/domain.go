@@ -36,7 +36,7 @@ func ReadAndParseDomains(domainsFile string) ([]Domain, error) {
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("error in parsing %s file: %v", domainsFile, err))
 	}
-	log.Info("Loaded and parsed domains.yml")
+	log.Infof("Loaded and parsed %s", domainsFile)
 
 	return domains, nil
 }

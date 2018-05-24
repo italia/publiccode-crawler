@@ -3,7 +3,9 @@ package crawler
 import (
 	"bytes"
 	"context"
+	"crypto/rand"
 	"html/template"
+	"math/big"
 	"sync"
 
 	"net/http"
@@ -153,4 +155,11 @@ func ProcessSingleRepository(url string, domain Domain, repositories chan Reposi
 	}
 
 	return nil
+}
+
+// generateRandomInt returns an integer between 0 and max parameter.
+// "Max" must be less than math.MaxInt32
+func generateRandomInt(max int) (int, error) {
+	result, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
+	return int(result.Int64()), err
 }
