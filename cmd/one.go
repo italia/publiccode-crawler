@@ -27,9 +27,6 @@ var oneCmd = &cobra.Command{
 		domainID := args[0]
 		repo := args[1]
 
-		// Register client API plugins.
-		crawler.RegisterClientAPIs()
-
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
 			viper.GetString("ELASTIC_URL"),

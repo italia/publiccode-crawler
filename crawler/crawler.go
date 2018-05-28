@@ -70,7 +70,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 }
 
 // ProcessPA delegates the work to single PA crawlers.
-func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index string, wg *sync.WaitGroup) {
+func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	log.Debugf("ProcessPA: %s", pa.CodiceIPA)
 	// range over repositories.
 	for _, repository := range pa.Repositories {
@@ -79,8 +79,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 			if domain.ClientAPI == repository.API {
 				for _, org := range repository.Organizations {
 					log.Debugf("ProcessPADomain: %s - API: %s", org, repository.API)
-					wg.Add(1)
-					ProcessPADomain(org, domain, repositories, index, wg)
+					ProcessPADomain(org, domain, repositories, wg)
 				}
 			}
 		}
@@ -90,7 +89,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, index stri
 }
 
 // ProcessPADomain starts from the org page and process all the next.
-func ProcessPADomain(org string, domain Domain, repositories chan Repository, index string, wg *sync.WaitGroup) {
+func ProcessPADomain(org string, domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	// Generate url using go templates. It will replace {{.OrgName}} with "org".
 	url := domain.APIOrgURL
 	data := struct{ OrgName string }{OrgName: org}
@@ -114,7 +113,6 @@ func ProcessPADomain(org string, domain Domain, repositories chan Repository, in
 		// If end is reached, nextUrl is empty.
 		if nextURL == "" {
 			log.Infof("Url: %s - is the last one for %s.", url, org)
-			wg.Done()
 			return
 		}
 		// Update url to nextURL.
@@ -148,7 +146,6 @@ func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup,
 
 // ProcessSingleRepository process a single repository given his url and domain.
 func ProcessSingleRepository(url string, domain Domain, repositories chan Repository) error {
-
 	err := domain.processSingleRepo(url, repositories)
 	if err != nil {
 		return err

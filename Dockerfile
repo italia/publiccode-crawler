@@ -25,9 +25,6 @@ RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
 WORKDIR /app
 COPY --from=build-env /go/src/$PROJECT/$NAME /app/
-COPY --from=build-env /go/src/$PROJECT/domains.yml /app/
-COPY --from=build-env /go/src/$PROJECT/whitelist.yml /app/
-COPY --from=build-env /go/src/$PROJECT/config.toml /app/
 EXPOSE 8081
 
 # ARG values are not allowed in ENTRYPOINT, pass NAME as ENV variable.

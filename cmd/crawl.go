@@ -65,7 +65,7 @@ var crawlCmd = &cobra.Command{
 			wg.Add(1)
 			// If iPAToCrawl is empty crawl all domains, otherwise crawl only the one with CodiceIPA equals to iPAToCrawl.
 			if (iPAToCrawl == "") || (iPAToCrawl != "" && pa.CodiceIPA == iPAToCrawl) {
-				go crawler.ProcessPA(pa, domains, repositories, index, &wg)
+				go crawler.ProcessPA(pa, domains, repositories, &wg)
 			}
 		}
 
@@ -77,5 +77,4 @@ var crawlCmd = &cobra.Command{
 
 		// Process the repositories in order to retrieve the file.
 		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
-
 	}}

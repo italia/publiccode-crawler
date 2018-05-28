@@ -38,7 +38,7 @@ func ReadAndParseWhitelist(whitelistFile string) ([]PA, error) {
 
 // parseWhitelistFile parses the whitelist file to build a slice of PA.
 func parseWhitelistFile(data []byte) ([]PA, error) {
-	whitelist := []PA{}
+	var whitelist []PA
 
 	// Unmarshal the yml in domains list.
 	err := yaml.Unmarshal(data, &whitelist)
