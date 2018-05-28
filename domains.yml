@@ -1,6 +1,5 @@
 - id: 'github.com'
   description: 'The leading software development platform: github.com'
-
   client-api: 'github'
   api-org-url: 'https://api.github.com/orgs/{{.OrgName}}/repos'
   api-repo-url: 'https://api.github.com/repos/{{.Name}}'
@@ -10,7 +9,6 @@
 
 - id: 'bitbucket.com'
   description: 'General Git solution for professional teams: bitbucket.com'
-
   client-api: 'bitbucket'
   api-org-url: 'https://api.bitbucket.org/2.0/repositories/{{.OrgName}}/?pagelen=100'
   api-repo-url: 'https://api.bitbucket.org/2.0/repositories/{{.Name}}'
