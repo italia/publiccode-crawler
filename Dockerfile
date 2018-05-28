@@ -25,12 +25,11 @@ RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 
 WORKDIR /app
 COPY --from=build-env /go/src/$PROJECT/$NAME /app/
-COPY --from=build-env /go/src/$PROJECT/domains.yml /app/
-COPY --from=build-env /go/src/$PROJECT/config.toml /app/
 EXPOSE 8081
 
 # ARG values are not allowed in ENTRYPOINT, pass NAME as ENV variable.
 ENV NAME=$NAME
 RUN chmod +x ./$NAME
 
-ENTRYPOINT ./$NAME one github.com https://github.com/r3vit/publiccode.yml-validator
+#ENTRYPOINT ./$NAME one github.com https://github.com/italia/developers-italia-backend
+ENTRYPOINT ./$NAME crawl

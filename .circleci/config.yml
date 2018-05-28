@@ -15,6 +15,6 @@ jobs:
       # Install and run go linter.
       - run: go get -u github.com/alecthomas/gometalinter
       - run: gometalinter --install
-      - run: gometalinter --exclude=vendor ./spider/...
+      - run: gometalinter ./... --deadline=5m
       # Test go code.
       - run: go test -race ./...

@@ -1,26 +1,23 @@
 package crawler
 
 import (
+	"bytes"
 	"context"
-	"strconv"
+	"crypto/rand"
+	"html/template"
+	"math/big"
 	"sync"
-	"time"
 
 	"net/http"
-	"strings"
 
-	"github.com/go-redis/redis"
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/olivere/elastic"
 
-	"github.com/italia/developers-italia-backend/publiccode"
-
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
-// Repository is a single code repository.
+// Repository is a single code repository. FileRawURL contains the direct url to the raw file.
 type Repository struct {
 	Name       string
 	FileRawURL string
@@ -28,105 +25,7 @@ type Repository struct {
 	Headers    map[string]string
 }
 
-func addIndex(index string, elasticClient *elastic.Client) error {
-	// Use the IndexExists service to check if a specified index exists.
-	exists, err := elasticClient.IndexExists(index).Do(context.Background())
-	if err != nil {
-		return err
-	}
-	if !exists {
-		// Create a new index.
-		// TODO: When mapping will be available: client.CreateIndex(index).BodyString(mapping).Do(ctx).
-		_, err = elasticClient.CreateIndex(index).Do(context.Background())
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-// UpdateIndex return an old index if found on redis. A new index if no one is found.
-func UpdateIndex(domains []Domain, redisClient *redis.Client, elasticClient *elastic.Client) (string, error) {
-	for i, _ := range domains {
-		// Check if there is an URL that wasn't correctly retrieved.
-		keys, err := redisClient.HKeys(domains[i].Id).Result()
-		if err != nil {
-			return "", err
-		}
-		// If some repository is left the index should remain the last one saved.
-		for _, key := range keys {
-			if redisClient.HGet(domains[i].Id, key).Val() != "" {
-				index := redisClient.HGet(domains[i].Id, key).Val()
-				addIndex(index, elasticClient)
-				if err != nil {
-					return "", err
-				}
-
-				return index, nil
-			}
-		}
-	}
-
-	// If reached there will be a new index.
-	index := strconv.FormatInt(time.Now().Unix(), 10)
-	err := addIndex(index, elasticClient)
-	if err != nil {
-		return "", err
-	}
-
-	return index, nil
-}
-
-// Process delegates the work to single domain crawlers.
-func ProcessDomain(domain Domain, redisClient *redis.Client, repositories chan Repository, index string, wg *sync.WaitGroup) {
-	// Base starting URL.
-	url := domain.URL
-
-	for {
-		// Set the value of nextURL on redis to domain.Index that describe the current execution.
-		err := redisClient.HSet(domain.Id, url, index).Err()
-		if err != nil {
-			log.Error(err)
-		}
-
-		nextURL, err := domain.processAndGetNextURL(url, wg, repositories)
-		if err != nil {
-			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
-			log.Errorf("Retry: %s", nextURL)
-			nextURL = url
-		}
-		// If reached, the repository list was successfully retrieved.
-		// Delete the repository url from redis.
-		err = redisClient.HDel(domain.Id, url).Err()
-		if err != nil {
-			log.Error(err)
-		}
-
-		// If end is reached, nextUrl is empty.
-		if nextURL == "" {
-			log.Infof("Url: %s - is the last one.", url)
-
-			// WaitingGroupd
-			wg.Done()
-			return
-		}
-		// Update url to nextURL.
-		url = nextURL
-	}
-}
-
-// ProcessSingleRepository process a single repository given his url and domain.
-func ProcessSingleRepository(url string, domain Domain, repositories chan Repository) error {
-
-	err := domain.processSingleRepo(url, repositories)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
+// ProcessRepositories process the repositories channel and check the availability of the file.
 func ProcessRepositories(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	log.Debug("Repositories are going to be processed...")
 
@@ -136,16 +35,17 @@ func ProcessRepositories(repositories chan Repository, index string, wg *sync.Wa
 	}
 }
 
+// checkAvailability looks for the FileRawURL and, if found, save it.
 func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	name := repository.Name
-	fileRawUrl := repository.FileRawURL
+	FileRawURL := repository.FileRawURL
 	domain := repository.Domain
 	headers := repository.Headers
 
+	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", index).Inc()
-	metrics.GetCounter("repository_"+repository.Domain.Id+"_processed", index).Inc()
 
-	resp, err := httpclient.GetURL(fileRawUrl, headers)
+	resp, err := httpclient.GetURL(FileRawURL, headers)
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
 
@@ -158,9 +58,9 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
 		// TODO: now validation is useless because we test on .gitignore file.
-		// err := validateRemoteFile(resp.Body, fileRawUrl, index)
+		// err := validateRemoteFile(resp.Body, FileRawURL, index)
 		// if err != nil {
-		// 	log.Warn("Validator fails for: " + fileRawUrl)
+		// 	log.Warn("Validator fails for: " + FileRawURL)
 		// 	log.Warn("Validator errors:" + err.Error())
 		// }
 	}
@@ -169,27 +69,59 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	wg.Done()
 }
 
-// validateRemoteFile validate the remote file
-func validateRemoteFile(data []byte, url, index string) error {
-	fileName := viper.GetString("CRAWLED_FILENAME")
-	// Parse data into pc struct and validate.
-	baseURL := strings.TrimSuffix(url, fileName)
-	// Set remore URL for remote validation (it will check files availability).
-	publiccode.BaseDir = baseURL
-	var pc publiccode.PublicCode
-
-	err := publiccode.Parse(data, &pc)
-
-	if err != nil {
-		return err
+// ProcessPA delegates the work to single PA crawlers.
+func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.WaitGroup) {
+	log.Debugf("ProcessPA: %s", pa.CodiceIPA)
+	// range over repositories.
+	for _, repository := range pa.Repositories {
+		for _, domain := range domains {
+			// if repository API is the domain
+			if domain.ClientAPI == repository.API {
+				for _, org := range repository.Organizations {
+					log.Debugf("ProcessPADomain: %s - API: %s", org, repository.API)
+					ProcessPADomain(org, domain, repositories, wg)
+				}
+			}
+		}
 	}
-
-	metrics.GetCounter("repository_file_saved_valid", index).Inc()
-	return err
+	wg.Done()
 
 }
 
+// ProcessPADomain starts from the org page and process all the next.
+func ProcessPADomain(org string, domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
+	// Generate url using go templates. It will replace {{.OrgName}} with "org".
+	url := domain.APIOrgURL
+	data := struct{ OrgName string }{OrgName: org}
+	// Create a new template and parse the Url into it.
+	t := template.Must(template.New("url").Parse(url))
+	buf := new(bytes.Buffer)
+	// Execute the template: add "data" data in "url".
+	t.Execute(buf, data)
+	url = buf.String()
+
+	// Process the pages until the end is reached.
+	for {
+		log.Debugf("processAndGetNextURL handler:%s", url)
+		nextURL, err := domain.processAndGetNextURL(url, wg, repositories)
+		if err != nil {
+			log.Errorf("error reading %s repository list: %v. NextUrl: %v", url, err, nextURL)
+			log.Errorf("Retry: %s", nextURL)
+			nextURL = url
+		}
+
+		// If end is reached, nextUrl is empty.
+		if nextURL == "" {
+			log.Infof("Url: %s - is the last one for %s.", url, org)
+			return
+		}
+		// Update url to nextURL.
+		url = nextURL
+	}
+}
+
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
+// It also switch the alias for elasticsearch index.
 func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	wg.Wait()
 
@@ -210,4 +142,21 @@ func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup,
 	aliasService.Add(index, "publiccode").Do(context.Background())
 
 	close(repositories)
+}
+
+// ProcessSingleRepository process a single repository given his url and domain.
+func ProcessSingleRepository(url string, domain Domain, repositories chan Repository) error {
+	err := domain.processSingleRepo(url, repositories)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// generateRandomInt returns an integer between 0 and max parameter.
+// "Max" must be less than math.MaxInt32
+func generateRandomInt(max int) (int, error) {
+	result, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
+	return int(result.Int64()), err
 }

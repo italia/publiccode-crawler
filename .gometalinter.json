@@ -1,14 +1,12 @@
 {
   "Enable": [
+    "gocyclo",
     "nakedret",
-    "dupl",
     "vet",
-    "vetshadow",
     "gotype",
     "goimports",
     "gotypex",
     "deadcode",
-    "gocyclo",
     "golint",
     "varcheck",
     "structcheck",
@@ -20,10 +18,13 @@
     "unconvert",
     "goconst",
     "gas",
+    "lll",
     "unparam",
     "misspell",
-    "lll",
     "safesql"
   ],
-  "Exclude": ["vendor/.*", "publiccode/.*"]
+  "Exclude": ["vendor/.*", "publiccode/.*"],
+
+  "Cyclo": 14,
+  "LineLength": 200
 }

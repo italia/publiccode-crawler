@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/italia/developers-italia-backend/cmd"
+	"github.com/italia/developers-italia-backend/crawler"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/italia/developers-italia-backend/crawler"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 	}
 
 	// Register client APIs.
-	crawler.RegisterClientApis()
+	crawler.RegisterClientAPIs()
 
 	cmd.Execute()
 }

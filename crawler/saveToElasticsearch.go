@@ -3,9 +3,9 @@ package crawler
 import (
 	"context"
 
+	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
-	"github.com/italia/developers-italia-backend/metrics"
 )
 
 // File is a generic structure for saveToES() function.
@@ -16,7 +16,7 @@ type File struct {
 	Data   string `json:"data"`
 }
 
-// SaveES save the chosen <file_name> in elasticsearch
+// SaveToES save the chosen data []byte in elasticsearch
 func SaveToES(domain Domain, name string, data []byte, index string, elasticClient *elastic.Client) {
 	const (
 		// Elasticsearch mapping for publiccode. Checkout elasticsearch/mappings/software.json
@@ -28,13 +28,13 @@ func SaveToES(domain Domain, name string, data []byte, index string, elasticClie
 	ctx := context.Background()
 
 	// Add a document to the index.
-	file := File{Source: domain.Id, Name: name, Data: string(data)}
+	file := File{Source: domain.ID, Name: name, Data: string(data)}
 
 	// Put publiccode data in ES.
-	put, err := elasticClient.Index().
+	_, err := elasticClient.Index().
 		Index(index).
 		Type("doc").
-		Id(domain.Id + "/" + name + "_" + index).
+		Id(domain.ID + "/" + name + "_" + index).
 		BodyJson(file).
 		Do(ctx)
 	if err != nil {
@@ -43,5 +43,6 @@ func SaveToES(domain Domain, name string, data []byte, index string, elasticClie
 
 	metrics.GetCounter("repository_file_indexed", index).Inc()
 
-	log.Debugf("Indexed file %s to index %s, type %s", put.Id, put.Index, put.Type)
+	// put, err := elasticClient.Index(). for "put" data.
+	// log.Debugf("Indexed file %s to index %s, type %s", put.Id, put.Index, put.Type)
 }

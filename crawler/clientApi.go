@@ -1,52 +1,57 @@
 package crawler
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 )
 
+// Handler returns the client handler for an organization/team/group page (every domain has a different handler implementation).
 type Handler func(domain Domain, url string, repositories chan Repository, wg *sync.WaitGroup) (string, error)
+
+// SingleHandler returns the client handler for an a single repository (every domain has a different handler implementation).
 type SingleHandler func(domain Domain, url string, repositories chan Repository) error
 
 var (
-	clientApis      map[string]Handler
-	clientSingleApi map[string]SingleHandler
+	clientAPIs      map[string]Handler
+	clientSingleAPI map[string]SingleHandler
 )
 
-// RegisterClientApis register all the client APIs for all the clients.
-func RegisterClientApis() {
-	clientApis = make(map[string]Handler)
-	clientSingleApi = make(map[string]SingleHandler)
+// RegisterClientAPIs register all the client APIs for all the clients.
+func RegisterClientAPIs() {
+	clientAPIs = make(map[string]Handler)
+	clientSingleAPI = make(map[string]SingleHandler)
 
 	// Client APIs for repository list.
-	clientApis["bitbucket"] = RegisterBitbucketAPI()
-	clientApis["github"] = RegisterGithubAPI()
-	clientApis["gitlab"] = RegisterGitlabAPI()
+	clientAPIs["bitbucket"] = RegisterBitbucketAPI()
+	clientAPIs["github"] = RegisterGithubAPI()
+	clientAPIs["gitlab"] = RegisterGitlabAPI()
 
-	// Client APIs for single repository.
-	clientSingleApi["bitbucket"] = RegisterSingleBitbucketAPI()
-	clientSingleApi["github"] = RegisterSingleGithubAPI()
-	clientSingleApi["gitlab"] = RegisterSingleGitlabAPI()
+	// Client APIs for a single repository.
+	clientSingleAPI["bitbucket"] = RegisterSingleBitbucketAPI()
+	clientSingleAPI["github"] = RegisterSingleGithubAPI()
+	clientSingleAPI["gitlab"] = RegisterSingleGitlabAPI()
+
 }
 
-func GetClientApiCrawler(clientApi string) (Handler, error) {
-	if crawler, ok := clientApis[clientApi]; ok {
+// GetClientAPICrawler checks if the API client for the requested organization clientAPI exists and return its handler.
+func GetClientAPICrawler(clientAPI string) (Handler, error) {
+	if crawler, ok := clientAPIs[clientAPI]; ok {
 		return crawler, nil
-	} else {
-		return nil, errors.New(fmt.Sprintf("no client found for %s", clientApi))
 	}
+	return nil, fmt.Errorf("no client found for %s", clientAPI)
+
 }
 
-func GetSingleClientApiCrawler(clientApi string) (SingleHandler, error) {
-	if crawler, ok := clientSingleApi[clientApi]; ok {
+// GetSingleClientAPICrawler checks if the API client for the requested singlle repository clientAPI exists and return its handler.
+func GetSingleClientAPICrawler(clientAPI string) (SingleHandler, error) {
+	if crawler, ok := clientSingleAPI[clientAPI]; ok {
 		return crawler, nil
-	} else {
-		return nil, errors.New(fmt.Sprintf("no client found for %s", clientApi))
 	}
+	return nil, fmt.Errorf("no single client found for %s", clientAPI)
+
 }
 
-// GetClients returns a list of all registered plugins.
+// GetClients returns a list of all registered clientAPI.
 func GetClients() map[string]Handler {
-	return clientApis
+	return clientAPIs
 }

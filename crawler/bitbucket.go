@@ -1,12 +1,14 @@
 package crawler
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
-	"math/rand"
+	"html/template"
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"sync"
@@ -16,56 +18,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Bitbucket represent a complete result for the Bitbucket API respose from all repositories list.
+// Bitbucket is the complete response for the Bitbucket all repositories list.
 type Bitbucket struct {
 	Pagelen int `json:"pagelen"`
 	Values  []struct {
-		Scm     string `json:"scm"`
-		Website string `json:"website"`
-		HasWiki bool   `json:"has_wiki"`
-		Name    string `json:"name"`
-		Links   struct {
-			Watchers struct {
-				Href string `json:"href"`
-			} `json:"watchers"`
-			Branches struct {
-				Href string `json:"href"`
-			} `json:"branches"`
-			Tags struct {
-				Href string `json:"href"`
-			} `json:"tags"`
-			Commits struct {
-				Href string `json:"href"`
-			} `json:"commits"`
-			Clone []struct {
-				Href string `json:"href"`
-				Name string `json:"name"`
-			} `json:"clone"`
-			Self struct {
-				Href string `json:"href"`
-			} `json:"self"`
-			Source struct {
-				Href string `json:"href"`
-			} `json:"source"`
-			HTML struct {
-				Href string `json:"href"`
-			} `json:"html"`
-			Avatar struct {
-				Href string `json:"href"`
-			} `json:"avatar"`
-			Hooks struct {
-				Href string `json:"href"`
-			} `json:"hooks"`
-			Forks struct {
-				Href string `json:"href"`
-			} `json:"forks"`
-			Downloads struct {
-				Href string `json:"href"`
-			} `json:"downloads"`
-			Pullrequests struct {
-				Href string `json:"href"`
-			} `json:"pullrequests"`
-		} `json:"links"`
+		Scm        string `json:"scm"`
+		Website    string `json:"website"`
+		HasWiki    bool   `json:"has_wiki"`
+		Name       string `json:"name"`
+		Links      Links  `json:"links"`
 		ForkPolicy string `json:"fork_policy"`
 		UUID       string `json:"uuid"`
 		Language   string `json:"language"`
@@ -137,54 +98,13 @@ type Bitbucket struct {
 	Next string `json:"next"`
 }
 
-// BitbucketRepo represent a complete for the Bitbucket API respose from a single repository.
+// BitbucketRepo is the complete response for the Bitbucket single repository.
 type BitbucketRepo struct {
-	Scm     string `json:"scm"`
-	Website string `json:"website"`
-	HasWiki bool   `json:"has_wiki"`
-	Name    string `json:"name"`
-	Links   struct {
-		Watchers struct {
-			Href string `json:"href"`
-		} `json:"watchers"`
-		Branches struct {
-			Href string `json:"href"`
-		} `json:"branches"`
-		Tags struct {
-			Href string `json:"href"`
-		} `json:"tags"`
-		Commits struct {
-			Href string `json:"href"`
-		} `json:"commits"`
-		Clone []struct {
-			Href string `json:"href"`
-			Name string `json:"name"`
-		} `json:"clone"`
-		Self struct {
-			Href string `json:"href"`
-		} `json:"self"`
-		Source struct {
-			Href string `json:"href"`
-		} `json:"source"`
-		HTML struct {
-			Href string `json:"href"`
-		} `json:"html"`
-		Avatar struct {
-			Href string `json:"href"`
-		} `json:"avatar"`
-		Hooks struct {
-			Href string `json:"href"`
-		} `json:"hooks"`
-		Forks struct {
-			Href string `json:"href"`
-		} `json:"forks"`
-		Downloads struct {
-			Href string `json:"href"`
-		} `json:"downloads"`
-		Pullrequests struct {
-			Href string `json:"href"`
-		} `json:"pullrequests"`
-	} `json:"links"`
+	Scm        string    `json:"scm"`
+	Website    string    `json:"website"`
+	HasWiki    bool      `json:"has_wiki"`
+	Name       string    `json:"name"`
+	Links      Links     `json:"links"`
 	ForkPolicy string    `json:"fork_policy"`
 	UUID       string    `json:"uuid"`
 	Language   string    `json:"language"`
@@ -220,18 +140,64 @@ type BitbucketRepo struct {
 	Description string    `json:"description"`
 }
 
+// Links is the list of Links associated to the repository.
+type Links struct {
+	Watchers struct {
+		Href string `json:"href"`
+	} `json:"watchers"`
+	Branches struct {
+		Href string `json:"href"`
+	} `json:"branches"`
+	Tags struct {
+		Href string `json:"href"`
+	} `json:"tags"`
+	Commits struct {
+		Href string `json:"href"`
+	} `json:"commits"`
+	Clone []struct {
+		Href string `json:"href"`
+		Name string `json:"name"`
+	} `json:"clone"`
+	Self struct {
+		Href string `json:"href"`
+	} `json:"self"`
+	Source struct {
+		Href string `json:"href"`
+	} `json:"source"`
+	HTML struct {
+		Href string `json:"href"`
+	} `json:"html"`
+	Avatar struct {
+		Href string `json:"href"`
+	} `json:"avatar"`
+	Hooks struct {
+		Href string `json:"href"`
+	} `json:"hooks"`
+	Forks struct {
+		Href string `json:"href"`
+	} `json:"forks"`
+	Downloads struct {
+		Href string `json:"href"`
+	} `json:"downloads"`
+	Pullrequests struct {
+		Href string `json:"href"`
+	} `json:"pullrequests"`
+}
+
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
 func RegisterBitbucketAPI() Handler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
-		// Set BasicAuth header
+		// Set BasicAuth header.
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
-			rand.Seed(time.Now().Unix())
-			n := rand.Int() % len(domain.BasicAuth)
+			n, err := generateRandomInt(len(domain.BasicAuth))
+			if err != nil {
+				return link, err
+			}
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
-		// Get List of repositories
+		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
 			return link, err
@@ -258,7 +224,7 @@ func RegisterBitbucketAPI() Handler {
 			}
 			u.Path = path.Join(u.Path, "raw", v.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
-			// If the repository was never used, the Mainbranch is empty ("")
+			// If the repository was never used, the Mainbranch is empty ("").
 			if v.Mainbranch.Name != "" {
 				repositories <- Repository{
 					Name:       v.FullName,
@@ -269,50 +235,46 @@ func RegisterBitbucketAPI() Handler {
 			}
 		}
 
-		// Bitbucket end reached.
+		// if last page for this organization, the result.Next is empty.
 		if len(result.Next) == 0 {
-			for len(repositories) != 0 {
-				time.Sleep(time.Second)
-			}
-			log.Info("Bitbucket repositories status: end reached. Restart from domain value:" + domain.URL)
-
-			// Restart.
-			// return domain.URL, nil
 			return "", nil
-
 		}
 
-		// Return next url
+		// Return next url.
 		return result.Next, nil
 	}
 }
 
-// RegisterSingleBitbucketAPI register the crawler function for single Bitbucket API.
+// RegisterSingleBitbucketAPI register the crawler function for single Bitbucket repository.
 func RegisterSingleBitbucketAPI() SingleHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
-			rand.Seed(time.Now().Unix())
-			n := rand.Int() % len(domain.BasicAuth)
+			n, err := generateRandomInt(len(domain.BasicAuth))
+			if err != nil {
+				return err
+			}
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
-
+		// Parse link as URL.
 		u, err := url.Parse(link)
 		if err != nil {
 			log.Error(err)
 		}
 
-		// Clear the url.
-		fullName := u.Path
-		if u.Path[:1] == "/" {
-			fullName = fullName[1:]
-		}
-		if u.Path[len(u.Path)-1:] == "/" {
-			fullName = fullName[:len(u.Path)-2]
-		}
+		// Clear the url. Trim slash.
+		fullName := strings.Trim(u.Path, "/")
 
-		fullURL := "https://api.bitbucket.org/2.0/repositories/" + fullName
+		// Generate fullURL using go templates. It will replace {{.Name}} with fullName.
+		fullURL := domain.APIRepoURL
+		data := struct{ Name string }{Name: fullName}
+		// Create a new template and parse the Url into it.
+		t := template.Must(template.New("url").Parse(fullURL))
+		buf := new(bytes.Buffer)
+		// Execute the template: add "data" data in "url".
+		t.Execute(buf, data)
+		fullURL = buf.String()
 
 		// Get single Repo
 		resp, err := httpclient.GetURL(fullURL, headers)
@@ -332,13 +294,13 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		}
 
 		// Join file raw URL.
-		u, err = url.Parse(domain.RawBaseUrl)
+		u, err = url.Parse(domain.RawBaseURL)
 		if err != nil {
 			return err
 		}
 		u.Path = path.Join(u.Path, result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
-		// If the repository was never used, the Mainbranch is empty ("")
+		// If the repository was never used, the Mainbranch is empty ("").
 		if result.Mainbranch.Name != "" {
 			repositories <- Repository{
 				Name:       result.FullName,
