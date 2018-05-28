@@ -2,9 +2,9 @@
   description: 'The leading software development platform: github.com'
 
   client-api: 'github'
-  apiOrgUrl: 'https://api.github.com/orgs/{{.OrgName}}/repos'
-  apiRepoUrl: 'https://api.github.com/repos/{{.Name}}'
-  rawBaseUrl: 'https://raw.githubusercontent.com'
+  api-org-url: 'https://api.github.com/orgs/{{.OrgName}}/repos'
+  api-repo-url: 'https://api.github.com/repos/{{.Name}}'
+  raw-base-url: 'https://raw.githubusercontent.com'
   basic-auth:
     - ''
 
@@ -12,17 +12,17 @@
   description: 'General Git solution for professional teams: bitbucket.com'
 
   client-api: 'bitbucket'
-  apiOrgUrl: 'https://api.bitbucket.org/2.0/repositories/{{.OrgName}}/?pagelen=100'
-  apiRepoUrl: 'https://api.bitbucket.org/2.0/repositories/{{.Name}}'
-  rawBaseUrl: 'https://bitbucket.org'
+  api-org-url: 'https://api.bitbucket.org/2.0/repositories/{{.OrgName}}/?pagelen=100'
+  api-repo-url: 'https://api.bitbucket.org/2.0/repositories/{{.Name}}'
+  raw-base-url: 'https://bitbucket.org'
   basic-auth:
     - ''
 
 - id: 'gitlab.com'
   description: 'The only single product for the complete DevOps lifecycle: gitlab.com'
   client-api: 'gitlab'
-  apiOrgUrl: 'https://gitlab.com/api/v4/groups/{{.OrgName}}'
-  apiRepoUrl: 'https://gitlab.com/api/v4/projects/{{.Name}}'
-  rawBaseUrl: 'https://gitlab.com'
+  api-org-url: 'https://gitlab.com/api/v4/groups/{{.OrgName}}'
+  api-repo-url: 'https://gitlab.com/api/v4/projects/{{.Name}}'
+  raw-base-url: 'https://gitlab.com'
   basic-auth:
     - ''

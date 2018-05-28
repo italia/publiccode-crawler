@@ -17,9 +17,9 @@ type Domain struct {
 	ID          string   `yaml:"id"`
 	Description string   `yaml:"description"`
 	ClientAPI   string   `yaml:"client-api"`
-	APIOrgURL   string   `yaml:"apiOrgUrl"`
-	APIRepoURL  string   `yaml:"apiRepoUrl"`
-	RawBaseURL  string   `yaml:"rawBaseUrl"`
+	APIOrgURL   string   `yaml:"api-org-url"`
+	APIRepoURL  string   `yaml:"api-repo-url"`
+	RawBaseURL  string   `yaml:"raw-base-url"`
 	BasicAuth   []string `yaml:"basic-auth"`
 }
 

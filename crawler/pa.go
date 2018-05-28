@@ -11,7 +11,7 @@ import (
 
 // PA is a Public Administration data.
 type PA struct {
-	CodiceIPA    string `yaml:"codiceIPA"`
+	CodiceIPA    string `yaml:"codice-IPA"`
 	Name         string `yaml:"name"`
 	Repositories []struct {
 		API           string   `yaml:"api"`

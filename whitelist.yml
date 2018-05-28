@@ -1,34 +1,34 @@
 # Whitelist is a lista of every organization repository from iPA.
 
-- codiceIPA: 'example-iPA' # iPA code.
+- codice-IPA: 'example-iPA' # iPA code.
   name: 'Comune di Esempio sul Naviglio' # Referred name.
   repositories:
     - api: 'github' # API specification. Refers to domains.yml
       organizations: # List of organizations links for the API.
         - 'italia'
 
-- codiceIPA: 'example-Github-iPA' 
+- codice-IPA: 'example-Github-iPA'
   name: 'Comune di Github sul Naviglio'
   repositories:
     - api: 'github'
       organizations:
         - 'google'
 
-- codiceIPA: 'example-Gitlab-iPA'
+- codice-IPA: 'example-Gitlab-iPA'
   name: 'Comune di Gitlab sul Naviglio'
   repositories:
     - api: 'gitlab'
       organizations:
         - 'gitlab-org'
 
-- codiceIPA: 'example-Bitbucket-iPA'
+- codice-IPA: 'example-Bitbucket-iPA'
   name: 'Comune di Bitbucket sul Naviglio'
   repositories:
     - api: 'bitbucket'
       organizations:
         - 'soft'
 
-- codiceIPA: 'abb_0577'
+- codice-IPA: 'abb_0577'
   name: 'Comune di Abb'
   repositories:
     - api: 'github'

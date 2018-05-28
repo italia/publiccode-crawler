@@ -73,12 +73,6 @@ services:
    volumes:
      - /var/run/docker.sock:/var/run/docker.sock
 
-  redis:
-    container_name: "${NAME}_redis"
-    image: redis:4.0
-    networks:
-      - web
-
   php:
     image: wodby/php:7.1-4.3.0
     container_name: ${NAME}_php

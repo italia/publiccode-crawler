@@ -1,4 +1,3 @@
-REDIS_URL = "localhost:6379"
 CRAWLED_FILENAME = "publiccode.yml"
 ELASTIC_URL = ""
 ELASTIC_USER = ""
