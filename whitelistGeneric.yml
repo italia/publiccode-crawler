@@ -1,0 +1,24 @@
+# whitelistGeneric.yml is a list of every organization repository not from iPA.
+
+- codice-IPA: '48ce32b4-1079-4a9b-868e-7fae1cb8a2d1' # UUID v4.
+  name: 'Wellnet' # Referred name (Company name or nickname).
+  repositories:
+    - api: 'github' # API specification. Refers to domains.yml
+      organizations: # List of organizations links for the API.
+        - 'publiccodenet'
+        - 'docker'
+        - 'ArchiveTeam'
+        - 'recursecenter'
+        - 'cryptography-training'
+    - api: 'bitbucket'
+      organizations:
+        - 'wellnet-team'
+        - 'blowmeaway'
+    - api: 'gitlab'
+      organizations:
+        - 'MicroRL'
+        - 'blockninja'
+        - 'blocklaunch'
+        - 'blockheads'
+        - 'Blockmatrix'
+        - 'cerfacs'

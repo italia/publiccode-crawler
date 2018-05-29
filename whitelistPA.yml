@@ -1,0 +1,22 @@
+# whitelistPA.yml is a list of every organization repository from iPA.
+
+- codice-IPA: 'example-Italia-iPA' # iPA code.
+  name: 'Comune di Italia sul Naviglio' # Referred name.
+  repositories:
+    - api: 'github' # API specification. Refers to domains.yml
+      organizations: # List of organizations links for the API.
+        - 'italia'
+
+- codice-IPA: 'example-Gitlab-iPA'
+  name: 'Comune di Gitlab sul Naviglio'
+  repositories:
+    - api: 'gitlab'
+      organizations:
+        - 'gitlab-org'
+
+- codice-IPA: 'example-Bitbucket-iPA'
+  name: 'Comune di Bitbucket sul Naviglio'
+  repositories:
+    - api: 'bitbucket'
+      organizations:
+        - 'soft'
