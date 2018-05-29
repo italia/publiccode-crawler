@@ -60,6 +60,8 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		// Save to ES.
 		SaveToES(domain, name, resp.Body, index, elasticClient)
 
+		// TODO: save "metadata" on ES. When mapping is ready.
+
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
 		// TODO: now validation is useless because we test on .gitignore file.
