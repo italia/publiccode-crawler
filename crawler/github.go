@@ -242,12 +242,20 @@ func RegisterGithubAPI() Handler {
 				return link, err
 			}
 			u.Path = path.Join(u.Path, v.FullName, v.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
+
+			// Marshal all the repository metadata.
+			metadata, err := json.Marshal(v)
+			if err != nil {
+				log.Errorf("github metadata: %v", err)
+			}
+
 			// Add repository to channel.
 			repositories <- Repository{
 				Name:       v.FullName,
 				FileRawURL: u.String(),
 				Domain:     domain,
 				Headers:    headers,
+				Metadata:   metadata,
 			}
 		}
 
@@ -309,6 +317,12 @@ func RegisterSingleGithubAPI() SingleHandler {
 		}
 		u.Path = path.Join(u.Path, result.FullName, result.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
+		// Marshal all the repository metadata.
+		metadata, err := json.Marshal(result)
+		if err != nil {
+			log.Errorf("github metadata: %v", err)
+		}
+
 		// If the repository was never used, the Mainbranch is empty ("").
 		if result.DefaultBranch != "" {
 			repositories <- Repository{
@@ -316,6 +330,7 @@ func RegisterSingleGithubAPI() SingleHandler {
 				FileRawURL: u.String(),
 				Domain:     domain,
 				Headers:    headers,
+				Metadata:   metadata,
 			}
 		} else {
 			return errors.New("repository is empty")

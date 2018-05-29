@@ -23,6 +23,7 @@ type Repository struct {
 	FileRawURL string
 	Domain     Domain
 	Headers    map[string]string
+	Metadata   []byte
 }
 
 // ProcessRepositories process the repositories channel and check the availability of the file.
@@ -41,6 +42,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	FileRawURL := repository.FileRawURL
 	domain := repository.Domain
 	headers := repository.Headers
+	metadata := repository.Metadata
 
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", index).Inc()
@@ -48,6 +50,9 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	resp, err := httpclient.GetURL(FileRawURL, headers)
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
+
+		// Save Metadata.
+		SaveToFile(domain, name, metadata, index+"_metadata")
 
 		// Save to file.
 		SaveToFile(domain, name, resp.Body, index)

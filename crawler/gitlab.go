@@ -228,12 +228,19 @@ func RegisterGitlabAPI() Handler {
 			}
 			u.Path = path.Join(u.Path, v.PathWithNamespace, "raw", v.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
+			// Marshal all the repository metadata.
+			metadata, err := json.Marshal(v)
+			if err != nil {
+				log.Errorf("gitlab metadata: %v", err)
+			}
+
 			if v.DefaultBranch != "" {
 				repositories <- Repository{
 					Name:       v.PathWithNamespace,
 					FileRawURL: u.String(),
 					Domain:     domain,
 					Headers:    headers,
+					Metadata:   metadata,
 				}
 			}
 		}
@@ -247,12 +254,19 @@ func RegisterGitlabAPI() Handler {
 			}
 			u.Path = path.Join(u.Path, v.PathWithNamespace, "raw", v.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
+			// Marshal all the repository metadata.
+			metadata, err := json.Marshal(v)
+			if err != nil {
+				log.Errorf("gitlab metadata: %v", err)
+			}
+
 			if v.DefaultBranch != "" {
 				repositories <- Repository{
 					Name:       v.PathWithNamespace,
 					FileRawURL: u.String(),
 					Domain:     domain,
 					Headers:    headers,
+					Metadata:   metadata,
 				}
 			}
 		}
@@ -327,6 +341,12 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		}
 		u.Path = path.Join(u.Path, result.PathWithNamespace, "raw", result.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
+		// Marshal all the repository metadata.
+		metadata, err := json.Marshal(result)
+		if err != nil {
+			log.Errorf("gitlab metadata: %v", err)
+		}
+
 		// If the repository was never used, the Mainbranch is empty ("")
 		if result.DefaultBranch != "" {
 			repositories <- Repository{
@@ -334,6 +354,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 				FileRawURL: u.String(),
 				Domain:     domain,
 				Headers:    headers,
+				Metadata:   metadata,
 			}
 		} else {
 			return errors.New("repository is: empty")
