@@ -8,7 +8,6 @@ import (
 )
 
 const domainsFile = "domains.yml"
-const whitelistFile = "whitelist.yml"
 
 var rootCmd = &cobra.Command{
 	Use:   "crawler",
