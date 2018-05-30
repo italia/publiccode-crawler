@@ -27,7 +27,8 @@ WORKDIR /app
 COPY --from=build-env /go/src/$PROJECT/$NAME /app/
 COPY --from=build-env /go/src/$PROJECT/domains.yml /app/
 COPY --from=build-env /go/src/$PROJECT/config.toml /app/
-COPY --from=build-env /go/src/$PROJECT/whitelist.yml /app/
+COPY --from=build-env /go/src/$PROJECT/whitelistPA.yml /app/
+COPY --from=build-env /go/src/$PROJECT/whitelistGeneric.yml /app/
 
 EXPOSE 8081
 
@@ -36,4 +37,4 @@ ENV NAME=$NAME
 RUN chmod +x ./$NAME
 
 #ENTRYPOINT ./$NAME one github.com https://github.com/italia/developers-italia-backend
-ENTRYPOINT ./$NAME crawl
+ENTRYPOINT ./$NAME crawl whitelistPA.yml whitelistGeneric.yml
