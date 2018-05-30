@@ -59,6 +59,7 @@ type GitlabRepo struct {
 	LastActivityAt    time.Time     `json:"last_activity_at"`
 }
 
+// GitlabProject is a software project hosted on Gitlab.
 type GitlabProject struct {
 	ID                int           `json:"id"`
 	Description       string        `json:"description"`
@@ -118,6 +119,7 @@ type GitlabProject struct {
 	ApprovalsBeforeMerge                      int           `json:"approvals_before_merge"`
 }
 
+// GitlabProject is a software project hosted on Gitlab, owned by a group and shared with someone.
 type GitlabSharedProject struct {
 	ID                int           `json:"id"`
 	Description       string        `json:"description"`
