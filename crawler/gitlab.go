@@ -339,7 +339,7 @@ func generateGitlabRawURL(baseURL, pathWithNamespace, defaultBranch string) (str
 	return u.String(), err
 }
 
-// addGitlabSharedProjectsToRepositories adds the projects from api response to repository channel.
+// addGitlabProjectsToRepositories adds the projects from api response to repository channel.
 func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, headers map[string]string, repositories chan Repository) error {
 	for _, v := range projects {
 		log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
