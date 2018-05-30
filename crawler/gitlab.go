@@ -298,7 +298,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		}
 
 		// Join file raw URL string.
-		_, err = generateGitlabRawUrl(domain.RawBaseURL, result.PathWithNamespace, result.DefaultBranch)
+		_, err = generateGitlabRawURL(domain.RawBaseURL, result.PathWithNamespace, result.DefaultBranch)
 		if err != nil {
 			return err
 		}
@@ -327,7 +327,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 }
 
 // generateGitlabRawUrl returns the file Gitlab specific file raw url.
-func generateGitlabRawUrl(baseURL, pathWithNamespace, defaultBranch string) (string, error) {
+func generateGitlabRawURL(baseURL, pathWithNamespace, defaultBranch string) (string, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return "", err
@@ -337,12 +337,13 @@ func generateGitlabRawUrl(baseURL, pathWithNamespace, defaultBranch string) (str
 	return u.String(), err
 }
 
+// addGitlabSharedProjectsToRepositories adds the projects from api response to repository channel.
 func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, headers map[string]string, repositories chan Repository) error {
 	for _, v := range projects {
 		log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
 
 		// Join file raw URL string.
-		rawURL, err := generateGitlabRawUrl(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
+		rawURL, err := generateGitlabRawURL(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
 		if err != nil {
 			return err
 		}
@@ -367,12 +368,13 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 	return nil
 }
 
+// addGitlabSharedProjectsToRepositories adds the shared projects from api response to repository channel.
 func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domain Domain, headers map[string]string, repositories chan Repository) error {
 	for _, v := range projects {
 		log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
 
 		// Join file raw URL string.
-		rawURL, err := generateGitlabRawUrl(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
+		rawURL, err := generateGitlabRawURL(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
 		if err != nil {
 			return err
 		}
