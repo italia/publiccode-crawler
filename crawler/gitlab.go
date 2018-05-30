@@ -221,12 +221,12 @@ func RegisterGitlabAPI() Handler {
 		// Add repositories to the channel that will perform the check on every project.
 		for _, v := range results.Projects {
 			log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
-			// Join file raw URL.
-			u, err := url.Parse(domain.RawBaseURL)
+
+			// Join file raw URL string.
+			rawURL, err := generateGitlabRawUrl(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
 			if err != nil {
 				return link, err
 			}
-			u.Path = path.Join(u.Path, v.PathWithNamespace, "raw", v.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 			// Marshal all the repository metadata.
 			metadata, err := json.Marshal(v)
@@ -237,7 +237,7 @@ func RegisterGitlabAPI() Handler {
 			if v.DefaultBranch != "" {
 				repositories <- Repository{
 					Name:       v.PathWithNamespace,
-					FileRawURL: u.String(),
+					FileRawURL: rawURL,
 					Domain:     domain,
 					Headers:    headers,
 					Metadata:   metadata,
@@ -247,12 +247,12 @@ func RegisterGitlabAPI() Handler {
 		// Add repositories to the channel that will perform the check on every sharedd project.
 		for _, v := range results.SharedProjects {
 			log.Debugf("Gitlab SharedProjects %s", v.PathWithNamespace)
-			// Join file raw URL.
-			u, err := url.Parse(domain.RawBaseURL)
+
+			// Join file raw URL string.
+			rawURL, err := generateGitlabRawUrl(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
 			if err != nil {
 				return link, err
 			}
-			u.Path = path.Join(u.Path, v.PathWithNamespace, "raw", v.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 			// Marshal all the repository metadata.
 			metadata, err := json.Marshal(v)
@@ -263,7 +263,7 @@ func RegisterGitlabAPI() Handler {
 			if v.DefaultBranch != "" {
 				repositories <- Repository{
 					Name:       v.PathWithNamespace,
-					FileRawURL: u.String(),
+					FileRawURL: rawURL,
 					Domain:     domain,
 					Headers:    headers,
 					Metadata:   metadata,
@@ -334,12 +334,11 @@ func RegisterSingleGitlabAPI() SingleHandler {
 			return err
 		}
 
-		// Join file raw URL.
-		u, err = url.Parse(domain.RawBaseURL)
+		// Join file raw URL string.
+		_, err = generateGitlabRawUrl(domain.RawBaseURL, result.PathWithNamespace, result.DefaultBranch)
 		if err != nil {
 			return err
 		}
-		u.Path = path.Join(u.Path, result.PathWithNamespace, "raw", result.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 		// Marshal all the repository metadata.
 		metadata, err := json.Marshal(result)
@@ -362,4 +361,15 @@ func RegisterSingleGitlabAPI() SingleHandler {
 
 		return nil
 	}
+}
+
+// generateGitlabRawUrl returns the file Gitlab specific file raw url.
+func generateGitlabRawUrl(baseURL, pathWithNamespace, defaultBranch string) (string, error) {
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return "", err
+	}
+	u.Path = path.Join(u.Path, pathWithNamespace, "raw", defaultBranch, viper.GetString("CRAWLED_FILENAME"))
+
+	return u.String(), err
 }
