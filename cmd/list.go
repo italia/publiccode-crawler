@@ -14,12 +14,13 @@ func init() {
 }
 
 var listCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List all the Public Administrations in the whitelist.",
-	Long:  `List all the Public Administrations in whitelist.yml file.`,
+	Use:   "list whitelist.yml",
+	Short: "List all the PA in the whitelist file.",
+	Long:  `List all the Public Administrations in the whitelist file.`,
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Read and parse the whitelist.
-		whitelist, err := crawler.ReadAndParseWhitelist(whitelistFile)
+		whitelist, err := crawler.ReadAndParseWhitelist(args[0])
 		if err != nil {
 			panic(err)
 		}

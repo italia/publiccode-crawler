@@ -19,9 +19,10 @@ func init() {
 }
 
 var crawlCmd = &cobra.Command{
-	Use:   "crawl",
-	Short: "Crawl publiccode.yml from domains in whitelist.",
-	Long:  `Start the crawler on whitelist.yml file.`,
+	Use:   "crawl whitelist.yml [whitelistGeneric.yml whitelistPA.yml ...]",
+	Short: "Crawl publiccode.yml file from domains in whitelist file.",
+	Long:  `Start whitelist file. It's possible to add multiple files adding them as args.`,
+	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 
 		// Elastic connection.
@@ -40,9 +41,14 @@ var crawlCmd = &cobra.Command{
 		}
 
 		// Read and parse the whitelist.
-		whitelist, err := crawler.ReadAndParseWhitelist(whitelistFile)
-		if err != nil {
-			panic(err)
+		var whitelist []crawler.PA
+
+		for id := range args {
+			readWhitelist, err := crawler.ReadAndParseWhitelist(args[id])
+			if err != nil {
+				panic(err)
+			}
+			whitelist = append(whitelist, readWhitelist...)
 		}
 
 		// Initiate a channel of repositories.

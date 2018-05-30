@@ -1,6 +1,7 @@
 # developers-italia-backend
 
-[![CircleCI](https://circleci.com/gh/italia/developers-italia-backend/tree/master.svg?style=svg)](https://circleci.com/gh/italia/developers-italia-backend/tree/master)
+[![CircleCI](https://circleci.com/gh/italia/developers-italia-backend/tree/master.svg?style=shield)](https://circleci.com/gh/italia/developers-italia-backend/tree/master)
+[![Go Report Card](https://goreportcard.com/badge/github.com/italia/developers-italia-backend)](https://goreportcard.com/report/github.com/italia/developers-italia-backend)
 
 Backend &amp; crawler for the OSS catalog of Developers Italia.
 
@@ -71,9 +72,9 @@ to localhost.
 * de-comment the crawler container from docker-compose.yml file
 * start the Docker stack: `make up`
 
-##### As golang app
+##### As golang binary
 
-* start the crawler: `make crawl`
+* start the crawler: `./crawler crawl whitelistPA.yml whitelistGeneric.yml`
 
 ### Copyright
 
