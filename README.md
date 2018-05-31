@@ -76,6 +76,12 @@ to localhost.
 
 * start the crawler: `./crawler crawl whitelistPA.yml whitelistGeneric.yml`
 
+### Troubleshooting
+
+* From docker logs seems that Elasticsearch container needs more virtual memory and now it's `Stalling for Elasticsearch....`
+
+  Increase container virtual memory: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode
+
 ### Copyright
 
 ```

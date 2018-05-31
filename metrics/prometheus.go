@@ -19,7 +19,7 @@ const validPrometheusName = "[^a-zA-Z_][^a-zA-Z0-9_]*"
 // GetCounter return the prometheus counter of given name.
 func GetCounter(name, namespace string) prometheus.Counter {
 	// Validate and fix name (replace invalid chars with underscore "_").
-	name = validateAndFix(name, validPrometheusName)
+	name = validateAndFix(name)
 	if registeredCounters[name] == nil {
 		log.Errorf("Error in metrics GetCounter: %s does not exist", name)
 		// If registeredCounters[name] does not exists a new counter is created and returned.
@@ -33,7 +33,7 @@ func GetCounter(name, namespace string) prometheus.Counter {
 // RegisterPrometheusCounter register a new Counter of given name with help text.
 func RegisterPrometheusCounter(name, helpText, namespace string) {
 	// Validate and fix name (replace invalid chars with underscore "_").
-	name = validateAndFix(name, validPrometheusName)
+	name = validateAndFix(name)
 
 	// Add counter in the map.
 	registeredCounters[name] = prometheus.NewCounter(prometheus.CounterOpts{
@@ -60,8 +60,8 @@ func StartPrometheusMetricsServer() {
 }
 
 // Validate and fix name (replace invalid chars with underscore "_").
-func validateAndFix(name, regex string) string {
-	reg, err := regexp.Compile(regex)
+func validateAndFix(name string) string {
+	reg, err := regexp.Compile(validPrometheusName)
 	if err != nil {
 		log.Warningf("Error in metrics regex RegisterPrometheusCounter: %v", err)
 	}

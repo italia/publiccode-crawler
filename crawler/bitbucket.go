@@ -224,6 +224,12 @@ func RegisterBitbucketAPI() Handler {
 			}
 			u.Path = path.Join(u.Path, "raw", v.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
+			// Marshal all the repository metadata.
+			metadata, err := json.Marshal(v)
+			if err != nil {
+				log.Errorf("bitbucket metadata: %v", err)
+			}
+
 			// If the repository was never used, the Mainbranch is empty ("").
 			if v.Mainbranch.Name != "" {
 				repositories <- Repository{
@@ -231,6 +237,7 @@ func RegisterBitbucketAPI() Handler {
 					FileRawURL: u.String(),
 					Domain:     domain,
 					Headers:    headers,
+					Metadata:   metadata,
 				}
 			}
 		}
@@ -273,7 +280,10 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		t := template.Must(template.New("url").Parse(fullURL))
 		buf := new(bytes.Buffer)
 		// Execute the template: add "data" data in "url".
-		t.Execute(buf, data)
+		err = t.Execute(buf, data)
+		if err != nil {
+			return err
+		}
 		fullURL = buf.String()
 
 		// Get single Repo
@@ -300,6 +310,12 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		}
 		u.Path = path.Join(u.Path, result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
+		// Marshal all the repository metadata.
+		metadata, err := json.Marshal(result)
+		if err != nil {
+			log.Errorf("bitbucket metadata: %v", err)
+		}
+
 		// If the repository was never used, the Mainbranch is empty ("").
 		if result.Mainbranch.Name != "" {
 			repositories <- Repository{
@@ -307,6 +323,7 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 				FileRawURL: u.String(),
 				Domain:     domain,
 				Headers:    headers,
+				Metadata:   metadata,
 			}
 		} else {
 			return errors.New("repository is: empty")

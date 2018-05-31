@@ -20,7 +20,10 @@ func SaveToFile(domain Domain, name string, data []byte, index string) {
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		os.MkdirAll(path, os.ModePerm)
+		err := os.MkdirAll(path, os.ModePerm)
+		if err != nil {
+			log.Error(err)
+		}
 	}
 
 	err := ioutil.WriteFile(filepath.Join(path, fileName), data, 0644)

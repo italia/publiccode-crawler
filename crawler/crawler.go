@@ -23,6 +23,7 @@ type Repository struct {
 	FileRawURL string
 	Domain     Domain
 	Headers    map[string]string
+	Metadata   []byte
 }
 
 // ProcessRepositories process the repositories channel and check the availability of the file.
@@ -41,6 +42,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	FileRawURL := repository.FileRawURL
 	domain := repository.Domain
 	headers := repository.Headers
+	metadata := repository.Metadata
 
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", index).Inc()
@@ -49,11 +51,16 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
 
+		// Save Metadata.
+		SaveToFile(domain, name, metadata, index+"_metadata")
+
 		// Save to file.
 		SaveToFile(domain, name, resp.Body, index)
 
 		// Save to ES.
 		SaveToES(domain, name, resp.Body, index, elasticClient)
+
+		// TODO: save "metadata" on ES. When mapping is ready.
 
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
@@ -97,7 +104,10 @@ func ProcessPADomain(org string, domain Domain, repositories chan Repository, wg
 	t := template.Must(template.New("url").Parse(url))
 	buf := new(bytes.Buffer)
 	// Execute the template: add "data" data in "url".
-	t.Execute(buf, data)
+	err := t.Execute(buf, data)
+	if err != nil {
+		log.Errorf("Error parsing the url: %v", err)
+	}
 	url = buf.String()
 
 	// Process the pages until the end is reached.
@@ -134,12 +144,19 @@ func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup,
 	indices := res.IndicesByAlias("publiccode")
 	for _, name := range indices {
 		log.Debugf("Remove alias from %s to %s", "publiccode", name)
-		aliasService.Remove(name, "publiccode").Do(context.Background())
+		aliasResult, err := aliasService.Remove(name, "publiccode").Do(context.Background())
+		if err != nil {
+			log.Errorf("AliasService %s Remove failed: %v", aliasResult.Index, err)
+		}
+
 	}
 
 	// Add an alias to the new index.
 	log.Debugf("Add alias from %s to %s", index, "publiccode")
-	aliasService.Add(index, "publiccode").Do(context.Background())
+	aliasResult, err := aliasService.Add(index, "publiccode").Do(context.Background())
+	if err != nil {
+		log.Errorf("AliasService %s Add failed: %v", aliasResult.Index, err)
+	}
 
 	close(repositories)
 }
@@ -147,11 +164,9 @@ func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup,
 // ProcessSingleRepository process a single repository given his url and domain.
 func ProcessSingleRepository(url string, domain Domain, repositories chan Repository) error {
 	err := domain.processSingleRepo(url, repositories)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
+
 }
 
 // generateRandomInt returns an integer between 0 and max parameter.

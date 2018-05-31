@@ -15,7 +15,10 @@ var rootCmd = &cobra.Command{
 	Long: `A Fast and Robust publiccode.yml file crawler.
 Complete documentation is available at https://github.com/italia/developers-italia-backend`,
 	Run: func(cmd *cobra.Command, args []string) {
-		cmd.Help()
+		err := cmd.Help()
+		if err != nil {
+			panic(err)
+		}
 	},
 }
 
