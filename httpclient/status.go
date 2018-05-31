@@ -79,7 +79,6 @@ func statusTooManyRequests(resp *http.Response, expBackoffAttempts int) (int, er
 
 // statusForbidden returns an HTTPResponse with the data from response.
 func statusForbidden(resp *http.Response, expBackoffAttempts int) (int, error) {
-
 	// If Retry-after is set, use that value.
 	if retryAfter := resp.Header.Get(headerRetryAfter); retryAfter != "" {
 		log.Infof("Waiting: %s seconds. (The value of %s)", retryAfter, headerRetryAfter)

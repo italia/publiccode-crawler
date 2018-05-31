@@ -10,7 +10,6 @@
     "golint",
     "varcheck",
     "structcheck",
-    "maligned",
     "errcheck",
     "megacheck",
     "ineffassign",
@@ -23,7 +22,6 @@
     "misspell",
     "safesql"
   ],
-  "Exclude": ["vendor/.*", "publiccode/.*"],
 
   "Cyclo": 14,
   "LineLength": 200

@@ -271,15 +271,17 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		// Clear the url.
 		fullName := strings.Trim(u.Path, "/")
 
-		var fullURL string
 		// Starting URL. Generate using go templates.
-		fullURL = domain.APIRepoURL
+		fullURL := domain.APIRepoURL
 		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
 		// Create a new template and parse the url into it.
 		t := template.Must(template.New("url").Parse(fullURL))
 		buf := new(bytes.Buffer)
 		// Execute the template: add "data" data in "url".
-		t.Execute(buf, data)
+		err = t.Execute(buf, data)
+		if err != nil {
+			return err
+		}
 		fullURL = buf.String()
 
 		// Get single Repo

@@ -301,11 +301,14 @@ func RegisterSingleGithubAPI() SingleHandler {
 		t := template.Must(template.New("url").Parse(fullURL))
 		buf := new(bytes.Buffer)
 		// Execute the template: add "data" data in "url".
-		t.Execute(buf, data)
+		err = t.Execute(buf, data)
+		if err != nil {
+			return err
+		}
 		fullURL = buf.String()
 
 		// Fill response as list of values (repositories data).
-		result, _, err := getGithubRepoInfos(fullURL, headers)
+		result, err := getGithubRepoInfos(fullURL, headers)
 		if err != nil {
 			return err
 		}
@@ -341,25 +344,22 @@ func RegisterSingleGithubAPI() SingleHandler {
 }
 
 // getGithubRepoInfos retrieve single repository info GithubRepo.
-func getGithubRepoInfos(URL string, headers map[string]string) (GithubRepo, string, error) {
+func getGithubRepoInfos(URL string, headers map[string]string) (GithubRepo, error) {
 	var results GithubRepo
 
 	// Get List of repositories.
 	resp, err := httpclient.GetURL(URL, headers)
 	if err != nil {
-		return results, URL, err
+		return results, err
 	}
 	if resp.Status.Code != http.StatusOK {
 		log.Warnf("Request for single Github repository returned: %s", string(resp.Body))
-		return results, URL, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+		return results, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 	}
 
 	// Fill response as list of values (repositories data).
 	err = json.Unmarshal(resp.Body, &results)
-	if err != nil {
-		return results, URL, err
-	}
 
-	return results, URL, nil
+	return results, err
 
 }

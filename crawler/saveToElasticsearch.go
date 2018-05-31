@@ -19,9 +19,9 @@ type File struct {
 // SaveToES save the chosen data []byte in elasticsearch
 func SaveToES(domain Domain, name string, data []byte, index string, elasticClient *elastic.Client) {
 	const (
-		// Elasticsearch mapping for publiccode. Checkout elasticsearch/mappings/software.json
-		// TODO: Mapping must reflect the publiccode.PublicCode structure.
-		mapping = ""
+	// Elasticsearch mapping for publiccode. Checkout elasticsearch/mappings/software.json
+	// TODO: Mapping must reflect the publiccode.PublicCode structure.
+	//mapping = ""
 	)
 
 	// Starting with elastic.v5, you must pass a context to execute each service.

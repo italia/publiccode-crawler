@@ -280,7 +280,10 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		t := template.Must(template.New("url").Parse(fullURL))
 		buf := new(bytes.Buffer)
 		// Execute the template: add "data" data in "url".
-		t.Execute(buf, data)
+		err = t.Execute(buf, data)
+		if err != nil {
+			return err
+		}
 		fullURL = buf.String()
 
 		// Get single Repo

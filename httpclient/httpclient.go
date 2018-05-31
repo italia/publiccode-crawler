@@ -24,14 +24,17 @@ const (
 // It uses some technique to slow down the requests if it get a 429 (Too Many Requests) response.
 func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 	expBackoffAttempts := 0
-	const timeout = time.Duration(60 * time.Second)
+	const timeout = 60 * time.Second
+	const maxBackOffAttempts = 8 // 2 minutes.
+	var err error
 
 	client := http.Client{
 		// Request Timeout.
 		Timeout: timeout,
 	}
 
-	for {
+	for expBackoffAttempts < maxBackOffAttempts {
+
 		req, err := http.NewRequest("GET", URL, nil)
 		if err != nil {
 			return HTTPResponse{
@@ -92,14 +95,14 @@ func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 			}
 		}
 
-		// Generic invalid status code.
-		return HTTPResponse{
-			Body:    nil,
-			Status:  ResponseStatus{Text: "Invalid Status Code: " + URL, Code: -1},
-			Headers: nil,
-		}, err
-
 	}
+
+	// Generic invalid status code.
+	return HTTPResponse{
+		Body:    nil,
+		Status:  ResponseStatus{Text: "Invalid Status Code: " + URL, Code: -1},
+		Headers: nil,
+	}, err
 }
 
 // NextHeaderLink parse the Github Header Link to next link of repositories.
