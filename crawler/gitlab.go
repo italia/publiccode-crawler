@@ -275,7 +275,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		// Starting URL. Generate using go templates.
 		fullURL = domain.APIRepoURL
 		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
-		// Create a new template and parse the Url into it.
+		// Create a new template and parse the url into it.
 		t := template.Must(template.New("url").Parse(fullURL))
 		buf := new(bytes.Buffer)
 		// Execute the template: add "data" data in "url".
@@ -328,7 +328,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 	}
 }
 
-// generateGitlabRawUrl returns the file Gitlab specific file raw url.
+// generateGitlabRawURL returns the file Gitlab specific file raw url.
 func generateGitlabRawURL(baseURL, pathWithNamespace, defaultBranch string) (string, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
