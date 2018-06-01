@@ -42,6 +42,9 @@ class generatorRandomDocuments {
   protected $dependencies_hardware;
   protected $dependencies_hardware_numbers;
 
+  protected $metadata_repo;
+  protected $metadata_repo_numbers;
+
   public function __construct() {
     $this->licenses = [
       "0BSD",                                 // BSD Zero Clause License
@@ -670,6 +673,9 @@ class generatorRandomDocuments {
       'NFC Reader (chipset xxx)'
     ];
     $this->dependencies_hardware_numbers = count($this->dependencies);
+
+    $this->metadata_repo = $this->readExampleMetadataRepo();
+    $this->metadata_repo_numbers = count($this->metadata_repo);
   }
 
   public function generateDocuments($n = 100) {
@@ -719,6 +725,7 @@ class generatorRandomDocuments {
         "it-use-spid" => $this->getRandomUseSpid(),
         "it-pagopa" => $this->getRandomPagopa(),
         "suggest-name" => explode(" ", $name),
+        "metadata-repo" => $this->getRandomMetadataRepo(),
       ];
     }
 
@@ -938,6 +945,10 @@ class generatorRandomDocuments {
     return $descriptions;
   }
 
+  public function getRandomMetadataRepo() {
+    return $this->metadata_repo[rand(0, $this->metadata_repo_numbers - 1)];
+  }
+
   private function generateRandomString($length = 10, $only_letters = FALSE) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     if ($only_letters) {
@@ -972,6 +983,22 @@ class generatorRandomDocuments {
     }
 
     return trim($affiliation);
+  }
+
+  private function readExampleMetadataRepo() {
+    $metadata = [];
+    $files = [
+      'metadata-repo-bitbucket.json',
+      'metadata-repo-github.json',
+      'metadata-repo-gitlab.json',
+    ];
+
+    foreach ($files as $file) {
+      $json = file_get_contents($file);
+      $metadata[] = json_decode($json);
+    }
+
+    return $metadata;
   }
 
 }
