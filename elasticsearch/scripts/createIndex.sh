@@ -140,6 +140,11 @@ generate_index_settings() {
         },
         "suggest-name": {
           "type": "completion"
+        },
+        "metadata-repo": {
+          "type": "object",
+          "dynamic": true,
+          "enabled": false
         }
       }
     }
