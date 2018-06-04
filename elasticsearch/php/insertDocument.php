@@ -29,5 +29,10 @@ foreach ($documents as $key => $document) {
     'id' => $key,
     'body' => $document
   ];
-  $client->index($params);
+  try {
+    $client->index($params);
+  }
+  catch(Exception $e) {
+    print_r($e->getMessage());
+  }
 }

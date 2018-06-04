@@ -45,6 +45,15 @@ class generatorRandomDocuments {
   protected $metadata_repo;
   protected $metadata_repo_numbers;
 
+  protected $development_status;
+  protected $development_status_numbers;
+
+  protected $software_type;
+  protected $software_type_numbers;
+
+  protected $ISO_639_3;
+  protected $ISO_639_3_numbers;
+
   public function __construct() {
     $this->licenses = [
       "0BSD",                                 // BSD Zero Clause License
@@ -512,12 +521,17 @@ class generatorRandomDocuments {
       'web',
       'linux',
       'windows',
-      'mac'
+      'mac',
+      'android',
+      'ios'
     ];
     $this->platforms_numbers = count($this->platforms);
 
     $this->scope = ["it", "en", "es", "fr", "de", "sv", "sl", "nl", "cs"];
     $this->scope_numbers = count($this->scope);
+
+    $this->ISO_639_3 = ["ita", "eng", "spa", "fra", "deu", "swe", "slv", "nld", "ces"];
+    $this->ISO_639_3_numbers = count($this->ISO_639_3);
 
     $this->patype = [
       'city',
@@ -676,6 +690,23 @@ class generatorRandomDocuments {
 
     $this->metadata_repo = $this->readExampleMetadataRepo();
     $this->metadata_repo_numbers = count($this->metadata_repo);
+
+    $this->development_status = [
+      "concept",
+      "development",
+      "beta",
+      "stable",
+      "obsolete"
+    ];
+    $this->development_status_numbers = count($this->development_status);
+
+    $this->software_type = [
+      "standalone",
+      "addon",
+      "library",
+      "configurationFiles"
+    ];
+    $this->software_type_numbers = count($this->software_type);
   }
 
   public function generateDocuments($n = 100) {
@@ -692,38 +723,59 @@ class generatorRandomDocuments {
 
     for ($i=0; $i < $n; $i++) { 
       $name = $this->getRandomProjectName();
-      $main_copyright_owner = $this->getRandomMainCopyrightOwner();
+      $audience_countries = $this->getRandomScope();
+      $audience_unsupported_countries = $this->getRandomScope();
+      $intended_audience_unsupported_countries = [];
+      foreach ($audience_unsupported_countries as $value) {
+        if (!in_array($value, $audience_countries)) {
+          $intended_audience_unsupported_countries[] = $value;
+        }
+      }
       $documents[] = [
-        "standard version" => "0.0.1",
-        "url" => "https://github.com/publiccodenet/publiccode.yml",
-        "upstream-url" => ["https://github.com/publiccodenet/publiccode.yml"],
-      
-        "license" => $this->getRandomLicense(),
-        "main-copyright-owner" => $main_copyright_owner,
-        "repo-owner" => (rand(0, 3) < 3) ? $main_copyright_owner : $this->getRandomRepoOwner(),
-      
-        "maintainance-type" => $this->getRandomMaintainanceType(),
-        "maintainance-until" => $this->getRandomDate($now, $end),
-        'technical-contacts' => $this->getRandomTechnicalContacts(),
+        "publiccode-yaml-version" => "http://w3id.org/publiccode/version/0.1",
         "name" => $name,
-        "logo" => "img/logo.jpg",
-        "version" => $this->getRandomVersion(),
-        "released" => $this->getRandomDate($start, $now),
+        "application-suite" => $this->getRandomApplicationSuite(),
+        "url" => "https://example.com/italia/medusa.git",
+        "landing-url" => "https://example.com/italia/medusa",
+        "is-based-on" => $this->getRandomIsBasedOn(),
+        "software-version" => $this->getRandomVersion(),
+        "release-date" => $this->getRandomDate($start, $now),
+        "logo" => "img/logo.svg",
+        "monochrome-logo" => "img/logo-mono.svg",
         "platforms" => $this->getRandomPlatforms(),
-        "longdesc-en" => $this->descriptions[$i*2],
-        "longdesc-it" => $this->descriptions[($i*2)+1],
-        "shortdesc-en" => substr($this->descriptions[$i*2], 0, rand(100, 150)),
-        "shortdesc-it" => substr($this->descriptions[($i*2)+1], 0, rand(100, 150)),
-        "videos" => $this->getRandomVideoUrls(),
-        "scope" => $this->getRandomScope(),
-        "pa-type" => $this->getRandomPaType(),
-        "category" => $this->getRandomCategory(),
         "tags" => $this->getRandomTags(),
+        "free-tags" => $this->getFreeTags(),
         "used-by" => $this->getRandomUsedBy(),
-        "dependencies" => $this->getRandomDependencies(),
+        "roadmap" => "https://example.com/italia/medusa/roadmap",
+        "development-status" => $this->getRandomDevelopmentStatus(),
+        "software-type" => $this->getRandomSoftwareType(),
+        "software-is-related-to" => $this->getRandomSoftwareIsRelatedTo(),
+        "intended-audience-only-for" => $this->getRandomPaType(),
+        "intended-audience-countries" => $audience_countries,
+        "intended-audience-unsupported-countries" => $intended_audience_unsupported_countries,
+        "legal-license" => $this->getRandomLicense(),
+        "legal-main-copyright-owner" => $this->getRandomMainCopyrightOwner(),
+        "legal-repo-owner" => $this->getRandomMainCopyrightOwner(),
+        "legal-authors-file" => "doc/AUTHORS.txt",
+        "description" => [
+          $this->getRandomISO6393() => $this->getRandomDescription($name, $i),
+        ],
+        "dependencies-software" => $this->getRandomDependencies(),
         "dependencies-hardware" => $this->getRandomDependenciesHardware(),
-        "it-use-spid" => $this->getRandomUseSpid(),
-        "it-pagopa" => $this->getRandomPagopa(),
+        "maintainance-contacts" => $this->generateRandomMaintenanceContact(),
+        "maintainance-contractors" => $this->getRandomMaintenanceContractors(),
+        "maintainance-type" => $this->getRandomMaintainanceType(),
+        "localisation-localisation-ready" => boolval(rand(0,1)),
+        "localisation-available-languages" => [],
+        "it-accessibile" => boolval(rand(0,1)),
+        "it-spid" => boolval(rand(0,1)), 
+        "it-cie" => boolval(rand(0,1)), 
+        "it-anpr" => boolval(rand(0,1)), 
+        "it-pagopa" => boolval(rand(0,1)), 
+        "it-riuso-codice-ipa" => boolval(rand(0,1)), 
+        "it-design-kit-service-design"  => boolval(rand(0,1)), 
+        "it-design-kit-ui"  => boolval(rand(0,1)), 
+        "it-design-kit-web-toolki" => boolval(rand(0,1)),
         "suggest-name" => explode(" ", $name),
         "metadata-repo" => $this->getRandomMetadataRepo(),
       ];
@@ -842,6 +894,40 @@ class generatorRandomDocuments {
     return $tags;
   }
 
+  public function getRandomLocalizationLanguages() {
+    $n_langs = rand(0, 3);
+    $localisation_available_languages = [];
+    for ($i=0; $i < $n_langs; $i++) { 
+      $localisation_available_languages[] = $this->getRandomISO6393();
+    }
+
+    return $localisation_available_languages;
+  }
+
+  public function getFreeTags() {
+    $free_tags = [];
+    // numero di tags
+    $n_tags = rand(0, 5);
+    $n_langs = rand(0, 5);
+    if($n_tags > 0) {
+      for ($i=0; $i < $n_langs; $i++) { 
+        $free_tags[$this->getRandomISO6393()] = $this->getRandomFreeTags($n_tags);
+      }
+    }
+
+    return $free_tags;
+  }
+
+  public function getRandomFreeTags($n = 3) {
+    $free_tags = [];
+
+    for ($i=0; $i < $n; $i++) { 
+      $free_tags[] = $this->getRandomPhrase(2, 3, "-");
+    }
+
+    return $free_tags;
+  }
+
   public function getRandomCategory() {
     $n = rand(1, 6);
     $category = [];
@@ -861,10 +947,14 @@ class generatorRandomDocuments {
     $n = rand(0, 5);
     $dependencies = [];
 
-    for ($i=0; $i < $n;) { 
+    for ($i=0; $i < $n;) {
       $current = rand(0, $this->dependencies_numbers - 1);
       if(!in_array($this->dependencies[$current], $dependencies)) {
-        $dependencies[] = $this->dependencies[$current];
+        $dependencies[] = [
+          'name' => $this->dependencies[$current],
+          'version' => $this->getRandomVersion(),
+          'optional' => boolval(rand(0,1))
+        ];
         $i++;
       }
     }
@@ -877,7 +967,10 @@ class generatorRandomDocuments {
     $dependencies_hardware = [];
 
     if ($n == 1) {
-      return $this->dependencies_hardware;
+      return [
+        'name' => $this->dependencies_hardware,
+        'optional' => boolval(rand(0,1)),
+      ];
     }
 
     return $dependencies_hardware;
@@ -895,14 +988,24 @@ class generatorRandomDocuments {
     return $this->maintainance_type[rand(0, $this->maintainance_type_numbers -1)];
   }
 
-  public function getRandomTechnicalContacts() {
+  public function getRandomMaintenanceContacts() {
     $n = rand(1, 10);
     $technical_contacts = [];
     for ($i=0; $i < $n ; $i++) { 
-      $technical_contacts[] = $this->generateRandomTechnicalContact();
+      $technical_contacts[] = $this->generateRandomMaintenanceContact();
     }
 
     return $technical_contacts;
+  }
+
+  public function getRandomMaintenanceContractors() {
+    $maintainance_contractors = [];
+    $n = rand(1,3);
+    for ($i=0; $i < $n; $i++) { 
+      $maintainance_contractors = $this->generateRandomMaintenanceContractor();
+    }
+
+    return $maintainance_contractors;
   }
 
   public function getRandomProjectName() {
@@ -914,6 +1017,69 @@ class generatorRandomDocuments {
     }
 
     return trim($name);
+  }
+
+  public function getRandomApplicationSuite() {
+    $n = rand(1, 4);
+    $application_suite = "";
+
+    for ($i=0; $i < $n; $i++) { 
+      $application_suite .= ucfirst(strtolower($this->generateRandomString(rand(4, 10), TRUE)));
+    }
+
+    return $application_suite;
+  }
+
+  public function getRandomIsBasedOn() {
+    $n = rand(1, 4);
+    $is_based_on = [];
+
+    for ($i=0; $i < $n; $i++) {
+      $is_based_on[] = "https://github.com/italia/otello.git";
+    }
+
+    return $is_based_on;
+  }
+
+  public function getRandomDevelopmentStatus() {
+    return $this->development_status[rand(0, $this->development_status_numbers -1)];
+  }
+
+  public function getRandomSoftwareType() {
+    return $this->software_type[rand(0, $this->software_type_numbers - 1)];
+  }
+
+  public function getRandomSoftwareIsRelatedTo() {
+    $n = rand(0, 4);
+    $software_is_related_to = [];
+
+    for ($i=0; $i < $n ; $i++) { 
+      $software_is_related_to[] = "https://example.com/italia/software".$i.".git";
+    }
+
+    return $software_is_related_to;
+  }
+
+  public function getRandomDescription($name, $i_description) {
+    $screenshots = [];
+    $n = rand(1, 8);
+    for ($i=0; $i < $n; $i++) { 
+      $screenshots[] = "img/sshot".($i+1).".jpg";
+    }
+    return [
+      "localised-name" => $name,
+      "short-description" => substr($this->descriptions[$i_description*2], 0, rand(100, 150)),
+      "long-description" => $this->descriptions[$i_description*2],
+      "documentation" => "https://read.the.documentation/medusa/v1.0",
+      "feature-list" => $this->getRandomFeatureList(),
+      "screenshots" => $screenshots,
+      "videos" => $this->getRandomVideoUrls(),
+      "awards" => $this->getRandomAwardsList(),
+    ];
+  }
+
+  public function getRandomISO6393() {
+    return $this->ISO_639_3[rand(0, ($this->ISO_639_3_numbers - 1))];
   }
 
   public function getDocumentsDescription($n = 100) {
@@ -964,14 +1130,59 @@ class generatorRandomDocuments {
     return $randomString;
   }
 
-  private function generateRandomTechnicalContact() {
+  private function getRandomAwardsList() {
+    $n = rand(0, 3);
+    $awards_list = [];
+
+    for ($i=0; $i < $n; $i++) { 
+      $awards_list[] = $this->getRandomPhrase(2, 4);
+    }
+
+    return $awards_list;
+  }
+
+  private function getRandomFeatureList() {
+    $n = rand(1, 5);
+    $feature_list = [];
+
+    for ($i=0; $i < $n; $i++) { 
+      $feature_list[] = $this->getRandomPhrase();
+    }
+
+    return $feature_list;
+  }
+
+  private function getRandomPhrase($min = 3, $max = 7, $blank = " ") {
+    $n = rand($min, $max);
+    $feature = "";
+
+    for ($i=0; $i < $n; $i++) { 
+      $feature .= strtolower($this->generateRandomString(rand(2, 12), TRUE)) . $blank;
+    }
+
+    return trim($feature, $blank);
+  }
+
+  private function generateRandomMaintenanceContact() {
     $name = strtolower($this->generateRandomString(rand(6, 15), TRUE));
     $surname = strtolower($this->generateRandomString(rand(6, 15), TRUE));
     $affiliation = $this->generateRandomAffiliation();
     return [
       "name" => ucfirst($name) . " " . ucfirst($surname),
       "email" => $name.".".$surname."@example.com",
+      "phone" => "123456789",
       "affiliation" => $this->generateRandomAffiliation(),
+    ];
+  }
+
+  private function generateRandomMaintenanceContractor() {
+    $now = (new DateTime())->getTimestamp();
+    $end = 1735693261;
+
+    return [
+      "name" => ucfirst(strtolower($this->generateRandomString(rand(6, 15), TRUE))) . " " . ucfirst(strtolower($this->generateRandomString(rand(6, 15), TRUE))) . " S.p.A.",
+      "website" => "https://www.companywebsite.com",
+      "until" => $this->getRandomDate($now, $end),
     ];
   }
 
