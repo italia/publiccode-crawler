@@ -14,66 +14,29 @@ ALIAS="publiccode"
 generate_document() {
   cat <<EOF
 {
-  "standard version": "0.0.1",
-  "url": "https://github.com/publiccodenet/publiccode.yml",
-  "upstream-url": ["https://github.com/publiccodenet/publiccode.yml"],
-
-  "license": "AGPL-3.0-or-later",
-  "main-copyright-owner": "City of Amsterdam and many contributors",
-  "repo-owner": "City of Amsterday",
-
-  "maintainance-type": "commercial",
-  "maintainance-until": "2019-01-01",
-  "technical-contacts": [
-    {
-      "name": "Frank Zappa",
-      "email": "frank.zappa@example.com",
-      "affiliation": "Comune di Reggio Emilia"
-    }
-  ],
-
+  "publiccode-yaml-version": "http://w3id.org/publiccode/version/0.1",
   "name": "Medusa",
-  "logo": "img/logo.jpg",
-  "version": "1.0",
-  "released": "2017-04-15",
-  "platforms": ["web", "Linux"],
-  "longdesc-en": "Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it.",
-  "longdesc-it": "Descrizione molto lunga di questo software, anche diviso su più righe. Si dovrebbe notare che cos'è il software e perché uno dovrebbe averne bisogno.",
-  "shortdesc-en": "A really interesting software.",
-  "shortdesc-it": "Un software davvero interessante.",
-  "videos": [
-    "https://youtube.com/xxxxxxxx"
-  ],
-
-  "scope": [
-    "it",
-    "en"
-  ],
-  "pa-type": [
-    "city",
-    "it-ag-lavoro"
-  ],
-  "category": [
-    "it-anagrafe"
+  "application-suite": "MegaProductivitySuite",
+  "url": "https://example.com/italia/medusa.git",
+  "landing-url": "https://example.com/italia/medusa",
+  "is-based-on": ["https://github.com/italia/otello.git"],
+  "software-version": "1.0",
+  "release-date": "2017-04-15",
+  "logo": "img/logo.svg",
+  "monochrome-logo": "img/logo-mono.svg",
+  "platforms": [
+    "android",
+    "ios"
   ],
   "tags": [
-    "city",
-    "employee",
-    "public"
+    "cms",
+    "productivity",
+    "it-portale-trasparenza"
   ],
-  "used-by": [
-    "Comune di Firenze",
-    "Comune di Roma"
-  ],
-  "dependencies": [
-    "Oracle 11.4",
-    "MySQL"
-  ],
-  "dependencies-hardware": [
-    "NFC Reader (chipset xxx)"
-  ],
-  "it-use-spid": "yes",
-  "it-pagopa": "no",
+  "free-tags": {
+    "eng": ["pippo-cheese", "this", "those"],
+    "ita": ["pippo-formaggio", "questo", "quello"]
+  },
   "suggest-name": {
     "input": ["Medusa"],
     "weight" : 1

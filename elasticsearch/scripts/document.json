@@ -1,0 +1,69 @@
+{
+  "publiccode-yaml-version": "http://w3id.org/publiccode/version/0.1",
+  "name": "Medusa",
+  "application-suite": "MegaProductivitySuite",
+  "url": "https://example.com/italia/medusa.git",
+  "landing-url": "https://example.com/italia/medusa",
+  "is-based-on": ["https://github.com/italia/otello.git"],
+  "software-version": "1.0",
+  "release-date": "2017-04-15",
+  "logo": "img/logo.svg",
+  "monochrome-logo": "img/logo-mono.svg",
+  "platforms": [
+    "android",
+    "ios"
+  ],
+  "tags": [
+    "cms",
+    "productivity",
+    "it-portale-trasparenza"
+  ],
+  "free-tags": {
+    "eng": ["pippo-cheese", "this", "those"],
+    "ita": ["pippo-formaggio", "questo", "quello"]
+  },
+  "used-by": [
+    "Comune di Firenze",
+    "Comune di Roma"
+  ],
+  "roadmap": "https://example.com/italia/medusa/roadmap",
+  "development-status": "development",
+  "software-type": "standalone",
+  "software-is-related-to": [
+    "https://example.com/italia/software1.git",
+    "https://example.com/italia/software2.git",
+    "https://example.com/italia/software3.git"
+  ],
+  "intended-audience-only-for": ["cities", "health-services", "it-ag-agricolo"],
+  "intended-audience-countries": ["it", "de"],
+  "intended-audience-unsupported-countries": ["fr"],
+  "description":{
+    "eng": {
+      "localised-name": "",
+      "short-description": "",
+      "long-description": "",
+      "documentation": "https://read.the.documentation/medusa/v1.0",
+      "feature-list": [
+        "Very important feature",
+        "Will run without a problem",
+        "Has zero bugs",
+        "Solves all the problems of the world"
+      ],
+      "screenshots": [
+        "img/sshot1.jpg",
+        "img/sshot2.jpg",
+        "img/sshot3.jpg"
+      ],
+      "videos": [
+        "https://youtube.com/xxxxxxxx"
+      ],
+      "awards": [
+        "1st Price Software of the year"
+      ]
+    }
+  },
+  "suggest-name": {
+    "input": ["Medusa"],
+    "weight" : 1
+  }
+}

@@ -14,7 +14,7 @@ $( document ).ready(function() {
   $('#es-automplete-input').on('input', null, client, executeAutoCompleteESQuery);
   $('#es-search-button').on('click', null, client, executeSearchCallback);
   $('#es-tags-list').on('click', null, client, activateTermFilter);
-  $('#es-pa-type-list').on('click', null, client, activateTermFilter);
+  $('#es-intended-audience-only-for-list').on('click', null, client, activateTermFilter);
   $('#es-term-active').on('click', null, client, deActivateTermFilter);
   $('input[name=sort-by-date]').on('change', null, client, onSortChange);
   
@@ -97,10 +97,11 @@ function executeSearchESQuery(client) {
   var sort = [];
   /*** execute full text query ***/
 
+  // Add fields corresponding to the current frontend language.
   var must = {
     'multi_match': {
       'query': $('#es-search-input').val(),
-      'fields': ['name', 'longdesc-it', 'longdesc-en', 'shortdesc-it', 'shortdesc-en']
+      'fields': ['name', 'description.deu.short-description', 'description.deu.short-description']
     }
   };
 
@@ -108,15 +109,15 @@ function executeSearchESQuery(client) {
 
   // first, take tags selected
   var tags = [];
-  var patype = [];
+  var intended_audience_only_for = [];
   $('#es-term-active .es-term.tags').each(function(index, element){
     tags.push({
       value:$(element).attr('es-value'),
       name: $(element).attr('es-name')
     });
   });
-  $('#es-term-active .es-term.pa-type').each(function(index, element){
-    patype.push({
+  $('#es-term-active .es-term.intended-audience-only-for').each(function(index, element){
+    intended_audience_only_for.push({
       value:$(element).attr('es-value'),
       name: $(element).attr('es-name')
     });
@@ -125,7 +126,7 @@ function executeSearchESQuery(client) {
   console.log("TAGS: ");
   console.log(tags);
   console.log("PATYPE: ");
-  console.log(patype);
+  console.log(intended_audience_only_for);
 
   if (tags && tags.length) {
     console.log(tags);
@@ -174,12 +175,12 @@ function executeSearchESQuery(client) {
     // };
   }
   
-  if (patype && patype.length) {
-    console.log(patype);
+  if (intended_audience_only_for && intended_audience_only_for.length) {
+    console.log(intended_audience_only_for);
 
     // filter have to be populated with all filters active
     // for AND query filtes use an distinct object, with term key, for each filter
-    $.each(patype, function(index, t){
+    $.each(intended_audience_only_for, function(index, t){
       var value = t.value;
       var name = t.name;
       term = {};
@@ -228,13 +229,13 @@ function executeSearchESQuery(client) {
   };
 
   if ($('#es-search-input').val() != '') {
-    query.query.bool.must = must;    
+    query.query.bool.must = must;
   }
 
   // Sort
   if ($('input[name=sort-by-date]:checked').val() !== undefined) {
     sort.push({
-      'released' : {'order' : $('input[name=sort-by-date]:checked').val() }
+      'release-date' : {'order' : $('input[name=sort-by-date]:checked').val() }
     });
   }
 
@@ -270,14 +271,14 @@ function getAllFilterTerms(client) {
     index: 'publiccode',
     body: {
       aggs: {
-        tags: {
+        'tags': {
           terms: {
             field:'tags'
           }
         },
-        patype: {
+        'intended-audience-only-for': {
           terms: {
-            field:'pa-type'
+            field:'intended-audience-only-for'
           }
         }
       }
@@ -285,14 +286,14 @@ function getAllFilterTerms(client) {
   }).then(
     function(data){
       console.log(data);
-      buckets = data.aggregations.tags.buckets;
+      buckets = data.aggregations['tags'].buckets;
       $.each(buckets, function(index, bucket){
         $('#es-tags-list').append("<span class='es-term tags' es-value='"+bucket.key+"' es-name='tags'>" + bucket.key + " ("+bucket.doc_count+")</span>" );
       });
 
-      buckets = data.aggregations.patype.buckets;
+      buckets = data.aggregations['intended-audience-only-for'].buckets;
       $.each(buckets, function(index, bucket){
-        $('#es-pa-type-list').append("<span class='es-term pa-type' es-value='"+bucket.key+"' es-name='pa-type'>" + bucket.key + " ("+bucket.doc_count+")</span>" );
+        $('#es-intended-audience-only-for-list').append("<span class='es-term intended-audience-only-for' es-value='"+bucket.key+"' es-name='intended-audience-only-for'>" + bucket.key + " ("+bucket.doc_count+")</span>" );
       });
 
     },
