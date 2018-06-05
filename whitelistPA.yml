@@ -1,22 +1,19 @@
-# whitelistPA.yml is a list of every organization repository from iPA.
+# whitelistGeneric.yml is a list of every organization repository not from iPA.
 
-- codice-IPA: 'example-Italia-iPA' # iPA code.
-  name: 'Comune di Italia sul Naviglio' # Referred name.
-  repositories:
-    - api: 'github' # API specification. Refers to domains.yml
-      organizations: # List of organizations links for the API.
-        - 'italia'
+- id: "Comune Firenze" # id name
+  codice-iPA: "cmfi"
+  organizations:
+    - "https://github.com/ArchiveTeam"
+    - "https://github.com/recursecenter"
+    - "https://bitbucket.org/wellnet-team"
+    - "https://gitlab.com/MicroRL"
+    #- "https://gitlab.comune.firenze.it/ufficioABC"
 
-- codice-IPA: 'example-Gitlab-iPA'
-  name: 'Comune di Gitlab sul Naviglio'
-  repositories:
-    - api: 'gitlab'
-      organizations:
-        - 'gitlab-org'
-
-- codice-IPA: 'example-Bitbucket-iPA'
-  name: 'Comune di Bitbucket sul Naviglio'
-  repositories:
-    - api: 'bitbucket'
-      organizations:
-        - 'soft'
+- id: "Wellnet Srl" #id name
+  codice-iPA: ""
+  organizations:
+    - "https://github.com/publiccodenet"
+    - "https://github.com/cryptography-training"
+    - "https://bitbucket.org/blowmeaway"
+    - "https://gitlab.com/blockninja"
+#- "https://gitlab.comune.firenze.it/ufficioABC"

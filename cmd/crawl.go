@@ -70,9 +70,9 @@ var crawlCmd = &cobra.Command{
 		for _, pa := range whitelist {
 			wg.Add(1)
 			// If iPAToCrawl is empty crawl all domains, otherwise crawl only the one with CodiceIPA equals to iPAToCrawl.
-			if (iPAToCrawl == "") || (iPAToCrawl != "" && pa.CodiceIPA == iPAToCrawl) {
-				go crawler.ProcessPA(pa, domains, repositories, &wg)
-			}
+			// if (iPAToCrawl == "") || (iPAToCrawl != "" && pa.CodiceIPA == iPAToCrawl) {
+			go crawler.ProcessPA(pa, domains, repositories, &wg)
+			// }
 		}
 
 		// Start the metrics server.

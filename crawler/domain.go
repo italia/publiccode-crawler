@@ -14,13 +14,8 @@ import (
 // Domain is a single code hosting service.
 type Domain struct {
 	// Domains.yml data
-	ID          string   `yaml:"id"`
-	Description string   `yaml:"description"`
-	ClientAPI   string   `yaml:"client-api"`
-	APIOrgURL   string   `yaml:"api-org-url"`
-	APIRepoURL  string   `yaml:"api-repo-url"`
-	RawBaseURL  string   `yaml:"raw-base-url"`
-	BasicAuth   []string `yaml:"basic-auth"`
+	Host      string   `yaml:"host"`
+	BasicAuth []string `yaml:"basic-auth"`
 }
 
 // ReadAndParseDomains read domainsFile and return the parsed content in a Domain slice.
@@ -49,24 +44,29 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return domains, nil
 }
 
 func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
-	crawler, err := GetClientAPICrawler(domain.ClientAPI)
+	crawler, err := GetClientAPICrawler(domain.Host)
 	if err != nil {
 		return "", err
 	}
-
 	return crawler(domain, url, repositories, wg)
 }
 
 func (domain Domain) processSingleRepo(url string, repositories chan Repository) error {
-	crawler, err := GetSingleClientAPICrawler(domain.ClientAPI)
+	crawler, err := GetSingleClientAPICrawler(domain.Host)
 	if err != nil {
 		return err
 	}
-
 	return crawler(domain, url, repositories)
+}
+
+func (domain Domain) generateAPIURL(u string) (string, error) {
+	crawler, err := GetAPIURL(domain.Host)
+	if err != nil {
+		return u, err
+	}
+	return crawler(u)
 }

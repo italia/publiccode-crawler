@@ -9,14 +9,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// PA is a Public Administration data.
+// Whitelist contain a list of Public Administrations.
+type Whitelist []PA
+
+// PA is a Public Administration.
 type PA struct {
-	CodiceIPA    string `yaml:"codice-IPA"`
-	Name         string `yaml:"name"`
-	Repositories []struct {
-		API           string   `yaml:"api"`
-		Organizations []string `yaml:"organizations"`
-	} `yaml:"repositories"`
+	ID            string   `yaml:"id"`
+	CodiceIPA     string   `yaml:"codice-iPA"`
+	Organizations []string `yaml:"organizations"`
 }
 
 // ReadAndParseWhitelist read the whitelist and return the parsed content in a slice of PA.

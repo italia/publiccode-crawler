@@ -33,13 +33,13 @@ var domainsCmd = &cobra.Command{
 			if len(domain.BasicAuth) > 0 {
 				basicAuth = "yes"
 			}
-			data = append(data, []string{domain.ID, domain.Description, domain.ClientAPI, basicAuth})
+			data = append(data, []string{domain.Host, basicAuth})
 
 		}
 
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ID", "Description", "API", "BasicAuth?"})
-		table.SetFooter([]string{"Total Domains: " + strconv.Itoa(len(domains)), "", "", ""})
+		table.SetHeader([]string{"ID", "BasicAuth?"})
+		table.SetFooter([]string{"Total Domains: " + strconv.Itoa(len(domains)), ""})
 		table.SetRowLine(true)
 		table.AppendBulk(data)
 		table.Render()

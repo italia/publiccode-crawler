@@ -1,26 +1,11 @@
-- id: 'github.com'
-  description: 'The leading software development platform: github.com'
-  client-api: 'github'
-  api-org-url: 'https://api.github.com/orgs/{{.OrgName}}/repos'
-  api-repo-url: 'https://api.github.com/repos/{{.Name}}'
-  raw-base-url: 'https://raw.githubusercontent.com'
+- host: "gitlab.com"
   basic-auth:
-    - ''
+    - ""
 
-- id: 'bitbucket.com'
-  description: 'General Git solution for professional teams: bitbucket.com'
-  client-api: 'bitbucket'
-  api-org-url: 'https://api.bitbucket.org/2.0/repositories/{{.OrgName}}/?pagelen=100'
-  api-repo-url: 'https://api.bitbucket.org/2.0/repositories/{{.Name}}'
-  raw-base-url: 'https://bitbucket.org'
+- host: "bitbucket.org"
   basic-auth:
-    - ''
+    - ""
 
-- id: 'gitlab.com'
-  description: 'The only single product for the complete DevOps lifecycle: gitlab.com'
-  client-api: 'gitlab'
-  api-org-url: 'https://gitlab.com/api/v4/groups/{{.OrgName}}'
-  api-repo-url: 'https://gitlab.com/api/v4/projects/{{.Name}}'
-  raw-base-url: 'https://gitlab.com'
+- host: "github.com"
   basic-auth:
-    - ''
+    - ""

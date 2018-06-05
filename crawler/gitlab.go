@@ -1,10 +1,8 @@
 package crawler
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"html/template"
 	"net/http"
 	"net/url"
 	"path"
@@ -204,7 +202,7 @@ func RegisterGitlabAPI() Handler {
 			if err != nil {
 				return link, err
 			}
-			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
+			headers["Authorization"] = domain.BasicAuth[n]
 		}
 
 		// Get List of repositories.
@@ -268,24 +266,8 @@ func RegisterSingleGitlabAPI() SingleHandler {
 			log.Error(err)
 		}
 
-		// Clear the url.
-		fullName := strings.Trim(u.Path, "/")
-
-		// Starting URL. Generate using go templates.
-		fullURL := domain.APIRepoURL
-		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
-		// Create a new template and parse the url into it.
-		t := template.Must(template.New("url").Parse(fullURL))
-		buf := new(bytes.Buffer)
-		// Execute the template: add "data" data in "url".
-		err = t.Execute(buf, data)
-		if err != nil {
-			return err
-		}
-		fullURL = buf.String()
-
 		// Get single Repo
-		resp, err := httpclient.GetURL(fullURL, headers)
+		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
 			return err
 		}
@@ -302,7 +284,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		}
 
 		// Join file raw URL string.
-		_, err = generateGitlabRawURL(domain.RawBaseURL, result.PathWithNamespace, result.DefaultBranch)
+		_, err = generateGitlabRawURL(result.WebURL, result.DefaultBranch)
 		if err != nil {
 			return err
 		}
@@ -331,12 +313,12 @@ func RegisterSingleGitlabAPI() SingleHandler {
 }
 
 // generateGitlabRawURL returns the file Gitlab specific file raw url.
-func generateGitlabRawURL(baseURL, pathWithNamespace, defaultBranch string) (string, error) {
+func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return "", err
 	}
-	u.Path = path.Join(u.Path, pathWithNamespace, "raw", defaultBranch, viper.GetString("CRAWLED_FILENAME"))
+	u.Path = path.Join(u.Path, "raw", defaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 	return u.String(), err
 }
@@ -347,7 +329,7 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 		log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
 
 		// Join file raw URL string.
-		rawURL, err := generateGitlabRawURL(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
+		rawURL, err := generateGitlabRawURL(v.WebURL, v.DefaultBranch)
 		if err != nil {
 			return err
 		}
@@ -378,7 +360,7 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 		log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
 
 		// Join file raw URL string.
-		rawURL, err := generateGitlabRawURL(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
+		rawURL, err := generateGitlabRawURL(v.WebURL, v.DefaultBranch)
 		if err != nil {
 			return err
 		}
@@ -401,4 +383,35 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 	}
 
 	return nil
+}
+
+func GenerateGitlabAPIURL() GeneratorURL {
+	return func(in string) (string, error) {
+		// IN https://gitlab.org/blockninja
+		// OUT https://gitlab.com/api/v4/groups/blockninja
+		u, err := url.Parse(in)
+		if err != nil {
+			return in, err
+		}
+		u.Path = path.Join("api/v4/groups", u.Path)
+
+		return u.String(), nil
+	}
+}
+
+func isGitlab(link string) bool {
+	u, err := url.Parse(link)
+	if err != nil {
+		return false
+	}
+	u.Path = path.Join(u.Path, "version")
+	u.Path = strings.Trim(u.Path, "/")
+	u.Host = "api." + u.Host
+
+	_, err = httpclient.GetURL(u.String(), nil)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
