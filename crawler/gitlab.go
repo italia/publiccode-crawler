@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	"github.com/italia/developers-italia-backend/httpclient"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 

@@ -7,7 +7,7 @@ import (
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/metrics"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

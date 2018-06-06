@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 // ResponseStatus contains the status and statusCode of a response.

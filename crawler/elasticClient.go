@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/olivere/elastic"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 // ElasticClientFactory returns an elastic Client.
