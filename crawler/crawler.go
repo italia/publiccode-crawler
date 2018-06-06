@@ -45,26 +45,26 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 				knownHost = true
 				domain = d
 			}
-
 		}
 
 		if knownHost {
 			log.Infof("%s - API known:%s", org, u.Hostname())
-			// Host is detected.
+			// Host is known.
 			ProcessPADomain(org, domain, repositories, wg)
 		} else {
 			// host unknown, needs to be inferred.
-			if isGithub(org) {
+			if IsGithub(org) {
 				log.Infof("%s - API inferred:%s", org, "github")
-				ProcessPADomain(org, Domain{Host: u.Hostname()}, repositories, wg)
-			} else if isBitbucket(org) {
+				ProcessPADomain(org, Domain{Host: "github.com"}, repositories, wg)
+			} else if IsBitbucket(org) {
 				log.Infof("%s - API inferred:%s", org, "bitbucket")
-				ProcessPADomain(org, Domain{Host: u.Hostname()}, repositories, wg)
-			} else if isGitlab(org) {
+				ProcessPADomain(org, Domain{Host: "bitbucket.org"}, repositories, wg)
+			} else if IsGitlab(org) {
 				log.Infof("%s - API inferred:%s", org, "gitlab")
-				ProcessPADomain(org, Domain{Host: u.Hostname()}, repositories, wg)
+				ProcessPADomain(org, Domain{Host: "gitlab.com"}, repositories, wg)
 			}
 		}
+
 	}
 
 	wg.Done()
@@ -73,6 +73,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 
 // ProcessPADomain starts from the org page and process all the next.
 func ProcessPADomain(orgURL string, domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
+	// generateAPIURL
 	orgURL, err := domain.generateAPIURL(orgURL)
 	if err != nil {
 		log.Errorf("generateAPIURL error: %v", err)
@@ -109,10 +110,7 @@ func WaitingLoop(repositories chan Repository, wg *sync.WaitGroup) {
 
 // ProcessSingleRepository process a single repository given his url and domain.
 func ProcessSingleRepository(url string, domain Domain, repositories chan Repository) error {
-	err := domain.processSingleRepo(url, repositories)
-
-	return err
-
+	return domain.processSingleRepo(url, repositories)
 }
 
 // generateRandomInt returns an integer between 0 and max parameter.

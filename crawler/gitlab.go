@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"sync"
@@ -265,8 +266,12 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 			log.Error(err)
 		}
 
+		// Dirty concatenation. With the normal URL String() the escaped characters are escaped two times.
+		repoString := strings.Trim(u.Path, "/")
+		fullURL := "https://" + u.Hostname() + "/api/v4/projects/" + url.QueryEscape(repoString)
+
 		// Get single Repo
-		resp, err := httpclient.GetURL(link, headers)
+		resp, err := httpclient.GetURL(fullURL, headers)
 		if err != nil {
 			return err
 		}
@@ -399,7 +404,7 @@ func GenerateGitlabAPIURL() GeneratorAPIURL {
 	}
 }
 
-func isGitlab(link string) bool {
+func IsGitlab(link string) bool {
 	u, err := url.Parse(link)
 	if err != nil {
 		return false

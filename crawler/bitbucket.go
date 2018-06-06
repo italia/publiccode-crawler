@@ -262,8 +262,19 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 			headers["Authorization"] = domain.BasicAuth[n]
 		}
 
+		// Generate single repository API url.
+		u, err := url.Parse(link)
+		if err != nil {
+			return err
+		}
+
+		u.Path = path.Join("/2.0/repositories", u.Path)
+		u.Host = "api." + u.Host
+
+		linkRepo := u.String()
+
 		// Get single Repo
-		resp, err := httpclient.GetURL(link, headers)
+		resp, err := httpclient.GetURL(linkRepo, headers)
 		if err != nil {
 			return err
 		}
@@ -278,25 +289,24 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 		if err != nil {
 			return err
 		}
-
+		log.Debug("1: " + link)
 		// Join file raw URL.
-		u, err := url.Parse(link)
+		u, err = url.Parse(link)
 		if err != nil {
 			return err
 		}
-		u.Path = path.Join(u.Hostname(), result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
+		fullUrl := path.Join(u.Hostname(), result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
 		// Marshal all the repository metadata.
 		metadata, err := json.Marshal(result)
 		if err != nil {
 			log.Errorf("bitbucket metadata: %v", err)
 		}
-
 		// If the repository was never used, the Mainbranch is empty ("").
 		if result.Mainbranch.Name != "" {
 			repositories <- Repository{
 				Name:       result.FullName,
-				FileRawURL: u.String(),
+				FileRawURL: "https://" + fullUrl,
 				Domain:     domain,
 				Headers:    headers,
 				Metadata:   metadata,
@@ -325,7 +335,7 @@ func GenerateBitbucketAPIURL() GeneratorAPIURL {
 	}
 }
 
-func isBitbucket(link string) bool {
+func IsBitbucket(link string) bool {
 	u, err := url.Parse(link)
 	if err != nil {
 		return false

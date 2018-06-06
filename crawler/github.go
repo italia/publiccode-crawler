@@ -303,53 +303,77 @@ func RegisterGithubAPI() OrganizationHandler {
 // Otherwise return the generated error.
 func RegisterSingleGithubAPI() SingleRepoHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
-		// // Set BasicAuth header.
-		// headers := make(map[string]string)
-		// if domain.BasicAuth != nil {
-		// 	n, err := generateRandomInt(len(domain.BasicAuth))
-		// 	if err != nil {
-		// 		return err
-		// 	}
-		// 	headers["Authorization"] = domain.BasicAuth[n]
-		// }
-		//
-		// // Parse the name
-		// u, err := url.Parse(link)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
-		//
-		// u.Path = path.Join("raw.githubusercontent.com", v.FullName, v.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
-		//
-		// // Fill response as list of values (repositories data).
-		// result, err := getGithubRepoInfos(fullURL, headers)
-		// if err != nil {
-		// 	return err
-		// }
-		//
-		// // Join file raw URL.
-		// u := url.URL{}
-		//
-		// u.Path = path.Join("raw.githubusercontent.com", v.FullName, v.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
-		//
-		// // Marshal all the repository metadata.
-		// metadata, err := json.Marshal(result)
-		// if err != nil {
-		// 	log.Errorf("github metadata: %v", err)
-		// }
-		//
-		// // If the repository was never used, the Mainbranch is empty ("").
-		// if result.DefaultBranch != "" {
-		// 	repositories <- Repository{
-		// 		Name:       result.FullName,
-		// 		FileRawURL: u.String(),
-		// 		Domain:     domain,
-		// 		Headers:    headers,
-		// 		Metadata:   metadata,
-		// 	}
-		// } else {
-		// 	return errors.New("repository is empty")
-		// }
+		// Set BasicAuth header.
+		headers := make(map[string]string)
+		if domain.BasicAuth != nil {
+			n, err := generateRandomInt(len(domain.BasicAuth))
+			if err != nil {
+				return err
+			}
+			headers["Authorization"] = domain.BasicAuth[n]
+		}
+
+		u, err := url.Parse(link)
+		if err != nil {
+			return err
+		}
+
+		u.Path = path.Join("repos", u.Path)
+		u.Path = strings.Trim(u.Path, "/")
+		u.Host = "api." + u.Host
+
+		// Get List of repositories.
+		resp, err := httpclient.GetURL(u.String(), headers)
+		if err != nil {
+			return err
+		}
+		if resp.Status.Code != http.StatusOK {
+			log.Warnf("Request returned: %s", string(resp.Body))
+			return errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+		}
+
+		var v GithubRepo
+		err = json.Unmarshal(resp.Body, &v)
+		if err != nil {
+			return err
+		}
+
+		// Marshal all the repository metadata.
+		metadata, err := json.Marshal(v)
+		if err != nil {
+			log.Errorf("github metadata: %v", err)
+		}
+		contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
+		// Get List of files.
+		resp, err = httpclient.GetURL(contents, headers)
+		if err != nil {
+			return err
+		}
+		if resp.Status.Code != http.StatusOK {
+			log.Infof("Request returned an invalid status code: %s", string(resp.Body))
+		}
+		// Fill response as list of values (repositories data).
+		var files GithubFiles
+		err = json.Unmarshal(resp.Body, &files)
+		if err != nil {
+			log.Infof("Repository is empty: %s", string(resp.Body))
+		}
+
+		// Search a file with a valid name and a downloadURL.
+		for _, f := range files {
+			if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
+				// Add repository to channel.
+				repositories <- Repository{
+					Name:       v.FullName,
+					FileRawURL: f.DownloadURL,
+					Domain:     domain,
+					Headers:    headers,
+					Metadata:   metadata,
+				}
+			} else {
+				errors.New("Repository does not contain " + viper.GetString("CRAWLED_FILENAME"))
+			}
+		}
 
 		return nil
 	}
@@ -393,7 +417,7 @@ func GenerateGithubAPIURL() GeneratorAPIURL {
 	}
 }
 
-func isGithub(link string) bool {
+func IsGithub(link string) bool {
 	u, err := url.Parse(link)
 	if err != nil {
 		return false

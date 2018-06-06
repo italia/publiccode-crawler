@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -17,15 +18,14 @@ func init() {
 }
 
 var oneCmd = &cobra.Command{
-	Use:   "one [domain ID] [repo url]",
-	Short: "Crawl publiccode.yml from one single [repo url] using [domain ID] configs.",
-	Long: `Crawl publiccode.yml from one [repo url] using [domain ID] configs.
-	The domainID should be one in the domains.yml list`,
-	Args: cobra.ExactArgs(2),
+	Use:   "one [repo url]",
+	Short: "Crawl publiccode.yml from one single [repo url].",
+	Long: `Crawl publiccode.yml from a single repository defined with [repo url].
+No organizations! Only single repositories!`,
+	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		// Read args from command.
-		domainID := args[0]
-		repo := args[1]
+		// Read repository URL.
+		repo := args[0]
 
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
@@ -56,17 +56,57 @@ var oneCmd = &cobra.Command{
 		metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", index)
 		//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", index)
 
-		// Process each domain service.
-		for _, domain := range domains {
-			// get the correct domain ID
-			if domain.Host == domainID {
-				log.Debugf("Processing domain: %s - Repo: %s", domainID, repo)
-				err = crawler.ProcessSingleRepository(repo, domain, repositories)
+		log.Debugf("Processing Single Repo: %s", repo)
+
+		knownHost := false
+		domain := crawler.Domain{}
+		// Parse as url.URL.
+		u, err := url.Parse(repo)
+		if err != nil {
+			log.Errorf("invalid host: %v", err)
+		}
+
+		// Check if host is in list of "famous" hosts.
+		for _, d := range domains {
+			if u.Hostname() == d.Host {
+				// Process this host
+				knownHost = true
+				domain = d
+			}
+		}
+
+		if knownHost {
+			log.Infof("%s - API known:%s", repo, u.Hostname())
+			// Host is detected.
+			err = crawler.ProcessSingleRepository(repo, domain, repositories)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+
+		} else {
+			// host unknown, needs to be inferred.
+			if crawler.IsGithub(repo) {
+				log.Infof("%s - API inferred:%s", repo, "github.com")
+				err = crawler.ProcessSingleRepository(repo, crawler.Domain{Host: "github.com"}, repositories)
 				if err != nil {
 					log.Error(err)
 					return
 				}
-
+			} else if crawler.IsBitbucket(repo) {
+				log.Infof("%s - API inferred:%s", repo, "bitbucket.org")
+				err = crawler.ProcessSingleRepository(repo, crawler.Domain{Host: "bitbucket.org"}, repositories)
+				if err != nil {
+					log.Error(err)
+					return
+				}
+			} else if crawler.IsGitlab(repo) {
+				log.Infof("%s - API inferred:%s", repo, "gitlab.com")
+				err = crawler.ProcessSingleRepository(repo, crawler.Domain{Host: "gitlab.com"}, repositories)
+				if err != nil {
+					log.Error(err)
+					return
+				}
 			}
 		}
 
