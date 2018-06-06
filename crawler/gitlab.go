@@ -405,12 +405,12 @@ func GenerateGitlabAPIURL() GeneratorAPIURL {
 }
 
 func IsGitlab(link string) bool {
+
 	u, err := url.Parse(link)
 	if err != nil {
 		return false
 	}
-	u.Path = "version"
-	u.Host = "api." + u.Host
+	u.Path = "api/v4/templates/gitlab_ci_ymls"
 
 	resp, err := httpclient.GetURL(u.String(), nil)
 	if err != nil {

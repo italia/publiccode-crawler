@@ -289,7 +289,7 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 		if err != nil {
 			return err
 		}
-		log.Debug("1: " + link)
+
 		// Join file raw URL.
 		u, err = url.Parse(link)
 		if err != nil {
@@ -340,7 +340,7 @@ func IsBitbucket(link string) bool {
 	if err != nil {
 		return false
 	}
-	u.Path = "hook_events"
+	u.Path = "2.0/hook_events"
 	u.Host = "api." + u.Host
 
 	resp, err := httpclient.GetURL(u.String(), nil)

@@ -70,7 +70,7 @@ No organizations! Only single repositories!`,
 		for _, d := range domains {
 			if u.Hostname() == d.Host {
 				// Process this host
-				knownHost = true
+				knownHost = false
 				domain = d
 			}
 		}
