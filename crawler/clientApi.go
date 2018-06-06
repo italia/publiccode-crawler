@@ -59,7 +59,7 @@ func GetClientAPICrawler(clientAPI string) (OrganizationHandler, error) {
 
 }
 
-// GetSingleClientAPICrawler checks if the API client for the requested singlle repository clientAPI exists and return its handler.
+// GetSingleClientAPICrawler checks if the API client for the requested single repository clientAPI exists and return its handler.
 func GetSingleClientAPICrawler(clientAPI string) (SingleRepoHandler, error) {
 	if clientAPIs[clientAPI].Single != nil {
 		return clientAPIs[clientAPI].Single, nil
@@ -67,7 +67,7 @@ func GetSingleClientAPICrawler(clientAPI string) (SingleRepoHandler, error) {
 	return nil, fmt.Errorf("no single client found for %s", clientAPI)
 }
 
-// GetAPIURL
+// GetAPIURL checks if the API client for the requested API url exists and return its handler.
 func GetAPIURL(clientAPI string) (GeneratorAPIURL, error) {
 	if clientAPIs[clientAPI].APIURL != nil {
 		return clientAPIs[clientAPI].APIURL, nil

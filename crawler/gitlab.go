@@ -404,8 +404,8 @@ func GenerateGitlabAPIURL() GeneratorAPIURL {
 	}
 }
 
+// IsGitlab returns "true" if the url can use Gitlab API.
 func IsGitlab(link string) bool {
-
 	u, err := url.Parse(link)
 	if err != nil {
 		return false

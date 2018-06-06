@@ -50,9 +50,6 @@ func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) erro
 	// Add an alias to the new index.
 	log.Debugf("Add alias from %s to %s", index, alias)
 	_, err = aliasService.Add(index, alias).Do(context.Background())
-	if err != nil {
-		return err
-	}
 
 	return err
 }

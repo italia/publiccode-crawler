@@ -295,7 +295,7 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 		if err != nil {
 			return err
 		}
-		fullUrl := path.Join(u.Hostname(), result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
+		fullURL := path.Join(u.Hostname(), result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
 		// Marshal all the repository metadata.
 		metadata, err := json.Marshal(result)
@@ -306,7 +306,7 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 		if result.Mainbranch.Name != "" {
 			repositories <- Repository{
 				Name:       result.FullName,
-				FileRawURL: "https://" + fullUrl,
+				FileRawURL: "https://" + fullURL,
 				Domain:     domain,
 				Headers:    headers,
 				Metadata:   metadata,
@@ -335,6 +335,7 @@ func GenerateBitbucketAPIURL() GeneratorAPIURL {
 	}
 }
 
+// IsBitbucket returns "true" if the url can use Bitbucket API.
 func IsBitbucket(link string) bool {
 	u, err := url.Parse(link)
 	if err != nil {

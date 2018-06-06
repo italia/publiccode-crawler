@@ -12,8 +12,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var iPAToCrawl string
-
 func init() {
 	rootCmd.AddCommand(crawlCmd)
 }
