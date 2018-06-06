@@ -190,7 +190,7 @@ type GitlabSharedProject struct {
 }
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
-func RegisterGitlabAPI() Handler {
+func RegisterGitlabAPI() OrganizationHandler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		log.Debugf("RegisterGitlabAPI: %s ")
 
@@ -248,7 +248,7 @@ func RegisterGitlabAPI() Handler {
 }
 
 // RegisterSingleGitlabAPI register the crawler function for single Bitbucket API.
-func RegisterSingleGitlabAPI() SingleHandler {
+func RegisterSingleGitlabAPI() SingleRepoHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
@@ -384,10 +384,11 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 	return nil
 }
 
-func GenerateGitlabAPIURL() GeneratorURL {
+// GenerateGitlabAPIURL returns the api url of given Gitlab organization link.
+// IN: https://gitlab.org/blockninja
+// OUT:https://gitlab.com/api/v4/groups/blockninja
+func GenerateGitlabAPIURL() GeneratorAPIURL {
 	return func(in string) (string, error) {
-		// IN https://gitlab.org/blockninja
-		// OUT https://gitlab.com/api/v4/groups/blockninja
 		u, err := url.Parse(in)
 		if err != nil {
 			return in, err

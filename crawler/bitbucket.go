@@ -182,7 +182,7 @@ type Links struct {
 }
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
-func RegisterBitbucketAPI() Handler {
+func RegisterBitbucketAPI() OrganizationHandler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
@@ -250,7 +250,7 @@ func RegisterBitbucketAPI() Handler {
 }
 
 // RegisterSingleBitbucketAPI register the crawler function for single Bitbucket repository.
-func RegisterSingleBitbucketAPI() SingleHandler {
+func RegisterSingleBitbucketAPI() SingleRepoHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
@@ -309,10 +309,11 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 	}
 }
 
-func GenerateBitbucketAPIURL() GeneratorURL {
+// GenerateBitbucketAPIURL returns the api url of given Bitbucket  organization link.
+// IN: https://bitbucket.org/Soft
+// OUT:https://api.bitbucket.org/2.0/repositories/Soft?pagelen=100
+func GenerateBitbucketAPIURL() GeneratorAPIURL {
 	return func(in string) (string, error) {
-		// IN https://bitbucket.org/Soft
-		// OUT https://api.bitbucket.org/2.0/repositories/Soft?pagelen=100
 		u, err := url.Parse(in)
 		if err != nil {
 			return in, err

@@ -221,7 +221,7 @@ type GithubFiles []struct {
 // It get the list of repositories on "link" url.
 // If a next page is available return its url.
 // Otherwise returns an empty ("") string.
-func RegisterGithubAPI() Handler {
+func RegisterGithubAPI() OrganizationHandler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
@@ -261,7 +261,7 @@ func RegisterGithubAPI() Handler {
 				return link, err
 			}
 			if resp.Status.Code != http.StatusOK {
-				log.Infof("Request returned an empty response: %s", string(resp.Body))
+				log.Infof("Request returned an invalid status code: %s", string(resp.Body))
 			}
 			// Fill response as list of values (repositories data).
 			var files GithubFiles
@@ -270,6 +270,7 @@ func RegisterGithubAPI() Handler {
 				log.Infof("Repository is empty: %s", string(resp.Body))
 			}
 
+			// Search a file with a valid name and a downloadURL.
 			for _, f := range files {
 				if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
 					// Add repository to channel.
@@ -300,7 +301,7 @@ func RegisterGithubAPI() Handler {
 // RegisterSingleGithubAPI register the crawler function for single repository Github API.
 // Return nil if the repository was successfully added to repositories channel.
 // Otherwise return the generated error.
-func RegisterSingleGithubAPI() SingleHandler {
+func RegisterSingleGithubAPI() SingleRepoHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// // Set BasicAuth header.
 		// headers := make(map[string]string)
@@ -375,10 +376,11 @@ func getGithubRepoInfos(URL string, headers map[string]string) (GithubRepo, erro
 
 }
 
-func GenerateGithubAPIURL() GeneratorURL {
+// GenerateGithubAPIURL returns the api url of given Gitlab organization link.
+// IN: https://github.com/italia
+// OUT:https://api.github.com/orgs/italia/repos
+func GenerateGithubAPIURL() GeneratorAPIURL {
 	return func(in string) (string, error) {
-		// IN https://github.com/italia
-		// OUT https://api.github.com/orgs/italia/repos
 		u, err := url.Parse(in)
 		if err != nil {
 			return in, err

@@ -99,32 +99,11 @@ func ProcessPADomain(orgURL string, domain Domain, repositories chan Repository,
 
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
 // It also switch the alias for elasticsearch index.
-func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
+func WaitingLoop(repositories chan Repository, wg *sync.WaitGroup) {
 	wg.Wait()
 
-	// Remove old aliases.
-	// res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
-	// if err != nil {
-	// 	log.Error(err)
-	// }
-	// aliasService := elasticClient.Alias()
-	// indices := res.IndicesByAlias("publiccode")
-	// for _, name := range indices {
-	// 	log.Debugf("Remove alias from %s to %s", "publiccode", name)
-	// 	aliasResult, err := aliasService.Remove(name, "publiccode").Do(context.Background())
-	// 	if err != nil {
-	// 		log.Errorf("AliasService %s Remove failed: %v", aliasResult.Index, err)
-	// 	}
-	//
-	// }
-	//
-	// // Add an alias to the new index.
-	// log.Debugf("Add alias from %s to %s", index, "publiccode")
-	// aliasResult, err := aliasService.Add(index, "publiccode").Do(context.Background())
-	// if err != nil {
-	// 	log.Errorf("AliasService %s Add failed: %v", aliasResult.Index, err)
-	// }
-
+	// Close repositories channel.
+	log.Debugf("closing repositories chan: len=%d", len(repositories))
 	close(repositories)
 }
 
