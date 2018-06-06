@@ -7,6 +7,7 @@ import (
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/metrics"
+	"github.com/prometheus/common/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -78,9 +79,16 @@ var crawlCmd = &cobra.Command{
 		// Start the metrics server.
 		go metrics.StartPrometheusMetricsServer()
 
-		// WaitingLoop check and close the repositories channel
-		go crawler.WaitingLoop(repositories, index, &wg, elasticClient)
+		// WaitingLoop check and close the repositories channel.
+		go crawler.WaitingLoop(repositories, &wg)
 
 		// Process the repositories in order to retrieve the file.
+		// ProcessRepositories is blocking (wait until repositories is closed by WaitingLoop).
 		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+
+		// Update Elastic alias.
+		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)
+		if err != nil {
+			log.Errorf("Error updating Elastic Alias: %v", err)
+		}
 	}}

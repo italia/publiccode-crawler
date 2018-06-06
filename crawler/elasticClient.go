@@ -29,6 +29,34 @@ func ElasticClientFactory(URL, user, password string) (*elastic.Client, error) {
 	return client, nil
 }
 
+// ElasticAliasUpdate update the Alias to the index.
+func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) error {
+	// Remove old aliases.
+	res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
+	if err != nil {
+		return err
+	}
+	aliasService := elasticClient.Alias()
+	indices := res.IndicesByAlias(alias)
+	for _, name := range indices {
+		log.Debugf("Remove alias from %s to %s", "publiccode", name)
+		_, err := aliasService.Remove(name, alias).Do(context.Background())
+		if err != nil {
+			return err
+		}
+
+	}
+
+	// Add an alias to the new index.
+	log.Debugf("Add alias from %s to %s", index, alias)
+	_, err = aliasService.Add(index, alias).Do(context.Background())
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
 // ElasticRetrier implements the elastic interface that user can implement to intercept failed requests.
 type ElasticRetrier struct {
 	backoff elastic.Backoff
