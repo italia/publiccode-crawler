@@ -16,7 +16,6 @@ var iPAToCrawl string
 
 func init() {
 	rootCmd.AddCommand(crawlCmd)
-	crawlCmd.Flags().StringVarP(&iPAToCrawl, "ipa", "i", "", "Crawl a single ipa from whitelist.yml.")
 }
 
 var crawlCmd = &cobra.Command{
@@ -44,6 +43,7 @@ var crawlCmd = &cobra.Command{
 		// Read and parse the whitelist.
 		var whitelist []crawler.PA
 
+		// Fill the whitelist with all the args whitelists.
 		for id := range args {
 			readWhitelist, err := crawler.ReadAndParseWhitelist(args[id])
 			if err != nil {
@@ -70,10 +70,7 @@ var crawlCmd = &cobra.Command{
 		// Process every item in whitelist.
 		for _, pa := range whitelist {
 			wg.Add(1)
-			// If iPAToCrawl is empty crawl all domains, otherwise crawl only the one with CodiceIPA equals to iPAToCrawl.
-			// if (iPAToCrawl == "") || (iPAToCrawl != "" && pa.CodiceIPA == iPAToCrawl) {
 			go crawler.ProcessPA(pa, domains, repositories, &wg)
-			// }
 		}
 
 		// Start the metrics server.
