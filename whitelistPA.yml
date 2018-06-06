@@ -3,17 +3,8 @@
 - id: "Comune Firenze" # id name
   codice-iPA: "cmfi"
   organizations:
-    - "https://github.com/ArchiveTeam"
     - "https://github.com/recursecenter"
+    - "https://github.com/italia"
     - "https://bitbucket.org/wellnet-team"
     - "https://gitlab.com/MicroRL"
     #- "https://gitlab.comune.firenze.it/ufficioABC"
-
-- id: "Wellnet Srl" #id name
-  codice-iPA: ""
-  organizations:
-    - "https://github.com/publiccodenet"
-    - "https://github.com/cryptography-training"
-    - "https://bitbucket.org/blowmeaway"
-    - "https://gitlab.com/blockninja"
-#- "https://gitlab.comune.firenze.it/ufficioABC"

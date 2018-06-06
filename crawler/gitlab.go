@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strings"
 	"time"
 
 	"sync"
@@ -404,14 +403,19 @@ func isGitlab(link string) bool {
 	if err != nil {
 		return false
 	}
-	u.Path = path.Join(u.Path, "version")
-	u.Path = strings.Trim(u.Path, "/")
+	u.Path = "version"
 	u.Host = "api." + u.Host
 
-	_, err = httpclient.GetURL(u.String(), nil)
+	resp, err := httpclient.GetURL(u.String(), nil)
 	if err != nil {
+		log.Infof("can %s use Gitlab API? No.", link)
+		return false
+	}
+	if resp.Status.Code != http.StatusOK {
+		log.Infof("can %s use Gitlab API? No.", link)
 		return false
 	}
 
+	log.Infof("can %s use Gitlab API? Yes.", link)
 	return true
 }

@@ -232,7 +232,6 @@ func RegisterGithubAPI() Handler {
 			}
 			headers["Authorization"] = domain.BasicAuth[n]
 		}
-
 		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
@@ -242,23 +241,19 @@ func RegisterGithubAPI() Handler {
 			log.Warnf("Request returned: %s", string(resp.Body))
 			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
-
 		// Fill response as list of values (repositories data).
 		var results GithubOrgs
 		err = json.Unmarshal(resp.Body, &results)
 		if err != nil {
 			return link, err
 		}
-
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
-
 			// Marshal all the repository metadata.
 			metadata, err := json.Marshal(v)
 			if err != nil {
 				log.Errorf("github metadata: %v", err)
 			}
-
 			contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
 			// Get List of files.
 			resp, err := httpclient.GetURL(contents, headers)
@@ -268,10 +263,9 @@ func RegisterGithubAPI() Handler {
 			if resp.Status.Code != http.StatusOK {
 				log.Infof("Request returned an empty response: %s", string(resp.Body))
 			}
-
 			// Fill response as list of values (repositories data).
 			var files GithubFiles
-			err = json.Unmarshal(resp.Body, &results)
+			err = json.Unmarshal(resp.Body, &files)
 			if err != nil {
 				log.Infof("Repository is empty: %s", string(resp.Body))
 			}
@@ -402,14 +396,19 @@ func isGithub(link string) bool {
 	if err != nil {
 		return false
 	}
-	u.Path = path.Join(u.Path, "rate_limit")
-	u.Path = strings.Trim(u.Path, "/")
+	u.Path = "rate_limit"
 	u.Host = "api." + u.Host
 
-	_, err = httpclient.GetURL(u.String(), nil)
+	resp, err := httpclient.GetURL(u.String(), nil)
 	if err != nil {
+		log.Infof("can %s use Github API? No.", link)
+		return false
+	}
+	if resp.Status.Code != http.StatusOK {
+		log.Infof("can %s use Github API? No.", link)
 		return false
 	}
 
+	log.Infof("can %s use Github API? Yes.", link)
 	return true
 }

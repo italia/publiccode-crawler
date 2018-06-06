@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"strings"
 	"time"
 
 	"sync"
@@ -330,14 +329,19 @@ func isBitbucket(link string) bool {
 	if err != nil {
 		return false
 	}
-	u.Path = path.Join(u.Path, "hook_events")
-	u.Path = strings.Trim(u.Path, "/")
+	u.Path = "hook_events"
 	u.Host = "api." + u.Host
 
-	_, err = httpclient.GetURL(u.String(), nil)
+	resp, err := httpclient.GetURL(u.String(), nil)
 	if err != nil {
+		log.Infof("can %s use Bitbucket API? No.", link)
+		return false
+	}
+	if resp.Status.Code != http.StatusOK {
+		log.Infof("can %s use Bitbucket API? No.", link)
 		return false
 	}
 
+	log.Infof("can %s use Bitbucket API? Yes.", link)
 	return true
 }

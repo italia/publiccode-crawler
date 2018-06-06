@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"context"
 	"crypto/rand"
 	"math/big"
 	"sync"
@@ -31,6 +30,8 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 
 	// range over organizations..
 	for _, org := range pa.Organizations {
+		knownHost := false
+		domain := Domain{}
 		// Parse as url.URL.
 		u, err := url.Parse(org)
 		if err != nil {
@@ -38,30 +39,34 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 		}
 
 		// Check if host is in list of "famous" hosts.
-		for _, domain := range domains {
-			knownHost := false
-			if u.Hostname() == domain.Host {
+		for _, d := range domains {
+			if u.Hostname() == d.Host {
 				// Process this host
 				knownHost = true
+				domain = d
 			}
 
-			if knownHost {
-				// Host is detected.
-				ProcessPADomain(org, domain, repositories, wg)
-			} else {
-				// host unknown, needs to be inferred.
-				if isGithub(org) {
-					ProcessPADomain(org, domain, repositories, wg)
-				}
-				if isBitbucket(org) {
-					ProcessPADomain(org, domain, repositories, wg)
-				}
-				if isGitlab(org) {
-					ProcessPADomain(org, domain, repositories, wg)
-				}
+		}
+
+		if knownHost {
+			log.Infof("%s - API known:%s", org, u.Hostname())
+			// Host is detected.
+			ProcessPADomain(org, domain, repositories, wg)
+		} else {
+			// host unknown, needs to be inferred.
+			if isGithub(org) {
+				log.Infof("%s - API inferred:%s", org, "github")
+				ProcessPADomain(org, Domain{Host: u.Hostname()}, repositories, wg)
+			} else if isBitbucket(org) {
+				log.Infof("%s - API inferred:%s", org, "bitbucket")
+				ProcessPADomain(org, Domain{Host: u.Hostname()}, repositories, wg)
+			} else if isGitlab(org) {
+				log.Infof("%s - API inferred:%s", org, "gitlab")
+				ProcessPADomain(org, Domain{Host: u.Hostname()}, repositories, wg)
 			}
 		}
 	}
+
 	wg.Done()
 
 }
@@ -98,27 +103,27 @@ func WaitingLoop(repositories chan Repository, index string, wg *sync.WaitGroup,
 	wg.Wait()
 
 	// Remove old aliases.
-	res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	aliasService := elasticClient.Alias()
-	indices := res.IndicesByAlias("publiccode")
-	for _, name := range indices {
-		log.Debugf("Remove alias from %s to %s", "publiccode", name)
-		aliasResult, err := aliasService.Remove(name, "publiccode").Do(context.Background())
-		if err != nil {
-			log.Errorf("AliasService %s Remove failed: %v", aliasResult.Index, err)
-		}
-
-	}
-
-	// Add an alias to the new index.
-	log.Debugf("Add alias from %s to %s", index, "publiccode")
-	aliasResult, err := aliasService.Add(index, "publiccode").Do(context.Background())
-	if err != nil {
-		log.Errorf("AliasService %s Add failed: %v", aliasResult.Index, err)
-	}
+	// res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
+	// if err != nil {
+	// 	log.Error(err)
+	// }
+	// aliasService := elasticClient.Alias()
+	// indices := res.IndicesByAlias("publiccode")
+	// for _, name := range indices {
+	// 	log.Debugf("Remove alias from %s to %s", "publiccode", name)
+	// 	aliasResult, err := aliasService.Remove(name, "publiccode").Do(context.Background())
+	// 	if err != nil {
+	// 		log.Errorf("AliasService %s Remove failed: %v", aliasResult.Index, err)
+	// 	}
+	//
+	// }
+	//
+	// // Add an alias to the new index.
+	// log.Debugf("Add alias from %s to %s", index, "publiccode")
+	// aliasResult, err := aliasService.Add(index, "publiccode").Do(context.Background())
+	// if err != nil {
+	// 	log.Errorf("AliasService %s Add failed: %v", aliasResult.Index, err)
+	// }
 
 	close(repositories)
 }
