@@ -72,6 +72,13 @@ services:
     image: italia/developers-italia-backend:0.0.1
     networks:
       - web
+    volumes:
+      - ./data:/app/data
+      - ./whitelistGeneric.yml:/app/whitelistGeneric.yml
+      - ./whitelistPA.yml:/app/whitelistPA.yml
+      - ./domains.yml:/app/domains.yml
+      - ./config.toml:/app/config.toml
+
 
 volumes:
   es_data:
