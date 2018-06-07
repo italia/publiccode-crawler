@@ -58,56 +58,23 @@ No organizations! Only single repositories!`,
 
 		log.Debugf("Processing Single Repo: %s", repo)
 
-		knownHost := false
-		domain := crawler.Domain{}
 		// Parse as url.URL.
 		u, err := url.Parse(repo)
 		if err != nil {
 			log.Errorf("invalid host: %v", err)
 		}
 
-		// Check if host is in list of "famous" hosts.
-		for _, d := range domains {
-			if u.Hostname() == d.Host {
-				// Process this host
-				knownHost = false
-				domain = d
-			}
+		// Check if current host is in known in domains.yml hosts.
+		domain, err := crawler.KnownHost(repo, u.Hostname(), domains)
+		if err != nil {
+			log.Error(err)
 		}
 
-		if knownHost {
-			log.Infof("%s - API known:%s", repo, u.Hostname())
-			// Host is detected.
-			err = crawler.ProcessSingleRepository(repo, domain, repositories)
-			if err != nil {
-				log.Error(err)
-				return
-			}
-
-		} else {
-			// host unknown, needs to be inferred.
-			if crawler.IsGithub(repo) {
-				log.Infof("%s - API inferred:%s", repo, "github.com")
-				err = crawler.ProcessSingleRepository(repo, crawler.Domain{Host: "github.com"}, repositories)
-				if err != nil {
-					log.Error(err)
-					return
-				}
-			} else if crawler.IsBitbucket(repo) {
-				log.Infof("%s - API inferred:%s", repo, "bitbucket.org")
-				err = crawler.ProcessSingleRepository(repo, crawler.Domain{Host: "bitbucket.org"}, repositories)
-				if err != nil {
-					log.Error(err)
-					return
-				}
-			} else if crawler.IsGitlab(repo) {
-				log.Infof("%s - API inferred:%s", repo, "gitlab.com")
-				err = crawler.ProcessSingleRepository(repo, crawler.Domain{Host: "gitlab.com"}, repositories)
-				if err != nil {
-					log.Error(err)
-					return
-				}
-			}
+		// Process single repository.
+		err = crawler.ProcessSingleRepository(repo, domain, repositories)
+		if err != nil {
+			log.Error(err)
+			return
 		}
 
 		// Start the metrics server.

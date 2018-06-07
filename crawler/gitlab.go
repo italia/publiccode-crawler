@@ -193,7 +193,7 @@ type GitlabSharedProject struct {
 // RegisterGitlabAPI register the crawler function for Gitlab API.
 func RegisterGitlabAPI() OrganizationHandler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
-		log.Debugf("RegisterGitlabAPI: %s ")
+		log.Debugf("RegisterGitlabAPI: %s ", link)
 
 		// Set BasicAuth header.
 		headers := make(map[string]string)
@@ -330,8 +330,6 @@ func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 // addGitlabProjectsToRepositories adds the projects from api response to repository channel.
 func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, headers map[string]string, repositories chan Repository) error {
 	for _, v := range projects {
-		log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
-
 		// Join file raw URL string.
 		rawURL, err := generateGitlabRawURL(v.WebURL, v.DefaultBranch)
 		if err != nil {
@@ -361,8 +359,6 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 // addGitlabSharedProjectsToRepositories adds the shared projects from api response to repository channel.
 func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domain Domain, headers map[string]string, repositories chan Repository) error {
 	for _, v := range projects {
-		log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
-
 		// Join file raw URL string.
 		rawURL, err := generateGitlabRawURL(v.WebURL, v.DefaultBranch)
 		if err != nil {

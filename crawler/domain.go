@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"errors"
 	"sync"
 
 	"gopkg.in/yaml.v2"
@@ -69,4 +70,28 @@ func (domain Domain) generateAPIURL(u string) (string, error) {
 		return u, err
 	}
 	return crawler(u)
+}
+
+// DetectHost checks if the host is in the domain list and return the right Domain.
+func KnownHost(link, host string, domains []Domain) (Domain, error) {
+	for _, domain := range domains {
+		if host == domain.Host {
+			// Host is found in the host list.
+			return domain, nil
+		}
+	}
+
+	// host unknown, needs to be inferred.
+	if IsGithub(link) {
+		log.Infof("%s - API inferred:%s", link, "github.com")
+		return Domain{Host: "github.com"}, nil
+	} else if IsBitbucket(link) {
+		log.Infof("%s - API inferred:%s", link, "bitbucket.org")
+		return Domain{Host: "bitbucket.org"}, nil
+	} else if IsGitlab(link) {
+		log.Infof("%s - API inferred:%s", link, "gitlab.com")
+		return Domain{Host: "gitlab.com"}, nil
+	}
+
+	return Domain{}, errors.New("this host is not registered: " + host)
 }

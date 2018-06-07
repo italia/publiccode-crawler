@@ -26,12 +26,10 @@ type Repository struct {
 
 // ProcessPA delegates the work to single PA crawlers.
 func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.WaitGroup) {
-	log.Debugf("ProcessPA: %s", pa.CodiceIPA)
+	log.Debugf("ProcessPA (empty if no iPA): '%s'", pa.CodiceIPA)
 
 	// range over organizations..
 	for _, org := range pa.Organizations {
-		knownHost := false
-		domain := Domain{}
 		// Parse as url.URL.
 		u, err := url.Parse(org)
 		if err != nil {
@@ -39,32 +37,13 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 		}
 
 		// Check if host is in list of "famous" hosts.
-		for _, d := range domains {
-			if u.Hostname() == d.Host {
-				// Process this host
-				knownHost = true
-				domain = d
-			}
+		domain, err := KnownHost(org, u.Hostname(), domains)
+		if err != nil {
+			log.Error(err)
 		}
 
-		if knownHost {
-			log.Infof("%s - API known:%s", org, u.Hostname())
-			// Host is known.
-			ProcessPADomain(org, domain, repositories, wg)
-		} else {
-			// host unknown, needs to be inferred.
-			if IsGithub(org) {
-				log.Infof("%s - API inferred:%s", org, "github")
-				ProcessPADomain(org, Domain{Host: "github.com"}, repositories, wg)
-			} else if IsBitbucket(org) {
-				log.Infof("%s - API inferred:%s", org, "bitbucket")
-				ProcessPADomain(org, Domain{Host: "bitbucket.org"}, repositories, wg)
-			} else if IsGitlab(org) {
-				log.Infof("%s - API inferred:%s", org, "gitlab")
-				ProcessPADomain(org, Domain{Host: "gitlab.com"}, repositories, wg)
-			}
-		}
-
+		// Process the PA domain
+		ProcessPADomain(org, domain, repositories, wg)
 	}
 
 	wg.Done()
