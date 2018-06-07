@@ -72,7 +72,7 @@ func (domain Domain) generateAPIURL(u string) (string, error) {
 	return crawler(u)
 }
 
-// DetectHost checks if the host is in the domain list and return the right Domain.
+// KnownHost checks if the host is in the domain list and return the right Domain.
 func KnownHost(link, host string, domains []Domain) (Domain, error) {
 	for _, domain := range domains {
 		if host == domain.Host {
