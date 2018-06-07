@@ -287,7 +287,7 @@ func RegisterGithubAPI() OrganizationHandler {
 		}
 
 		// Return next url.
-		nextLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
+		nextLink := httpclient.HeaderLink(resp.Headers.Get("Link"), "next")
 
 		// if last page for this organization, the nextLink is empty.
 		if nextLink == "" {

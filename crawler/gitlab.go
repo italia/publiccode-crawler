@@ -238,13 +238,13 @@ func RegisterGitlabAPI() OrganizationHandler {
 			return "", nil
 		}
 
-		// Return next url
-		parsedLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
-		if parsedLink == "" {
+		// Return next url.
+		nextLink := httpclient.HeaderLink(resp.Headers.Get("Link"), "next")
+		if nextLink == "" {
 			return "", nil
 		}
 
-		return parsedLink, nil
+		return nextLink, nil
 	}
 }
 
