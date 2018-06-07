@@ -33,13 +33,13 @@ No organizations! Only single repositories!`,
 			viper.GetString("ELASTIC_USER"),
 			viper.GetString("ELASTIC_PWD"))
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		// Read and parse list of domains.
 		domains, err := crawler.ReadAndParseDomains(domainsFile)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		// Initiate a channel of repositories.
@@ -71,6 +71,7 @@ No organizations! Only single repositories!`,
 		}
 
 		// Process single repository.
+		log.Infof("Start ProcessSingleRepository '%s'...", repo)
 		err = crawler.ProcessSingleRepository(repo, domain, repositories)
 		if err != nil {
 			log.Error(err)
@@ -86,6 +87,8 @@ No organizations! Only single repositories!`,
 		// Process the repositories in order to retrieve the file.
 		// ProcessRepositories is blocking (wait until repositories is closed by WaitingLoop).
 		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+
+		log.Infof("... end ProcessSingleRepository '%s'", repo)
 
 		// Update Elastic alias.
 		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)

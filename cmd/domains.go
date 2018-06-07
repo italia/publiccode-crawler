@@ -4,6 +4,8 @@ import (
 	"os"
 	"strconv"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -21,7 +23,7 @@ var domainsCmd = &cobra.Command{
 		// Read and parse the whitelist.
 		domains, err := crawler.ReadAndParseDomains(domainsFile)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 		// Prepare data table.
 		var data [][]string
@@ -37,6 +39,7 @@ var domainsCmd = &cobra.Command{
 
 		}
 
+		// Write data and render as table in os.Stdout.
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"ID", "BasicAuth?"})
 		table.SetFooter([]string{"Total Domains: " + strconv.Itoa(len(domains)), ""})

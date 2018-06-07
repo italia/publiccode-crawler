@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"log"
 	"os"
 	"strconv"
 
@@ -22,7 +23,7 @@ var listCmd = &cobra.Command{
 		// Read and parse the whitelist.
 		whitelist, err := crawler.ReadAndParseWhitelist(args[0])
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		// Prepare data table.
@@ -37,6 +38,7 @@ var listCmd = &cobra.Command{
 			}
 		}
 
+		// Write data and render as table in os.Stdout.
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"ID", "Codice iPA", "Repository"})
 		table.SetFooter([]string{"Total Public Administrations: " + strconv.Itoa(len(whitelist)), "", ""})

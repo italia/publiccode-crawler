@@ -417,14 +417,14 @@ func IsGitlab(link string) bool {
 
 	resp, err := httpclient.GetURL(u.String(), nil)
 	if err != nil {
-		log.Infof("can %s use Gitlab API? No.", link)
+		log.Debugf("can %s use Gitlab API? No.", link)
 		return false
 	}
 	if resp.Status.Code != http.StatusOK {
-		log.Infof("can %s use Gitlab API? No.", link)
+		log.Debugf("can %s use Gitlab API? No.", link)
 		return false
 	}
 
-	log.Infof("can %s use Gitlab API? Yes.", link)
+	log.Debugf("can %s use Gitlab API? Yes.", link)
 	return true
 }

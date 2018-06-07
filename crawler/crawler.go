@@ -26,7 +26,7 @@ type Repository struct {
 
 // ProcessPA delegates the work to single PA crawlers.
 func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.WaitGroup) {
-	log.Debugf("ProcessPA (empty if no iPA): '%s'", pa.CodiceIPA)
+	log.Infof("Start ProcessPA (empty if no iPA) on '%s'...", pa.CodiceIPA)
 
 	// range over organizations..
 	for _, org := range pa.Organizations {
@@ -48,6 +48,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 
 	wg.Done()
 
+	log.Infof("... end ProcessPA (empty if no iPA) on '%s'...", pa.CodiceIPA)
 }
 
 // ProcessPADomain starts from the org page and process all the next.

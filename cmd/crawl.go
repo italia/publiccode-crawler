@@ -22,20 +22,19 @@ var crawlCmd = &cobra.Command{
 	Long:  `Start whitelist file. It's possible to add multiple files adding them as args.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
 			viper.GetString("ELASTIC_URL"),
 			viper.GetString("ELASTIC_USER"),
 			viper.GetString("ELASTIC_PWD"))
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		// Read and parse list of domains.
 		domains, err := crawler.ReadAndParseDomains(domainsFile)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		// Read and parse the whitelist.
@@ -45,7 +44,7 @@ var crawlCmd = &cobra.Command{
 		for id := range args {
 			readWhitelist, err := crawler.ReadAndParseWhitelist(args[id])
 			if err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 			whitelist = append(whitelist, readWhitelist...)
 		}
