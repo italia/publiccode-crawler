@@ -32,7 +32,7 @@ func ReadAndParseDomains(domainsFile string) ([]Domain, error) {
 	}
 	log.Infof("Loaded and parsed %s", domainsFile)
 
-	return domains, nil
+	return domains, err
 }
 
 // parseDomainsFile parses the domains file to build a slice of Domain.
@@ -44,7 +44,7 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 	if err != nil {
 		return nil, err
 	}
-	return domains, nil
+	return domains, err
 }
 
 func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {

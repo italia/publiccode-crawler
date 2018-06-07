@@ -33,7 +33,7 @@ func ReadAndParseWhitelist(whitelistFile string) ([]PA, error) {
 	}
 	log.Infof("Loaded and parsed %s", whitelistFile)
 
-	return whitelist, nil
+	return whitelist, err
 }
 
 // parseWhitelistFile parses the whitelist file to build a slice of PA.
@@ -46,5 +46,5 @@ func parseWhitelistFile(data []byte) ([]PA, error) {
 		return nil, err
 	}
 
-	return whitelist, nil
+	return whitelist, err
 }

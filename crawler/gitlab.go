@@ -406,10 +406,17 @@ func GenerateGitlabAPIURL() GeneratorAPIURL {
 
 // IsGitlab returns "true" if the url can use Gitlab API.
 func IsGitlab(link string) bool {
-	u, err := url.Parse(link)
-	if err != nil {
+	if len(link) == 0 {
+		log.Errorf("IsGitlab: empty link %s.", link)
 		return false
 	}
+
+	u, err := url.Parse(link)
+	if err != nil {
+		log.Errorf("IsGitlab: impossible to parse %s.", link)
+		return false
+	}
+
 	u.Path = "api/v4/templates/gitlab_ci_ymls"
 
 	resp, err := httpclient.GetURL(u.String(), nil)

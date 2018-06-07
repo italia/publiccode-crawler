@@ -337,8 +337,14 @@ func GenerateBitbucketAPIURL() GeneratorAPIURL {
 
 // IsBitbucket returns "true" if the url can use Bitbucket API.
 func IsBitbucket(link string) bool {
+	if len(link) == 0 {
+		log.Errorf("IsBitbucket: empty link %s.", link)
+		return false
+	}
+
 	u, err := url.Parse(link)
 	if err != nil {
+		log.Errorf("IsBitbucket: impossible to parse %s.", link)
 		return false
 	}
 	u.Path = "2.0/hook_events"
