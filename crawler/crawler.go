@@ -26,7 +26,7 @@ type Repository struct {
 
 // ProcessPA delegates the work to single PA crawlers.
 func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.WaitGroup) {
-	log.Infof("Start ProcessPA (empty if no iPA) on '%s'...", pa.CodiceIPA)
+	log.Infof("Start ProcessPA on '%s'", pa.ID)
 
 	// range over organizations..
 	for _, org := range pa.Organizations {
@@ -48,7 +48,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 
 	wg.Done()
 
-	log.Infof("... end ProcessPA (empty if no iPA) on '%s'...", pa.CodiceIPA)
+	log.Infof("End ProcessPA on '%s'", pa.ID)
 }
 
 // ProcessPADomain starts from the org page and process all the next.
@@ -126,14 +126,22 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	if resp.Status.Code == http.StatusOK && err == nil {
 
 		// Save Metadata.
-		SaveToFile(domain, name, metadata, index+"_metadata")
+		err = SaveToFile(domain, name, metadata, index+"_metadata")
+		if err != nil {
+			log.Errorf("error saving to file: %v", err)
+		}
 
 		// Save to file.
-		SaveToFile(domain, name, resp.Body, index)
+		err = SaveToFile(domain, name, resp.Body, index)
+		if err != nil {
+			log.Errorf("error saving to file: %v", err)
+		}
 
 		// Save to ES.
-		SaveToES(domain, name, resp.Body, index, elasticClient)
-
+		err = SaveToES(domain, name, resp.Body, index, elasticClient)
+		if err != nil {
+			log.Errorf("error saving to file: %v", err)
+		}
 		// TODO: save "metadata" on ES. When mapping is ready.
 
 		// Validate file.

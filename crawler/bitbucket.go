@@ -194,6 +194,14 @@ func RegisterBitbucketAPI() OrganizationHandler {
 			headers["Authorization"] = domain.BasicAuth[n]
 		}
 
+		// Parse url.
+		u, err := url.Parse(link)
+		if err != nil {
+			return link, err
+		}
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
+
 		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
@@ -201,7 +209,7 @@ func RegisterBitbucketAPI() OrganizationHandler {
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return "", errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
@@ -262,11 +270,14 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 			headers["Authorization"] = domain.BasicAuth[n]
 		}
 
-		// Generate single repository API url.
+		// Parse url.
 		u, err := url.Parse(link)
 		if err != nil {
 			return err
 		}
+
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
 
 		u.Path = path.Join("/2.0/repositories", u.Path)
 		u.Host = "api." + u.Host

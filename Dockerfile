@@ -35,4 +35,5 @@ RUN chmod +x ./$NAME
 #ENTRYPOINT ./$NAME one https://github.com/italia/developers.italia.it
 #ENTRYPOINT ./$NAME one https://bitbucket.org/marco-capobussi/publiccode-example
 #ENTRYPOINT ./$NAME one https://gitlab.com/inkscape/inkscape
+#ENTRYPOINT ./$NAME one https://gitlab.marconirovereto.it/Cristian.Tonelli/ProvaInfo
 ENTRYPOINT ./$NAME crawl whitelistPA.yml whitelistGeneric.yml

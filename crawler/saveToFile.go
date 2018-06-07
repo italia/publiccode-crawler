@@ -1,18 +1,25 @@
 package crawler
 
 import (
+	"errors"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/italia/developers-italia-backend/metrics"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 // SaveToFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<crawler_timestamp>_<file_name>.
-func SaveToFile(domain Domain, name string, data []byte, index string) {
+func SaveToFile(domain Domain, name string, data []byte, index string) error {
+	if domain.Host == "" {
+		return errors.New("cannot save a file without domain host")
+	}
+	if name == "" {
+		return errors.New("cannot save a file without name")
+	}
+
 	fileName := index + "_" + viper.GetString("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
@@ -22,16 +29,17 @@ func SaveToFile(domain Domain, name string, data []byte, index string) {
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		err := os.MkdirAll(path, os.ModePerm)
 		if err != nil {
-			log.Error(err)
+			return err
 		}
 	}
 
 	err := ioutil.WriteFile(filepath.Join(path, fileName), data, 0644)
 	if err != nil {
-		log.Error(err)
+		return err
 	}
 
 	metrics.GetCounter("repository_file_saved", index).Inc()
+	return err
 }
 
 // splitFullName split a git FullName format to vendor and repo strings.

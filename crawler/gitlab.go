@@ -205,6 +205,14 @@ func RegisterGitlabAPI() OrganizationHandler {
 			headers["Authorization"] = domain.BasicAuth[n]
 		}
 
+		// Parse url.
+		u, err := url.Parse(link)
+		if err != nil {
+			return link, err
+		}
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
+
 		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
@@ -212,7 +220,7 @@ func RegisterGitlabAPI() OrganizationHandler {
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return "", errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
@@ -261,10 +269,15 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
+		// Parse url.
 		u, err := url.Parse(link)
 		if err != nil {
 			log.Error(err)
+			return err
 		}
+
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
 
 		// Dirty concatenation. With the normal URL String() the escaped characters are escaped two times.
 		repoString := strings.Trim(u.Path, "/")
@@ -297,6 +310,7 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 		metadata, err := json.Marshal(result)
 		if err != nil {
 			log.Errorf("gitlab metadata: %v", err)
+			return err
 		}
 
 		// If the repository was never used, the Mainbranch is empty ("")
@@ -309,7 +323,7 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 				Metadata:   metadata,
 			}
 		} else {
-			return errors.New("repository is: empty")
+			return errors.New("repository is empty")
 		}
 
 		return nil
@@ -340,6 +354,7 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 		metadata, err := json.Marshal(v)
 		if err != nil {
 			log.Errorf("gitlab metadata: %v", err)
+			return err
 		}
 
 		if v.DefaultBranch != "" {
@@ -369,6 +384,7 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 		metadata, err := json.Marshal(v)
 		if err != nil {
 			log.Errorf("gitlab metadata: %v", err)
+			return err
 		}
 
 		if v.DefaultBranch != "" {

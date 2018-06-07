@@ -232,6 +232,15 @@ func RegisterGithubAPI() OrganizationHandler {
 			}
 			headers["Authorization"] = domain.BasicAuth[n]
 		}
+
+		// Parse url.
+		u, err := url.Parse(link)
+		if err != nil {
+			return link, err
+		}
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
+
 		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
 		if err != nil {
@@ -239,14 +248,16 @@ func RegisterGithubAPI() OrganizationHandler {
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return "", errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
+
 		// Fill response as list of values (repositories data).
 		var results GithubOrgs
 		err = json.Unmarshal(resp.Body, &results)
 		if err != nil {
 			return link, err
 		}
+
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
 			// Marshal all the repository metadata.
@@ -270,18 +281,9 @@ func RegisterGithubAPI() OrganizationHandler {
 				log.Infof("Repository is empty: %s", string(resp.Body))
 			}
 
-			// Search a file with a valid name and a downloadURL.
-			for _, f := range files {
-				if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
-					// Add repository to channel.
-					repositories <- Repository{
-						Name:       v.FullName,
-						FileRawURL: f.DownloadURL,
-						Domain:     domain,
-						Headers:    headers,
-						Metadata:   metadata,
-					}
-				}
+			err = addGithubProjectsToRepositories(files, v.FullName, domain, headers, metadata, repositories)
+			if err != nil {
+				log.Infof("addGithubProectsToRepositories %v", err)
 			}
 
 		}
@@ -313,10 +315,14 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 			headers["Authorization"] = domain.BasicAuth[n]
 		}
 
+		// Parse url.
 		u, err := url.Parse(link)
 		if err != nil {
 			return err
 		}
+
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
 
 		u.Path = path.Join("repos", u.Path)
 		u.Path = strings.Trim(u.Path, "/")
@@ -342,6 +348,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 		metadata, err := json.Marshal(v)
 		if err != nil {
 			log.Errorf("github metadata: %v", err)
+			return err
 		}
 		contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
 		// Get List of files.
@@ -351,6 +358,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Infof("Request returned an invalid status code: %s", string(resp.Body))
+			return err
 		}
 		// Fill response as list of values (repositories data).
 		var files GithubFiles
@@ -377,6 +385,25 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 
 		return nil
 	}
+}
+
+// addGithubProjectsToRepositories adds the projects from api response to repository channel.
+func addGithubProjectsToRepositories(files GithubFiles, fullName string, domain Domain, headers map[string]string, metadata []byte, repositories chan Repository) error {
+	// Search a file with a valid name and a downloadURL.
+	for _, f := range files {
+		if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
+			// Add repository to channel.
+			repositories <- Repository{
+				Name:       fullName,
+				FileRawURL: f.DownloadURL,
+				Domain:     domain,
+				Headers:    headers,
+				Metadata:   metadata,
+			}
+		}
+	}
+
+	return nil
 }
 
 // GenerateGithubAPIURL returns the api url of given Gitlab organization link.

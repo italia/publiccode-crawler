@@ -71,7 +71,7 @@ No organizations! Only single repositories!`,
 		}
 
 		// Process single repository.
-		log.Infof("Start ProcessSingleRepository '%s'...", repo)
+		log.Infof("Start ProcessSingleRepository '%s'", repo)
 		err = crawler.ProcessSingleRepository(repo, domain, repositories)
 		if err != nil {
 			log.Error(err)
@@ -88,7 +88,7 @@ No organizations! Only single repositories!`,
 		// ProcessRepositories is blocking (wait until repositories is closed by WaitingLoop).
 		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
 
-		log.Infof("... end ProcessSingleRepository '%s'", repo)
+		log.Infof("End ProcessSingleRepository '%s'", repo)
 
 		// Update Elastic alias.
 		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)
