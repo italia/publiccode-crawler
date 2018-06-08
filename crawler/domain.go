@@ -20,14 +20,15 @@ type Domain struct {
 	BasicAuth []string `yaml:"basic-auth"`
 }
 
-func (d *Domain) API() string {
-	truncateIndex := strings.LastIndexAny(d.Host, ".")
+// API returns a Domain without tld.
+func (domain Domain) API() string {
+	truncateIndex := strings.LastIndexAny(domain.Host, ".")
 	// It is already an API without tld.
 	if truncateIndex == -1 {
-		return d.Host
+		return domain.Host
 	}
 
-	return d.Host[:truncateIndex]
+	return domain.Host[:truncateIndex]
 }
 
 // ReadAndParseDomains read domainsFile and return the parsed content in a Domain slice.
