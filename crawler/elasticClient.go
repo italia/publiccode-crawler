@@ -31,15 +31,17 @@ func ElasticClientFactory(URL, user, password string) (*elastic.Client, error) {
 
 // ElasticAliasUpdate update the Alias to the index.
 func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) error {
-	// Remove old aliases.
+	// Retrieve all the aliases.
 	res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
 	if err != nil {
 		return err
 	}
+	// Range over all the aliases services.
 	aliasService := elasticClient.Alias()
 	indices := res.IndicesByAlias(alias)
 	for _, name := range indices {
-		log.Debugf("Remove alias from %s to %s", "publiccode", name)
+		log.Debugf("Remove alias from %s to %s", alias, name)
+		// Remove the publiccode alias.
 		_, err := aliasService.Remove(name, alias).Do(context.Background())
 		if err != nil {
 			return err
