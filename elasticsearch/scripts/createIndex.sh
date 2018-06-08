@@ -80,11 +80,12 @@ generate_index_settings() {
         },
         "application-suite": {
           "type": "text",
-          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+          "fields": { "keyword":{ "type": "keyword", "ignore_above": 256 } }
         },
         "url": {
           "type": "text",
-          "index": false
+          "index": false,
+          "fields": { "keyword":{ "type": "keyword", "ignore_above": 256 } }
         },
         "landing-url": {
           "type": "text",
@@ -267,10 +268,93 @@ generate_index_settings() {
         "suggest-name": {
           "type": "completion"
         },
-        "metadata-repo": {
-          "type": "object",
-          "dynamic": true,
-          "enabled": false
+        "vitality-score": {
+          "type": "text",
+          "index": false
+        },
+        "vitality-data-chart": {
+          "type": "integer"
+        },
+        "related-software": {
+          "properties": {
+            "name": {
+              "type": "text",
+              "index": false
+            },
+            "image": {
+              "type": "text",
+              "index": false
+            },
+            "eng": {
+              "properties": {
+                "localised-name": {
+                  "type": "text",
+                  "index": false
+                },
+                "url": {
+                  "type": "text",
+                  "index": false
+                }
+              }
+            },
+            "ita": {
+              "properties": {
+                "localised-name": {
+                  "type": "text",
+                  "index": false
+                },
+                "url": {
+                  "type": "text",
+                  "index": false
+                }
+              }
+            }
+          }
+        },
+        "tags-related": {
+          "type": "keyword"
+        },
+        "popular-tags": {
+          "type": "keyword"
+        },
+        "share-tags": {
+          "type": "keyword"
+        },
+        "old-variant": {
+          "properties": {
+            "eng": {
+              "properties": {
+                "localised-name": {
+                  "type": "text",
+                  "index": false
+                },
+                "url": {
+                  "type": "text",
+                  "index": false
+                },
+                "feature-list": {
+                  "type": "keyword",
+                  "index": false
+                }
+              }
+            },
+            "ita": {
+              "properties": {
+                "localised-name": {
+                  "type": "text",
+                  "index": false
+                },
+                "url": {
+                  "type": "text",
+                  "index": false
+                },
+                "feature-list": {
+                  "type": "keyword",
+                  "index": false
+                }
+              }
+            }
+          }
         }
       }
     }
