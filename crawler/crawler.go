@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"math/big"
 	"sync"
+	"time"
 
 	"net/http"
 	"net/url"
@@ -18,6 +19,7 @@ import (
 // Repository is a single code repository. FileRawURL contains the direct url to the raw file.
 type Repository struct {
 	Name       string
+	Hostname   string
 	FileRawURL string
 	Domain     Domain
 	Headers    map[string]string
@@ -60,6 +62,7 @@ func ProcessPADomain(orgURL string, domain Domain, repositories chan Repository,
 	}
 	// Process the pages until the end is reached.
 	for {
+		wg.Add(1)
 		log.Debugf("processAndGetNextURL handler: %s", orgURL)
 		nextURL, err := domain.processAndGetNextURL(orgURL, wg, repositories)
 		if err != nil {
@@ -70,17 +73,25 @@ func ProcessPADomain(orgURL string, domain Domain, repositories chan Repository,
 
 		// If end is reached, nextUrl is empty.
 		if nextURL == "" {
-			log.Infof("Url: %s - is the last one for %s.", orgURL, domain.Host)
+			log.Infof("Url: %s - is the last one.", orgURL)
+			wg.Done()
 			return
 		}
 		// Update url to nextURL.
 		orgURL = nextURL
+		wg.Done()
 	}
 }
 
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
 func WaitingLoop(repositories chan Repository, wg *sync.WaitGroup) {
+	// Waiting initial timer.
+	time.Sleep(5 * time.Second)
+
 	wg.Wait()
+
+	// Waiting final timer.
+	time.Sleep(5 * time.Second)
 
 	// Close repositories channel.
 	log.Debugf("closing repositories chan: len=%d", len(repositories))
@@ -112,7 +123,8 @@ func ProcessRepositories(repositories chan Repository, index string, wg *sync.Wa
 // checkAvailability looks for the FileRawURL and, if found, save it.
 func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	name := repository.Name
-	FileRawURL := repository.FileRawURL
+	hostname := repository.Hostname
+	fileRawURL := repository.FileRawURL
 	domain := repository.Domain
 	headers := repository.Headers
 	metadata := repository.Metadata
@@ -120,18 +132,20 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", index).Inc()
 
-	resp, err := httpclient.GetURL(FileRawURL, headers)
+	resp, err := httpclient.GetURL(fileRawURL, headers)
+	log.Debugf("repository checkAvailability: %s", name)
+
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
 
 		// Save Metadata.
-		err = SaveToFile(domain, name, metadata, index+"_metadata")
+		err = SaveToFile(domain, hostname, name, metadata, index+"_metadata")
 		if err != nil {
 			log.Errorf("error saving to file: %v", err)
 		}
 
 		// Save to file.
-		err = SaveToFile(domain, name, resp.Body, index)
+		err = SaveToFile(domain, hostname, name, resp.Body, index)
 		if err != nil {
 			log.Errorf("error saving to file: %v", err)
 		}
@@ -146,9 +160,9 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
 		// TODO: now validation is useless because we test on .gitignore file.
-		// err := validateRemoteFile(resp.Body, FileRawURL, index)
+		// err := validateRemoteFile(resp.Body, fileRawURL, index)
 		// if err != nil {
-		// 	log.Warn("Validator fails for: " + FileRawURL)
+		// 	log.Warn("Validator fails for: " + fileRawURL)
 		// 	log.Warn("Validator errors:" + err.Error())
 		// }
 	}

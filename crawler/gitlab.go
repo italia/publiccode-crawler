@@ -318,12 +318,13 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 			repositories <- Repository{
 				Name:       result.PathWithNamespace,
 				FileRawURL: u.String(),
+				Hostname:   u.Hostname(),
 				Domain:     domain,
 				Headers:    headers,
 				Metadata:   metadata,
 			}
 		} else {
-			return errors.New("repository is empty")
+			return errors.New("repository is empty." + result.WebURL)
 		}
 
 		return nil
@@ -360,6 +361,7 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 		if v.DefaultBranch != "" {
 			repositories <- Repository{
 				Name:       v.PathWithNamespace,
+				Hostname:   domain.Host,
 				FileRawURL: rawURL,
 				Domain:     domain,
 				Headers:    headers,
@@ -390,6 +392,7 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 		if v.DefaultBranch != "" {
 			repositories <- Repository{
 				Name:       v.PathWithNamespace,
+				Hostname:   domain.Host,
 				FileRawURL: rawURL,
 				Domain:     domain,
 				Headers:    headers,

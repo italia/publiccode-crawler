@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"errors"
+	"strings"
 	"sync"
 
 	"gopkg.in/yaml.v2"
@@ -17,6 +18,16 @@ type Domain struct {
 	// Domains.yml data
 	Host      string   `yaml:"host"`
 	BasicAuth []string `yaml:"basic-auth"`
+}
+
+func (d *Domain) API() string {
+	truncateIndex := strings.LastIndexAny(d.Host, ".")
+	// It is already an API without tld.
+	if truncateIndex == -1 {
+		return d.Host
+	}
+
+	return d.Host[:truncateIndex]
 }
 
 // ReadAndParseDomains read domainsFile and return the parsed content in a Domain slice.
@@ -49,7 +60,7 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 }
 
 func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
-	crawler, err := GetClientAPICrawler(domain.Host)
+	crawler, err := GetClientAPICrawler(domain.API())
 	if err != nil {
 		return "", err
 	}
@@ -57,7 +68,7 @@ func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, reposi
 }
 
 func (domain Domain) processSingleRepo(url string, repositories chan Repository) error {
-	crawler, err := GetSingleClientAPICrawler(domain.Host)
+	crawler, err := GetSingleClientAPICrawler(domain.API())
 	if err != nil {
 		return err
 	}
@@ -65,7 +76,7 @@ func (domain Domain) processSingleRepo(url string, repositories chan Repository)
 }
 
 func (domain Domain) generateAPIURL(u string) (string, error) {
-	crawler, err := GetAPIURL(domain.Host)
+	crawler, err := GetAPIURL(domain.API())
 	if err != nil {
 		return u, err
 	}
@@ -84,14 +95,14 @@ func KnownHost(link, host string, domains []Domain) (Domain, error) {
 
 	// host unknown, needs to be inferred.
 	if IsGithub(link) {
-		log.Infof("%s - API inferred:%s", link, "github.com")
-		return Domain{Host: "github.com"}, nil
+		log.Infof("%s - API inferred:%s", link, "github")
+		return Domain{Host: "github"}, nil
 	} else if IsBitbucket(link) {
-		log.Infof("%s - API inferred:%s", link, "bitbucket.org")
-		return Domain{Host: "bitbucket.org"}, nil
+		log.Infof("%s - API inferred:%s", link, "bitbucket")
+		return Domain{Host: "bitbucket"}, nil
 	} else if IsGitlab(link) {
-		log.Infof("%s - API inferred:%s", link, "gitlab.com")
-		return Domain{Host: "gitlab.com"}, nil
+		log.Infof("%s - API inferred:%s", link, "gitlab")
+		return Domain{Host: "gitlab"}, nil
 	}
 
 	return Domain{}, errors.New("this host is not registered: " + host)

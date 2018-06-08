@@ -12,7 +12,7 @@ import (
 )
 
 // SaveToFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<crawler_timestamp>_<file_name>.
-func SaveToFile(domain Domain, name string, data []byte, index string) error {
+func SaveToFile(domain Domain, hostname string, name string, data []byte, index string) error {
 	if domain.Host == "" {
 		return errors.New("cannot save a file without domain host")
 	}
@@ -23,7 +23,7 @@ func SaveToFile(domain Domain, name string, data []byte, index string) error {
 	fileName := index + "_" + viper.GetString("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
-	path := filepath.Join("./data", domain.Host, vendor, repo)
+	path := filepath.Join("./data", hostname, vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {

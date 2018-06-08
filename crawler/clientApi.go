@@ -29,19 +29,19 @@ func RegisterClientAPIs() {
 
 	clientAPIs = make(map[string]ClientAPI)
 
-	clientAPIs["bitbucket.org"] = ClientAPI{
+	clientAPIs["bitbucket"] = ClientAPI{
 		Organization: RegisterBitbucketAPI(),
 		Single:       RegisterSingleBitbucketAPI(),
 		APIURL:       GenerateBitbucketAPIURL(),
 	}
 
-	clientAPIs["github.com"] = ClientAPI{
+	clientAPIs["github"] = ClientAPI{
 		Organization: RegisterGithubAPI(),
 		Single:       RegisterSingleGithubAPI(),
 		APIURL:       GenerateGithubAPIURL(),
 	}
 
-	clientAPIs["gitlab.com"] = ClientAPI{
+	clientAPIs["gitlab"] = ClientAPI{
 		Organization: RegisterGitlabAPI(),
 		Single:       RegisterSingleGitlabAPI(),
 		APIURL:       GenerateGitlabAPIURL(),

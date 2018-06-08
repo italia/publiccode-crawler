@@ -239,6 +239,7 @@ func RegisterBitbucketAPI() OrganizationHandler {
 			if v.Mainbranch.Name != "" {
 				repositories <- Repository{
 					Name:       v.FullName,
+					Hostname:   u.Hostname(),
 					FileRawURL: u.String(),
 					Domain:     domain,
 					Headers:    headers,
@@ -317,6 +318,7 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 		if result.Mainbranch.Name != "" {
 			repositories <- Repository{
 				Name:       result.FullName,
+				Hostname:   u.Hostname(),
 				FileRawURL: "https://" + fullURL,
 				Domain:     domain,
 				Headers:    headers,
