@@ -79,7 +79,6 @@ func ProcessPADomain(orgURL string, domain Domain, repositories chan Repository,
 }
 
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
-// It also switch the alias for elasticsearch index.
 func WaitingLoop(repositories chan Repository, wg *sync.WaitGroup) {
 	wg.Wait()
 
