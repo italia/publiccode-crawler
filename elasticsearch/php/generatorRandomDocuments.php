@@ -731,11 +731,15 @@ class generatorRandomDocuments {
           $intended_audience_unsupported_countries[] = $value;
         }
       }
+
+      $tags = $this->getRandomTags();
+      $free_tags = $this->getRandomFreeTags();
+
       $documents[] = [
         "publiccode-yaml-version" => "http://w3id.org/publiccode/version/0.1",
         "name" => $name,
         "application-suite" => $this->getRandomApplicationSuite(),
-        "url" => "https://example.com/italia/medusa.git",
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$name.".git",
         "landing-url" => "https://example.com/italia/medusa",
         "is-based-on" => $this->getRandomIsBasedOn(),
         "software-version" => $this->getRandomVersion(),
@@ -743,8 +747,8 @@ class generatorRandomDocuments {
         "logo" => "img/logo.svg",
         "monochrome-logo" => "img/logo-mono.svg",
         "platforms" => $this->getRandomPlatforms(),
-        "tags" => $this->getRandomTags(),
-        "free-tags" => $this->getFreeTags(),
+        "tags" => $tags,
+        "free-tags" => $free_tags,
         "used-by" => $this->getRandomUsedBy(),
         "roadmap" => "https://example.com/italia/medusa/roadmap",
         "development-status" => $this->getRandomDevelopmentStatus(),
@@ -758,7 +762,8 @@ class generatorRandomDocuments {
         "legal-repo-owner" => $this->getRandomMainCopyrightOwner(),
         "legal-authors-file" => "doc/AUTHORS.txt",
         "description" => [
-          $this->getRandomISO6393() => $this->getRandomDescription($name, $i),
+          "ita" => $this->getRandomDescription($name, $i),
+          "eng" => $this->getRandomDescription($name, $i),
         ],
         "dependencies-software" => $this->getRandomDependencies(),
         "dependencies-hardware" => $this->getRandomDependenciesHardware(),
@@ -778,6 +783,13 @@ class generatorRandomDocuments {
         "it-design-kit-web-toolki" => boolval(rand(0,1)),
         "suggest-name" => explode(" ", $name),
         "metadata-repo" => $this->getRandomMetadataRepo(),
+        "vitality-score" => rand(1, 100),
+        "vitality-data-chart" => $this->getRandomVitalityDataChart(),
+        "tags-related" => $this->getRandomItemFromArray($tags),
+        "popular-tags" => $this->getRandomItemFromArray($tags),
+        "share-tags" => $this->getRandomItemFromArray($tags),
+        "related-software" => $this->getRandomRelatedSoftware(),
+        "old-variant" => $this->getRandomOldVariant(),
       ];
     }
 
@@ -790,10 +802,6 @@ class generatorRandomDocuments {
 
   public function getRandomMainCopyrightOwner() {
     return $this->main_copyright_owner[rand(0, $this->main_copyright_owner_numbers - 1)];
-  }
-
-  public function getRandomRepoOwner() {
-    return $this->repo_owner[rand(0, $this->repo_owner_numbers - 1)];
   }
 
   public function getRandomVersion() {
@@ -880,7 +888,7 @@ class generatorRandomDocuments {
   }
 
   public function getRandomTags() {
-    $n = rand(1, 8);
+    $n = rand(1, 15);
     $tags = [];
 
     for ($i=0; $i < $n;) { 
@@ -894,31 +902,21 @@ class generatorRandomDocuments {
     return $tags;
   }
 
-  public function getRandomLocalizationLanguages() {
-    $n_langs = rand(0, 3);
-    $localisation_available_languages = [];
-    for ($i=0; $i < $n_langs; $i++) { 
-      $localisation_available_languages[] = $this->getRandomISO6393();
-    }
-
-    return $localisation_available_languages;
-  }
-
-  public function getFreeTags() {
+  public function getRandomFreeTags() {
     $free_tags = [];
     // numero di tags
-    $n_tags = rand(0, 5);
+    $n_tags = rand(0, 9);
     $n_langs = rand(0, 5);
     if($n_tags > 0) {
       for ($i=0; $i < $n_langs; $i++) { 
-        $free_tags[$this->getRandomISO6393()] = $this->getRandomFreeTags($n_tags);
+        $free_tags[$this->getRandomISO6393()] = $this->generateRandomFreeTags($n_tags);
       }
     }
 
     return $free_tags;
   }
 
-  public function getRandomFreeTags($n = 3) {
+  public function generateRandomFreeTags($n = 3) {
     $free_tags = [];
 
     for ($i=0; $i < $n; $i++) { 
@@ -926,21 +924,6 @@ class generatorRandomDocuments {
     }
 
     return $free_tags;
-  }
-
-  public function getRandomCategory() {
-    $n = rand(1, 6);
-    $category = [];
-
-    for ($i=0; $i < $n;) { 
-      $current = rand(0, $this->category_numbers - 1);
-      if(!in_array($this->category[$current], $category)) {
-        $category[] = $this->category[$current];
-        $i++;
-      }
-    }
-
-    return $category;
   }
 
   public function getRandomDependencies() {
@@ -976,26 +959,8 @@ class generatorRandomDocuments {
     return $dependencies_hardware;
   }
 
-  public function getRandomUseSpid() {
-    return (rand(0, 1) == 0) ? 'no' : 'yes';
-  }
-
-  public function getRandomPagopa() {
-    return (rand(0, 1) == 0) ? 'no' : 'yes';
-  }
-
   public function getRandomMaintainanceType() {
     return $this->maintainance_type[rand(0, $this->maintainance_type_numbers -1)];
-  }
-
-  public function getRandomMaintenanceContacts() {
-    $n = rand(1, 10);
-    $technical_contacts = [];
-    for ($i=0; $i < $n ; $i++) { 
-      $technical_contacts[] = $this->generateRandomMaintenanceContact();
-    }
-
-    return $technical_contacts;
   }
 
   public function getRandomMaintenanceContractors() {
@@ -1115,6 +1080,61 @@ class generatorRandomDocuments {
     return $this->metadata_repo[rand(0, $this->metadata_repo_numbers - 1)];
   }
 
+  public function getRandomVitalityDataChart() {
+    $months = rand(0, 12);
+    $vitality_data_chart = [];
+    for ($i=0; $i < $months ; $i++) { 
+      $vitality_data_chart[] = rand(1, 10);
+    }
+
+    return $vitality_data_chart;
+  }
+
+  public function getRandomItemFromArray($all_tags = []) {
+    if(empty($all_tags)){
+      return [];
+    }
+    
+    $c = count($all_tags);
+    $n = rand(1, $c);
+    
+    $keys = array_rand($all_tags, $n);
+    if(!is_array($keys)){
+      return [
+        $all_tags[$keys]
+      ];
+    }
+
+    $items = [];    
+    foreach ($keys as $key) {
+      $items[] = $all_tags[$key];
+    }
+    
+    return $items;
+  }
+
+  public function getRandomRelatedSoftware() {
+    $n = rand(0, 3);
+    $items = [];
+
+    for ($i=0; $i < $n; $i++) { 
+      $items[] = $this->generateRandomRelatedSoftware();
+    }
+
+    return $items;
+  }
+
+  public function getRandomOldVariant() {
+    $n = rand(0, 3);
+    $items = [];
+
+    for ($i=0; $i < $n; $i++) { 
+      $items[] = $this->generateRandomOldVariant();
+    }
+
+    return $items;
+  }
+
   private function generateRandomString($length = 10, $only_letters = FALSE) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     if ($only_letters) {
@@ -1210,6 +1230,36 @@ class generatorRandomDocuments {
     }
 
     return $metadata;
+  }
+
+  private function generateRandomRelatedSoftware() {
+    return [
+      "name" => $this->generateRandomString(rand(6, 15), TRUE),
+      "image" => "img/screenshot.jpg",
+      "eng" => [
+        "localised-name" => $this->getRandomPhrase(1, 3),
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
+      ],
+      "ita" => [
+        "localised-name" => $this->getRandomPhrase(1, 3),
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
+      ],
+    ];
+  }
+
+  private function generateRandomOldVariant() {
+    return [
+      "eng" => [
+        "localised-name" => $this->getRandomPhrase(1, 3),
+        "feature-list" => $this->getRandomFeatureList(),
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
+      ],
+      "ita" => [
+        "localised-name" => $this->getRandomPhrase(1, 3),
+        "feature-list" => $this->getRandomFeatureList(),
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
+      ],
+    ];
   }
 
 }
