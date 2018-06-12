@@ -1,8 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/spf13/cobra"
 )
@@ -17,7 +16,7 @@ Complete documentation is available at https://github.com/italia/developers-ital
 	Run: func(cmd *cobra.Command, args []string) {
 		err := cmd.Help()
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 	},
 }
@@ -25,7 +24,6 @@ Complete documentation is available at https://github.com/italia/developers-ital
 // Execute is the entrypoint for cmd package Cobra.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }

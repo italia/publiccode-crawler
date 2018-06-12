@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/olivere/elastic"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 // ElasticClientFactory returns an elastic Client.
@@ -27,6 +27,33 @@ func ElasticClientFactory(URL, user, password string) (*elastic.Client, error) {
 	}
 
 	return client, nil
+}
+
+// ElasticAliasUpdate update the Alias to the index.
+func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) error {
+	// Retrieve all the aliases.
+	res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
+	if err != nil {
+		return err
+	}
+	// Range over all the aliases services.
+	aliasService := elasticClient.Alias()
+	indices := res.IndicesByAlias(alias)
+	for _, name := range indices {
+		log.Debugf("Remove alias from %s to %s", alias, name)
+		// Remove the publiccode alias.
+		_, err := aliasService.Remove(name, alias).Do(context.Background())
+		if err != nil {
+			return err
+		}
+
+	}
+
+	// Add an alias to the new index.
+	log.Debugf("Add alias from %s to %s", index, alias)
+	_, err = aliasService.Add(index, alias).Do(context.Background())
+
+	return err
 }
 
 // ElasticRetrier implements the elastic interface that user can implement to intercept failed requests.

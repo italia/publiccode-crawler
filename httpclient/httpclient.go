@@ -6,6 +6,7 @@ import (
 	"time"
 
 	version "github.com/italia/developers-italia-backend/version"
+	log "github.com/sirupsen/logrus"
 	"github.com/tomnomnom/linkheader"
 )
 
@@ -62,17 +63,20 @@ func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 			}, err
 		}
 
-		// Check if the request results in http notFound.
-		if resp.StatusCode == http.StatusNotFound {
-			return statusNotFound(resp)
-		}
-
 		// Check if the request results in http OK.
 		if resp.StatusCode == http.StatusOK {
 			return statusOK(resp)
 		}
+
+		// Check if the request results in http notFound.
+		if resp.StatusCode == http.StatusNotFound {
+			log.Debugf("Status: %s - Resource: %s", resp.Status, URL)
+			return statusNotFound(resp)
+		}
+
 		// Check if the request results in http RateLimit error.
 		if resp.StatusCode == http.StatusTooManyRequests {
+			log.Debugf("Status: %s - Resource: %s", resp.Status, URL)
 			expBackoffAttempts, err = statusTooManyRequests(resp, expBackoffAttempts)
 			if err != nil {
 				return HTTPResponse{
@@ -83,8 +87,9 @@ func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 			}
 
 		}
-		// Check if the request result in http Forbidden status
+		// Check if the request result in http Forbidden status.
 		if resp.StatusCode == http.StatusForbidden {
+			log.Debugf("Status: %s - Resource: %s", resp.Status, URL)
 			expBackoffAttempts, err = statusForbidden(resp, expBackoffAttempts)
 			if err != nil {
 				return HTTPResponse{
@@ -105,24 +110,9 @@ func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 	}, err
 }
 
-// NextHeaderLink parse the Github Header Link to next link of repositories.
-// original Link: <https://api.github.com/repositories?since=1592>; rel="next", <https://api.github.com/repositories{?since}>; rel="first"
-// parsedLink: https://api.github.com/repositories?since=1592
-func NextHeaderLink(linkHeader string) string {
-	parsedLinks := linkheader.Parse(linkHeader)
-
-	for _, link := range parsedLinks {
-		if link.Rel == "next" {
-			return link.URL
-		}
-	}
-
-	return ""
-}
-
 // HeaderLink parse the Github Header Link to "next"/"last"/"first"/"prev" link of repositories.
-// HeaderLink("next", link) or HeaderLink("prev", link) or HeaderLink("last", link).
-func HeaderLink(command, linkHeader string) string {
+// Example: HeaderLink(link,"next") or HeaderLink(link, "prev") or HeaderLink(link,"last").
+func HeaderLink(linkHeader, command string) string {
 	parsedLinks := linkheader.Parse(linkHeader)
 
 	for _, link := range parsedLinks {

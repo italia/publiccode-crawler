@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"log"
 	"os"
 	"strconv"
 
@@ -22,7 +23,7 @@ var listCmd = &cobra.Command{
 		// Read and parse the whitelist.
 		whitelist, err := crawler.ReadAndParseWhitelist(args[0])
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		// Prepare data table.
@@ -31,18 +32,16 @@ var listCmd = &cobra.Command{
 		// Process every item in whitelist.
 		for _, pa := range whitelist {
 			// And add to data table.
-			data = append(data, []string{pa.CodiceIPA, pa.Name, "", ""})
-			for _, repository := range pa.Repositories {
-				data = append(data, []string{pa.CodiceIPA, pa.Name, repository.API, ""})
-				for _, org := range repository.Organizations {
-					data = append(data, []string{pa.CodiceIPA, pa.Name, repository.API, org})
-				}
+			data = append(data, []string{pa.ID, pa.CodiceIPA, ""})
+			for _, org := range pa.Organizations {
+				data = append(data, []string{pa.ID, pa.CodiceIPA, org})
 			}
 		}
 
+		// Write data and render as table in os.Stdout.
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"iPA", "Description", "API", "Org"})
-		table.SetFooter([]string{"Total Public Administrations: " + strconv.Itoa(len(whitelist)), "", "", ""})
+		table.SetHeader([]string{"ID", "Codice iPA", "Repository"})
+		table.SetFooter([]string{"Total Public Administrations: " + strconv.Itoa(len(whitelist)), "", ""})
 		table.SetAutoMergeCells(true)
 		table.SetRowLine(true)
 		table.AppendBulk(data)

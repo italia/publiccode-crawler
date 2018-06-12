@@ -5,53 +5,77 @@ import (
 	"sync"
 )
 
-// Handler returns the client handler for an organization/team/group page (every domain has a different handler implementation).
-type Handler func(domain Domain, url string, repositories chan Repository, wg *sync.WaitGroup) (string, error)
+// ClientAPI contains all the API function in a single Client.
+type ClientAPI struct {
+	Organization OrganizationHandler
+	Single       SingleRepoHandler
 
-// SingleHandler returns the client handler for an a single repository (every domain has a different handler implementation).
-type SingleHandler func(domain Domain, url string, repositories chan Repository) error
+	APIURL GeneratorAPIURL
+}
 
-var (
-	clientAPIs      map[string]Handler
-	clientSingleAPI map[string]SingleHandler
-)
+// OrganizationHandler returns the client handler for an organization/team/group page (every domain has a different handler implementation).
+type OrganizationHandler func(domain Domain, url string, repositories chan Repository, wg *sync.WaitGroup) (string, error)
+
+// SingleRepoHandler returns the client handler for an a single repository (every domain has a different handler implementation).
+type SingleRepoHandler func(domain Domain, url string, repositories chan Repository) error
+
+// GeneratorAPIURL returns the url in the api correct ecosystem.
+type GeneratorAPIURL func(url string) (string, error)
+
+var clientAPIs map[string]ClientAPI
 
 // RegisterClientAPIs register all the client APIs for all the clients.
 func RegisterClientAPIs() {
-	clientAPIs = make(map[string]Handler)
-	clientSingleAPI = make(map[string]SingleHandler)
 
-	// Client APIs for repository list.
-	clientAPIs["bitbucket"] = RegisterBitbucketAPI()
-	clientAPIs["github"] = RegisterGithubAPI()
-	clientAPIs["gitlab"] = RegisterGitlabAPI()
+	clientAPIs = make(map[string]ClientAPI)
 
-	// Client APIs for a single repository.
-	clientSingleAPI["bitbucket"] = RegisterSingleBitbucketAPI()
-	clientSingleAPI["github"] = RegisterSingleGithubAPI()
-	clientSingleAPI["gitlab"] = RegisterSingleGitlabAPI()
+	clientAPIs["bitbucket"] = ClientAPI{
+		Organization: RegisterBitbucketAPI(),
+		Single:       RegisterSingleBitbucketAPI(),
+		APIURL:       GenerateBitbucketAPIURL(),
+	}
+
+	clientAPIs["github"] = ClientAPI{
+		Organization: RegisterGithubAPI(),
+		Single:       RegisterSingleGithubAPI(),
+		APIURL:       GenerateGithubAPIURL(),
+	}
+
+	clientAPIs["gitlab"] = ClientAPI{
+		Organization: RegisterGitlabAPI(),
+		Single:       RegisterSingleGitlabAPI(),
+		APIURL:       GenerateGitlabAPIURL(),
+	}
 
 }
 
 // GetClientAPICrawler checks if the API client for the requested organization clientAPI exists and return its handler.
-func GetClientAPICrawler(clientAPI string) (Handler, error) {
-	if crawler, ok := clientAPIs[clientAPI]; ok {
-		return crawler, nil
+func GetClientAPICrawler(clientAPI string) (OrganizationHandler, error) {
+	if clientAPIs[clientAPI].Organization != nil {
+		return clientAPIs[clientAPI].Organization, nil
 	}
-	return nil, fmt.Errorf("no client found for %s", clientAPI)
+
+	return nil, fmt.Errorf("no organization client found for %s", clientAPI)
 
 }
 
-// GetSingleClientAPICrawler checks if the API client for the requested singlle repository clientAPI exists and return its handler.
-func GetSingleClientAPICrawler(clientAPI string) (SingleHandler, error) {
-	if crawler, ok := clientSingleAPI[clientAPI]; ok {
-		return crawler, nil
+// GetSingleClientAPICrawler checks if the API client for the requested single repository clientAPI exists and return its handler.
+func GetSingleClientAPICrawler(clientAPI string) (SingleRepoHandler, error) {
+	if clientAPIs[clientAPI].Single != nil {
+		return clientAPIs[clientAPI].Single, nil
 	}
 	return nil, fmt.Errorf("no single client found for %s", clientAPI)
+}
 
+// GetAPIURL checks if the API client for the requested API url exists and return its handler.
+func GetAPIURL(clientAPI string) (GeneratorAPIURL, error) {
+	if clientAPIs[clientAPI].APIURL != nil {
+		return clientAPIs[clientAPI].APIURL, nil
+	}
+	return nil, fmt.Errorf("no api url generator client found for %s", clientAPI)
 }
 
 // GetClients returns a list of all registered clientAPI.
-func GetClients() map[string]Handler {
+func GetClients() map[string]ClientAPI {
 	return clientAPIs
 }

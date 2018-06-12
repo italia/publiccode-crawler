@@ -7,15 +7,13 @@ import (
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/metrics"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var iPAToCrawl string
-
 func init() {
 	rootCmd.AddCommand(crawlCmd)
-	crawlCmd.Flags().StringVarP(&iPAToCrawl, "ipa", "i", "", "Crawl a single ipa from whitelist.yml.")
 }
 
 var crawlCmd = &cobra.Command{
@@ -24,29 +22,29 @@ var crawlCmd = &cobra.Command{
 	Long:  `Start whitelist file. It's possible to add multiple files adding them as args.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
 			viper.GetString("ELASTIC_URL"),
 			viper.GetString("ELASTIC_USER"),
 			viper.GetString("ELASTIC_PWD"))
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		// Read and parse list of domains.
 		domains, err := crawler.ReadAndParseDomains(domainsFile)
 		if err != nil {
-			panic(err)
+			log.Fatal(err)
 		}
 
 		// Read and parse the whitelist.
 		var whitelist []crawler.PA
 
+		// Fill the whitelist with all the args whitelists.
 		for id := range args {
 			readWhitelist, err := crawler.ReadAndParseWhitelist(args[id])
 			if err != nil {
-				panic(err)
+				log.Fatal(err)
 			}
 			whitelist = append(whitelist, readWhitelist...)
 		}
@@ -69,18 +67,22 @@ var crawlCmd = &cobra.Command{
 		// Process every item in whitelist.
 		for _, pa := range whitelist {
 			wg.Add(1)
-			// If iPAToCrawl is empty crawl all domains, otherwise crawl only the one with CodiceIPA equals to iPAToCrawl.
-			if (iPAToCrawl == "") || (iPAToCrawl != "" && pa.CodiceIPA == iPAToCrawl) {
-				go crawler.ProcessPA(pa, domains, repositories, &wg)
-			}
+			go crawler.ProcessPA(pa, domains, repositories, &wg)
 		}
 
 		// Start the metrics server.
 		go metrics.StartPrometheusMetricsServer()
 
-		// WaitingLoop check and close the repositories channel
-		go crawler.WaitingLoop(repositories, index, &wg, elasticClient)
+		// WaitingLoop check and close the repositories channel.
+		go crawler.WaitingLoop(repositories, &wg)
 
 		// Process the repositories in order to retrieve the file.
+		// ProcessRepositories is blocking (wait until repositories is closed by WaitingLoop).
 		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+
+		// Update Elastic alias.
+		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)
+		if err != nil {
+			log.Errorf("Error updating Elastic Alias: %v", err)
+		}
 	}}

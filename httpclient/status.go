@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 // ResponseStatus contains the status and statusCode of a response.
@@ -108,7 +108,7 @@ func statusForbidden(resp *http.Response, expBackoffAttempts int) (int, error) {
 				log.Warn(err)
 			}
 			secondsAfterRetry := int64(retryEpoch) - time.Now().Unix()
-			log.Infof("Waiting %s seconds. (The difference between header %s and time.Now())", strconv.FormatInt(secondsAfterRetry, 10), headerRateReset)
+			log.Infof("Waiting %s seconds for %s. (The difference between header %s and time.Now())", strconv.FormatInt(secondsAfterRetry, 10), headerRateReset, reset)
 			time.Sleep(time.Second * time.Duration(secondsAfterRetry))
 			return expBackoffAttempts, nil
 		}

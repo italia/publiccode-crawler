@@ -1,10 +1,8 @@
 package crawler
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"html/template"
 	"net/http"
 	"net/url"
 	"path"
@@ -18,7 +16,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// GithubOrgs is the complete result from the Github API respose for /orgs/<orgNamee>/repos.
+// GithubOrgs is the complete result from the Github API respose for /orgs/<Name>/repos.
 type GithubOrgs []struct {
 	ID               int       `json:"id"`
 	Name             string    `json:"name"`
@@ -201,11 +199,29 @@ type Owner struct {
 	SiteAdmin         bool   `json:"site_admin"`
 }
 
+// GithubFiles is a list of files in repository
+type GithubFiles []struct {
+	Name        string `json:"name"`
+	Path        string `json:"path"`
+	Sha         string `json:"sha"`
+	Size        int    `json:"size"`
+	URL         string `json:"url"`
+	HTMLURL     string `json:"html_url"`
+	GitURL      string `json:"git_url"`
+	DownloadURL string `json:"download_url"`
+	Type        string `json:"type"`
+	Links       struct {
+		Self string `json:"self"`
+		Git  string `json:"git"`
+		HTML string `json:"html"`
+	} `json:"_links"`
+}
+
 // RegisterGithubAPI register the crawler function for Github API.
 // It get the list of repositories on "link" url.
 // If a next page is available return its url.
 // Otherwise returns an empty ("") string.
-func RegisterGithubAPI() Handler {
+func RegisterGithubAPI() OrganizationHandler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
@@ -214,8 +230,16 @@ func RegisterGithubAPI() Handler {
 			if err != nil {
 				return link, err
 			}
-			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
+			headers["Authorization"] = domain.BasicAuth[n]
 		}
+
+		// Parse url.
+		u, err := url.Parse(link)
+		if err != nil {
+			return link, err
+		}
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
 
 		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
@@ -224,7 +248,7 @@ func RegisterGithubAPI() Handler {
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return "", errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
@@ -236,31 +260,36 @@ func RegisterGithubAPI() Handler {
 
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
-			// Join file raw URL.
-			u, err := url.Parse(domain.RawBaseURL)
-			if err != nil {
-				return link, err
-			}
-			u.Path = path.Join(u.Path, v.FullName, v.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
-
 			// Marshal all the repository metadata.
 			metadata, err := json.Marshal(v)
 			if err != nil {
 				log.Errorf("github metadata: %v", err)
 			}
-
-			// Add repository to channel.
-			repositories <- Repository{
-				Name:       v.FullName,
-				FileRawURL: u.String(),
-				Domain:     domain,
-				Headers:    headers,
-				Metadata:   metadata,
+			contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
+			// Get List of files.
+			resp, err := httpclient.GetURL(contents, headers)
+			if err != nil {
+				return link, err
 			}
+			if resp.Status.Code != http.StatusOK {
+				log.Infof("Request returned an invalid status code: %s", string(resp.Body))
+			}
+			// Fill response as list of values (repositories data).
+			var files GithubFiles
+			err = json.Unmarshal(resp.Body, &files)
+			if err != nil {
+				log.Infof("Repository is empty: %s", string(resp.Body))
+			}
+
+			err = addGithubProjectsToRepositories(files, v.FullName, domain.Host, domain, headers, metadata, repositories)
+			if err != nil {
+				log.Infof("addGithubProectsToRepositories %v", err)
+			}
+
 		}
 
 		// Return next url.
-		nextLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
+		nextLink := httpclient.HeaderLink(resp.Headers.Get("Link"), "next")
 
 		// if last page for this organization, the nextLink is empty.
 		if nextLink == "" {
@@ -274,7 +303,7 @@ func RegisterGithubAPI() Handler {
 // RegisterSingleGithubAPI register the crawler function for single repository Github API.
 // Return nil if the repository was successfully added to repositories channel.
 // Otherwise return the generated error.
-func RegisterSingleGithubAPI() SingleHandler {
+func RegisterSingleGithubAPI() SingleRepoHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
@@ -283,83 +312,144 @@ func RegisterSingleGithubAPI() SingleHandler {
 			if err != nil {
 				return err
 			}
-			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
+			headers["Authorization"] = domain.BasicAuth[n]
 		}
 
+		// Parse url.
 		u, err := url.Parse(link)
 		if err != nil {
-			log.Error(err)
-		}
-
-		// Clear the url.
-		fullName := strings.Trim(u.Path, "/")
-
-		// Generate fullURL using go templates. It will replace {{.Name}} with fullName.
-		fullURL := domain.APIRepoURL
-		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
-		// Create a new template and parse the Url into it.
-		t := template.Must(template.New("url").Parse(fullURL))
-		buf := new(bytes.Buffer)
-		// Execute the template: add "data" data in "url".
-		err = t.Execute(buf, data)
-		if err != nil {
-			return err
-		}
-		fullURL = buf.String()
-
-		// Fill response as list of values (repositories data).
-		result, err := getGithubRepoInfos(fullURL, headers)
-		if err != nil {
 			return err
 		}
 
-		// Join file raw URL.
-		u, err = url.Parse(domain.RawBaseURL)
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
+
+		u.Path = path.Join("repos", u.Path)
+		u.Path = strings.Trim(u.Path, "/")
+		u.Host = "api." + u.Host
+
+		// Get List of repositories.
+		resp, err := httpclient.GetURL(u.String(), headers)
 		if err != nil {
 			return err
 		}
-		u.Path = path.Join(u.Path, result.FullName, result.DefaultBranch, viper.GetString("CRAWLED_FILENAME"))
+		if resp.Status.Code != http.StatusOK {
+			log.Warnf("Request returned: %s", string(resp.Body))
+			return errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+		}
+
+		var v GithubRepo
+		err = json.Unmarshal(resp.Body, &v)
+		if err != nil {
+			return err
+		}
 
 		// Marshal all the repository metadata.
-		metadata, err := json.Marshal(result)
+		metadata, err := json.Marshal(v)
 		if err != nil {
 			log.Errorf("github metadata: %v", err)
+			return err
+		}
+		contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
+		// Get List of files.
+		resp, err = httpclient.GetURL(contents, headers)
+		if err != nil {
+			return err
+		}
+		if resp.Status.Code != http.StatusOK {
+			log.Infof("Request returned an invalid status code: %s", string(resp.Body))
+			return err
+		}
+		// Fill response as list of values (repositories data).
+		var files GithubFiles
+		err = json.Unmarshal(resp.Body, &files)
+		if err != nil {
+			log.Infof("Repository is empty: %s", link)
 		}
 
-		// If the repository was never used, the Mainbranch is empty ("").
-		if result.DefaultBranch != "" {
-			repositories <- Repository{
-				Name:       result.FullName,
-				FileRawURL: u.String(),
-				Domain:     domain,
-				Headers:    headers,
-				Metadata:   metadata,
+		// Search a file with a valid name and a downloadURL.
+		for _, f := range files {
+			if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
+				// Add repository to channel.
+				repositories <- Repository{
+					Name:       v.FullName,
+					Hostname:   u.Hostname(),
+					FileRawURL: f.DownloadURL,
+					Domain:     domain,
+					Headers:    headers,
+					Metadata:   metadata,
+				}
+			} else {
+				return errors.New("Repository does not contain " + viper.GetString("CRAWLED_FILENAME"))
 			}
-		} else {
-			return errors.New("repository is empty")
 		}
 
 		return nil
 	}
 }
 
-// getGithubRepoInfos retrieve single repository info GithubRepo.
-func getGithubRepoInfos(URL string, headers map[string]string) (GithubRepo, error) {
-	var results GithubRepo
+// addGithubProjectsToRepositories adds the projects from api response to repository channel.
+func addGithubProjectsToRepositories(files GithubFiles, fullName string, hostname string, domain Domain, headers map[string]string, metadata []byte, repositories chan Repository) error {
+	// Search a file with a valid name and a downloadURL.
+	for _, f := range files {
+		if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
+			// Add repository to channel.
+			repositories <- Repository{
+				Name:       fullName,
+				Hostname:   hostname,
+				FileRawURL: f.DownloadURL,
+				Domain:     domain,
+				Headers:    headers,
+				Metadata:   metadata,
+			}
+		}
+	}
 
-	// Get List of repositories.
-	resp, err := httpclient.GetURL(URL, headers)
+	return nil
+}
+
+// GenerateGithubAPIURL returns the api url of given Gitlab organization link.
+// IN: https://github.com/italia
+// OUT:https://api.github.com/orgs/italia/repos
+func GenerateGithubAPIURL() GeneratorAPIURL {
+	return func(in string) (string, error) {
+		u, err := url.Parse(in)
+		if err != nil {
+			return in, err
+		}
+		u.Path = path.Join("orgs", u.Path, "repos")
+		u.Path = strings.Trim(u.Path, "/")
+		u.Host = "api." + u.Host
+
+		return u.String(), nil
+	}
+}
+
+// IsGithub returns "true" if the url can use Github API.
+func IsGithub(link string) bool {
+	if len(link) == 0 {
+		log.Errorf("IsGithub: empty link %s.", link)
+		return false
+	}
+
+	u, err := url.Parse(link)
 	if err != nil {
-		return results, err
+		log.Errorf("IsGithub: impossible to parse %s.", link)
+		return false
+	}
+	u.Path = "rate_limit"
+	u.Host = "api." + u.Host
+
+	resp, err := httpclient.GetURL(u.String(), nil)
+	if err != nil {
+		log.Debugf("can %s use Github API? No.", link)
+		return false
 	}
 	if resp.Status.Code != http.StatusOK {
-		log.Warnf("Request for single Github repository returned: %s", string(resp.Body))
-		return results, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+		log.Debugf("can %s use Github API? No.", link)
+		return false
 	}
 
-	// Fill response as list of values (repositories data).
-	err = json.Unmarshal(resp.Body, &results)
-
-	return results, err
-
+	log.Debugf("can %s use Github API? Yes.", link)
+	return true
 }

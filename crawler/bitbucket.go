@@ -1,14 +1,11 @@
 package crawler
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"html/template"
 	"net/http"
 	"net/url"
 	"path"
-	"strings"
 	"time"
 
 	"sync"
@@ -185,7 +182,7 @@ type Links struct {
 }
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
-func RegisterBitbucketAPI() Handler {
+func RegisterBitbucketAPI() OrganizationHandler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
@@ -194,8 +191,16 @@ func RegisterBitbucketAPI() Handler {
 			if err != nil {
 				return link, err
 			}
-			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
+			headers["Authorization"] = domain.BasicAuth[n]
 		}
+
+		// Parse url.
+		u, err := url.Parse(link)
+		if err != nil {
+			return link, err
+		}
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
 
 		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
@@ -204,7 +209,7 @@ func RegisterBitbucketAPI() Handler {
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return "", errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
@@ -234,6 +239,7 @@ func RegisterBitbucketAPI() Handler {
 			if v.Mainbranch.Name != "" {
 				repositories <- Repository{
 					Name:       v.FullName,
+					Hostname:   u.Hostname(),
 					FileRawURL: u.String(),
 					Domain:     domain,
 					Headers:    headers,
@@ -253,7 +259,7 @@ func RegisterBitbucketAPI() Handler {
 }
 
 // RegisterSingleBitbucketAPI register the crawler function for single Bitbucket repository.
-func RegisterSingleBitbucketAPI() SingleHandler {
+func RegisterSingleBitbucketAPI() SingleRepoHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
@@ -262,32 +268,25 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 			if err != nil {
 				return err
 			}
-			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
+			headers["Authorization"] = domain.BasicAuth[n]
 		}
-		// Parse link as URL.
+
+		// Parse url.
 		u, err := url.Parse(link)
-		if err != nil {
-			log.Error(err)
-		}
-
-		// Clear the url. Trim slash.
-		fullName := strings.Trim(u.Path, "/")
-
-		// Generate fullURL using go templates. It will replace {{.Name}} with fullName.
-		fullURL := domain.APIRepoURL
-		data := struct{ Name string }{Name: fullName}
-		// Create a new template and parse the Url into it.
-		t := template.Must(template.New("url").Parse(fullURL))
-		buf := new(bytes.Buffer)
-		// Execute the template: add "data" data in "url".
-		err = t.Execute(buf, data)
 		if err != nil {
 			return err
 		}
-		fullURL = buf.String()
+
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
+
+		u.Path = path.Join("/2.0/repositories", u.Path)
+		u.Host = "api." + u.Host
+
+		linkRepo := u.String()
 
 		// Get single Repo
-		resp, err := httpclient.GetURL(fullURL, headers)
+		resp, err := httpclient.GetURL(linkRepo, headers)
 		if err != nil {
 			return err
 		}
@@ -304,23 +303,23 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 		}
 
 		// Join file raw URL.
-		u, err = url.Parse(domain.RawBaseURL)
+		u, err = url.Parse(link)
 		if err != nil {
 			return err
 		}
-		u.Path = path.Join(u.Path, result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
+		fullURL := path.Join(u.Hostname(), result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
 		// Marshal all the repository metadata.
 		metadata, err := json.Marshal(result)
 		if err != nil {
 			log.Errorf("bitbucket metadata: %v", err)
 		}
-
 		// If the repository was never used, the Mainbranch is empty ("").
 		if result.Mainbranch.Name != "" {
 			repositories <- Repository{
 				Name:       result.FullName,
-				FileRawURL: u.String(),
+				Hostname:   u.Hostname(),
+				FileRawURL: "https://" + fullURL,
 				Domain:     domain,
 				Headers:    headers,
 				Metadata:   metadata,
@@ -331,4 +330,49 @@ func RegisterSingleBitbucketAPI() SingleHandler {
 
 		return nil
 	}
+}
+
+// GenerateBitbucketAPIURL returns the api url of given Bitbucket  organization link.
+// IN: https://bitbucket.org/Soft
+// OUT:https://api.bitbucket.org/2.0/repositories/Soft?pagelen=100
+func GenerateBitbucketAPIURL() GeneratorAPIURL {
+	return func(in string) (string, error) {
+		u, err := url.Parse(in)
+		if err != nil {
+			return in, err
+		}
+		u.Path = path.Join("/2.0/repositories", u.Path)
+		u.Host = "api." + u.Host
+
+		return u.String(), nil
+	}
+}
+
+// IsBitbucket returns "true" if the url can use Bitbucket API.
+func IsBitbucket(link string) bool {
+	if len(link) == 0 {
+		log.Errorf("IsBitbucket: empty link %s.", link)
+		return false
+	}
+
+	u, err := url.Parse(link)
+	if err != nil {
+		log.Errorf("IsBitbucket: impossible to parse %s.", link)
+		return false
+	}
+	u.Path = "2.0/hook_events"
+	u.Host = "api." + u.Host
+
+	resp, err := httpclient.GetURL(u.String(), nil)
+	if err != nil {
+		log.Debugf("can %s use Bitbucket API? No.", link)
+		return false
+	}
+	if resp.Status.Code != http.StatusOK {
+		log.Debugf("can %s use Bitbucket API? No.", link)
+		return false
+	}
+
+	log.Debugf("can %s use Bitbucket API? Yes.", link)
+	return true
 }

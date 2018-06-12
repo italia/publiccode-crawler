@@ -1,10 +1,8 @@
 package crawler
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"html/template"
 	"net/http"
 	"net/url"
 	"path"
@@ -14,7 +12,7 @@ import (
 	"sync"
 
 	"github.com/italia/developers-italia-backend/httpclient"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -193,9 +191,9 @@ type GitlabSharedProject struct {
 }
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
-func RegisterGitlabAPI() Handler {
+func RegisterGitlabAPI() OrganizationHandler {
 	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
-		log.Debugf("RegisterGitlabAPI: %s ")
+		log.Debugf("RegisterGitlabAPI: %s ", link)
 
 		// Set BasicAuth header.
 		headers := make(map[string]string)
@@ -204,8 +202,16 @@ func RegisterGitlabAPI() Handler {
 			if err != nil {
 				return link, err
 			}
-			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
+			headers["Authorization"] = domain.BasicAuth[n]
 		}
+
+		// Parse url.
+		u, err := url.Parse(link)
+		if err != nil {
+			return link, err
+		}
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
 
 		// Get List of repositories.
 		resp, err := httpclient.GetURL(link, headers)
@@ -214,7 +220,7 @@ func RegisterGitlabAPI() Handler {
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return link, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return "", errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
@@ -240,18 +246,18 @@ func RegisterGitlabAPI() Handler {
 			return "", nil
 		}
 
-		// Return next url
-		parsedLink := httpclient.NextHeaderLink(resp.Headers.Get("Link"))
-		if parsedLink == "" {
+		// Return next url.
+		nextLink := httpclient.HeaderLink(resp.Headers.Get("Link"), "next")
+		if nextLink == "" {
 			return "", nil
 		}
 
-		return parsedLink, nil
+		return nextLink, nil
 	}
 }
 
 // RegisterSingleGitlabAPI register the crawler function for single Bitbucket API.
-func RegisterSingleGitlabAPI() SingleHandler {
+func RegisterSingleGitlabAPI() SingleRepoHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
@@ -263,26 +269,19 @@ func RegisterSingleGitlabAPI() SingleHandler {
 			headers["Authorization"] = "Basic " + domain.BasicAuth[n]
 		}
 
+		// Parse url.
 		u, err := url.Parse(link)
 		if err != nil {
 			log.Error(err)
-		}
-
-		// Clear the url.
-		fullName := strings.Trim(u.Path, "/")
-
-		// Starting URL. Generate using go templates.
-		fullURL := domain.APIRepoURL
-		data := struct{ Name string }{Name: url.QueryEscape(fullName)}
-		// Create a new template and parse the url into it.
-		t := template.Must(template.New("url").Parse(fullURL))
-		buf := new(bytes.Buffer)
-		// Execute the template: add "data" data in "url".
-		err = t.Execute(buf, data)
-		if err != nil {
 			return err
 		}
-		fullURL = buf.String()
+
+		// Set domain host to new host.
+		domain.Host = u.Hostname()
+
+		// Dirty concatenation. With the normal URL String() the escaped characters are escaped two times.
+		repoString := strings.Trim(u.Path, "/")
+		fullURL := "https://" + u.Hostname() + "/api/v4/projects/" + url.QueryEscape(repoString)
 
 		// Get single Repo
 		resp, err := httpclient.GetURL(fullURL, headers)
@@ -302,7 +301,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		}
 
 		// Join file raw URL string.
-		_, err = generateGitlabRawURL(domain.RawBaseURL, result.PathWithNamespace, result.DefaultBranch)
+		_, err = generateGitlabRawURL(result.WebURL, result.DefaultBranch)
 		if err != nil {
 			return err
 		}
@@ -311,6 +310,7 @@ func RegisterSingleGitlabAPI() SingleHandler {
 		metadata, err := json.Marshal(result)
 		if err != nil {
 			log.Errorf("gitlab metadata: %v", err)
+			return err
 		}
 
 		// If the repository was never used, the Mainbranch is empty ("")
@@ -318,12 +318,13 @@ func RegisterSingleGitlabAPI() SingleHandler {
 			repositories <- Repository{
 				Name:       result.PathWithNamespace,
 				FileRawURL: u.String(),
+				Hostname:   u.Hostname(),
 				Domain:     domain,
 				Headers:    headers,
 				Metadata:   metadata,
 			}
 		} else {
-			return errors.New("repository is: empty")
+			return errors.New("repository is empty." + result.WebURL)
 		}
 
 		return nil
@@ -331,12 +332,12 @@ func RegisterSingleGitlabAPI() SingleHandler {
 }
 
 // generateGitlabRawURL returns the file Gitlab specific file raw url.
-func generateGitlabRawURL(baseURL, pathWithNamespace, defaultBranch string) (string, error) {
+func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 	u, err := url.Parse(baseURL)
 	if err != nil {
 		return "", err
 	}
-	u.Path = path.Join(u.Path, pathWithNamespace, "raw", defaultBranch, viper.GetString("CRAWLED_FILENAME"))
+	u.Path = path.Join(u.Path, "raw", defaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 	return u.String(), err
 }
@@ -344,10 +345,8 @@ func generateGitlabRawURL(baseURL, pathWithNamespace, defaultBranch string) (str
 // addGitlabProjectsToRepositories adds the projects from api response to repository channel.
 func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, headers map[string]string, repositories chan Repository) error {
 	for _, v := range projects {
-		log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
-
 		// Join file raw URL string.
-		rawURL, err := generateGitlabRawURL(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
+		rawURL, err := generateGitlabRawURL(v.WebURL, v.DefaultBranch)
 		if err != nil {
 			return err
 		}
@@ -356,11 +355,13 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 		metadata, err := json.Marshal(v)
 		if err != nil {
 			log.Errorf("gitlab metadata: %v", err)
+			return err
 		}
 
 		if v.DefaultBranch != "" {
 			repositories <- Repository{
 				Name:       v.PathWithNamespace,
+				Hostname:   domain.Host,
 				FileRawURL: rawURL,
 				Domain:     domain,
 				Headers:    headers,
@@ -375,10 +376,8 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 // addGitlabSharedProjectsToRepositories adds the shared projects from api response to repository channel.
 func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domain Domain, headers map[string]string, repositories chan Repository) error {
 	for _, v := range projects {
-		log.Debugf("Gitlab Projects %s", v.PathWithNamespace)
-
 		// Join file raw URL string.
-		rawURL, err := generateGitlabRawURL(domain.RawBaseURL, v.PathWithNamespace, v.DefaultBranch)
+		rawURL, err := generateGitlabRawURL(v.WebURL, v.DefaultBranch)
 		if err != nil {
 			return err
 		}
@@ -387,11 +386,13 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 		metadata, err := json.Marshal(v)
 		if err != nil {
 			log.Errorf("gitlab metadata: %v", err)
+			return err
 		}
 
 		if v.DefaultBranch != "" {
 			repositories <- Repository{
 				Name:       v.PathWithNamespace,
+				Hostname:   domain.Host,
 				FileRawURL: rawURL,
 				Domain:     domain,
 				Headers:    headers,
@@ -401,4 +402,48 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 	}
 
 	return nil
+}
+
+// GenerateGitlabAPIURL returns the api url of given Gitlab organization link.
+// IN: https://gitlab.org/blockninja
+// OUT:https://gitlab.com/api/v4/groups/blockninja
+func GenerateGitlabAPIURL() GeneratorAPIURL {
+	return func(in string) (string, error) {
+		u, err := url.Parse(in)
+		if err != nil {
+			return in, err
+		}
+		u.Path = path.Join("api/v4/groups", u.Path)
+
+		return u.String(), nil
+	}
+}
+
+// IsGitlab returns "true" if the url can use Gitlab API.
+func IsGitlab(link string) bool {
+	if len(link) == 0 {
+		log.Errorf("IsGitlab: empty link %s.", link)
+		return false
+	}
+
+	u, err := url.Parse(link)
+	if err != nil {
+		log.Errorf("IsGitlab: impossible to parse %s.", link)
+		return false
+	}
+
+	u.Path = "api/v4/templates/gitlab_ci_ymls"
+
+	resp, err := httpclient.GetURL(u.String(), nil)
+	if err != nil {
+		log.Debugf("can %s use Gitlab API? No.", link)
+		return false
+	}
+	if resp.Status.Code != http.StatusOK {
+		log.Debugf("can %s use Gitlab API? No.", link)
+		return false
+	}
+
+	log.Debugf("can %s use Gitlab API? Yes.", link)
+	return true
 }

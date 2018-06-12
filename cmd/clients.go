@@ -29,6 +29,7 @@ var clientsCmd = &cobra.Command{
 			data = append(data, []string{id})
 		}
 
+		// Write data and render as table in os.Stdout.
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"Client ID"})
 		table.SetFooter([]string{"Total Client IDs: " + strconv.Itoa(len(clients))})
