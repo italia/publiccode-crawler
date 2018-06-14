@@ -1,0 +1,6 @@
+# Ignore in docker context.
+data
+docker
+elasticsearch
+.git
+.cache
