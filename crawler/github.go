@@ -390,7 +390,8 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 }
 
 // addGithubProjectsToRepositories adds the projects from api response to repository channel.
-func addGithubProjectsToRepositories(files GithubFiles, fullName string, cloneURL string, hostname string, domain Domain, headers map[string]string, metadata []byte, repositories chan Repository) error {
+func addGithubProjectsToRepositories(files GithubFiles, fullName string, cloneURL string, hostname string,
+	domain Domain, headers map[string]string, metadata []byte, repositories chan Repository) error {
 	// Search a file with a valid name and a downloadURL.
 	for _, f := range files {
 		if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {

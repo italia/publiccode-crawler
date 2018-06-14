@@ -30,7 +30,7 @@ func CloneRepository(domain Domain, hostname string, name string, gitURL string,
 
 	// If folder already exists it will do a pull instead of a clone.
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		cmd := exec.Command("git", "-C", path, "pull")
+		cmd := exec.Command("git", "-C", path, "pull") // nolint: gas
 		err := cmd.Run()
 		if err != nil {
 			return errors.New("cannot git pull the repository: " + err.Error())
@@ -39,7 +39,7 @@ func CloneRepository(domain Domain, hostname string, name string, gitURL string,
 	}
 
 	// Clone the repository using the external command "git".
-	cmd := exec.Command("git", "clone", gitURL, path)
+	cmd := exec.Command("git", "clone", gitURL, path) // nolint: gas
 	err := cmd.Run()
 	if err != nil {
 		return errors.New("cannot git clone the repository: " + err.Error())
