@@ -278,10 +278,10 @@ func RegisterGithubAPI() OrganizationHandler {
 			var files GithubFiles
 			err = json.Unmarshal(resp.Body, &files)
 			if err != nil {
-				log.Infof("Repository is empty: %s", string(resp.Body))
+				log.Infof("Repository is empty: %s", link)
 			}
 
-			err = addGithubProjectsToRepositories(files, v.FullName, domain.Host, domain, headers, metadata, repositories)
+			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, domain.Host, domain, headers, metadata, repositories)
 			if err != nil {
 				log.Infof("addGithubProectsToRepositories %v", err)
 			}
@@ -372,12 +372,13 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 			if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
 				// Add repository to channel.
 				repositories <- Repository{
-					Name:       v.FullName,
-					Hostname:   u.Hostname(),
-					FileRawURL: f.DownloadURL,
-					Domain:     domain,
-					Headers:    headers,
-					Metadata:   metadata,
+					Name:        v.FullName,
+					Hostname:    u.Hostname(),
+					FileRawURL:  f.DownloadURL,
+					GitCloneURL: v.CloneURL,
+					Domain:      domain,
+					Headers:     headers,
+					Metadata:    metadata,
 				}
 			} else {
 				return errors.New("Repository does not contain " + viper.GetString("CRAWLED_FILENAME"))
@@ -389,18 +390,19 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 }
 
 // addGithubProjectsToRepositories adds the projects from api response to repository channel.
-func addGithubProjectsToRepositories(files GithubFiles, fullName string, hostname string, domain Domain, headers map[string]string, metadata []byte, repositories chan Repository) error {
+func addGithubProjectsToRepositories(files GithubFiles, fullName string, cloneURL string, hostname string, domain Domain, headers map[string]string, metadata []byte, repositories chan Repository) error {
 	// Search a file with a valid name and a downloadURL.
 	for _, f := range files {
 		if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
 			// Add repository to channel.
 			repositories <- Repository{
-				Name:       fullName,
-				Hostname:   hostname,
-				FileRawURL: f.DownloadURL,
-				Domain:     domain,
-				Headers:    headers,
-				Metadata:   metadata,
+				Name:        fullName,
+				Hostname:    hostname,
+				FileRawURL:  f.DownloadURL,
+				GitCloneURL: cloneURL,
+				Domain:      domain,
+				Headers:     headers,
+				Metadata:    metadata,
 			}
 		}
 	}
