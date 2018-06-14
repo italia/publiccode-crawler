@@ -95,13 +95,14 @@ function executeSearchESQuery(client) {
   };
   var filter = [];
   var sort = [];
+  var language = $('#language').val();
   /*** execute full text query ***/
 
   // Add fields corresponding to the current frontend language.
   var must = {
     'multi_match': {
       'query': $('#es-search-input').val(),
-      'fields': ['name', 'description.deu.short-description', 'description.deu.short-description']
+      'fields': ['name', 'description.'+language+'.short-description', 'description.'+language+'.short-description']
     }
   };
 
@@ -251,7 +252,7 @@ function executeSearchESQuery(client) {
       $('#es-results').text('');
       console.log(data);
       $.each(data.hits.hits, function(index, result){
-        $('#es-results').append("<div class='es-result'>"+result._source.name+"</div>");
+        $('#es-results').append("<div class='es-result'>"+result._source.name+" ("+result._id+")</div>");
       });
     },
     function(error){
