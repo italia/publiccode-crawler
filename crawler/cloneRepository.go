@@ -25,7 +25,6 @@ func CloneRepository(domain Domain, hostname string, name string, gitURL string,
 
 	vendor, repo := splitFullName(name)
 
-	// path := filepath.Join("./clones", hostname, vendor, repo)
 	path := filepath.Join("./data", hostname, vendor, repo, cloneFolder)
 
 	// If folder already exists it will do a pull instead of a clone.
