@@ -382,6 +382,10 @@ generate_index_settings() {
         },
         "old-variant": {
           "properties": {
+            "name": {
+              "type": "text",
+              "index": false
+            },
             "eng": {
               "properties": {
                 "localised-name": {
@@ -394,6 +398,14 @@ generate_index_settings() {
                 },
                 "feature-list": {
                   "type": "keyword",
+                  "index": false
+                },
+                "vitality-score": {
+                  "type": "integer",
+                  "index": false
+                },
+                "legal-repo-owner": {
+                  "type": "text",
                   "index": false
                 }
               }
@@ -411,8 +423,28 @@ generate_index_settings() {
                 "feature-list": {
                   "type": "keyword",
                   "index": false
+                },
+                "vitality-score": {
+                  "type": "integer",
+                  "index": false
+                },
+                "legal-repo-owner": {
+                  "type": "text",
+                  "index": false
                 }
               }
+            }
+          }
+        },
+        "old-feature-list": {
+          "properties": {
+            "ita": {
+              "type": "keyword",
+              "index": false
+            },
+            "eng": {
+              "type": "keyword",
+              "index": false
             }
           }
         }

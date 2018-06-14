@@ -889,6 +889,10 @@ class generatorRandomDocuments {
         "share-tags" => $this->getRandomItemFromArray($tags),
         "related-software" => $this->getRandomRelatedSoftware(),
         "old-variant" => $this->getRandomOldVariant(),
+        "old-feature-list" => [
+          "ita" => $this->getRandomFeatureList(),
+          "eng" => $this->getRandomFeatureList(),
+        ],
       ];
     }
 
@@ -1381,7 +1385,10 @@ class generatorRandomDocuments {
   }
 
   private function generateRandomOldVariant() {
-    return [
+    $old_variant = [
+      "name" => $this->getRandomPhrase($min = 1, $max = 4),
+      "vitality-score" => rand(1, 99),
+      "legal-repo-owner" => $this->getRandomMainCopyrightOwner(),
       "eng" => [
         "localised-name" => $this->getRandomPhrase(1, 3),
         "feature-list" => $this->getRandomFeatureList(),
@@ -1393,6 +1400,13 @@ class generatorRandomDocuments {
         "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
       ],
     ];
+
+    if (rand(0,1) == 0) {
+      unset($old_variant["eng"]["localised-name"]);
+      unset($old_variant["ita"]["localised-name"]);
+    }
+
+    return $old_variant;
   }
 
 }
