@@ -2,22 +2,22 @@ package crawler
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
+	"time"
 
-	"github.com/italia/developers-italia-backend/metrics"
-	"github.com/spf13/viper"
+	log "github.com/sirupsen/logrus"
+	git "gopkg.in/src-d/go-git.v4"
+	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 // CalculateRepoActivity return the repository activity calculated on the git clone.
 func CalculateRepoActivity(domain Domain, hostname string, name string) (float64, error) {
 	if domain.Host == "" {
-		return errors.New("cannot save a file without domain host")
+		return 0, errors.New("cannot calculate repository activity without domain host")
 	}
 	if name == "" {
-		return errors.New("cannot save a file without name")
+		return 0, errors.New("cannot  calculate repository activity without name")
 	}
 
 	vendor, repo := splitFullName(name)
@@ -26,7 +26,7 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return err
+		return 0, err
 	}
 
 	// Repository activity score.
@@ -127,10 +127,14 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 
 	// Merges.
 	cIter, err = r.Log(&git.LogOptions{From: ref.Hash()})
-	CheckIfError(err)
+	if err != nil {
+		log.Error(err)
+	}
 	// Merges last year.
 	mergesLastyear, err := extractLastYearMerges(cIter)
-	CheckIfError(err)
+	if err != nil {
+		log.Error(err)
+	}
 	if len(mergesLastyear) < 10 { // 10 merges last year
 		repoActivity += 5
 	} else if len(mergesLastyear) < 20 { // 20 merges last year
@@ -154,7 +158,9 @@ func extractLastYearMerges(cIter object.CommitIter) ([]object.Commit, error) {
 		}
 		return nil
 	})
-	CheckIfError(err)
+	if err != nil {
+		log.Error(err)
+	}
 	return commits, nil
 }
 
@@ -169,7 +175,9 @@ func extractLastYearCommits(cIter object.CommitIter) ([]object.Commit, error) {
 		}
 		return nil
 	})
-	CheckIfError(err)
+	if err != nil {
+		log.Error(err)
+	}
 	return commits, nil
 }
 
@@ -183,7 +191,9 @@ func extractOldestCommitDate(cIter object.CommitIter) (time.Time, error) {
 		}
 		return nil
 	})
-	CheckIfError(err)
+	if err != nil {
+		log.Error(err)
+	}
 	return result, nil
 }
 
@@ -196,7 +206,9 @@ func extractAuthorsCommits(cIter object.CommitIter) (map[string]int, error) {
 		totalAuthors[c.Author.Email]++
 		return nil
 	})
-	CheckIfError(err)
+	if err != nil {
+		log.Error(err)
+	}
 
 	return totalAuthors, nil
 
@@ -212,7 +224,9 @@ func extractCommitsPerMonth(cIter object.CommitIter) (map[string]int, error) {
 		commitsMonth[monthYear]++
 		return nil
 	})
-	CheckIfError(err)
+	if err != nil {
+		log.Error(err)
+	}
 
 	return commitsMonth, err
 }
@@ -241,4 +255,11 @@ func extractNumberAuthorsPerMonth(cIter object.CommitIter) (map[string]int, erro
 	})
 
 	return authorsPerMonth, err
+}
+
+func between(v, min, max int) bool {
+	if v > min && v <= max {
+		return true
+	}
+	return false
 }
