@@ -6,7 +6,8 @@ ARG VERSION
 
 RUN apk update && \
     apk upgrade && \
-    apk add git
+    apk add git \
+    rm -rf /var/cache/apk/*
 
 ADD . /go/src/$PROJECT
 
@@ -21,7 +22,11 @@ FROM alpine:3.7
 ARG NAME
 ARG PROJECT
 
-RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
+RUN apk update && \
+    apk upgrade && \
+    apk add ca-certificates && \
+    apk add git && \
+    rm -rf /var/cache/apk/*
 
 WORKDIR /app
 COPY --from=build-env /go/src/$PROJECT/$NAME /app/

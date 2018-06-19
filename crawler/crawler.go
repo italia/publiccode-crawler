@@ -18,12 +18,13 @@ import (
 
 // Repository is a single code repository. FileRawURL contains the direct url to the raw file.
 type Repository struct {
-	Name       string
-	Hostname   string
-	FileRawURL string
-	Domain     Domain
-	Headers    map[string]string
-	Metadata   []byte
+	Name        string
+	Hostname    string
+	FileRawURL  string
+	GitCloneURL string
+	Domain      Domain
+	Headers     map[string]string
+	Metadata    []byte
 }
 
 // ProcessPA delegates the work to single PA crawlers.
@@ -125,6 +126,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	name := repository.Name
 	hostname := repository.Hostname
 	fileRawURL := repository.FileRawURL
+	gitURL := repository.GitCloneURL
 	domain := repository.Domain
 	headers := repository.Headers
 	metadata := repository.Metadata
@@ -156,6 +158,12 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 			log.Errorf("error saving to file: %v", err)
 		}
 		// TODO: save "metadata" on ES. When mapping is ready.
+
+		// Clone repository.
+		err = CloneRepository(domain, hostname, name, gitURL, index)
+		if err != nil {
+			log.Errorf("error cloning repository: %v", err)
+		}
 
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
