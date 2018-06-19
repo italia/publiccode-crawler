@@ -11,7 +11,9 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-// CalculateRepoActivity return the repository activity calculated on the git clone.
+// CalculateRepoActivity return the repository activity index calculated on the git clone.
+// It follows the document https://lg-acquisizione-e-riuso-software-per-la-pa.readthedocs.io/
+// In reference to section: fase-2-2-valutazione-soluzioni-riusabili-per-la-pa
 func CalculateRepoActivity(domain Domain, hostname string, name string) (float64, error) {
 	if domain.Host == "" {
 		return 0, errors.New("cannot calculate repository activity without domain host")
@@ -30,7 +32,14 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 	}
 
 	// Repository activity score.
-	repoActivity := 0.0
+	var (
+		userCommunity  float64 // max 25
+		codeActivity   float64 // max 30
+		releaseHistory float64 // max 15
+		longevity      float64 // max 25
+
+		repoActivity float64 // max 95
+	)
 
 	// Open and load the git repo path.
 	r, err := git.PlainOpen(path)
@@ -38,110 +47,56 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 		log.Error(err)
 	}
 
-	// Retrieves the branch pointed by HEAD.
-	ref, err := r.Head()
-	if err != nil {
-		log.Error(err)
-	}
-
+	// Total authors. (userCommunity index)
+	// 0 to 25 = + #authors
+	// > 25 = +25 userCommunity
 	// Retrieves the commit history.
-	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
+	userCommunity, err = calculateUserCommunityIndex(r)
 	if err != nil {
 		log.Error(err)
 	}
 
-	// Total authors.
-	authors, err := extractAuthorsCommits(cIter)
+	// Oldest (first) commit. (logevity index)
+	// 0 to 6 months = +5
+	// 6 to 12 months = +10
+	// 12 to 24 months = +15
+	// 24 to 36 months = +20
+	// > 36 months = +25 longevity points
+	longevity, err = calculateLongevityIndex(r)
 	if err != nil {
 		log.Error(err)
-	}
-	if between(len(authors), 0, 5) {
-		repoActivity += 5
-	} else if between(len(authors), 5, 10) {
-		repoActivity += 10
-	} else if between(len(authors), 10, 15) {
-		repoActivity += 15
-	} else if between(len(authors), 15, 20) {
-		repoActivity += 20
-	} else {
-		repoActivity += 25
 	}
 
-	// Return to HEAD.
-	cIter, err = r.Log(&git.LogOptions{From: ref.Hash()})
+	// Tags. (releaseHistory)
+	// 0 to 1 tag = +5
+	// 1 to 5 tags = +10
+	// > 5 tags = +15 releaseHistory points
+	releaseHistory, err = calculateReleaseHistoryIndex(r)
 	if err != nil {
 		log.Error(err)
-	}
-	// Oldest (first) commit.
-	creationDate, err := extractOldestCommitDate(cIter)
-	if err != nil {
-		log.Error(err)
-	}
-	if time.Now().Sub(creationDate).Hours() < 24*182.5 { // 6 months
-		repoActivity += 1
-	} else if time.Now().Sub(creationDate).Hours() < 24*365 { // 1 year
-		repoActivity += 10
-	} else if time.Now().Sub(creationDate).Hours() < 24*730 { // 2 year
-		repoActivity += 15
-	} else if time.Now().Sub(creationDate).Hours() < 24*1095 { // 3 year
-		repoActivity += 20
-	} else {
-		repoActivity += 25
 	}
 
-	// Tags.
-	tags, err := r.TagObjects()
+	// Commits last year. (codeActivity)
+	// 0 to 100 commits = +5
+	// 1 to 200 commits = +10
+	// > 200 commmits = +15 codeActivity points
+	// And merges last year. (codeActivity)
+	// 0 to 10 merges = +5
+	// 10 to 20 merges = +10
+	// > 20 merges = +15 codeActivity points
+	codeActivity, err = calculateCodeActivityIndex(r)
 	if err != nil {
 		log.Error(err)
-	}
-	sumTags := 0
-	err = tags.ForEach(func(t *object.Tag) error {
-		sumTags++
-		return nil
-	})
-	if between(sumTags, 0, 1) { // 1 tag
-		repoActivity += 5
-	} else if between(sumTags, 1, 5) { // 2 tag
-		repoActivity += 10
-	} else {
-		repoActivity += 15 // > 2 tag
 	}
 
-	// Return to HEAD.
-	cIter, err = r.Log(&git.LogOptions{From: ref.Hash()})
-	if err != nil {
-		log.Error(err)
-	}
-	// Commits last year.
-	commitsLastYear, err := extractLastYearCommits(cIter)
-	if err != nil {
-		log.Error(err)
-	}
-	if len(commitsLastYear) < 100 { // 100 commits last year
-		repoActivity += 5
-	} else if len(commitsLastYear) < 200 { // 200 commits last year
-		repoActivity += 10
-	} else {
-		repoActivity += 15 // > 200 commits last year
-	}
+	// Calculate repoActivity index. (sum of other indexes)
+	repoActivity = userCommunity + codeActivity + releaseHistory + longevity
 
-	// Merges.
-	cIter, err = r.Log(&git.LogOptions{From: ref.Hash()})
-	if err != nil {
-		log.Error(err)
-	}
-	// Merges last year.
-	mergesLastyear, err := extractLastYearMerges(cIter)
-	if err != nil {
-		log.Error(err)
-	}
-	if len(mergesLastyear) < 10 { // 10 merges last year
-		repoActivity += 5
-	} else if len(mergesLastyear) < 20 { // 20 merges last year
-		repoActivity += 10
-	} else {
-		repoActivity += 15 // > 20 merges last year
-	}
+	log.Debugf("Repoactivity: %f", repoActivity)
+	log.Debugf("Repoactivity (userCommunity): %f", userCommunity)
+	log.Debugf("Repoactivity (codeActivity): %f", codeActivity)
+	log.Debugf("Repoactivity (releaseHistory): %f", releaseHistory)
+	log.Debugf("Repoactivity (longevity): %f", longevity)
 
 	return repoActivity, err
 }
@@ -214,52 +169,145 @@ func extractAuthorsCommits(cIter object.CommitIter) (map[string]int, error) {
 
 }
 
-// extractCommitsPerMonth return a map[month]numberOfCommits.
-func extractCommitsPerMonth(cIter object.CommitIter) (map[string]int, error) {
-	// Authors per month.
-	commitsMonth := make(map[string]int)
-	// Iterates over the commits and extract infos.
-	err := cIter.ForEach(func(c *object.Commit) error {
-		monthYear := c.Author.When.Format("01-2006")
-		commitsMonth[monthYear]++
-		return nil
-	})
-	if err != nil {
-		log.Error(err)
-	}
-
-	return commitsMonth, err
-}
-
-// extractNumberAuthorsPerMonth return a map[month]numberOfAuthors.
-func extractNumberAuthorsPerMonth(cIter object.CommitIter) (map[string]int, error) {
-	// Authors per month.
-	authorsPerMonth := make(map[string]int)
-	differentAuthorsMonth := map[string]map[string]int{}
-
-	// Iterates over the commits and extract infos.
-	err := cIter.ForEach(func(c *object.Commit) error {
-		monthYear := c.Author.When.Format("01-2006")
-		// Number of commits per author.
-		if differentAuthorsMonth[monthYear] == nil {
-			differentAuthorsMonth[monthYear] = make(map[string]int)
-		}
-		differentAuthorsMonth[monthYear][c.Author.Email] = differentAuthorsMonth[monthYear][c.Author.Email] + 1
-
-		// Number authors per month.
-		for month, authors := range differentAuthorsMonth {
-			authorsPerMonth[month] = len(authors)
-		}
-
-		return nil
-	})
-
-	return authorsPerMonth, err
-}
-
 func between(v, min, max int) bool {
 	if v > min && v <= max {
 		return true
 	}
 	return false
+}
+
+func calculateUserCommunityIndex(r *git.Repository) (float64, error) {
+	ref, err := r.Head()
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
+	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
+
+	authors, err := extractAuthorsCommits(cIter)
+	if err != nil {
+		log.Error(err)
+	}
+	if len(authors) < 25 {
+		return float64(len(authors)), err
+	} else if len(authors) > 25 {
+		return 25, err
+	}
+
+	return 0, err
+}
+
+func calculateLongevityIndex(r *git.Repository) (float64, error) {
+	ref, err := r.Head()
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
+	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
+	creationDate, err := extractOldestCommitDate(cIter)
+	if err != nil {
+		log.Error(err)
+	}
+	if time.Since(creationDate).Hours() < 24*182.5 { // 6 months
+		return 5, err
+	} else if time.Since(creationDate).Hours() < 24*365 { // 1 year
+		return 10, err
+	} else if time.Since(creationDate).Hours() < 24*730 { // 2 year
+		return 15, err
+	} else if time.Since(creationDate).Hours() < 24*1095 { // 3 year
+		return 20, err
+	} else if time.Since(creationDate).Hours() > 24*1095 { // > 3 years
+		return 25, err
+	}
+
+	return 0, err
+}
+
+func calculateReleaseHistoryIndex(r *git.Repository) (float64, error) {
+	tags, err := r.TagObjects()
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
+	sumTags := 0
+	err = tags.ForEach(func(t *object.Tag) error {
+		sumTags++
+		return nil
+	})
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
+	if between(sumTags, 0, 1) { // 1 tag
+		return 5, err
+	} else if between(sumTags, 1, 5) { // < 5 tags
+		return 10, err
+	} else if sumTags > 5 {
+		return 15, err // > 5 tags
+	}
+
+	return 0, err
+
+}
+
+func calculateCodeActivityIndex(r *git.Repository) (float64, error) {
+	var codeActivity float64
+
+	ref, err := r.Head()
+	if err != nil {
+		log.Error(err)
+		return 0, err
+	}
+
+	// Commits.
+	// Return to HEAD.
+	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
+	if err != nil {
+		log.Error(err)
+		return codeActivity, err
+	}
+	commitsLastYear, err := extractLastYearCommits(cIter)
+	if err != nil {
+		log.Error(err)
+		return codeActivity, err
+	}
+	if len(commitsLastYear) < 100 { // 100 commits last year
+		codeActivity += 5
+	} else if len(commitsLastYear) < 200 { // 200 commits last year
+		codeActivity += 10
+	} else {
+		codeActivity += 15 // > 200 commits last year
+	}
+
+	// Merges.
+	// Return to HEAD.
+	cIter, err = r.Log(&git.LogOptions{From: ref.Hash()})
+	if err != nil {
+		log.Error(err)
+		return codeActivity, err
+	}
+	// Merges last year.
+	mergesLastyear, err := extractLastYearMerges(cIter)
+	if err != nil {
+		log.Error(err)
+		return codeActivity, err
+	}
+	if len(mergesLastyear) < 10 { // 10 merges last year
+		codeActivity += 5
+	} else if len(mergesLastyear) < 20 { // 20 merges last year
+		codeActivity += 10
+	} else {
+		codeActivity += 15 // > 20 merges last year
+	}
+
+	return codeActivity, err
+
 }
