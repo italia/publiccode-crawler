@@ -38,7 +38,7 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 		releaseHistory float64 // max 15
 		longevity      float64 // max 25
 
-		repoActivity float64 // max 95
+		repoActivity float64 // max 100
 	)
 
 	// Open and load the git repo path.
@@ -48,26 +48,18 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 	}
 
 	// Total authors. (userCommunity index)
-	// 0 to 30 = + #authors
-	// > 30 = +30 userCommunity
-	// Retrieves the commit history.
 	userCommunity, err = calculateUserCommunityIndex(r)
 	if err != nil {
 		log.Error(err)
 	}
 
 	// Oldest (first) commit. (logevity index)
-	// 0 to 6 months = +5
-	// 6 to 12 months = +10
-	// 12 to 24 months = +15
-	// 24 to 36 months = +20
-	// > 36 months = +25 longevity points
 	longevity, err = calculateLongevityIndex(r)
 	if err != nil {
 		log.Error(err)
 	}
 
-	// Tags. (releaseHistory)
+	// Tags. (releaseHistory index)
 	// 0 to 1 tag = +5
 	// 1 to 5 tags = +10
 	// > 5 tags = +15 releaseHistory points
@@ -76,27 +68,14 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 		log.Error(err)
 	}
 
-	// Commits last year. (codeActivity)
-	// 0 to 100 commits = +5
-	// 1 to 200 commits = +10
-	// > 200 commmits = +15 codeActivity points
-	// And merges last year. (codeActivity)
-	// 0 to 10 merges = +5
-	// 10 to 20 merges = +10
-	// > 20 merges = +15 codeActivity points
+	// Commits and merges last year. (codeActivity index)
 	codeActivity, err = calculateCodeActivityIndex(r)
 	if err != nil {
 		log.Error(err)
 	}
 
-	// Calculate repoActivity index. (sum of other indexes)
+	// Calculate repoActivity index. (sum of all the others indexes)
 	repoActivity = userCommunity + codeActivity + releaseHistory + longevity
-
-	log.Debugf("Repoactivity: %f", repoActivity)
-	log.Debugf("Repoactivity (userCommunity): %f", userCommunity)
-	log.Debugf("Repoactivity (codeActivity): %f", codeActivity)
-	log.Debugf("Repoactivity (releaseHistory): %f", releaseHistory)
-	log.Debugf("Repoactivity (longevity): %f", longevity)
 
 	return repoActivity, err
 }
@@ -169,6 +148,7 @@ func extractAuthorsCommits(cIter object.CommitIter) (map[string]int, error) {
 
 }
 
+// between returns true if the first integer parameter is between ]min,max].
 func between(v, min, max int) bool {
 	if v > min && v <= max {
 		return true
@@ -176,6 +156,9 @@ func between(v, min, max int) bool {
 	return false
 }
 
+// calculateUserCommunityIndex find out how many authors there are in the repository.
+// 0 to 30 = + #authors
+// > 30 = +30 userCommunity
 func calculateUserCommunityIndex(r *git.Repository) (float64, error) {
 	ref, err := r.Head()
 	if err != nil {
@@ -201,6 +184,12 @@ func calculateUserCommunityIndex(r *git.Repository) (float64, error) {
 	return 0, err
 }
 
+// calculateUserCommunityIndex find out the index based on the age of the repository.
+// 0 to 6 months = +5
+// 6 to 12 months = +10
+// 12 to 24 months = +15
+// 24 to 36 months = +20
+// > 36 months = +25 longevity points
 func calculateLongevityIndex(r *git.Repository) (float64, error) {
 	ref, err := r.Head()
 	if err != nil {
@@ -231,6 +220,10 @@ func calculateLongevityIndex(r *git.Repository) (float64, error) {
 	return 0, err
 }
 
+// calculateReleaseHistoryIndex find out the index based on the number of tags released.
+// 0 to 1 tag = +5
+// 1 to 5 tags = +10
+// > 5 tags = +15 releaseHistory points
 func calculateReleaseHistoryIndex(r *git.Repository) (float64, error) {
 	tags, err := r.TagObjects()
 	if err != nil {
@@ -258,6 +251,14 @@ func calculateReleaseHistoryIndex(r *git.Repository) (float64, error) {
 
 }
 
+// calculateCodeActivityIndex find out the index based on the number of commits and merges from the repository.
+// 0 to 100 commits = +5
+// 1 to 200 commits = +10
+// > 200 commmits = +15 codeActivity points
+// And merges last year. (codeActivity index)
+// 0 to 10 merges = +5
+// 10 to 20 merges = +10
+// > 20 merges = +15 codeActivity points
 func calculateCodeActivityIndex(r *git.Repository) (float64, error) {
 	var codeActivity float64
 
