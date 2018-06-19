@@ -30,7 +30,7 @@ foreach ($documents as $key => $document) {
     'body' => $document
   ];
   try {
-    $client->index($params);
+    $response = $client->index($params);
   }
   catch(Exception $e) {
     print_r($e->getMessage());

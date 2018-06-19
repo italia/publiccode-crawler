@@ -41,6 +41,10 @@ generate_index_settings() {
                 "localised-name": {
                   "type": "text"
                 },
+                "generic-name": {
+                  "type": "text",
+                  "fields": { "keyword":{ "type": "keyword", "ignore_above": 256 } }
+                },
                 "short-description": {
                   "type": "text"
                 },
@@ -48,7 +52,11 @@ generate_index_settings() {
                   "type": "text"
                 },
                 "documentation": {
-                  "type": "keyword",
+                  "type": "text",
+                  "index": false
+                },
+                "api-documentation": {
+                  "type": "text",
                   "index": false
                 },
                 "feature-list": {
@@ -109,6 +117,12 @@ generate_index_settings() {
         "monochrome-logo": {
           "type": "text",
           "index": false
+        },
+        "input-types": {
+          "type": "keyword"
+        },
+        "output-types": {
+          "type": "keyword"
         },
         "platforms": {
           "type": "keyword"
@@ -200,7 +214,7 @@ generate_index_settings() {
         "localisation-available-languages": {
           "type": "keyword"
         },
-        "dependencies-software": {
+        "dependencies-open": {
           "type": "nested",
           "properties": {
             "name": {
@@ -208,11 +222,38 @@ generate_index_settings() {
             },
             "version-min": {
               "type": "text",
-              "index": false              
+              "index": false
             },
             "version-max": {
               "type": "text",
-              "index": false              
+              "index": false
+            },
+            "version": {
+              "type": "text",
+              "index": false
+            },
+            "optional": {
+              "type": "boolean"
+            }
+          }
+        },
+        "dependencies-proprietary": {
+          "type": "nested",
+          "properties": {
+            "name": {
+              "type": "text"
+            },
+            "version-min": {
+              "type": "text",
+              "index": false
+            },
+            "version-max": {
+              "type": "text",
+              "index": false
+            },
+            "version": {
+              "type": "text",
+              "index": false
             },
             "optional": {
               "type": "boolean"
@@ -227,18 +268,31 @@ generate_index_settings() {
             },
             "version-min": {
               "type": "text",
-              "index": false              
+              "index": false
             },
             "version-max": {
               "type": "text",
-              "index": false              
+              "index": false
+            },
+            "version": {
+              "type": "text",
+              "index": false
             },
             "optional": {
               "type": "boolean"
             }
           }
         },
-        "it-accessibile": {
+        "it-conforme-accessibile": {
+          "type":"boolean"
+        },
+        "it-conforme-interoperabile": {
+          "type":"boolean"
+        },
+        "it-conforme-sicuro": {
+          "type":"boolean"
+        },
+        "it-conforme-privacy": {
           "type":"boolean"
         },
         "it-spid": {
@@ -254,17 +308,23 @@ generate_index_settings() {
           "type":"boolean"
         },
         "it-riuso-codice-ipa": {
-          "type":"boolean"
+          "type": "keyword"
         },
-        "it-design-kit-service-design" : {
+        "it-ecosistemi": {
+          "type": "keyword"
+        },
+        "it-design-kit-seo" : {
           "type":"boolean"
         },
         "it-design-kit-ui" : {
           "type":"boolean"
         },
-        "it-design-kit-web-toolkit" : {
+        "it-design-kit-web" : {
           "type":"boolean"
-        },        
+        },
+        "it-design-kit-content" : {
+          "type":"boolean"
+        },
         "suggest-name": {
           "type": "completion"
         },
@@ -322,6 +382,10 @@ generate_index_settings() {
         },
         "old-variant": {
           "properties": {
+            "name": {
+              "type": "text",
+              "index": false
+            },
             "eng": {
               "properties": {
                 "localised-name": {
@@ -334,6 +398,14 @@ generate_index_settings() {
                 },
                 "feature-list": {
                   "type": "keyword",
+                  "index": false
+                },
+                "vitality-score": {
+                  "type": "integer",
+                  "index": false
+                },
+                "legal-repo-owner": {
+                  "type": "text",
                   "index": false
                 }
               }
@@ -351,8 +423,28 @@ generate_index_settings() {
                 "feature-list": {
                   "type": "keyword",
                   "index": false
+                },
+                "vitality-score": {
+                  "type": "integer",
+                  "index": false
+                },
+                "legal-repo-owner": {
+                  "type": "text",
+                  "index": false
                 }
               }
+            }
+          }
+        },
+        "old-feature-list": {
+          "properties": {
+            "ita": {
+              "type": "keyword",
+              "index": false
+            },
+            "eng": {
+              "type": "keyword",
+              "index": false
             }
           }
         }
