@@ -238,12 +238,13 @@ func RegisterBitbucketAPI() OrganizationHandler {
 			// If the repository was never used, the Mainbranch is empty ("").
 			if v.Mainbranch.Name != "" {
 				repositories <- Repository{
-					Name:       v.FullName,
-					Hostname:   u.Hostname(),
-					FileRawURL: u.String(),
-					Domain:     domain,
-					Headers:    headers,
-					Metadata:   metadata,
+					Name:        v.FullName,
+					Hostname:    u.Hostname(),
+					FileRawURL:  u.String(),
+					GitCloneURL: v.Links.Clone[0].Href,
+					Domain:      domain,
+					Headers:     headers,
+					Metadata:    metadata,
 				}
 			}
 		}

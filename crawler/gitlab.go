@@ -316,12 +316,13 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 		// If the repository was never used, the Mainbranch is empty ("")
 		if result.DefaultBranch != "" {
 			repositories <- Repository{
-				Name:       result.PathWithNamespace,
-				FileRawURL: u.String(),
-				Hostname:   u.Hostname(),
-				Domain:     domain,
-				Headers:    headers,
-				Metadata:   metadata,
+				Name:        result.PathWithNamespace,
+				FileRawURL:  u.String(),
+				GitCloneURL: result.HTTPURLToRepo,
+				Hostname:    u.Hostname(),
+				Domain:      domain,
+				Headers:     headers,
+				Metadata:    metadata,
 			}
 		} else {
 			return errors.New("repository is empty." + result.WebURL)
@@ -360,12 +361,13 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 
 		if v.DefaultBranch != "" {
 			repositories <- Repository{
-				Name:       v.PathWithNamespace,
-				Hostname:   domain.Host,
-				FileRawURL: rawURL,
-				Domain:     domain,
-				Headers:    headers,
-				Metadata:   metadata,
+				Name:        v.PathWithNamespace,
+				Hostname:    domain.Host,
+				FileRawURL:  rawURL,
+				GitCloneURL: v.HTTPURLToRepo,
+				Domain:      domain,
+				Headers:     headers,
+				Metadata:    metadata,
 			}
 		}
 	}
@@ -391,12 +393,13 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 
 		if v.DefaultBranch != "" {
 			repositories <- Repository{
-				Name:       v.PathWithNamespace,
-				Hostname:   domain.Host,
-				FileRawURL: rawURL,
-				Domain:     domain,
-				Headers:    headers,
-				Metadata:   metadata,
+				Name:        v.PathWithNamespace,
+				Hostname:    domain.Host,
+				FileRawURL:  rawURL,
+				GitCloneURL: v.HTTPURLToRepo,
+				Domain:      domain,
+				Headers:     headers,
+				Metadata:    metadata,
 			}
 		}
 	}
