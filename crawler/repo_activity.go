@@ -33,7 +33,7 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 
 	// Repository activity score.
 	var (
-		userCommunity  float64 // max 25
+		userCommunity  float64 // max 30
 		codeActivity   float64 // max 30
 		releaseHistory float64 // max 15
 		longevity      float64 // max 25
@@ -48,8 +48,8 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 	}
 
 	// Total authors. (userCommunity index)
-	// 0 to 25 = + #authors
-	// > 25 = +25 userCommunity
+	// 0 to 30 = + #authors
+	// > 30 = +30 userCommunity
 	// Retrieves the commit history.
 	userCommunity, err = calculateUserCommunityIndex(r)
 	if err != nil {
@@ -192,10 +192,10 @@ func calculateUserCommunityIndex(r *git.Repository) (float64, error) {
 	if err != nil {
 		log.Error(err)
 	}
-	if len(authors) < 25 {
+	if len(authors) < 30 {
 		return float64(len(authors)), err
-	} else if len(authors) > 25 {
-		return 25, err
+	} else if len(authors) > 30 {
+		return 30, err
 	}
 
 	return 0, err
