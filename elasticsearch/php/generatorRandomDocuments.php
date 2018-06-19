@@ -54,6 +54,12 @@ class generatorRandomDocuments {
   protected $ISO_639_3;
   protected $ISO_639_3_numbers;
 
+  protected $mime_types;
+  protected $mime_types_numbers;
+
+  protected $ecosistemi;
+  protected $ecosistemi_numbers;
+
   public function __construct() {
     $this->licenses = [
       "0BSD",                                 // BSD Zero Clause License
@@ -707,6 +713,91 @@ class generatorRandomDocuments {
       "configurationFiles"
     ];
     $this->software_type_numbers = count($this->software_type);
+
+    $this->mime_types = [
+      "audio/aac",
+      "application/x-abiword",
+      "application/octet-stream",
+      "video/x-msvideo",
+      "application/vnd.amazon.ebook",
+      "application/octet-stream",
+      "image/bmp",
+      "application/x-bzip",
+      "application/x-bzip2",
+      "application/x-csh",
+      "text/css",
+      "text/csv",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.ms-fontobject",
+      "application/epub+zip",
+      "application/ecmascript",
+      "image/gif",
+      "text/html",
+      "image/x-icon",
+      "text/calendar",
+      "application/java-archive",
+      "image/jpeg",
+      "application/javascript",
+      "application/json",
+      "audio/midi",
+      "audio/x-midi",
+      "video/mpeg",
+      "application/vnd.apple.installer+xml",
+      "application/vnd.oasis.opendocument.presentation",
+      "application/vnd.oasis.opendocument.spreadsheet",
+      "application/vnd.oasis.opendocument.text",
+      "audio/ogg",
+      "video/ogg",
+      "application/ogg",
+      "font/otf",
+      "image/png",
+      "application/pdf",
+      "application/vnd.ms-powerpoint",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/x-rar-compressed",
+      "application/rtf",
+      "application/x-sh",
+      "image/svg+xml",
+      "application/x-shockwave-flash",
+      "application/x-tar",
+      "image/tiff",
+      "application/typescript",
+      "font/ttf",
+      "application/vnd.visio",
+      "audio/wav",
+      "audio/webm",
+      "video/webm",
+      "image/webp",
+      "font/woff",
+      "font/woff2",
+      "application/xhtml+xml",
+      "application/vnd.ms-excel",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/xml",
+      "application/vnd.mozilla.xul+xml",
+      "application/zip",
+      "video/3gpp",
+      "audio/3gpp",
+      "application/x-7z-compressed",
+    ];
+    $this->mime_types_numbers = count($this->mime_types);
+
+    $this->ecosistemi = [
+      'sanita',
+      'welfare',
+      'finanza-pubblica',
+      'scuola',
+      'istruzione-superiore-ricerca',
+      'difesa-sicurezza-soccorso-legalita',
+      'giustizia',
+      'infrastruttura-logistica',
+      'sviluppo-sostenibilita',
+      'beni-culturali-turismo',
+      'agricoltura',
+      'italia-europa-mondo',
+    ];
+    $this->ecosistemi_numbers = count($this->ecosistemi);
   }
 
   public function generateDocuments($n = 100) {
@@ -746,6 +837,8 @@ class generatorRandomDocuments {
         "release-date" => $this->getRandomDate($start, $now),
         "logo" => "img/logo.svg",
         "monochrome-logo" => "img/logo-mono.svg",
+        "input-types" => $this->getRamdomMimeTypes(),
+        "output-types" => $this->getRamdomMimeTypes(0, 3),
         "platforms" => $this->getRandomPlatforms(),
         "tags" => $tags,
         "free-tags" => $free_tags,
@@ -765,22 +858,28 @@ class generatorRandomDocuments {
           "ita" => $this->getRandomDescription($name, $i),
           "eng" => $this->getRandomDescription($name, $i),
         ],
-        "dependencies-software" => $this->getRandomDependencies(),
+        "dependencies-open" => $this->getRandomDependencies(),
+        "dependencies-proprietary" => $this->getRandomDependencies(),
         "dependencies-hardware" => $this->getRandomDependenciesHardware(),
         "maintainance-contacts" => $this->generateRandomMaintenanceContact(),
         "maintainance-contractors" => $this->getRandomMaintenanceContractors(),
         "maintainance-type" => $this->getRandomMaintainanceType(),
         "localisation-localisation-ready" => boolval(rand(0,1)),
         "localisation-available-languages" => [],
-        "it-accessibile" => boolval(rand(0,1)),
+        "it-conforme-accessibile" => boolval(rand(0,1)),
+        "it-conforme-interoperabile" => boolval(rand(0,1)),
+        "it-conforme-sicuro" => boolval(rand(0,1)),
+        "it-conforme-privacy" => boolval(rand(0,1)),
         "it-spid" => boolval(rand(0,1)), 
         "it-cie" => boolval(rand(0,1)), 
         "it-anpr" => boolval(rand(0,1)), 
         "it-pagopa" => boolval(rand(0,1)), 
-        "it-riuso-codice-ipa" => boolval(rand(0,1)), 
-        "it-design-kit-service-design"  => boolval(rand(0,1)), 
+        "it-riuso-codice-ipa" => $this->generateRandomString(6, TRUE),
+        "it-ecosistemi" => $this->getRandomEcosistemi(),
+        "it-design-kit-seo"  => boolval(rand(0,1)), 
         "it-design-kit-ui"  => boolval(rand(0,1)), 
-        "it-design-kit-web-toolki" => boolval(rand(0,1)),
+        "it-design-kit-web" => boolval(rand(0,1)),
+        "it-design-kit-content" => boolval(rand(0,1)),
         "suggest-name" => explode(" ", $name),
         "metadata-repo" => $this->getRandomMetadataRepo(),
         "vitality-score" => rand(1, 100),
@@ -790,6 +889,10 @@ class generatorRandomDocuments {
         "share-tags" => $this->getRandomItemFromArray($tags),
         "related-software" => $this->getRandomRelatedSoftware(),
         "old-variant" => $this->getRandomOldVariant(),
+        "old-feature-list" => [
+          "ita" => $this->getRandomFeatureList(),
+          "eng" => $this->getRandomFeatureList(),
+        ],
       ];
     }
 
@@ -933,11 +1036,21 @@ class generatorRandomDocuments {
     for ($i=0; $i < $n;) {
       $current = rand(0, $this->dependencies_numbers - 1);
       if(!in_array($this->dependencies[$current], $dependencies)) {
-        $dependencies[] = [
-          'name' => $this->dependencies[$current],
-          'version' => $this->getRandomVersion(),
-          'optional' => boolval(rand(0,1))
-        ];
+        if(($i % 2) == 0){
+          $dependencies[] = [
+            'name' => $this->dependencies[$current],
+            'version' => $this->getRandomVersion(),
+            'optional' => boolval(rand(0,1))
+          ];
+        }
+        else {
+          $dependencies[] = [
+            'name' => $this->dependencies[$current],
+            'version-min' => $this->getRandomVersion(),
+            'version-max' => $this->getRandomVersion(),
+            'optional' => boolval(rand(0,1))
+          ];
+        }
         $i++;
       }
     }
@@ -1033,9 +1146,11 @@ class generatorRandomDocuments {
     }
     return [
       "localised-name" => $name,
+      "generic-name" => $this->getRandomPhrase(1, 3),
       "short-description" => substr($this->descriptions[$i_description*2], 0, rand(100, 150)),
       "long-description" => $this->descriptions[$i_description*2],
       "documentation" => "https://read.the.documentation/medusa/v1.0",
+      "api-documentation" => "https://read.the.api-documentation/medusa/v1.0",
       "feature-list" => $this->getRandomFeatureList(),
       "screenshots" => $screenshots,
       "videos" => $this->getRandomVideoUrls(),
@@ -1133,6 +1248,28 @@ class generatorRandomDocuments {
     }
 
     return $items;
+  }
+
+  public function getRamdomMimeTypes($min = 0, $max = 5) {
+    $n = rand($min, $max);
+    $mime_types = [];
+
+    for ($i=0; $i < $n; $i++) { 
+      $mime_types[] = $this->mime_types[rand(0, $this->mime_types_numbers - 1)];
+    }
+
+    return $mime_types;
+  }
+
+  public function getRandomEcosistemi($min = 0, $max = 5) {
+    $n = rand($min, $max);
+    $ecosistemi = [];
+
+    for ($i=0; $i < $n; $i++) { 
+      $ecosistemi[] = $this->ecosistemi[rand(0, $this->ecosistemi_numbers - 1)];
+    }
+
+    return $ecosistemi;
   }
 
   private function generateRandomString($length = 10, $only_letters = FALSE) {
@@ -1248,7 +1385,10 @@ class generatorRandomDocuments {
   }
 
   private function generateRandomOldVariant() {
-    return [
+    $old_variant = [
+      "name" => $this->getRandomPhrase($min = 1, $max = 4),
+      "vitality-score" => rand(1, 99),
+      "legal-repo-owner" => $this->getRandomMainCopyrightOwner(),
       "eng" => [
         "localised-name" => $this->getRandomPhrase(1, 3),
         "feature-list" => $this->getRandomFeatureList(),
@@ -1260,6 +1400,13 @@ class generatorRandomDocuments {
         "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
       ],
     ];
+
+    if (rand(0,1) == 0) {
+      unset($old_variant["eng"]["localised-name"]);
+      unset($old_variant["ita"]["localised-name"]);
+    }
+
+    return $old_variant;
   }
 
 }
