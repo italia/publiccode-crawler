@@ -86,4 +86,10 @@ var crawlCmd = &cobra.Command{
 		if err != nil {
 			log.Errorf("Error updating Elastic Alias: %v", err)
 		}
+
+		// Generate the yml file for jekyll
+		// err = jekyll.AllSoftware("softwares.yml")
+		// if err != nil {
+		// 	log.Errorf("Error exporting jekyll file of all the software : %v", err)
+		// }
 	}}
