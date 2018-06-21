@@ -876,43 +876,42 @@ class generatorRandomDocuments {
       $documents[] = [
         "publiccode-yaml-version" => "http://w3id.org/publiccode/version/0.1",
         "name" => $name,
-        "application-suite" => $this->getRandomApplicationSuite(),
+        "applicationSuite" => $this->getRandomApplicationSuite(),
         "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$name.".git",
-        "landing-url" => "https://example.com/italia/medusa",
-        "is-based-on" => $this->getRandomIsBasedOn(),
-        "software-version" => $this->getRandomVersion(),
-        "release-date" => $this->getRandomDate($start, $now),
+        "landingURL" => "https://example.com/italia/medusa",
+        "isBasedOn" => $this->getRandomIsBasedOn(),
+        "softwareVersion" => $this->getRandomVersion(),
+        "releaseDate" => $this->getRandomDate($start, $now),
         "logo" => "img/logo.svg",
-        "monochrome-logo" => "img/logo-mono.svg",
-        "input-types" => $this->getRamdomMimeTypes(),
-        "output-types" => $this->getRamdomMimeTypes(0, 3),
+        "monochromeLogo" => "img/logo-mono.svg",
+        "inputTypes" => $this->getRamdomMimeTypes(),
+        "outputTypes" => $this->getRamdomMimeTypes(0, 3),
         "platforms" => $this->getRandomPlatforms(),
         "tags" => $tags,
-        "free-tags" => $free_tags,
-        "used-by" => $this->getRandomUsedBy(),
+        "freeTags" => $free_tags,
+        "usedBy" => $this->getRandomUsedBy(),
         "roadmap" => "https://example.com/italia/medusa/roadmap",
-        "development-status" => $this->getRandomDevelopmentStatus(),
-        "software-type" => $this->getRandomSoftwareType(),
-        "software-is-related-to" => $this->getRandomSoftwareIsRelatedTo(),
-        "intended-audience-only-for" => $this->getRandomPaType(),
-        "intended-audience-countries" => $audience_countries,
-        "intended-audience-unsupported-countries" => $intended_audience_unsupported_countries,
+        "developmentStatus" => $this->getRandomDevelopmentStatus(),
+        "softwareType" => $this->getRandomSoftwareType(),
+        "intendedAudience-onlyFor" => $this->getRandomPaType(),
+        "intendedAudience-countries" => $audience_countries,
+        "intendedAudience-unsupportedCountries" => $intended_audience_unsupported_countries,
         "legal-license" => $this->getRandomLicense(),
-        "legal-main-copyright-owner" => $this->getRandomMainCopyrightOwner(),
-        "legal-repo-owner" => $this->getRandomMainCopyrightOwner(),
-        "legal-authors-file" => "doc/AUTHORS.txt",
+        "legal-mainCopyrightOwner" => $this->getRandomMainCopyrightOwner(),
+        "legal-repoOwner" => $this->getRandomMainCopyrightOwner(),
+        "legal-authorsFile" => "doc/AUTHORS.txt",
         "description" => [
           "ita" => $this->getRandomDescription($name, $i),
           "eng" => $this->getRandomDescription($name, $i),
         ],
-        "dependencies-open" => $this->getRandomDependencies(),
-        "dependencies-proprietary" => $this->getRandomDependencies(),
-        "dependencies-hardware" => $this->getRandomDependenciesHardware(),
-        "maintainance-contacts" => $this->generateRandomMaintenanceContact(),
-        "maintainance-contractors" => $this->getRandomMaintenanceContractors(),
+        "dependsOn-open" => $this->getRandomDependencies(),
+        "dependsOn-proprietary" => $this->getRandomDependencies(),
+        "dependsOn-hardware" => $this->getRandomDependenciesHardware(),
+        "maintenance-contacts" => $this->generateRandomMaintenanceContact(),
+        "maintenance-contractors" => $this->getRandomMaintenanceContractors(),
         "maintainance-type" => $this->getRandomMaintainanceType(),
-        "localisation-localisation-ready" => boolval(rand(0,1)),
-        "localisation-available-languages" => [],
+        "localisation-localisationReady" => boolval(rand(0,1)),
+        "localisation-availableLanguages" => [],
         "it-conforme-accessibile" => boolval(rand(0,1)),
         "it-conforme-interoperabile" => boolval(rand(0,1)),
         "it-conforme-sicuro" => boolval(rand(0,1)),
@@ -1172,17 +1171,6 @@ class generatorRandomDocuments {
 
   public function getRandomSoftwareType() {
     return $this->software_type[rand(0, $this->software_type_numbers - 1)];
-  }
-
-  public function getRandomSoftwareIsRelatedTo() {
-    $n = rand(0, 4);
-    $software_is_related_to = [];
-
-    for ($i=0; $i < $n ; $i++) {
-      $software_is_related_to[] = "https://example.com/italia/software".$i.".git";
-    }
-
-    return $software_is_related_to;
   }
 
   public function getRandomDescription($name, $i_description) {
