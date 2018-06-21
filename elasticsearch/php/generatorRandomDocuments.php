@@ -1,19 +1,19 @@
 <?php
 
 class generatorRandomDocuments {
-  
+
   protected $licenses;
   protected $licenses_numbers;
-  
+
   protected $main_copyright_owner;
   protected $main_copyright_owner_numbers;
-  
+
   protected $repo_owner;
   protected $repo_owner_numbers;
-  
+
   protected $maintainance_type;
   protected $maintainance_type_numbers;
-  
+
   protected $technical_contacts;
 
   protected $platforms;
@@ -409,7 +409,7 @@ class generatorRandomDocuments {
       "ZPL-2.1",                              // Zope Public License 2.1
     ];
     $this->licenses_numbers = count($this->licenses);
-    
+
     $this->main_copyright_owner = [
       'City of Roma',
       'City of Milano',
@@ -520,7 +520,7 @@ class generatorRandomDocuments {
 
     $this->maintainance_type = ["internal", "contract", "community", "none"];
     $this->maintainance_type_numbers = count($this->maintainance_type);
-    
+
     $this->technical_contacts = [];
 
     $this->platforms = [
@@ -638,26 +638,73 @@ class generatorRandomDocuments {
     $this->usedby_numbers = count($this->usedby);
 
     $this->tags = [
-      'rest',
-      'fixed',
-      'jewel',
-      'head',
-      'imaginary',
-      'mellow',
-      'seashore',
-      'intend',
-      'square',
-      'decorate',
-      'attach',
-      'pie',
-      'thank',
-      'wanting',
-      'oil',
-      'crooked',
-      'coil',
-      'furry',
-      'surround',
-      'complete',
+      // International tags.
+    	"3dgraphics",    // application for viewing, creating, or processing 3-d graphics
+    	"accessibility", // accessibility
+    	"accounting",    // accounting software
+    	"amusement",     // a simple amusement
+    	"archiving",     // a tool to archive/backup data
+    	"art",           // software to teach arts
+    	"artificial-intelligence", // artificial intelligence software
+    	"backend",                 // software not meant for end users
+    	"calculator",              // a calculator
+    	"calendar",                // calendar application
+    	"chat",                    // a chat client
+    	"classroom-management",    // classroom management software
+    	"clock",                   // a clock application/applet
+    	"content-management",      // a content management system (CMS)
+    	"compression",             // a tool to manage compressed data/archives
+    	"construction",            //
+    	"contact-management",      // e.g. an address book
+    	"database",                // application to manage a database
+    	"debugger",                // a tool to debug applications
+    	"dictionary",              // a dictionary
+    	"documentation",           // help or documentation
+    	"electronics",             // electronics software, e.g. a circuit designer
+    	"email",                   // email application
+    	"emulator",                // emulator of another platform, such as a dos emulator
+    	"engineering",             // engineering software, e.g. cad programs
+    	"file-manager",            // a file manager
+    	"file-transfer",           // tools like ftp or p2p programs
+    	"finance",                 // application to manage your finance
+    	"flowchart",               // a flowchart application
+    	"gui-designer",            // a gui designer application
+    	"identity",                // identity management
+    	"instant-messaging",       // an instant messaging client
+    	"library",                 // a library software
+    	"medical",                 // medical software
+    	"monitor",                 // monitor application/applet that monitors some resource or activity
+    	"museum",                  // museum software
+    	"music",                   // musical software
+    	"news",                    // software to manage and publish news
+    	"ocr",                     // optical character recognition application
+    	"parallel-computing",      // parallel computing software
+    	"photography",             // camera tools, etc.
+    	"presentation",            // presentation software
+    	"printing",                // a tool to manage printers
+    	"procurement",             // software for managing procurement
+    	"project-management",      // project management application
+    	"publishing",              // desktop publishing applications and color management tools
+    	"raster-graphics",         // application for viewing, creating, or processing raster (bitmap) graphics
+    	"remote-access",           // a tool to remotely manage your pc
+    	"revision-control",        // applications like git or subversion
+    	"robotics",                // robotics software
+    	"scanning",                // tool to scan a file/text
+    	"security",                // a security tool
+    	"sports",                  // sports software
+    	"spreadsheet",             // a spreadsheet
+    	"telephony",               // telephony via pc
+    	"terminal-emulator",       // a terminal emulator application
+    	"texteditor",              // a text editor
+    	"texttools",               // a text tool utility
+    	"translation",             // a translation tool
+    	"vector-graphics",         // application for viewing, creating, or processing vector graphics
+    	"video-conference",        // video conference software
+    	"viewer",                  // tool to view e.g. a graphic or pdf file
+    	"web-browser",             // a web browser
+    	"whistleblowing",          // software for whistleblowing / anticorruption
+    	"word-processor",          // a word processor
+    	"wordprocessor",           // a word processor
     ];
     $this->tags_numbers = count($this->tags);
 
@@ -803,7 +850,7 @@ class generatorRandomDocuments {
   public function generateDocuments($n = 100) {
     $documents = [];
     $this->descriptions = $this->getDocumentsDescription($n);
-    
+
     // 1 January 2005 01:01:01
     $start = 1104541261;
 
@@ -812,7 +859,7 @@ class generatorRandomDocuments {
     // 1 January 2025 01:01:01
     $end = 1735693261;
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $name = $this->getRandomProjectName();
       $audience_countries = $this->getRandomScope();
       $audience_unsupported_countries = $this->getRandomScope();
@@ -870,14 +917,14 @@ class generatorRandomDocuments {
         "it-conforme-interoperabile" => boolval(rand(0,1)),
         "it-conforme-sicuro" => boolval(rand(0,1)),
         "it-conforme-privacy" => boolval(rand(0,1)),
-        "it-spid" => boolval(rand(0,1)), 
-        "it-cie" => boolval(rand(0,1)), 
-        "it-anpr" => boolval(rand(0,1)), 
-        "it-pagopa" => boolval(rand(0,1)), 
+        "it-spid" => boolval(rand(0,1)),
+        "it-cie" => boolval(rand(0,1)),
+        "it-anpr" => boolval(rand(0,1)),
+        "it-pagopa" => boolval(rand(0,1)),
         "it-riuso-codice-ipa" => $this->generateRandomString(6, TRUE),
         "it-ecosistemi" => $this->getRandomEcosistemi(),
-        "it-design-kit-seo"  => boolval(rand(0,1)), 
-        "it-design-kit-ui"  => boolval(rand(0,1)), 
+        "it-design-kit-seo"  => boolval(rand(0,1)),
+        "it-design-kit-ui"  => boolval(rand(0,1)),
         "it-design-kit-web" => boolval(rand(0,1)),
         "it-design-kit-content" => boolval(rand(0,1)),
         "suggest-name" => explode(" ", $name),
@@ -923,7 +970,7 @@ class generatorRandomDocuments {
   public function getRandomVideoUrls() {
     $n = rand(0,3);
     $videos = [];
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $videos[] = 'https://youtube.com/' . $this->generateRandomString(8);
     }
 
@@ -934,7 +981,7 @@ class generatorRandomDocuments {
     $n = rand(1, $this->platforms_numbers);
     $platforms = [];
 
-    for ($i=0; $i < $n;) { 
+    for ($i=0; $i < $n;) {
       $current = rand(0, $this->platforms_numbers - 1);
       if(!in_array($this->platforms[$current], $platforms)) {
         $platforms[] = $this->platforms[$current];
@@ -949,7 +996,7 @@ class generatorRandomDocuments {
     $n = rand(1, $this->scope_numbers);
     $scope = [];
 
-    for ($i=0; $i < $n;) { 
+    for ($i=0; $i < $n;) {
       $current = rand(0, $this->scope_numbers - 1);
       if(!in_array($this->scope[$current], $scope)) {
         $scope[] = $this->scope[$current];
@@ -964,7 +1011,7 @@ class generatorRandomDocuments {
     $n = rand(1, 10);
     $patype = [];
 
-    for ($i=0; $i < $n;) { 
+    for ($i=0; $i < $n;) {
       $current = rand(0, $this->patype_numbers - 1);
       if(!in_array($this->patype[$current], $patype)) {
         $patype[] = $this->patype[$current];
@@ -979,7 +1026,7 @@ class generatorRandomDocuments {
     $n = rand(1, 8);
     $usedby = [];
 
-    for ($i=0; $i < $n;) { 
+    for ($i=0; $i < $n;) {
       $current = rand(0, $this->usedby_numbers - 1);
       if(!in_array($this->usedby[$current], $usedby)) {
         $usedby[] = $this->usedby[$current];
@@ -994,7 +1041,7 @@ class generatorRandomDocuments {
     $n = rand(1, 15);
     $tags = [];
 
-    for ($i=0; $i < $n;) { 
+    for ($i=0; $i < $n;) {
       $current = rand(0, $this->tags_numbers - 1);
       if(!in_array($this->tags[$current], $tags)) {
         $tags[] = $this->tags[$current];
@@ -1011,7 +1058,7 @@ class generatorRandomDocuments {
     $n_tags = rand(0, 9);
     $n_langs = rand(0, 5);
     if($n_tags > 0) {
-      for ($i=0; $i < $n_langs; $i++) { 
+      for ($i=0; $i < $n_langs; $i++) {
         $free_tags[$this->getRandomISO6393()] = $this->generateRandomFreeTags($n_tags);
       }
     }
@@ -1022,7 +1069,7 @@ class generatorRandomDocuments {
   public function generateRandomFreeTags($n = 3) {
     $free_tags = [];
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $free_tags[] = $this->getRandomPhrase(2, 3, "-");
     }
 
@@ -1079,7 +1126,7 @@ class generatorRandomDocuments {
   public function getRandomMaintenanceContractors() {
     $maintainance_contractors = [];
     $n = rand(1,3);
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $maintainance_contractors = $this->generateRandomMaintenanceContractor();
     }
 
@@ -1090,7 +1137,7 @@ class generatorRandomDocuments {
     $n = rand(1, 4);
     $name = "";
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $name .= ucfirst(strtolower($this->generateRandomString(rand(4, 10), TRUE))) . " ";
     }
 
@@ -1101,7 +1148,7 @@ class generatorRandomDocuments {
     $n = rand(1, 4);
     $application_suite = "";
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $application_suite .= ucfirst(strtolower($this->generateRandomString(rand(4, 10), TRUE)));
     }
 
@@ -1131,7 +1178,7 @@ class generatorRandomDocuments {
     $n = rand(0, 4);
     $software_is_related_to = [];
 
-    for ($i=0; $i < $n ; $i++) { 
+    for ($i=0; $i < $n ; $i++) {
       $software_is_related_to[] = "https://example.com/italia/software".$i.".git";
     }
 
@@ -1141,7 +1188,7 @@ class generatorRandomDocuments {
   public function getRandomDescription($name, $i_description) {
     $screenshots = [];
     $n = rand(1, 8);
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $screenshots[] = "img/sshot".($i+1).".jpg";
     }
     return [
@@ -1163,7 +1210,7 @@ class generatorRandomDocuments {
   }
 
   public function getDocumentsDescription($n = 100) {
-    
+
     $descriptions = [];
     $numbers = $n * 2;
     $retry = 3;
@@ -1198,7 +1245,7 @@ class generatorRandomDocuments {
   public function getRandomVitalityDataChart() {
     $months = rand(0, 12);
     $vitality_data_chart = [];
-    for ($i=0; $i < $months ; $i++) { 
+    for ($i=0; $i < $months ; $i++) {
       $vitality_data_chart[] = rand(1, 10);
     }
 
@@ -1209,10 +1256,10 @@ class generatorRandomDocuments {
     if(empty($all_tags)){
       return [];
     }
-    
+
     $c = count($all_tags);
     $n = rand(1, $c);
-    
+
     $keys = array_rand($all_tags, $n);
     if(!is_array($keys)){
       return [
@@ -1220,11 +1267,11 @@ class generatorRandomDocuments {
       ];
     }
 
-    $items = [];    
+    $items = [];
     foreach ($keys as $key) {
       $items[] = $all_tags[$key];
     }
-    
+
     return $items;
   }
 
@@ -1232,7 +1279,7 @@ class generatorRandomDocuments {
     $n = rand(0, 3);
     $items = [];
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $items[] = $this->generateRandomRelatedSoftware();
     }
 
@@ -1243,7 +1290,7 @@ class generatorRandomDocuments {
     $n = rand(0, 3);
     $items = [];
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $items[] = $this->generateRandomOldVariant();
     }
 
@@ -1254,7 +1301,7 @@ class generatorRandomDocuments {
     $n = rand($min, $max);
     $mime_types = [];
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $mime_types[] = $this->mime_types[rand(0, $this->mime_types_numbers - 1)];
     }
 
@@ -1265,7 +1312,7 @@ class generatorRandomDocuments {
     $n = rand($min, $max);
     $ecosistemi = [];
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $ecosistemi[] = $this->ecosistemi[rand(0, $this->ecosistemi_numbers - 1)];
     }
 
@@ -1275,7 +1322,7 @@ class generatorRandomDocuments {
   private function generateRandomString($length = 10, $only_letters = FALSE) {
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     if ($only_letters) {
-      $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';      
+      $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     }
     $charactersLength = strlen($characters);
     $randomString = '';
@@ -1291,7 +1338,7 @@ class generatorRandomDocuments {
     $n = rand(0, 3);
     $awards_list = [];
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $awards_list[] = $this->getRandomPhrase(2, 4);
     }
 
@@ -1302,7 +1349,7 @@ class generatorRandomDocuments {
     $n = rand(1, 5);
     $feature_list = [];
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $feature_list[] = $this->getRandomPhrase();
     }
 
@@ -1313,7 +1360,7 @@ class generatorRandomDocuments {
     $n = rand($min, $max);
     $feature = "";
 
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $feature .= strtolower($this->generateRandomString(rand(2, 12), TRUE)) . $blank;
     }
 
@@ -1346,7 +1393,7 @@ class generatorRandomDocuments {
   private function generateRandomAffiliation() {
     $n = rand(2, 4);
     $affiliation = '';
-    for ($i=0; $i < $n; $i++) { 
+    for ($i=0; $i < $n; $i++) {
       $affiliation .= ucfirst(strtolower($this->generateRandomString(rand(6, 15), TRUE))) . " ";
     }
 
