@@ -54,6 +54,7 @@ No organizations! Only single repositories!`,
 		metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", index)
 		metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", index)
 		metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", index)
+		metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", index)
 		//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", index)
 
 		log.Debugf("Processing Single Repo: %s", repo)

@@ -18,12 +18,14 @@ import (
 
 // Repository is a single code repository. FileRawURL contains the direct url to the raw file.
 type Repository struct {
-	Name       string
-	Hostname   string
-	FileRawURL string
-	Domain     Domain
-	Headers    map[string]string
-	Metadata   []byte
+	Name        string
+	Hostname    string
+	FileRawURL  string
+	GitCloneURL string
+	GitBranch   string
+	Domain      Domain
+	Headers     map[string]string
+	Metadata    []byte
 }
 
 // ProcessPA delegates the work to single PA crawlers.
@@ -125,6 +127,8 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	name := repository.Name
 	hostname := repository.Hostname
 	fileRawURL := repository.FileRawURL
+	gitURL := repository.GitCloneURL
+	gitBranch := repository.GitBranch
 	domain := repository.Domain
 	headers := repository.Headers
 	metadata := repository.Metadata
@@ -137,7 +141,6 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
-
 		// Save Metadata.
 		err = SaveToFile(domain, hostname, name, metadata, index+"_metadata")
 		if err != nil {
@@ -150,10 +153,23 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 			log.Errorf("error saving to file: %v", err)
 		}
 
+		// Clone repository.
+		err = CloneRepository(domain, hostname, name, gitURL, gitBranch, index)
+		if err != nil {
+			log.Errorf("error cloning repository %s: %v", gitURL, err)
+		}
+
+		// Calculate Repository activity index.
+		activityIndex, err := CalculateRepoActivity(domain, hostname, name)
+		if err != nil {
+			log.Errorf("error calculating repository Activity to file: %v", err)
+		}
+		log.Debugf("Activity Index for %s: %f", name, activityIndex)
+
 		// Save to ES.
 		err = SaveToES(domain, name, resp.Body, index, elasticClient)
 		if err != nil {
-			log.Errorf("error saving to file: %v", err)
+			log.Errorf("error saving to ElastcSearch: %v", err)
 		}
 		// TODO: save "metadata" on ES. When mapping is ready.
 
@@ -162,8 +178,10 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		// TODO: now validation is useless because we test on .gitignore file.
 		// err := validateRemoteFile(resp.Body, fileRawURL, index)
 		// if err != nil {
-		// 	log.Warn("Validator fails for: " + fileRawURL)
-		// 	log.Warn("Validator errors:" + err.Error())
+		// 	log.Errorf("Validator fails for: " + fileRawURL)
+		// 	log.Errorf("Validator errors:" + err.Error())
+		//	wg.Done()
+		//	return
 		// }
 	}
 

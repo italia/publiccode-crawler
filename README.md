@@ -9,19 +9,19 @@ Backend &amp; crawler for the OSS catalog of Developers Italia.
 
 ## Components
 
-* Elasticsearch
-* Kibana
-* Prometheus
-* Træfik
+- Elasticsearch
+- Kibana
+- Prometheus
+- Træfik
 
 ## How to contribute
 
 ### Dependencies
 
-* [Go](https://golang.org/)
-* [dep](https://github.com/golang/dep)
-* [Docker](https://www.docker.com/)
-* [Docker-compose](https://docs.docker.com/compose/)
+- [Go](https://golang.org/)
+- [dep](https://github.com/golang/dep)
+- [Docker](https://www.docker.com/)
+- [Docker-compose](https://docs.docker.com/compose/)
 
 ### Setup
 
@@ -43,9 +43,9 @@ networks:
 
 ##### 3) rename .env.example to .env and fill the variables with your values
 
-* default Elasticsearch user and password are `elastic`
-* default Kibana user and password are `kibana`
-* basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
+- default Elasticsearch user and password are `elastic`
+- default Kibana user and password are `kibana`
+- basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
 ##### 4) rename config.toml.example to config.toml and fill the variables with your values
 
@@ -53,9 +53,9 @@ networks:
 
 For example, if `PROJECT_BASE_URL` in `.env` is `developers.loc`, add (if your Docker daemon is listening on localhost):
 
-* 127.0.0.1 elasticsearch.developers.loc
-* 127.0.0.1 kibana.developers.loc
-* 127.0.0.1 prometheus.developers.loc
+- 127.0.0.1 elasticsearch.developers.loc
+- 127.0.0.1 kibana.developers.loc
+- 127.0.0.1 prometheus.developers.loc
 
 Or use a local DNS (like [dnsmasq](https://en.wikipedia.org/wiki/Dnsmasq)) to resolve all DNS request to `.loc` domains
 to localhost.
@@ -64,23 +64,28 @@ to localhost.
 
 #### Crawler
 
-* Fill your domains.yml file with configuration values (like specific host basic auth token)
+- Fill your domains.yml file with configuration values (like specific host basic auth token)
 
 ##### With docker-compose
 
-* build the crawler image: `make build`
-* de-comment the crawler container from docker-compose.yml file
-* start the Docker stack: `make up`
+- build the crawler image: `make build`
+- de-comment the crawler container from docker-compose.yml file
+- start the Docker stack: `make up`
 
 ##### As golang binary
 
-* start the crawler: `./crawler crawl whitelistPA.yml whitelistGeneric.yml`
+- start the crawler: `./crawler crawl whitelistPA.yml whitelistGeneric.yml`
 
 ### Troubleshooting
 
-* From docker logs seems that Elasticsearch container needs more virtual memory and now it's `Stalling for Elasticsearch....`
+- From docker logs seems that Elasticsearch container needs more virtual memory and now it's `Stalling for Elasticsearch....`
 
   Increase container virtual memory: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode
+
+- When trying to `make build` the crawler image, a fatal memory error occurs: "fatal error: out of memory"
+
+  Probably you should increase the container memory:
+  `docker-machine stop && VBoxManage modifyvm default --cpus 2 && VBoxManage modifyvm default --memory 2048 && docker-machine stop`
 
 ### Copyright
 
