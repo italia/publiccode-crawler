@@ -66,6 +66,7 @@ func AmministrazioniYML(filename string) error {
 		Index("publiccode").               // search in index "publiccode"
 		Query(elastic.NewMatchAllQuery()). // specify the query
 		Pretty(true).                      // pretty print request and response JSON
+		From(0).Size(10000).               // get first 10k elements. It can be changed.
 		Do(context.Background())           // execute
 	if err != nil {
 		log.Error(err)
