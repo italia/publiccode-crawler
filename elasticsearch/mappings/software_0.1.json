@@ -3,15 +3,6 @@
     "software": {
       "dynamic_templates": [
         {
-          "freeTags": {
-            "match_pattern": "regex",
-            "match": "^freeTags-[a-z]{3}$",
-            "mapping": {
-              "type": "keyword"
-            }
-          }
-        },
-        {
           "description": {
             "path_match": "description.*",
             "mapping": {
@@ -41,6 +32,9 @@
                   "index": false
                 },
                 "featureList": {
+                  "type": "keyword"
+                },
+                "freeTags": {
                   "type": "keyword"
                 },
                 "screenshots": {
