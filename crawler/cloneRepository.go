@@ -10,7 +10,7 @@ import (
 )
 
 // CloneRepository clone the repository into  ./data/<hostname>/<vendor>/<repo>/gitClone
-func CloneRepository(domain Domain, hostname string, name string, gitURL string, index string) error {
+func CloneRepository(domain Domain, hostname, name, gitURL, gitBranch, index string) error {
 	if domain.Host == "" {
 		return errors.New("cannot save a file without domain host")
 	}
@@ -27,10 +27,17 @@ func CloneRepository(domain Domain, hostname string, name string, gitURL string,
 
 	path := filepath.Join("./data", hostname, vendor, repo, cloneFolder)
 
-	// If folder already exists it will do a pull instead of a clone.
+	// If folder already exists it will do a fetch instead of a clone.
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		cmd := exec.Command("git", "-C", path, "pull") // nolint: gas
+		//	Command is: git fetch --all
+		cmd := exec.Command("git", "-C", path, "fetch", "--all") // nolint: gas
 		err := cmd.Run()
+		if err != nil {
+			return errors.New("cannot git pull the repository: " + err.Error())
+		}
+		// Command is: git reset --hard origin/<branch_name>
+		cmd = exec.Command("git", "-C", path, "reset", "--hard", "origin/"+gitBranch) // nolint: gas
+		err = cmd.Run()
 		if err != nil {
 			return errors.New("cannot git pull the repository: " + err.Error())
 		}
@@ -38,7 +45,8 @@ func CloneRepository(domain Domain, hostname string, name string, gitURL string,
 	}
 
 	// Clone the repository using the external command "git".
-	cmd := exec.Command("git", "clone", gitURL, path) // nolint: gas
+	// Command is: git clone -b <branch> <remote_repo>
+	cmd := exec.Command("git", "clone", "-b", gitBranch, gitURL, path) // nolint: gas
 	err := cmd.Run()
 	if err != nil {
 		return errors.New("cannot git clone the repository: " + err.Error())

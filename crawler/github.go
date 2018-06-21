@@ -281,7 +281,7 @@ func RegisterGithubAPI() OrganizationHandler {
 				log.Infof("Repository is empty: %s", link)
 			}
 
-			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, domain.Host, domain, headers, metadata, repositories)
+			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, v.DefaultBranch, domain.Host, domain, headers, metadata, repositories)
 			if err != nil {
 				log.Infof("addGithubProectsToRepositories %v", err)
 			}
@@ -376,6 +376,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 					Hostname:    u.Hostname(),
 					FileRawURL:  f.DownloadURL,
 					GitCloneURL: v.CloneURL,
+					GitBranch:   v.DefaultBranch,
 					Domain:      domain,
 					Headers:     headers,
 					Metadata:    metadata,
@@ -390,7 +391,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 }
 
 // addGithubProjectsToRepositories adds the projects from api response to repository channel.
-func addGithubProjectsToRepositories(files GithubFiles, fullName string, cloneURL string, hostname string,
+func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defaultBranch, hostname string,
 	domain Domain, headers map[string]string, metadata []byte, repositories chan Repository) error {
 	// Search a file with a valid name and a downloadURL.
 	for _, f := range files {
@@ -401,6 +402,7 @@ func addGithubProjectsToRepositories(files GithubFiles, fullName string, cloneUR
 				Hostname:    hostname,
 				FileRawURL:  f.DownloadURL,
 				GitCloneURL: cloneURL,
+				GitBranch:   defaultBranch,
 				Domain:      domain,
 				Headers:     headers,
 				Metadata:    metadata,
