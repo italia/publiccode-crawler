@@ -55,6 +55,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int) error {
 		Index("publiccode").               // search in index "publiccode"
 		Query(elastic.NewMatchAllQuery()). // specify the query
 		Pretty(true).                      // pretty print request and response JSON
+		From(0).Size(10000).               // get first 10k elements. The limit can be changed in ES.
 		Do(context.Background())           // execute
 	if err != nil {
 		log.Error(err)
