@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"reflect"
 
 	"github.com/italia/developers-italia-backend/crawler"
@@ -12,28 +13,29 @@ import (
 
 func main() {
 	file := "generated/softwares.yml"
-	err := AllSoftwareYML(file)
+	numberOfSimilarSoftware := 4
+	err := AllSoftwareYML(file, numberOfSimilarSoftware)
 	if err != nil {
 		log.Error(err)
 	}
 }
 
-func AllSoftwareYML(filename string) error {
+func AllSoftwareYML(filename string, numberOfSimilarSoftware int) error {
 	// Uncommnet when the publiccodes is ready to be written on file.
-	// // Create file if not exists.
-	// if _, err := os.Stat(filename); os.IsNotExist(err) {
-	// 	file, err := os.Create(filename)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	file.Close()
-	// }
-	// // Open file.
-	// f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0600)
-	// if err != nil {
-	// 	return err
-	// }
-	// defer f.Close()
+	// Create file if not exists.
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
+		}
+		file.Close()
+	}
+	// Open file.
+	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
 
 	// Publiccodes data.
 	var publiccodes []PublicCode
@@ -64,12 +66,11 @@ func AllSoftwareYML(filename string) error {
 		publiccodes = append(publiccodes, i)
 
 		// Search similar softwares for this software and add them to olSoftwares.
-		similarSoftware := findSimilarSoftwares(i.Tags, elasticClient)
+		similarSoftware := findSimilarSoftwares(i.Tags, numberOfSimilarSoftware, elasticClient)
 		// TODO: add similarSoftwaresNames to similar software list.
 		for _, _ = range similarSoftware {
 			// TODO: append to relatedSoftwares for this item
 			// https://github.com/italia/developers.italia.it/blob/new-version-master/_data/softwares.yml#L200
-
 		}
 
 		// Search softwares basedOn this one.
@@ -117,7 +118,7 @@ func AllSoftwareYML(filename string) error {
 	return err
 }
 
-func findSimilarSoftwares(tags []string, elasticClient *elastic.Client) []PublicCode {
+func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, elasticClient *elastic.Client) []PublicCode {
 	var pcs []PublicCode
 
 	// Generate query.
@@ -127,11 +128,11 @@ func findSimilarSoftwares(tags []string, elasticClient *elastic.Client) []Public
 	}
 
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").     // search in index "publiccode"
-		Query(query).            // specify the query
-		From(0).Size(4).         // take documents 0-4
-		Pretty(true).            // pretty print request and response JSON
-		Do(context.Background()) // execute
+		Index("publiccode").                   // search in index "publiccode"
+		Query(query).                          // specify the query
+		From(0).Size(numberOfSimilarSoftware). // take documents from 0-numberOfSimilarSoftware
+		Pretty(true).                          // pretty print request and response JSON
+		Do(context.Background())               // execute
 	if err != nil {
 		log.Error(err)
 	}
