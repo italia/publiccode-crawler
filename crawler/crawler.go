@@ -22,6 +22,7 @@ type Repository struct {
 	Hostname    string
 	FileRawURL  string
 	GitCloneURL string
+	GitBranch   string
 	Domain      Domain
 	Headers     map[string]string
 	Metadata    []byte
@@ -127,6 +128,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	hostname := repository.Hostname
 	fileRawURL := repository.FileRawURL
 	gitURL := repository.GitCloneURL
+	gitBranch := repository.GitBranch
 	domain := repository.Domain
 	headers := repository.Headers
 	metadata := repository.Metadata
@@ -152,9 +154,9 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		}
 
 		// Clone repository.
-		err = CloneRepository(domain, hostname, name, gitURL, index)
+		err = CloneRepository(domain, hostname, name, gitURL, gitBranch, index)
 		if err != nil {
-			log.Errorf("error cloning repository: %v", err)
+			log.Errorf("error cloning repository %s: %v", gitURL, err)
 		}
 
 		// Calculate Repository activity index.
@@ -170,12 +172,6 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 			log.Errorf("error saving to ElastcSearch: %v", err)
 		}
 		// TODO: save "metadata" on ES. When mapping is ready.
-
-		// Clone repository.
-		err = CloneRepository(domain, hostname, name, gitURL, index)
-		if err != nil {
-			log.Errorf("error cloning repository: %v", err)
-		}
 
 		// Validate file.
 		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
