@@ -24,42 +24,38 @@ generate_index_settings() {
     "software": {
       "dynamic_templates": [
         {
-          "free-tags": {
-            "match_pattern": "regex",
-            "match": "^free-tags-[a-z]{3}$",
-            "mapping": {
-              "type": "keyword"
-            }
-          }
-        },
-        {
           "description": {
             "path_match": "description.*",
             "mapping": {
               "type": "object",
               "properties": {
-                "localised-name": {
+                "localisedName": {
                   "type": "text"
                 },
-                "generic-name": {
+                "genericName": {
                   "type": "text",
-                  "fields": { "keyword":{ "type": "keyword", "ignore_above": 256 } }
+                  "fields": {
+                    "keyword": { "type": "keyword", "ignore_above": 256 }
+                  }
                 },
-                "short-description": {
+                "shortDescription": {
                   "type": "text"
                 },
-                "long-description": {
+                "longDescription": {
                   "type": "text"
                 },
                 "documentation": {
                   "type": "text",
                   "index": false
                 },
-                "api-documentation": {
+                "apiDocumentation": {
                   "type": "text",
                   "index": false
                 },
-                "feature-list": {
+                "featureList": {
+                  "type": "keyword"
+                },
+                "freeTags": {
                   "type": "keyword"
                 },
                 "screenshots": {
@@ -86,27 +82,27 @@ generate_index_settings() {
         "name": {
           "type": "text"
         },
-        "application-suite": {
+        "applicationSuite": {
           "type": "text",
-          "fields": { "keyword":{ "type": "keyword", "ignore_above": 256 } }
+          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
         "url": {
           "type": "text",
           "index": false,
-          "fields": { "keyword":{ "type": "keyword", "ignore_above": 256 } }
+          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
-        "landing-url": {
+        "landingURL": {
           "type": "text",
           "index": false
         },
-        "is-based-on": {
+        "isBasedOn": {
           "type": "text",
           "index": false
         },
-        "software-version": {
+        "softwareVersion": {
           "type": "keyword"
         },
-        "release-date": {
+        "releaseDate": {
           "type": "date",
           "format": "strict_date"
         },
@@ -114,14 +110,14 @@ generate_index_settings() {
           "type": "text",
           "index": false
         },
-        "monochrome-logo": {
+        "monochromeLogo": {
           "type": "text",
           "index": false
         },
-        "input-types": {
+        "inputTypes": {
           "type": "keyword"
         },
-        "output-types": {
+        "outputTypes": {
           "type": "keyword"
         },
         "platforms": {
@@ -130,7 +126,7 @@ generate_index_settings() {
         "tags": {
           "type": "keyword"
         },
-        "used-by": {
+        "usedBy": {
           "type": "text",
           "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
@@ -138,47 +134,43 @@ generate_index_settings() {
           "type": "text",
           "index": false
         },
-        "development-status": {
+        "developmentStatus": {
           "type": "keyword"
         },
-        "software-type": {
+        "softwareType": {
           "type": "keyword"
         },
-        "software-type-is-related-to": {
-          "type": "text",
-          "index": false          
-        },
-        "intended-audience-only-for": {
+        "intendedAudience-onlyFor": {
           "type": "keyword"
         },
-        "intended-audience-countries": {
+        "intendedAudience-countries": {
           "type": "keyword"
         },
-        "intended-audience-unsupported-countries": {
+        "intendedAudience-unsupportedCountries": {
           "type": "keyword"
         },
         "legal-license": {
           "type": "text",
           "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
-        "legal-main-copyright-owner": {
+        "legal-mainCopyrightOwner": {
           "type": "text"
         },
-        "legal-repo-owner": {
+        "legal-repoOwner": {
           "type": "text"
         },
-        "legal-authors-file": {
+        "legal-authorsFile": {
           "type": "text",
           "index": false
         },
-        "maintainance-type": {
+        "maintenance-type": {
           "type": "keyword"
         },
-        "maintainance-contractors": {
+        "maintenance-contractors": {
           "type": "nested",
           "properties": {
             "name": {
-              "type":"text"
+              "type": "text"
             },
             "until": {
               "type": "date",
@@ -190,11 +182,11 @@ generate_index_settings() {
             }
           }
         },
-        "maintainance-contacts": {
+        "maintenance-contacts": {
           "type": "nested",
           "properties": {
             "name": {
-              "type":"text"
+              "type": "text"
             },
             "email": {
               "type": "text"
@@ -204,17 +196,17 @@ generate_index_settings() {
               "index": false
             },
             "affiliation": {
-              "type":"text"
+              "type": "text"
             }
           }
         },
-        "localisation-localisation-ready": {
+        "localisation-localisationReady": {
           "type": "boolean"
         },
-        "localisation-available-languages": {
+        "localisation-availableLanguages": {
           "type": "keyword"
         },
-        "dependencies-open": {
+        "dependsOn-open": {
           "type": "nested",
           "properties": {
             "name": {
@@ -237,7 +229,7 @@ generate_index_settings() {
             }
           }
         },
-        "dependencies-proprietary": {
+        "dependsOn-proprietary": {
           "type": "nested",
           "properties": {
             "name": {
@@ -260,7 +252,7 @@ generate_index_settings() {
             }
           }
         },
-        "dependencies-hardware": {
+        "dependsOn-hardware": {
           "type": "nested",
           "properties": {
             "name": {
@@ -284,46 +276,46 @@ generate_index_settings() {
           }
         },
         "it-conforme-accessibile": {
-          "type":"boolean"
+          "type": "boolean"
         },
         "it-conforme-interoperabile": {
-          "type":"boolean"
+          "type": "boolean"
         },
         "it-conforme-sicuro": {
-          "type":"boolean"
+          "type": "boolean"
         },
         "it-conforme-privacy": {
-          "type":"boolean"
+          "type": "boolean"
         },
         "it-spid": {
-          "type":"boolean"
+          "type": "boolean"
         },
         "it-cie": {
-          "type":"boolean"
+          "type": "boolean"
         },
         "it-anpr": {
-          "type":"boolean"
+          "type": "boolean"
         },
         "it-pagopa": {
-          "type":"boolean"
+          "type": "boolean"
         },
-        "it-riuso-codice-ipa": {
+        "it-riuso-codiceIPA": {
           "type": "keyword"
         },
         "it-ecosistemi": {
           "type": "keyword"
         },
-        "it-design-kit-seo" : {
-          "type":"boolean"
+        "it-designKit-seo": {
+          "type": "boolean"
         },
-        "it-design-kit-ui" : {
-          "type":"boolean"
+        "it-designKit-ui": {
+          "type": "boolean"
         },
-        "it-design-kit-web" : {
-          "type":"boolean"
+        "it-designKit-web": {
+          "type": "boolean"
         },
-        "it-design-kit-content" : {
-          "type":"boolean"
+        "it-designKit-content": {
+          "type": "boolean"
         },
         "suggest-name": {
           "type": "completion"
@@ -332,7 +324,7 @@ generate_index_settings() {
           "type": "text",
           "index": false
         },
-        "vitality-data-chart": {
+        "vitality-dataChart": {
           "type": "integer"
         },
         "related-software": {
@@ -456,4 +448,3 @@ EOF
 }
 
 curl -u "$BASICAUTH" -X PUT "$ELASTICSEARCH_URL/$INDEX" -H 'Content-Type: application/json' -d"$(generate_index_settings)"
-
