@@ -5,6 +5,9 @@
 
 Backend &amp; crawler for the OSS catalog of Developers Italia.
 
+The crawler will find and retrieve all the publiccode.yml files from the Organizations registered on Github/Bitbucket/Gitlab listed in the whitelistes.
+If a user that is not an Organization wants to add his work to the catalog, he have to use the single repository command.
+
 **This document is a Work in progress!**
 
 ## Components
