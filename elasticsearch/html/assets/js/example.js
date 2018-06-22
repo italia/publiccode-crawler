@@ -23,25 +23,51 @@ $( document ).ready(function() {
 function executeAutoCompleteESQuery(event) {
   event.preventDefault();
   client = event.data;
-  client.search({
-    index: 'publiccode',
-    body: {
-      suggest: {
-        names: {
-          prefix: event.target.value,
-          completion: {
-            field : "suggest-name",
-            size: 10
+
+  var not_language_specific = ['suggest-software-type', 'suggest-agencies'];
+  var language = $('#language').val();
+  var field_autocomplete = $('#es-select-type-query').val();
+
+  if (!not_language_specific.includes(field_autocomplete)) {
+    field_autocomplete = field_autocomplete + '-' + language.substring(0, 2);
+  }
+
+  /**
+   * In Elasticsearch are defined the following fields in order to use for suggestions
+   *  - suggest-all-it & suggest-all-en
+   *  - suggest-platforms-it & suggest-platforms-en
+   *  - suggest-software-type
+   *  - suggest-api-it & suggest-api-en
+   *  - suggest-agencies
+   */
+  console.log("campo autocomplete: ", field_autocomplete);
+
+  var params = {
+    'index': 'suggestions',
+    'body': {
+      'suggest': {
+        'search_string': {
+          'prefix': event.target.value.trim().split(' '),
+          // 'prefix': event.target.value,
+          'completion': {
+            'field' : field_autocomplete,
+            'size': 10
           }
         }
       }
     }
-  }).then(
+  };
+
+  console.log(params.body);
+
+  client.search(params).then(
     function(body){
+      console.log(body);
       $('#es-automplete-results').text("");
-      var names = body.suggest.names.pop();
-      $.each(names.options, function(index, option){
-        $('#es-automplete-results').append("<div>" + option._source.name + "</div>" );
+      var search_string = body.suggest.search_string.pop();
+      $.each(search_string.options, function(index, option){
+        console.log(option);
+        $('#es-automplete-results').append("<div>" + option._source.title + "</div>" );
       });
     },
     function(error){console.log(error);}
@@ -102,7 +128,7 @@ function executeSearchESQuery(client) {
   var must = {
     'multi_match': {
       'query': $('#es-search-input').val(),
-      'fields': ['name', 'description.'+language+'.short-description', 'description.'+language+'.short-description']
+      'fields': ['name', 'description.'+language+'.short-description', 'description.'+language+'.short-description', 'title', 'description']
     }
   };
 
@@ -252,7 +278,8 @@ function executeSearchESQuery(client) {
       $('#es-results').text('');
       console.log(data);
       $.each(data.hits.hits, function(index, result){
-        $('#es-results').append("<div class='es-result'>"+result._source.name+" ("+result._id+")</div>");
+        var title = (result._type == 'software') ? result._source.name : result._source.title;
+        $('#es-results').append("<div class='es-result'>"+title+" ("+result._id+")</div>");
       });
     },
     function(error){
@@ -270,6 +297,7 @@ function executeSearchESQuery(client) {
 function getAllFilterTerms(client) {
   client.search({
     index: 'publiccode',
+    // type: 'post',
     body: {
       aggs: {
         'tags': {

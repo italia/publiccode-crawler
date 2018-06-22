@@ -1,0 +1,30 @@
+{
+  "mappings": {
+    "suggestion": {
+      "dynamic_templates": [
+        {
+          "dynamic-suggestions": {
+            "match":   "suggest-*",
+            "mapping": {
+              "type": "completion",
+              "preserve_separators": false
+            }
+          }
+        },
+        {
+          "dynamic-localized-name": {
+            "match":   "title-*",
+            "mapping": {
+              "type": "text"
+            }
+          }
+        }
+      ],
+      "properties": {
+        "title": {
+          "type": "text"
+        }
+      }
+    }
+  }
+}

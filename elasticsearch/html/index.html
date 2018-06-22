@@ -14,7 +14,15 @@
     <h1 class="">Elastich Search Query test</h1>
     <div>
       <h2>Autocomplete</h2>
-      <div><input type="text" id="es-automplete-input"></div>
+      <div>
+        <input type="text" id="es-automplete-input">
+        <select id="es-select-type-query">
+          <option value="suggest-all" selected>Tutto</option>
+          <option value="suggest-platforms">Piattaforme</option>
+          <option value="suggest-software-type">Tipologia di Software</option>
+          <option value="suggest-api">Api</option>
+          <option value="suggest-agencies">Enti</option>
+        </select> </div>
       <div id="es-automplete-results"></div>
     </div>
     <div>
