@@ -33,10 +33,6 @@ generate_document() {
     "productivity",
     "it-portale-trasparenza"
   ],
-  "free-tags": {
-    "eng": ["pippo-cheese", "this", "those"],
-    "ita": ["pippo-formaggio", "questo", "quello"]
-  },
   "suggest-name": {
     "input": ["Medusa"],
     "weight" : 1
