@@ -351,6 +351,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 			return err
 		}
 		contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
+		log.Debug(contents)
 		// Get List of files.
 		resp, err = httpclient.GetURL(contents, headers)
 		if err != nil {
@@ -367,8 +368,10 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 			log.Infof("Repository is empty: %s", link)
 		}
 
+		foundIt := false
 		// Search a file with a valid name and a downloadURL.
 		for _, f := range files {
+			log.Debug(f.Name)
 			if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
 				// Add repository to channel.
 				repositories <- Repository{
@@ -381,11 +384,12 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 					Headers:     headers,
 					Metadata:    metadata,
 				}
-			} else {
-				return errors.New("Repository does not contain " + viper.GetString("CRAWLED_FILENAME"))
+				foundIt = true
 			}
 		}
-
+		if !foundIt {
+			return errors.New("Repository does not contain " + viper.GetString("CRAWLED_FILENAME"))
+		}
 		return nil
 	}
 }
