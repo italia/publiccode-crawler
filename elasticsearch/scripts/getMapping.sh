@@ -8,7 +8,7 @@ source config.sh
 INDEX=$1
 
 if [ ! -n "${INDEX}" ] ; then
-    echo -e $RED "Devi passarmi il nome dell'Indice" $Z;
+    echo -e $RED "You have to pass index name" $Z;
     exit 1;
 fi
 
