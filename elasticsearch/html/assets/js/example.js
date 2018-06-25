@@ -24,33 +24,30 @@ function executeAutoCompleteESQuery(event) {
   event.preventDefault();
   client = event.data;
 
-  var not_language_specific = ['suggest-software-type', 'suggest-agencies'];
   var language = $('#language').val();
   var field_autocomplete = $('#es-select-type-query').val();
 
-  if (!not_language_specific.includes(field_autocomplete)) {
-    field_autocomplete = field_autocomplete + '-' + language.substring(0, 2);
-  }
+  field_autocomplete = language.substring(0, 2) + '.' + field_autocomplete;
 
   /**
    * In Elasticsearch are defined the following fields in order to use for suggestions
-   *  - suggest-all-it & suggest-all-en
-   *  - suggest-platforms-it & suggest-platforms-en
-   *  - suggest-software-type
-   *  - suggest-api-it & suggest-api-en
-   *  - suggest-agencies
+   *  - (it|en).suggest-all           - index: suggestions
+   *  - (it|en).suggest-platforms     - index: suggestions
+   *  - (it|en).suggest-software-type - index  suggestions
+   *  - (it|en).suggest-api           - index: suggestions
+   *  - (it|en).suggest-agencies      - index: suggestions
+   *  - (it|en).suggest-reuse-codeipa - index: suggestions
+   *  - (it|en).suggest-open-source   - index: suggestions
    */
-  console.log("campo autocomplete: ", field_autocomplete);
 
   var params = {
     'index': 'suggestions',
     'body': {
       'suggest': {
         'search_string': {
-          'prefix': event.target.value.trim().split(' '),
-          // 'prefix': event.target.value,
+          'prefix': event.target.value,
           'completion': {
-            'field' : field_autocomplete,
+            'field' :  field_autocomplete,
             'size': 10
           }
         }
@@ -67,7 +64,33 @@ function executeAutoCompleteESQuery(event) {
       var search_string = body.suggest.search_string.pop();
       $.each(search_string.options, function(index, option){
         console.log(option);
-        $('#es-automplete-results').append("<div>" + option._source.title + "</div>" );
+        var title = '';
+        // post - this can be moved into a function
+        if (typeof option._source.post !== 'undefined') {
+          title = option._source.post.title;
+        }
+
+        // software - this can be moved into a function
+        if (typeof option._source.software !== 'undefined') {
+          if (typeof option._source.software[language.substring(0, 2)] !== 'undefined' && typeof option._source.software[language.substring(0, 2)].localisedName !== 'undefined') {
+            title =  option._source.software[language.substring(0, 2)].localisedName; 
+          }
+          else {
+            title =  option._source.software.name; 
+          }
+        }
+
+        // software - this can be moved into a function
+        if (typeof option._source.agencies !== 'undefined') {
+          title = option._source.agencies.title;
+        }
+
+        // software - this can be moved into a function
+        if (typeof option._source.software_type !== 'undefined') {
+          title = option._source.software_type.title;
+        }
+
+        $('#es-automplete-results').append("<div>" + title + "</div>" );
       });
     },
     function(error){console.log(error);}

@@ -1,6 +1,17 @@
 {
 	"mappings": {
 		"post": {
+      "dynamic_templates": [
+        {
+          "dynamic-suggestions": {
+            "match":   "suggest-*",
+            "mapping": {
+              "type": "completion",
+              "preserve_separators": false
+            }
+          }
+        }
+      ],
 			"properties": {
 				"author": {
 					"type": "text",

@@ -51,6 +51,15 @@
               }
             }
           }
+        },
+        {
+          "dynamic-suggestions": {
+            "match":   "suggest-*",
+            "mapping": {
+              "type": "completion",
+              "preserve_separators": false
+            }
+          }
         }
       ],
       "properties": {
@@ -133,7 +142,7 @@
           "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
         "legal-mainCopyrightOwner": {
-          "type": "text"
+          "type": "keyword"
         },
         "legal-repoOwner": {
           "type": "text"
