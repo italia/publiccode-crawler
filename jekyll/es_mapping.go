@@ -4,18 +4,18 @@ type PublicCode struct {
 	PubliccodeYamlVersion string `json:"publiccode-yaml-version"`
 
 	Name             string `json:"name"`
-	ApplicationSuite string `json:"application-suite"`
+	ApplicationSuite string `json:"applicationSuite"`
 	URL              string `json:"url"`
-	LandingURL       string `json:"landing-url"`
+	LandingURL       string `json:"landingURL"`
 
-	IsBasedOn       []string `json:"is-based-on"`
-	SoftwareVersion string   `json:"software-version"`
-	ReleaseDate     string   `json:"release-date"`
+	IsBasedOn       []string `json:"isBasedOn"`
+	SoftwareVersion string   `json:"softwareVersion"`
+	ReleaseDate     string   `json:"releaseDate"`
 	Logo            string   `json:"logo"`
-	MonochromeLogo  string   `json:"monochrome-logo"`
+	MonochromeLogo  string   `json:"monochromeLogo"`
 
-	InputTypes  []string `json:"input-types"`
-	OutputTypes []string `json:"output-types"`
+	InputTypes  []string `json:"inputTypes"`
+	OutputTypes []string `json:"outputTypes"`
 
 	Platforms []string `json:"platforms"`
 
@@ -37,38 +37,28 @@ type PublicCode struct {
 
 	SoftwareType string `json:"software-type"`
 
-	IntendedAudience struct {
-		OnlyFor              []string `json:"intended-audience-only-for"`
-		Countries            []string `json:"intended-audience-countries"`
-		UnsupportedCountries []string `json:"intended-audience-unsupported-countries"`
-	} `json:"intendedAudience"`
+	IntendedAudienceOnlyFor              []string `json:"intended-audience-only-for"`
+	IntendedAudienceCountries            []string `json:"intended-audience-countries"`
+	IntendedAudienceUnsupportedCountries []string `json:"intended-audience-unsupported-countries"`
 
 	Description map[string]Desc `json:"description"`
 	OldVariants []OldVariant    `json:"old-variant"`
 
-	Legal struct {
-		License            string `json:"legal-license"`
-		MainCopyrightOwner string `json:"legal-main-copyright-owner"`
-		RepoOwner          string `json:"legal-repo-owner"`
-		AuthorsFile        string `json:"legal-authors-file"`
-	} `json:"legal"`
+	LegalLicense            string `json:"legal-license"`
+	LegalMainCopyrightOwner string `json:"legal-main-copyright-owner"`
+	LegalRepoOwner          string `json:"legal-repo-owner"`
+	LegalAuthorsFile        string `json:"legal-authors-file"`
 
-	Maintenance struct {
-		Type        string       `json:"maintainance-type"`
-		Contractors []Contractor `json:"maintainance-contractors"`
-		Contacts    []Contact    `json:"maintainance-contacts"`
-	} `json:"maintenance"`
+	MaintenanceType        string       `json:"maintainance-type"`
+	MaintenanceContractors []Contractor `json:"maintainance-contractors"`
+	MaintenanceContacts    []Contact    `json:"maintainance-contacts"`
 
-	Localisation struct {
-		LocalisationReady  bool     `json:"localisation-localisation-ready"`
-		AvailableLanguages []string `json:"localisation-available-languages"`
-	} `json:"localisation"`
+	LocalisationLocalisationReady  bool     `json:"localisation-localisation-ready"`
+	LocalisationAvailableLanguages []string `json:"localisation-available-languages"`
 
-	Dependencies struct {
-		Open        []Dependency `json:"dependencies-open"`
-		Proprietary []Dependency `json:"dependencies-proprietary"`
-		Hardware    []Dependency `json:"dependencies-hardware"`
-	} `json:"dependencies"`
+	DependenciesOpen        []Dependency `json:"dependencies-open"`
+	DependenciesProprietary []Dependency `json:"dependencies-proprietary"`
+	DependenciesHardware    []Dependency `json:"dependencies-hardware"`
 
 	// Italian extension.
 	ItConformeAccessibile    bool `json:"it-conforme-accessibile"`

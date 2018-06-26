@@ -2,23 +2,16 @@ package crawler
 
 import (
 	"context"
+	"net/url"
 
-	"github.com/italia/developers-italia-backend/jekyll"
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/olivere/elastic"
-	yaml "gopkg.in/yaml.v1"
+	pcode "github.com/publiccodenet/publiccode.yml-parser-go"
+	log "github.com/sirupsen/logrus"
 )
 
-// File is a generic structure for saveToES() function.
-// TODO: Will be replaced with a parsed publiccode.PublicCode whit proper mapping.
-type File struct {
-	Source string `json:"source"`
-	Name   string `json:"name"`
-	Data   string `json:"data"`
-}
-
 // SaveToES save the chosen data []byte in elasticsearch
-func SaveToES(domain Domain, name string, data []byte, index string, elasticClient *elastic.Client) error {
+func SaveToES(domain Domain, name string, activityIndex float64, data []byte, index string, elasticClient *elastic.Client) error {
 	const (
 		// Elasticsearch mapping for publiccode. Check elasticsearch/mappings/.
 		mapping = `{
@@ -452,18 +445,162 @@ func SaveToES(domain Domain, name string, data []byte, index string, elasticClie
 	// Starting with elastic.v5, you must pass a context to execute each service.
 	ctx := context.Background()
 
-	// Generic publiccode data
-	pc := PublicCode{}
-	err := yaml.Unmarshal([]byte(data), &pc)
+	// Generate publiccode data using the parser.
+	pc := pcode.PublicCode{}
+	err := pcode.Parse([]byte(data), &pc)
+	//	yaml.Unmarshal([]byte(data), &pc)
 	if err != nil {
-		return err
+		log.Errorf("Error in publiccode.yml for %s: %v", name, err)
 	}
 
 	// Add a document to the index.
-	file := jekyll.PublicCode{
+	file := PublicCodeES{
 		PubliccodeYamlVersion: pc.PubliccodeYamlVersion,
-		Name: pc.Name,
-	} //File{Source: domain.Host, Name: name, Data: string(data)}
+
+		Name:             pc.Name,
+		ApplicationSuite: pc.ApplicationSuite,
+		URL:              pc.URL.String(),
+		LandingURL:       pc.LandingURL.String(),
+
+		IsBasedOn:       pc.IsBasedOn,
+		SoftwareVersion: pc.SoftwareVersion,
+		ReleaseDate:     pc.ReleaseDate.Format("2006-01-02"),
+		Logo:            pc.Logo,
+		MonochromeLogo:  pc.MonochromeLogo,
+		InputTypes:      pc.InputTypes,
+		OutputTypes:     pc.OutputTypes,
+
+		Platforms: pc.Platforms,
+
+		Tags: pc.Tags,
+
+		FreeTags: pc.FreeTags,
+
+		UsedBy: pc.UsedBy,
+
+		Roadmap: pc.Roadmap.String(),
+
+		DevelopmentStatus: pc.DevelopmentStatus,
+
+		VitalityScore:     activityIndex,
+		VitalityDataChart: []int{12, 24, 36, 48, 60, 72, 84, 96, 48},
+
+		RelatedSoftware: nil,
+
+		SoftwareType: pc.SoftwareType,
+
+		IntendedAudienceOnlyFor:              pc.IntendedAudience.OnlyFor,
+		IntendedAudienceCountries:            pc.IntendedAudience.Countries,
+		IntendedAudienceUnsupportedCountries: pc.IntendedAudience.UnsupportedCountries,
+
+		Description: map[string]Desc{},
+		//OldVariants: oldVariant will be added in the seach function.
+
+		LegalLicense:            pc.Legal.License,
+		LegalMainCopyrightOwner: pc.Legal.MainCopyrightOwner,
+		LegalRepoOwner:          pc.Legal.RepoOwner,
+		LegalAuthorsFile:        pc.Legal.AuthorsFile,
+
+		MaintenanceType:        pc.Maintenance.Type,
+		MaintenanceContractors: []Contractor{},
+		MaintenanceContacts:    []Contact{},
+
+		LocalisationLocalisationReady:  pc.Localisation.LocalisationReady,
+		LocalisationAvailableLanguages: pc.Localisation.AvailableLanguages,
+
+		DependenciesOpen:        []Dependency{},
+		DependenciesProprietary: []Dependency{},
+		DependenciesHardware:    []Dependency{},
+
+		ItConformeAccessibile:    pc.It.Conforme.Accessibile,
+		ItConformeInteroperabile: pc.It.Conforme.Interoperabile,
+		ItConformeSicuro:         pc.It.Conforme.Sicuro,
+		ItConformePrivacy:        pc.It.Conforme.Privacy,
+
+		ItRiusoCodiceIPA: pc.It.Riuso.CodiceIPA,
+
+		ItSpid:   pc.It.Spid,
+		ItPagopa: pc.It.Pagopa,
+		ItCie:    pc.It.Cie,
+		ItAnpr:   pc.It.Anpr,
+
+		ItEcosistemi: pc.It.Ecosistemi,
+
+		ItDesignKitSeo:     pc.It.DesignKit.Seo,
+		ItDesignKitUI:      pc.It.DesignKit.UI,
+		ItDesignKitWeb:     pc.It.DesignKit.Web,
+		ItDesignKitContent: pc.It.DesignKit.Content,
+	}
+	// Populate complex fields.
+	for _, contractor := range pc.Maintenance.Contractors {
+		file.MaintenanceContractors = append(file.MaintenanceContractors, Contractor{
+			Name:    contractor.Name,
+			Website: contractor.Website.String(),
+			Until:   contractor.Until.String(),
+		})
+	}
+	for _, contact := range pc.Maintenance.Contacts {
+		file.MaintenanceContacts = append(file.MaintenanceContacts, Contact{
+			Name:        contact.Name,
+			Email:       contact.Email,
+			Affiliation: contact.Affiliation,
+			Phone:       contact.Phone,
+		})
+	}
+	for lang, _ := range pc.Description {
+		file.Description[lang] = Desc{
+			LocalisedName:    pc.Description[lang].LocalisedName,
+			GenericName:      pc.Description[lang].GenericName,
+			ShortDescription: pc.Description[lang].ShortDescription,
+			LongDescription:  pc.Description[lang].LongDescription,
+			Documentation:    pc.Description[lang].Documentation.String(),
+			APIDocumentation: pc.Description[lang].APIDocumentation.String(),
+			FeatureList:      pc.Description[lang].FeatureList,
+			Screenshots: func(screenshots []string) []string {
+				var s []string
+				for _, screenshot := range screenshots {
+					s = append(s, screenshot)
+				}
+				return s
+			}(pc.Description[lang].Screenshots),
+			Videos: func(videos []*url.URL) []string {
+				var v []string
+				for _, video := range videos {
+					v = append(v, video.String())
+				}
+				return v
+			}(pc.Description[lang].Videos),
+			Awards: pc.Description[lang].Awards,
+		}
+
+	}
+	for _, dependency := range pc.Dependencies.Open {
+		file.DependenciesOpen = append(file.DependenciesOpen, Dependency{
+			Name:       dependency.Name,
+			VersionMin: dependency.VersionMin,
+			VersionMax: dependency.VersionMax,
+			Optional:   dependency.Optional,
+			Version:    dependency.Version,
+		})
+	}
+	for _, dependency := range pc.Dependencies.Proprietary {
+		file.DependenciesProprietary = append(file.DependenciesProprietary, Dependency{
+			Name:       dependency.Name,
+			VersionMin: dependency.VersionMin,
+			VersionMax: dependency.VersionMax,
+			Optional:   dependency.Optional,
+			Version:    dependency.Version,
+		})
+	}
+	for _, dependency := range pc.Dependencies.Hardware {
+		file.DependenciesHardware = append(file.DependenciesHardware, Dependency{
+			Name:       dependency.Name,
+			VersionMin: dependency.VersionMin,
+			VersionMax: dependency.VersionMax,
+			Optional:   dependency.Optional,
+			Version:    dependency.Version,
+		})
+	}
 
 	// Use the IndexExists service to check if a specified index exists.
 	exists, err := elasticClient.IndexExists(index).Do(context.Background())

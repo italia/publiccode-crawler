@@ -167,7 +167,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		log.Debugf("Activity Index for %s: %f", name, activityIndex)
 
 		// Save to ES.
-		err = SaveToES(domain, name, resp.Body, index, elasticClient)
+		err = SaveToES(domain, name, activityIndex, resp.Body, index, elasticClient)
 		if err != nil {
 			log.Errorf("error saving to ElastcSearch: %v", err)
 		}

@@ -5,6 +5,7 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v1"
@@ -58,7 +59,7 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(PublicCode)
 		// Debug.
-		log.Debug(i)
+		spew.Dump(i)
 
 		if i.ItRiusoCodiceIPA != "" {
 			administrations = append(administrations, Administration{

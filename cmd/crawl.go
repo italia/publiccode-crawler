@@ -90,6 +90,7 @@ var crawlCmd = &cobra.Command{
 
 		// Generate the jekyll files.
 		// amministrazioni.yml
+		log.Debug("Saving amministrazioni.yml ...")
 		err = jekyll.AmministrazioniYML("jekyll/generated/amministrazioni.yml", elasticClient)
 		if err != nil {
 			log.Error(err)

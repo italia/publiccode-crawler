@@ -1,145 +1,135 @@
 package crawler
 
-import (
-	"net/url"
-	"time"
-)
+type PublicCodeES struct {
+	PubliccodeYamlVersion string `json:"publiccode-yaml-version"`
 
-// Publiccode is a publiccode.yml file definition.
-// Reference: https://github.com/publiccodenet/publiccode.yml
-type PublicCode struct {
-	PubliccodeYamlVersion string `yaml:"publiccode-yaml-version" json:"publiccode-yaml-version"`
+	Name             string `json:"name"`
+	ApplicationSuite string `json:"applicationSuite"`
+	URL              string `json:"url"`
+	LandingURL       string `json:"landingURL"`
 
-	Name             string   `yaml:"name" json:"name"`
-	ApplicationSuite string   `yaml:"applicationSuite" json:"applicationSuite"`
-	URL              *url.URL `yaml:"url" json:"url"`
-	LandingURL       *url.URL `yaml:"landingURL" json:"landingURL"`
+	IsBasedOn       []string `json:"isBasedOn"`
+	SoftwareVersion string   `json:"softwareVersion"`
+	ReleaseDate     string   `json:"releaseDate"`
+	Logo            string   `json:"logo"`
+	MonochromeLogo  string   `json:"monochromeLogo"`
 
-	IsBasedOn       []string  `yaml:"isBasedOn" json:"isBasedOn"`
-	SoftwareVersion string    `yaml:"softwareVersion" json:"softwareVersion"`
-	ReleaseDate     time.Time `yaml:"releaseDate" json:"releaseDate"`
-	Logo            string    `yaml:"logo" json:"logo"`
-	MonochromeLogo  string    `yaml:"monochromeLogo" json:"monochromeLogo"`
+	InputTypes  []string `json:"inputTypes"`
+	OutputTypes []string `json:"outputTypes"`
 
-	InputTypes  []string `yaml:"inputTypes" json:"inputTypes"`
-	OutputTypes []string `yaml:"outputTypes" json:"outputTypes"`
+	Platforms []string `json:"platforms"`
 
-	Platforms []string `yaml:"platforms" json:"platforms"`
+	Tags []string `json:"tags"`
 
-	Tags []string `yaml:"tags" json:"tags"`
+	FreeTags map[string][]string `json:"free-tags"`
 
-	FreeTags map[string][]string `yaml:"freeTags" json:"freeTags"`
+	UsedBy []string `json:"used-by"`
 
-	UsedBy []string `yaml:"usedBy" json:"usedBy"`
+	Roadmap string `json:"roadmap"`
 
-	Roadmap *url.URL `yaml:"roadmap" json:"roadmap"`
+	DevelopmentStatus string `json:"development-status"`
 
-	DevelopmentStatus string `yaml:"developmentStatus" json:"developmentStatus"`
+	// Vitalityscore
+	VitalityScore     float64 `json:"vitalityScore"`
+	VitalityDataChart []int   `json:"vitalityDataChart"`
 
-	SoftwareType string `yaml:"softwareType" json:"softwareType"`
+	RelatedSoftware []string `json:"related-software"` //TODO: update after crawling.
 
-	IntendedAudience struct {
-		OnlyFor              []string `yaml:"onlyFor" json:"onlyFor"`
-		Countries            []string `yaml:"countries" json:"countries"`
-		UnsupportedCountries []string `yaml:"unsupportedCountries" json:"unsupportedCountries"`
-	} `yaml:"intendedAudience" json:"intendedAudience"`
+	SoftwareType string `json:"software-type"`
 
-	Description map[string]Desc `yaml:"description" json:"description"`
+	IntendedAudienceOnlyFor              []string `json:"intended-audience-only-for"`
+	IntendedAudienceCountries            []string `json:"intended-audience-countries"`
+	IntendedAudienceUnsupportedCountries []string `json:"intended-audience-unsupported-countries"`
 
-	Legal struct {
-		License            string `yaml:"license" json:"license"`
-		MainCopyrightOwner string `yaml:"mainCopyrightOwner" json:"mainCopyrightOwner"`
-		RepoOwner          string `yaml:"repoOwner" json:"repoOwner"`
-		AuthorsFile        string `yaml:"authorsFile" json:"authorsFile"`
-	} `yaml:"legal" json:"legal"`
+	Description map[string]Desc `json:"description"`
+	//OldVariants []OldVariant    `json:"old-variant"`
 
-	Maintenance struct {
-		Type        string       `yaml:"type" json:"type"`
-		Contractors []Contractor `yaml:"contractors" json:"contractors"`
-		Contacts    []Contact    `yaml:"contacts" json:"contacts"`
-	} `yaml:"maintenance" json:"maintenance"`
+	LegalLicense            string `json:"legal-license"`
+	LegalMainCopyrightOwner string `json:"legal-main-copyright-owner"`
+	LegalRepoOwner          string `json:"legal-repo-owner"`
+	LegalAuthorsFile        string `json:"legal-authors-file"`
 
-	Localisation struct {
-		LocalisationReady  bool     `yaml:"localisationReady" json:"localisationReady"`
-		AvailableLanguages []string `yaml:"availableLanguages" json:"availableLanguages"`
-	} `yaml:"localisation" json:"localisation"`
+	MaintenanceType        string       `json:"maintainance-type"`
+	MaintenanceContractors []Contractor `json:"maintainance-contractors"`
+	MaintenanceContacts    []Contact    `json:"maintainance-contacts"`
 
-	Dependencies struct {
-		Open        []Dependency `yaml:"open" json:"open"`
-		Proprietary []Dependency `yaml:"proprietary" json:"proprietary"`
-		Hardware    []Dependency `yaml:"hardware" json:"hardware"`
-	} `yaml:"dependencies" json:"dependencies"`
+	LocalisationLocalisationReady  bool     `json:"localisation-localisation-ready"`
+	LocalisationAvailableLanguages []string `json:"localisation-available-languages"`
 
-	It ExtensionIT `yaml:"it" json:"it"`
+	DependenciesOpen        []Dependency `json:"dependencies-open"`
+	DependenciesProprietary []Dependency `json:"dependencies-proprietary"`
+	DependenciesHardware    []Dependency `json:"dependencies-hardware"`
+
+	// Italian extension.
+	ItConformeAccessibile    bool `json:"it-conforme-accessibile"`
+	ItConformeInteroperabile bool `json:"it-conforme-interoperabile"`
+	ItConformeSicuro         bool `json:"it-conforme-sicuro"`
+	ItConformePrivacy        bool `json:"it-conforme-privacy"`
+
+	ItRiusoCodiceIPA string `json:"it-riuso-codice-ipa"`
+
+	ItSpid   bool `json:"it-spid"`
+	ItPagopa bool `json:"it-pagopa"`
+	ItCie    bool `json:"it-cie"`
+	ItAnpr   bool `json:"it-anpr"`
+
+	ItEcosistemi []string `json:"it-ecosistemi"`
+
+	ItDesignKitSeo     bool `json:"it-design-kit-seo"`
+	ItDesignKitUI      bool `json:"it-design-kit-ui""`
+	ItDesignKitWeb     bool `json:"it-design-kit-web"`
+	ItDesignKitContent bool `json:"it-design-kit-content"`
 }
 
 // Desc is a general description of the software.
 // Reference: https://github.com/publiccodenet/publiccode.yml/blob/develop/schema.md#section-description
 type Desc struct {
-	LocalisedName    string     `yaml:"localisedName" json:"localisedName"`
-	GenericName      string     `yaml:"genericName" json:"genericName"`
-	ShortDescription string     `yaml:"shortDescription" json:"shortDescription"`
-	LongDescription  string     `yaml:"longDescription" json:"longDescription"`
-	Documentation    *url.URL   `yaml:"documentation" json:"documentation"`
-	APIDocumentation *url.URL   `yaml:"apiDocumentation" json:"apiDocumentation"`
-	FeatureList      []string   `yaml:"featureList" json:"featureList"`
-	Screenshots      []string   `yaml:"screenshots" json:"screenshots"`
-	Videos           []*url.URL `yaml:"videos" json:"videos"`
-	Awards           []string   `yaml:"awards" json:"awards"`
+	LocalisedName    string   `json:"localisedName"`
+	GenericName      string   `json:"genericName"`
+	ShortDescription string   `json:"shortDescription"`
+	LongDescription  string   `json:"longDescription"`
+	Documentation    string   `json:"documentation"`
+	APIDocumentation string   `json:"apiDocumentation"`
+	FeatureList      []string `json:"featureList"`
+	Screenshots      []string `json:"screenshots"`
+	Videos           []string `json:"videos"`
+	Awards           []string `json:"awards"`
 }
 
 // Contractor is an entity or entities, if any, that are currently contracted for maintaining the software.
 // Reference: https://github.com/publiccodenet/publiccode.yml/blob/develop/schema.md#contractor
 type Contractor struct {
-	Name    string    `yaml:"name" json:"name"`
-	Website *url.URL  `yaml:"website" json:"website"`
-	Until   time.Time `yaml:"until" json:"until"`
+	Name    string `json:"name"`
+	Website string `json:"website"`
+	Until   string `json:"until"`
 }
 
 // Contact is a contact info maintaining the software.
 // Reference: https://github.com/publiccodenet/publiccode.yml/blob/develop/schema.md#contact
 type Contact struct {
-	Name        string `yaml:"name" json:"name"`
-	Email       string `yaml:"email" json:"email"`
-	Affiliation string `yaml:"affiliation" json:"affiliation"`
-	Phone       string `yaml:"phone" json:"phone"`
+	Name        string `json:"name"`
+	Email       string `json:"email"`
+	Affiliation string `json:"affiliation"`
+	Phone       string `json:"phone"`
 }
 
 // Dependency describe system-level dependencies required to install and use this software.
 // Reference: https://github.com/publiccodenet/publiccode.yml/blob/develop/schema.md#section-dependencies
 type Dependency struct {
-	Name       string `yaml:"name" json:"name"`
-	VersionMin string `yaml:"versionMin" json:"versionMin"`
-	VersionMax string `yaml:"versionMax" json:"versionMax"`
-	Optional   bool   `yaml:"optional" json:"optional"`
-	Version    string `yaml:"version" json:"optional"`
+	Name       string `json:"name"`
+	VersionMin string `json:"versionMin"`
+	VersionMax string `json:"versionMax"`
+	Optional   bool   `json:"optional"`
+	Version    string `json:"version"`
 }
 
-// ExtensionIT is the country-specific extension for Italy.
-// Reference: https://github.com/publiccodenet/publiccode.yml/blob/develop/schema.it.md
-type ExtensionIT struct {
-	Conforme struct {
-		Accessibile    bool `yaml:"accessibile" json:"accessibile"`
-		Interoperabile bool `yaml:"interoperabile" json:"interoperabile"`
-		Sicuro         bool `yaml:"sicuro" json:"sicuro"`
-		Privacy        bool `yaml:"privacy" json:"privacy"`
-	} `yaml:"conforme" json:"conforme"`
-
-	Riuso struct {
-		CodiceIPA string `yaml:"codiceIPA" json:"codiceIPA"`
-	} `yaml:"riuso" json:"riuso"`
-
-	Spid   bool `yaml:"spid" json:"spid"`
-	Pagopa bool `yaml:"pagopa" json:"pagopa"`
-	Cie    bool `yaml:"cie" json:"cie"`
-	Anpr   bool `yaml:"anpr" json:"anpr"`
-
-	Ecosistemi []string `yaml:"ecosistemi" json:"ecosistemi"`
-
-	DesignKit struct {
-		Seo     bool `yaml:"seo" json:"seo"`
-		UI      bool `yaml:"ui" json:"ui"`
-		Web     bool `yaml:"web" json:"web"`
-		Content bool `yaml:"content" json:"content"`
-	} `yaml:"designKit" json:"designKit"`
+type OldVariant struct {
+	Name        string             `json:"name"`
+	URL         string             `json:"url"`
+	Description map[string]OldDesc `json:"description"`
+}
+type OldDesc struct {
+	LocalisedName string   `json:"localisedName"`
+	GenericName   string   `json:"genericName"`
+	FeatureList   []string `json:"featureList"`
 }
