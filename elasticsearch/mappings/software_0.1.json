@@ -1,25 +1,4 @@
-#!/bin/bash
-#
-# To create an index in elasticsearch
-#
-
-# shards & replicas are default values.
-#
-
-source config.sh
-
-TODAY=$(date '+%Y%m%d')
-INDEX="publiccode_$TODAY"
-
-generate_index_settings() {
-  cat <<EOF
 {
-  "settings" : {
-    "index" : {
-      "number_of_shards" : 5,
-      "number_of_replicas" : 1
-    }
-  },
   "mappings": {
     "software": {
       "dynamic_templates": [
@@ -444,7 +423,3 @@ generate_index_settings() {
     }
   }
 }
-EOF
-}
-
-curl -u "$BASICAUTH" -X PUT "$ELASTICSEARCH_URL/$INDEX" -H 'Content-Type: application/json' -d"$(generate_index_settings)"
