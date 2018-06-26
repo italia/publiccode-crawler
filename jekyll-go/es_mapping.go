@@ -1,4 +1,4 @@
-package jekyll
+package main
 
 type PublicCode struct {
 	PubliccodeYamlVersion string `json:"publiccode-yaml-version"`

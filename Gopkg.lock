@@ -29,8 +29,8 @@
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
   packages = ["."]
-  revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
-  version = "v1.4.7"
+  revision = "836bfd95fecc0f1511dd66bdbf2b5b61ab8b00b6"
+  version = "v1.2.11"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -210,8 +210,8 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
+  revision = "418b41d23a1bf978c06faea5313ba194650ac088"
+  version = "v0.8.7"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -293,8 +293,7 @@
     "poly1305",
     "ssh",
     "ssh/agent",
-    "ssh/knownhosts",
-    "ssh/terminal"
+    "ssh/knownhosts"
   ]
   revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
 
@@ -307,10 +306,7 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = [
-    "unix",
-    "windows"
-  ]
+  packages = ["windows"]
   revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
 
 [[projects]]
@@ -404,6 +400,12 @@
   version = "v0.1.2"
 
 [[projects]]
+  branch = "v1"
+  name = "gopkg.in/yaml.v1"
+  packages = ["."]
+  revision = "9f9df34309c04878acc86042b16630b0f696e1de"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -412,6 +414,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3baebd85e901b17aa078b29c8ee7961577698a7ecf60bee434f263b3fa396f9d"
+  inputs-digest = "c5020286a9c0779644e8fb88ba19e97731abc36f4339ec714788a76f2fe8aa44"
   solver-name = "gps-cdcl"
   solver-version = 1

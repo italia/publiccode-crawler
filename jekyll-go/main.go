@@ -1,10 +1,12 @@
-package jekyll
+package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"reflect"
 
+	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v1"
@@ -16,8 +18,15 @@ type Administration struct {
 	CodiceIPA string `json:"ipa"`
 }
 
-// AmministrazioniYML generate a yml file with all the amministrazioni in es.
-func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
+func main() {
+	file := "generated/amministrazioni.yml"
+	err := AmministrazioniYML(file)
+	if err != nil {
+		log.Error(err)
+	}
+}
+
+func AmministrazioniYML(filename string) error {
 	// Uncommnet when the publiccodes is ready to be written on file.
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
@@ -42,6 +51,16 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	// Administrations data.
 	var administrations []Administration
 
+	// Elastic connection.
+	elasticClient, err := crawler.ElasticClientFactory(
+		"http://localhost:9200",
+		"",
+		"")
+	if err != nil {
+		fmt.Println("error connecting es")
+		log.Error(err)
+	}
+
 	// Extract all the documents.
 	searchResult, err := elasticClient.Search().
 		Index("publiccode").               // search in index "publiccode"
@@ -57,9 +76,6 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	var pctype PublicCode
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(PublicCode)
-		// Debug.
-		log.Debug(i)
-
 		if i.ItRiusoCodiceIPA != "" {
 			administrations = append(administrations, Administration{
 				Name:      i.Name,
