@@ -439,7 +439,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 	    }
 	  }
 	}
-`
+` // nolint: misspell
 	)
 
 	// Starting with elastic.v5, you must pass a context to execute each service.
@@ -447,7 +447,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 
 	// Generate publiccode data using the parser.
 	pc := pcode.PublicCode{}
-	err := pcode.Parse([]byte(data), &pc)
+	err := pcode.Parse(data, &pc)
 	//	yaml.Unmarshal([]byte(data), &pc)
 	if err != nil {
 		log.Errorf("Error in publiccode.yml for %s: %v", name, err)
@@ -494,7 +494,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 		IntendedAudienceUnsupportedCountries: pc.IntendedAudience.UnsupportedCountries,
 
 		Description: map[string]Desc{},
-		//OldVariants: oldVariant will be added in the seach function.
+		//OldVariants: oldVariant will be added in the search function.
 
 		LegalLicense:            pc.Legal.License,
 		LegalMainCopyrightOwner: pc.Legal.MainCopyrightOwner,
@@ -547,7 +547,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 			Phone:       contact.Phone,
 		})
 	}
-	for lang, _ := range pc.Description {
+	for lang := range pc.Description {
 		file.Description[lang] = Desc{
 			LocalisedName:    pc.Description[lang].LocalisedName,
 			GenericName:      pc.Description[lang].GenericName,
@@ -558,9 +558,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 			FeatureList:      pc.Description[lang].FeatureList,
 			Screenshots: func(screenshots []string) []string {
 				var s []string
-				for _, screenshot := range screenshots {
-					s = append(s, screenshot)
-				}
+				s = append(s, screenshots...)
 				return s
 			}(pc.Description[lang].Screenshots),
 			Videos: func(videos []*url.URL) []string {

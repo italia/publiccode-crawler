@@ -11,6 +11,7 @@ import (
 	yaml "gopkg.in/yaml.v1"
 )
 
+// Administration is a simple description of an Administration.
 type Administration struct {
 	Name      string `json:"name"`
 	URL       string `json:"url"`
@@ -32,13 +33,13 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	if err != nil {
 		return err
 	}
-	file.Close()
+	file.Close() // nolint: errcheck
 	// Open file.
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer f.Close() // nolint: errcheck
 
 	// Administrations data.
 	var administrations []Administration

@@ -11,8 +11,8 @@ class generatorRandomDocuments {
   protected $repo_owner;
   protected $repo_owner_numbers;
 
-  protected $maintainance_type;
-  protected $maintainance_type_numbers;
+  protected $maintenance_type;
+  protected $maintenance_type_numbers;
 
   protected $technical_contacts;
 
@@ -518,8 +518,8 @@ class generatorRandomDocuments {
     ];
     $this->repo_owner_numbers = count($this->repo_owner);
 
-    $this->maintainance_type = ["internal", "contract", "community", "none"];
-    $this->maintainance_type_numbers = count($this->maintainance_type);
+    $this->maintenance_type = ["internal", "contract", "community", "none"];
+    $this->maintenance_type_numbers = count($this->maintenance_type);
 
     $this->technical_contacts = [];
 
@@ -909,7 +909,7 @@ class generatorRandomDocuments {
         "dependsOn-hardware" => $this->getRandomDependenciesHardware(),
         "maintenance-contacts" => $this->generateRandomMaintenanceContact(),
         "maintenance-contractors" => $this->getRandomMaintenanceContractors(),
-        "maintainance-type" => $this->getRandomMaintainanceType(),
+        "maintenance-type" => $this->getRandommaintenanceType(),
         "localisation-localisationReady" => boolval(rand(0,1)),
         "localisation-availableLanguages" => [],
         "it-conforme-accessibile" => boolval(rand(0,1)),
@@ -1118,18 +1118,18 @@ class generatorRandomDocuments {
     return $dependencies_hardware;
   }
 
-  public function getRandomMaintainanceType() {
-    return $this->maintainance_type[rand(0, $this->maintainance_type_numbers -1)];
+  public function getRandommaintenanceType() {
+    return $this->maintenance_type[rand(0, $this->maintenance_type_numbers -1)];
   }
 
   public function getRandomMaintenanceContractors() {
-    $maintainance_contractors = [];
+    $maintenance_contractors = [];
     $n = rand(1,3);
     for ($i=0; $i < $n; $i++) {
-      $maintainance_contractors = $this->generateRandomMaintenanceContractor();
+      $maintenance_contractors = $this->generateRandomMaintenanceContractor();
     }
 
-    return $maintainance_contractors;
+    return $maintenance_contractors;
   }
 
   public function getRandomProjectName() {

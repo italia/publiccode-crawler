@@ -1,5 +1,6 @@
 package jekyll
 
+// PublicCode describe the data used in jekyll that includes publiccode and meta informations.
 type PublicCode struct {
 	PubliccodeYamlVersion string `json:"publiccode-yaml-version"`
 
@@ -49,9 +50,9 @@ type PublicCode struct {
 	LegalRepoOwner          string `json:"legal-repo-owner"`
 	LegalAuthorsFile        string `json:"legal-authors-file"`
 
-	MaintenanceType        string       `json:"maintainance-type"`
-	MaintenanceContractors []Contractor `json:"maintainance-contractors"`
-	MaintenanceContacts    []Contact    `json:"maintainance-contacts"`
+	MaintenanceType        string       `json:"maintenance-type"`
+	MaintenanceContractors []Contractor `json:"maintenance-contractors"`
+	MaintenanceContacts    []Contact    `json:"maintenance-contacts"`
 
 	LocalisationLocalisationReady  bool     `json:"localisation-localisation-ready"`
 	LocalisationAvailableLanguages []string `json:"localisation-available-languages"`
@@ -61,7 +62,7 @@ type PublicCode struct {
 	DependenciesHardware    []Dependency `json:"dependencies-hardware"`
 
 	// Italian extension.
-	ItConformeAccessibile    bool `json:"it-conforme-accessibile"`
+	ItConformeAccessibile    bool `json:"it-conforme-accessibile"` // nolint: misspell
 	ItConformeInteroperabile bool `json:"it-conforme-interoperabile"`
 	ItConformeSicuro         bool `json:"it-conforme-sicuro"`
 	ItConformePrivacy        bool `json:"it-conforme-privacy"`
@@ -76,7 +77,7 @@ type PublicCode struct {
 	ItEcosistemi []string `json:"it-ecosistemi"`
 
 	ItDesignKitSeo     bool `json:"it-design-kit-seo"`
-	ItDesignKitUI      bool `json:"it-design-kit-ui""`
+	ItDesignKitUI      bool `json:"it-design-kit-ui"`
 	ItDesignKitWeb     bool `json:"it-design-kit-web"`
 	ItDesignKitContent bool `json:"it-design-kit-content"`
 }
@@ -123,11 +124,14 @@ type Dependency struct {
 	Version    string `json:"version"`
 }
 
+// OldVariant describe some infos about variant of the software.
 type OldVariant struct {
 	Name        string             `json:"name"`
 	URL         string             `json:"url"`
 	Description map[string]OldDesc `json:"description"`
 }
+
+// OldDesc is a description of old OldVariants softwares.
 type OldDesc struct {
 	LocalisedName string   `json:"localisedName"`
 	GenericName   string   `json:"genericName"`
