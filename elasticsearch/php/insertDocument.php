@@ -26,8 +26,6 @@ foreach ($aliases as $a => $a_indexes) {
 $posts = insert_jekyll_posts($client, 'jekyll', 'jekyll_data.json');
 $documents = insert_publiccode_documents($client, $index, $type);
 insert_suggestions_documents($client, 'suggestions', 'suggestion', $documents);
-insert_suggestions_posts($client, 'suggestions', 'suggestion', $posts);
-insert_suggestions_agencies($client, 'suggestions', 'suggestion');
 insert_suggestions_software_type($client, 'suggestions', 'suggestion');
 
 function create_indexes($client, $indexes) {
@@ -163,10 +161,10 @@ function insert_suggestions_agencies($client, $index, $type) {
   foreach ($response['aggregations']['agencies']['buckets'] as $item) {
     $agencies[] = [
       'it' => [
-        'suggest-agencies' => $item['key'],
+        'suggest-agencies' => explode(' ', $item['key']),
       ],
       'en' => [
-        'suggest-agencies' => $item['key'],
+        'suggest-agencies' => explode(' ', $item['key']),
       ],
       'agency' => [
         'title' => $item['key']

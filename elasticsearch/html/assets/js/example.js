@@ -24,77 +24,229 @@ function executeAutoCompleteESQuery(event) {
   event.preventDefault();
   client = event.data;
 
-  var language = $('#language').val();
+  var language = $('#language').val().substring(0, 2);
   var field_autocomplete = $('#es-select-type-query').val();
+  var query, index, types;
 
-  field_autocomplete = language.substring(0, 2) + '.' + field_autocomplete;
+  switch (field_autocomplete) {
+    case 'suggest-all':
+      query = AutoCompleteESQuerySuggestAll(event.target.value, language);
+      index = 'publiccode';
+      types = ['software', 'post'];
+      break;
+    case 'suggest-software-type':
+    case 'suggest-agencies':
+      query = AutoCompleteESQuerySuggestTerms(event.target.value, language, field_autocomplete);
+      index = 'suggestions';
+      types = 'suggestion';
+      break;
+    case 'suggest-api':
+      break;
+    case 'suggest-platforms':
+      query = AutoCompleteESQuerySuggestPlatforms(event.target.value, language);
+      index = 'jekyll';
+      types = 'post';
+      break;
+    case 'suggest-reuse-codeipa':
+      query = AutoCompleteESQuerySuggestReuseCodeIPA(event.target.value, language);
+      index = 'publiccode';
+      types = ['software'];
+      break;
+    case 'suggest-open-source':
+    query = AutoCompleteESQuerySuggestOpenSource(event.target.value, language);
+      index = 'publiccode';
+      types = ['software'];
+      break;
+  }
 
   /**
    * In Elasticsearch are defined the following fields in order to use for suggestions
-   *  - (it|en).suggest-all           - index: suggestions
-   *  - (it|en).suggest-platforms     - index: suggestions
-   *  - (it|en).suggest-software-type - index  suggestions
-   *  - (it|en).suggest-api           - index: suggestions
+   *  - (it|en).suggest-all           - index: publiccode
+   *  - (it|en).suggest-platforms     - index: jekyll
+   *  - (it|en).suggest-software-type - index: suggestions
+   *  - (it|en).suggest-api           - index: jekyll
    *  - (it|en).suggest-agencies      - index: suggestions
-   *  - (it|en).suggest-reuse-codeipa - index: suggestions
-   *  - (it|en).suggest-open-source   - index: suggestions
+   *  - (it|en).suggest-reuse-codeipa - index: publiccode
+   *  - (it|en).suggest-open-source   - index: publiccode
    */
 
   var params = {
-    'index': 'suggestions',
-    'body': {
-      'suggest': {
-        'search_string': {
-          'prefix': event.target.value,
-          'completion': {
-            'field' :  field_autocomplete,
-            'size': 10
+    'index': index,
+    'type': types,
+    'body': query
+  };
+
+  client.search(params).then(
+    function(body){
+      $('#es-automplete-results').text("");
+
+      // For suggester query.
+      if (field_autocomplete == 'suggest-software-type' || field_autocomplete == 'suggest-agencies') {
+        $.each(body.suggest.search_string.pop().options, AutoCompleteESShowSuggest);
+      }
+      // For search query.
+      else {
+        $.each(body.hits.hits, AutoCompleteESShowResults);
+      }
+    },
+    function(error){console.log(error);}
+  );
+}
+
+function AutoCompleteESShowSuggest(index, item) {
+  console.log(item);
+  var title = '';
+  // software - this can be moved into a function
+  if (typeof item._source.agency !== 'undefined') {
+    title = item._source.agency.title;
+  }
+
+  // software - this can be moved into a function
+  if (typeof item._source.software_type !== 'undefined') {
+    title = item._source.software_type.title;
+  }
+
+  $('#es-automplete-results').append('<div><a href="" class="">' + title + '</a></div>' );
+}
+
+function AutoCompleteESShowResults(index, item) {
+  var title = '';
+  // post - this can be moved into a function
+  if (item._type == 'post') {
+    title = item._source.title;
+  }
+
+  // software - this can be moved into a function
+  if (item._type == 'software') {
+    if (typeof item._source[language] !== 'undefined' && typeof item._source[language].localisedName !== 'undefined') {
+      title =  item._source[language].localisedName;
+    }
+    else {
+      title =  item._source.name;
+    }
+  }
+  $('#es-automplete-results').append('<div><a href="" class="">' + title + '</a></div>' );
+}
+
+function AutoCompleteESQuerySuggestAll(value, language) {
+  return {
+    'query': {
+      'bool': {
+        'must': [
+          {
+            'multi_match': {
+              'query': value,
+              'fields': [
+                'name.ngram',
+                'description.' + language + '.localizedName.ngram',
+                'description.' + language + '.longDescription.ngram',
+                'title.ngram',
+                'subtitle.ngram',
+              ]
+            }
+          },
+          {
+            'bool': {
+              'should': [
+                {
+                  'bool': {
+                    'must': [
+                      {'term': { '_type': 'post' }},
+                      {'term': { 'lang': language }}
+                    ]
+                  }
+                },
+                {'term': { '_type': 'software' }}
+              ]
+            }
           }
+        ]
+      }
+    }
+  };
+}
+
+function AutoCompleteESQuerySuggestTerms(value, language, field_autocomplete) {
+  return {
+    'suggest': {
+      'search_string': {
+        'prefix': value,
+        'completion': {
+          'field' :  language + '.' + field_autocomplete,
+          'size': 10
         }
       }
     }
   };
+}
 
-  console.log(params.body);
-
-  client.search(params).then(
-    function(body){
-      console.log(body);
-      $('#es-automplete-results').text("");
-      var search_string = body.suggest.search_string.pop();
-      $.each(search_string.options, function(index, option){
-        console.log(option);
-        var title = '';
-        // post - this can be moved into a function
-        if (typeof option._source.post !== 'undefined') {
-          title = option._source.post.title;
-        }
-
-        // software - this can be moved into a function
-        if (typeof option._source.software !== 'undefined') {
-          if (typeof option._source.software[language.substring(0, 2)] !== 'undefined' && typeof option._source.software[language.substring(0, 2)].localisedName !== 'undefined') {
-            title =  option._source.software[language.substring(0, 2)].localisedName; 
+function AutoCompleteESQuerySuggestPlatforms(value, language) {
+  return {
+    'query': {
+      'bool': {
+        'must': [
+          {
+            'multi_match': {
+              'query': value,
+              'fields': [
+                'title.ngram',
+                'subtitle.ngram',
+              ]
+            }
           }
-          else {
-            title =  option._source.software.name; 
+        ],
+        'filter': [
+          {'term': {'type': 'projects'}},
+          {'term': { 'lang': language }}
+        ]
+      }
+    }
+  };
+}
+
+function AutoCompleteESQuerySuggestReuseCodeIPA(value, language) {
+  return {
+    'query': {
+      'bool': {
+        'must': [
+          {
+            'multi_match': {
+              'query': value,
+              'fields': [
+                'name.ngram',
+                'description.' + language + '.localizedName.ngram',
+                'description.' + language + '.longDescription.ngram',
+              ]
+            }
+          },
+          {'exists': { 'field': 'it-riuso-codiceIPA' }}
+        ]
+      }
+    }
+  };
+}
+
+function AutoCompleteESQuerySuggestOpenSource(value, language) {
+  console.log("QUERY: AutoCompleteESQuerySuggestOpenSource" );
+  return {
+    'query': {
+      'bool': {
+        'must': [
+          {
+            'multi_match': {
+              'query': value,
+              'fields': [
+                'name.ngram',
+                'description.' + language + '.localizedName.ngram',
+                'description.' + language + '.longDescription.ngram',
+              ]
+            }
           }
-        }
-
-        // software - this can be moved into a function
-        if (typeof option._source.agencies !== 'undefined') {
-          title = option._source.agencies.title;
-        }
-
-        // software - this can be moved into a function
-        if (typeof option._source.software_type !== 'undefined') {
-          title = option._source.software_type.title;
-        }
-
-        $('#es-automplete-results').append("<div>" + title + "</div>" );
-      });
-    },
-    function(error){console.log(error);}
-  );
+        ],
+        'must_not': {'exists': { 'field': 'it-riuso-codiceIPA' }}
+      }
+    }
+  };
 }
 
 function executeSearchCallback(event) {

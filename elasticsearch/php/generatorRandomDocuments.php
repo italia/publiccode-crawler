@@ -918,7 +918,7 @@ class generatorRandomDocuments {
         "it-cie" => boolval(rand(0,1)),
         "it-anpr" => boolval(rand(0,1)),
         "it-pagopa" => boolval(rand(0,1)),
-        "it-riuso-codiceIPA" => (rand(0,1) == 1) ? $this->generateRandomString(6, TRUE) : '',
+        "it-riuso-codiceIPA" => (rand(0,1) == 1) ? $this->generateRandomString(6, TRUE) : NULL,
         "it-ecosistemi" => $this->getRandomEcosistemi(),
         "it-design-kit-seo"  => boolval(rand(0,1)),
         "it-design-kit-ui"  => boolval(rand(0,1)),
