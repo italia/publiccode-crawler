@@ -1,4 +1,24 @@
 {
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "suggest_analyzer": {
+          "tokenizer": "suggest_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "suggest_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 20,
+          "token_chars": [
+            "letter",
+            "digit"
+          ]
+        }
+      }
+    }
+  },
   "mappings": {
     "software": {
       "dynamic_templates": [
@@ -9,7 +29,13 @@
               "type": "object",
               "properties": {
                 "localisedName": {
-                  "type": "text"
+                  "type": "text",
+                  "fields": {
+                    "ngram": {
+                      "type": "text",
+                      "analyzer": "suggest_analyzer"
+                    }
+                  }
                 },
                 "genericName": {
                   "type": "text",
@@ -18,10 +44,22 @@
                   }
                 },
                 "shortDescription": {
-                  "type": "text"
+                  "type": "text",
+                  "fields": {
+                    "ngram": {
+                      "type": "text",
+                      "analyzer": "suggest_analyzer"
+                    }
+                  }
                 },
                 "longDescription": {
-                  "type": "text"
+                  "type": "text",
+                  "fields": {
+                    "ngram": {
+                      "type": "text",
+                      "analyzer": "suggest_analyzer"
+                    }
+                  }
                 },
                 "documentation": {
                   "type": "text",
@@ -51,6 +89,15 @@
               }
             }
           }
+        },
+        {
+          "dynamic-suggestions": {
+            "match":   "suggest-*",
+            "mapping": {
+              "type": "completion",
+              "preserve_separators": false
+            }
+          }
         }
       ],
       "properties": {
@@ -59,7 +106,13 @@
           "index": false
         },
         "name": {
-          "type": "text"
+          "type": "text",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "suggest_analyzer"
+            }
+          }
         },
         "applicationSuite": {
           "type": "text",
@@ -133,7 +186,7 @@
           "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
         "legal-mainCopyrightOwner": {
-          "type": "text"
+          "type": "keyword"
         },
         "legal-repoOwner": {
           "type": "text"
