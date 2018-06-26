@@ -871,7 +871,6 @@ class generatorRandomDocuments {
       }
 
       $tags = $this->getRandomTags();
-      $free_tags = $this->getRandomFreeTags();
 
       $documents[] = [
         "publiccode-yaml-version" => "http://w3id.org/publiccode/version/0.1",
@@ -888,7 +887,6 @@ class generatorRandomDocuments {
         "outputTypes" => $this->getRamdomMimeTypes(0, 3),
         "platforms" => $this->getRandomPlatforms(),
         "tags" => $tags,
-        "freeTags" => $free_tags,
         "usedBy" => $this->getRandomUsedBy(),
         "roadmap" => "https://example.com/italia/medusa/roadmap",
         "developmentStatus" => $this->getRandomDevelopmentStatus(),
@@ -920,7 +918,7 @@ class generatorRandomDocuments {
         "it-cie" => boolval(rand(0,1)),
         "it-anpr" => boolval(rand(0,1)),
         "it-pagopa" => boolval(rand(0,1)),
-        "it-riuso-codice-ipa" => $this->generateRandomString(6, TRUE),
+        "it-riuso-codiceIPA" => (rand(0,1) == 1) ? $this->generateRandomString(6, TRUE) : NULL,
         "it-ecosistemi" => $this->getRandomEcosistemi(),
         "it-design-kit-seo"  => boolval(rand(0,1)),
         "it-design-kit-ui"  => boolval(rand(0,1)),
@@ -1180,13 +1178,14 @@ class generatorRandomDocuments {
       $screenshots[] = "img/sshot".($i+1).".jpg";
     }
     return [
-      "localised-name" => $name,
-      "generic-name" => $this->getRandomPhrase(1, 3),
-      "short-description" => substr($this->descriptions[$i_description*2], 0, rand(100, 150)),
-      "long-description" => $this->descriptions[$i_description*2],
+      "localisedName" => $name,
+      "genericName" => $this->getRandomPhrase(1, 3),
+      "shortDescription" => substr($this->descriptions[$i_description*2], 0, rand(100, 150)),
+      "longDescription" => $this->descriptions[$i_description*2],
       "documentation" => "https://read.the.documentation/medusa/v1.0",
-      "api-documentation" => "https://read.the.api-documentation/medusa/v1.0",
-      "feature-list" => $this->getRandomFeatureList(),
+      "apiDocumentation" => "https://read.the.api-documentation/medusa/v1.0",
+      "featureList" => $this->getRandomFeatureList(),
+      "freeTags" => $this->generateRandomFreeTags(rand(0, 9)),
       "screenshots" => $screenshots,
       "videos" => $this->getRandomVideoUrls(),
       "awards" => $this->getRandomAwardsList(),

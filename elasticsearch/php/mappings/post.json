@@ -1,0 +1,211 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "suggest_analyzer": {
+          "tokenizer": "suggest_tokenizer"
+        }
+      },
+      "tokenizer": {
+        "suggest_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 20,
+          "token_chars": [
+            "letter",
+            "digit"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "post": {
+      "properties": {
+        "author": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "categories": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "comingsoon": {
+          "type": "boolean"
+        },
+        "release-date": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss Z"
+        },
+        "description": {
+          "type": "text",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "suggest_analyzer"
+            }
+          }
+        },
+        "draft": {
+          "type": "boolean"
+        },
+        "excerpt": {
+          "type": "text"
+        },
+        "ext": {
+          "type": "text",
+          "index": false
+        },
+        "github_team": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "highlight": {
+          "type": "boolean"
+        },
+        "html": {
+          "type": "text"
+        },
+        "id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "image": {
+          "type": "text",
+          "index": false
+        },
+        "lang": {
+          "type": "keyword"
+        },
+        "layout": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "logo": {
+          "type": "text",
+          "index": false
+        },
+        "maintainers": {
+          "type": "keyword"
+        },
+        "order": {
+          "type": "long"
+        },
+        "payoff": {
+          "type": "text"
+        },
+        "permalink": {
+          "type": "text",
+          "index": false
+        },
+        "pills": {
+          "properties": {
+            "link": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "title": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            }
+          }
+        },
+        "redirect_from": {
+          "type": "text",
+          "index": false
+        },
+        "slug": {
+          "type": "keyword"
+        },
+        "socials": {
+          "properties": {
+            "icon": {
+              "type": "text",
+              "index": false
+            },
+            "link": {
+              "type": "text",
+              "index": false
+            },
+            "name": {
+              "type": "text"
+            }
+          }
+        },
+        "subtitle": {
+          "type": "text",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "suggest_analyzer"
+            }
+          }
+        },
+        "tags": {
+          "type": "keyword"
+        },
+        "text": {
+          "type": "text"
+        },
+        "title": {
+          "type": "text",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "suggest_analyzer"
+            }
+          }
+        },
+        "toc": {
+          "type": "boolean"
+        },
+        "top_projects_link": {
+          "type": "text",
+          "index": false
+        },
+        "type": {
+          "type": "keyword"
+        },
+        "url": {
+          "type": "text",
+          "index": false
+        }
+      }
+    }
+  }
+}

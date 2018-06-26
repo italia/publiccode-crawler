@@ -1,8 +1,25 @@
 <?php
+// connection
 $host = 'elasticsearch';
 $post = '9200';
 $schema = 'http';
 $user = 'elastic';
 $password= 'elastic';
-$index = 'publiccode';
+$index = 'publiccode_20180614';
 $type = 'software';
+
+$aliases = [
+  'publiccode' => [
+    'publiccode_20180614',
+    'jekyll',
+  ],
+  'suggestions' => [
+    'suggestions_20180614'
+  ]
+];
+
+$indexes = [
+  'jekyll' => 'mappings/post.json',
+  'publiccode_20180614' => 'mappings/software_0.1.json',
+  'suggestions_20180614' => 'mappings/suggestion.json',
+];
