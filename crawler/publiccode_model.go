@@ -1,7 +1,7 @@
-package jekyll
+package crawler
 
-// PublicCode describe the data used in jekyll that includes publiccode and meta informations.
-type PublicCode struct {
+// PublicCodeES describe the data in ElasticSearch that includes publiccode and meta informations.
+type PublicCodeES struct {
 	PubliccodeYamlVersion string `json:"publiccode-yaml-version"`
 
 	Name             string `json:"name"`
@@ -31,10 +31,10 @@ type PublicCode struct {
 	DevelopmentStatus string `json:"development-status"`
 
 	// Vitalityscore
-	VitalityScore     int   `json:"vitalityScore"`
-	VitalityDataChart []int `json:"vitalityDataChart"`
+	VitalityScore     float64 `json:"vitalityScore"`
+	VitalityDataChart []int   `json:"vitalityDataChart"`
 
-	RelatedSoftware string //TODO
+	RelatedSoftware []string `json:"related-software"` //TODO: update after crawling.
 
 	SoftwareType string `json:"software-type"`
 
@@ -43,7 +43,7 @@ type PublicCode struct {
 	IntendedAudienceUnsupportedCountries []string `json:"intended-audience-unsupported-countries"`
 
 	Description map[string]Desc `json:"description"`
-	OldVariants []OldVariant    `json:"old-variant"`
+	//OldVariants []OldVariant    `json:"old-variant"`
 
 	LegalLicense            string `json:"legal-license"`
 	LegalMainCopyrightOwner string `json:"legal-main-copyright-owner"`

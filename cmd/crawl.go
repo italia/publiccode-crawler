@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/jekyll"
 	"github.com/italia/developers-italia-backend/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -87,9 +88,19 @@ var crawlCmd = &cobra.Command{
 			log.Errorf("Error updating Elastic Alias: %v", err)
 		}
 
-		// Generate the yml file for jekyll
-		// err = jekyll.AllSoftware("softwares.yml")
+		// Generate the jekyll files.
+		// Create and populate amministrazioni.yml
+		// err = jekyll.AmministrazioniYML("jekyll/generated/amministrazioni.yml", elasticClient)
 		// if err != nil {
-		// 	log.Errorf("Error exporting jekyll file of all the software : %v", err)
+		// 	log.Error(err)
 		// }
+
+		// Create and populate softwares.yml
+		log.Debug("Saving softwares.yml ...")
+		numberOfSimilarSoftware := 4
+		err = jekyll.AllSoftwareYML("jekyll/generated/softwares.yml", numberOfSimilarSoftware, elasticClient)
+		if err != nil {
+			log.Errorf("Error exporting jekyll file of all the software : %v", err)
+		}
+
 	}}

@@ -281,7 +281,7 @@ func RegisterGithubAPI() OrganizationHandler {
 				log.Infof("Repository is empty: %s", link)
 			}
 
-			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, domain.Host, domain, headers, metadata, repositories)
+			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, v.DefaultBranch, domain.Host, domain, headers, metadata, repositories)
 			if err != nil {
 				log.Infof("addGithubProectsToRepositories %v", err)
 			}
@@ -351,6 +351,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 			return err
 		}
 		contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
+		log.Debug(contents)
 		// Get List of files.
 		resp, err = httpclient.GetURL(contents, headers)
 		if err != nil {
@@ -367,8 +368,10 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 			log.Infof("Repository is empty: %s", link)
 		}
 
+		foundIt := false
 		// Search a file with a valid name and a downloadURL.
 		for _, f := range files {
+			log.Debug(f.Name)
 			if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
 				// Add repository to channel.
 				repositories <- Repository{
@@ -376,21 +379,23 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 					Hostname:    u.Hostname(),
 					FileRawURL:  f.DownloadURL,
 					GitCloneURL: v.CloneURL,
+					GitBranch:   v.DefaultBranch,
 					Domain:      domain,
 					Headers:     headers,
 					Metadata:    metadata,
 				}
-			} else {
-				return errors.New("Repository does not contain " + viper.GetString("CRAWLED_FILENAME"))
+				foundIt = true
 			}
 		}
-
+		if !foundIt {
+			return errors.New("Repository does not contain " + viper.GetString("CRAWLED_FILENAME"))
+		}
 		return nil
 	}
 }
 
 // addGithubProjectsToRepositories adds the projects from api response to repository channel.
-func addGithubProjectsToRepositories(files GithubFiles, fullName string, cloneURL string, hostname string,
+func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defaultBranch, hostname string,
 	domain Domain, headers map[string]string, metadata []byte, repositories chan Repository) error {
 	// Search a file with a valid name and a downloadURL.
 	for _, f := range files {
@@ -401,6 +406,7 @@ func addGithubProjectsToRepositories(files GithubFiles, fullName string, cloneUR
 				Hostname:    hostname,
 				FileRawURL:  f.DownloadURL,
 				GitCloneURL: cloneURL,
+				GitBranch:   defaultBranch,
 				Domain:      domain,
 				Headers:     headers,
 				Metadata:    metadata,

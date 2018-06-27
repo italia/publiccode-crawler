@@ -9,23 +9,9 @@
   "release-date": "2017-04-15",
   "logo": "img/logo.svg",
   "monochrome-logo": "img/logo-mono.svg",
-  "platforms": [
-    "android",
-    "ios"
-  ],
-  "tags": [
-    "cms",
-    "productivity",
-    "it-portale-trasparenza"
-  ],
-  "free-tags": {
-    "eng": ["pippo-cheese", "this", "those"],
-    "ita": ["pippo-formaggio", "questo", "quello"]
-  },
-  "used-by": [
-    "Comune di Firenze",
-    "Comune di Roma"
-  ],
+  "platforms": ["android", "ios"],
+  "tags": ["cms", "productivity", "it-portale-trasparenza"],
+  "used-by": ["Comune di Firenze", "Comune di Roma"],
   "roadmap": "https://example.com/italia/medusa/roadmap",
   "development-status": "development",
   "software-type": "standalone",
@@ -37,33 +23,26 @@
   "intended-audience-only-for": ["cities", "health-services", "it-ag-agricolo"],
   "intended-audience-countries": ["it", "de"],
   "intended-audience-unsupported-countries": ["fr"],
-  "description":{
+  "description": {
     "eng": {
       "localised-name": "",
       "short-description": "",
       "long-description": "",
       "documentation": "https://read.the.documentation/medusa/v1.0",
+      "freeTags": ["foo", "bar", "82/2+1"],
       "feature-list": [
         "Very important feature",
         "Will run without a problem",
         "Has zero bugs",
         "Solves all the problems of the world"
       ],
-      "screenshots": [
-        "img/sshot1.jpg",
-        "img/sshot2.jpg",
-        "img/sshot3.jpg"
-      ],
-      "videos": [
-        "https://youtube.com/xxxxxxxx"
-      ],
-      "awards": [
-        "1st Price Software of the year"
-      ]
+      "screenshots": ["img/sshot1.jpg", "img/sshot2.jpg", "img/sshot3.jpg"],
+      "videos": ["https://youtube.com/xxxxxxxx"],
+      "awards": ["1st Price Software of the year"]
     }
   },
   "suggest-name": {
     "input": ["Medusa"],
-    "weight" : 1
+    "weight": 1
   }
 }

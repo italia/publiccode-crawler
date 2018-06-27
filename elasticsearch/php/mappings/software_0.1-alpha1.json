@@ -1,61 +1,44 @@
-#!/bin/bash
-#
-# To create an index in elasticsearch
-#
-
-# shards & replicas are default values.
-#
-
-source config.sh
-
-TODAY=$(date '+%Y%m%d')
-INDEX="publiccode_$TODAY"
-
-generate_index_settings() {
-  cat <<EOF
 {
-  "settings" : {
-    "index" : {
-      "number_of_shards" : 5,
-      "number_of_replicas" : 1
-    }
-  },
   "mappings": {
     "software": {
       "dynamic_templates": [
+        {
+          "free-tags": {
+            "match_pattern": "regex",
+            "match": "^free-tags-[a-z]{3}$",
+            "mapping": {
+              "type": "keyword"
+            }
+          }
+        },
         {
           "description": {
             "path_match": "description.*",
             "mapping": {
               "type": "object",
               "properties": {
-                "localisedName": {
+                "localised-name": {
                   "type": "text"
                 },
-                "genericName": {
+                "generic-name": {
                   "type": "text",
-                  "fields": {
-                    "keyword": { "type": "keyword", "ignore_above": 256 }
-                  }
+                  "fields": { "keyword":{ "type": "keyword", "ignore_above": 256 } }
                 },
-                "shortDescription": {
+                "short-description": {
                   "type": "text"
                 },
-                "longDescription": {
+                "long-description": {
                   "type": "text"
                 },
                 "documentation": {
                   "type": "text",
                   "index": false
                 },
-                "apiDocumentation": {
+                "api-documentation": {
                   "type": "text",
                   "index": false
                 },
-                "featureList": {
-                  "type": "keyword"
-                },
-                "freeTags": {
+                "feature-list": {
                   "type": "keyword"
                 },
                 "screenshots": {
@@ -82,27 +65,27 @@ generate_index_settings() {
         "name": {
           "type": "text"
         },
-        "applicationSuite": {
+        "application-suite": {
           "type": "text",
-          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+          "fields": { "keyword":{ "type": "keyword", "ignore_above": 256 } }
         },
         "url": {
           "type": "text",
           "index": false,
-          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+          "fields": { "keyword":{ "type": "keyword", "ignore_above": 256 } }
         },
-        "landingURL": {
+        "landing-url": {
           "type": "text",
           "index": false
         },
-        "isBasedOn": {
+        "is-based-on": {
           "type": "text",
           "index": false
         },
-        "softwareVersion": {
+        "software-version": {
           "type": "keyword"
         },
-        "releaseDate": {
+        "release-date": {
           "type": "date",
           "format": "strict_date"
         },
@@ -110,14 +93,14 @@ generate_index_settings() {
           "type": "text",
           "index": false
         },
-        "monochromeLogo": {
+        "monochrome-logo": {
           "type": "text",
           "index": false
         },
-        "inputTypes": {
+        "input-types": {
           "type": "keyword"
         },
-        "outputTypes": {
+        "output-types": {
           "type": "keyword"
         },
         "platforms": {
@@ -126,7 +109,7 @@ generate_index_settings() {
         "tags": {
           "type": "keyword"
         },
-        "usedBy": {
+        "used-by": {
           "type": "text",
           "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
@@ -134,32 +117,36 @@ generate_index_settings() {
           "type": "text",
           "index": false
         },
-        "developmentStatus": {
+        "development-status": {
           "type": "keyword"
         },
-        "softwareType": {
+        "software-type": {
           "type": "keyword"
         },
-        "intendedAudience-onlyFor": {
+        "software-type-is-related-to": {
+          "type": "text",
+          "index": false          
+        },
+        "intended-audience-only-for": {
           "type": "keyword"
         },
-        "intendedAudience-countries": {
+        "intended-audience-countries": {
           "type": "keyword"
         },
-        "intendedAudience-unsupportedCountries": {
+        "intended-audience-unsupported-countries": {
           "type": "keyword"
         },
         "legal-license": {
           "type": "text",
           "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
-        "legal-mainCopyrightOwner": {
+        "legal-main-copyright-owner": {
           "type": "text"
         },
-        "legal-repoOwner": {
+        "legal-repo-owner": {
           "type": "text"
         },
-        "legal-authorsFile": {
+        "legal-authors-file": {
           "type": "text",
           "index": false
         },
@@ -170,7 +157,7 @@ generate_index_settings() {
           "type": "nested",
           "properties": {
             "name": {
-              "type": "text"
+              "type":"text"
             },
             "until": {
               "type": "date",
@@ -186,7 +173,7 @@ generate_index_settings() {
           "type": "nested",
           "properties": {
             "name": {
-              "type": "text"
+              "type":"text"
             },
             "email": {
               "type": "text"
@@ -196,17 +183,17 @@ generate_index_settings() {
               "index": false
             },
             "affiliation": {
-              "type": "text"
+              "type":"text"
             }
           }
         },
-        "localisation-localisationReady": {
+        "localisation-localisation-ready": {
           "type": "boolean"
         },
-        "localisation-availableLanguages": {
+        "localisation-available-languages": {
           "type": "keyword"
         },
-        "dependsOn-open": {
+        "dependencies-open": {
           "type": "nested",
           "properties": {
             "name": {
@@ -229,7 +216,7 @@ generate_index_settings() {
             }
           }
         },
-        "dependsOn-proprietary": {
+        "dependencies-proprietary": {
           "type": "nested",
           "properties": {
             "name": {
@@ -252,7 +239,7 @@ generate_index_settings() {
             }
           }
         },
-        "dependsOn-hardware": {
+        "dependencies-hardware": {
           "type": "nested",
           "properties": {
             "name": {
@@ -276,46 +263,46 @@ generate_index_settings() {
           }
         },
         "it-conforme-accessibile": {
-          "type": "boolean"
+          "type":"boolean"
         },
         "it-conforme-interoperabile": {
-          "type": "boolean"
+          "type":"boolean"
         },
         "it-conforme-sicuro": {
-          "type": "boolean"
+          "type":"boolean"
         },
         "it-conforme-privacy": {
-          "type": "boolean"
+          "type":"boolean"
         },
         "it-spid": {
-          "type": "boolean"
+          "type":"boolean"
         },
         "it-cie": {
-          "type": "boolean"
+          "type":"boolean"
         },
         "it-anpr": {
-          "type": "boolean"
+          "type":"boolean"
         },
         "it-pagopa": {
-          "type": "boolean"
+          "type":"boolean"
         },
-        "it-riuso-codiceIPA": {
+        "it-riuso-codice-ipa": {
           "type": "keyword"
         },
         "it-ecosistemi": {
           "type": "keyword"
         },
-        "it-designKit-seo": {
-          "type": "boolean"
+        "it-design-kit-seo" : {
+          "type":"boolean"
         },
-        "it-designKit-ui": {
-          "type": "boolean"
+        "it-design-kit-ui" : {
+          "type":"boolean"
         },
-        "it-designKit-web": {
-          "type": "boolean"
+        "it-design-kit-web" : {
+          "type":"boolean"
         },
-        "it-designKit-content": {
-          "type": "boolean"
+        "it-design-kit-content" : {
+          "type":"boolean"
         },
         "suggest-name": {
           "type": "completion"
@@ -324,7 +311,7 @@ generate_index_settings() {
           "type": "text",
           "index": false
         },
-        "vitality-dataChart": {
+        "vitality-data-chart": {
           "type": "integer"
         },
         "related-software": {
@@ -444,7 +431,3 @@ generate_index_settings() {
     }
   }
 }
-EOF
-}
-
-curl -u "$BASICAUTH" -X PUT "$ELASTICSEARCH_URL/$INDEX" -H 'Content-Type: application/json' -d"$(generate_index_settings)"
