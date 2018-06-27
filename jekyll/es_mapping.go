@@ -62,7 +62,7 @@ type PublicCode struct {
 	DependenciesHardware    []Dependency `json:"dependencies-hardware"`
 
 	// Italian extension.
-	ItConformeAccessibile    bool `json:"it-conforme-accessibile"` // nolint: misspell
+	ItConformeAccessibile    bool `json:"it-conforme-accessibile"`
 	ItConformeInteroperabile bool `json:"it-conforme-interoperabile"`
 	ItConformeSicuro         bool `json:"it-conforme-sicuro"`
 	ItConformePrivacy        bool `json:"it-conforme-privacy"`

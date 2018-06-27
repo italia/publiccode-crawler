@@ -12,6 +12,7 @@ import (
 )
 
 func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient *elastic.Client) error {
+	log.Debug("Generating softwares.yml")
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
 		err := os.Remove(filename)

@@ -89,25 +89,6 @@ var crawlCmd = &cobra.Command{
 		}
 
 		// Generate the jekyll files.
-		// Create and populate amministrazioni.yml
-		// err = jekyll.AmministrazioniYML("jekyll/generated/amministrazioni.yml", elasticClient)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
-
-		// Create and populate softwares.yml
-		log.Debug("Saving softwares.yml ...")
-		numberOfSimilarSoftware := 4
-		err = jekyll.AllSoftwareYML("jekyll/generated/softwares.yml", numberOfSimilarSoftware, elasticClient)
-		if err != nil {
-			log.Errorf("Error exporting jekyll file of all the software : %v", err)
-		}
-
-		// amministrazioni.yml
-		log.Debug("Saving amministrazioni.yml ...")
-		err = jekyll.AmministrazioniYML("jekyll/generated/amministrazioni.yml", elasticClient)
-		if err != nil {
-			log.Error(err)
-		}
+		jekyll.GenerateJekyllYML(elasticClient)
 
 	}}

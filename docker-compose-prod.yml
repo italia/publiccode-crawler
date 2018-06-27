@@ -78,6 +78,7 @@ services:
       - ./whitelistPA.yml:/app/whitelistPA.yml
       - ./domains.yml:/app/domains.yml
       - ./config.toml:/app/config.toml
+      - ./jekyll/generated:/app/jekyll/generated
 
 
 volumes:
