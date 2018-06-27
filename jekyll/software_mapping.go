@@ -83,19 +83,19 @@ type OldFeatureListData struct {
 }
 
 type OldVariantData struct {
-	Name string `json:"name"`
-	Eng  struct {
-		URL      []string `json:"url"`
-		Features []string `json:"features"`
-	} `json:"eng"`
-	Ita struct {
-		URL      []string `json:"url"`
-		Features []string `json:"features"`
-	} `json:"ita"`
-	VitalityScore int `json:"vitalityScore"`
+	Name          string  `json:"name"`
+	VitalityScore float64 `json:"vitalityScore"`
 	Legal         struct {
 		RepoOwner string `json:"repoOwner"`
 	} `json:"legal"`
+	Eng struct {
+		URL      string   `json:"url"`
+		Features []string `json:"features"`
+	} `json:"eng"`
+	Ita struct {
+		URL      string   `json:"url"`
+		Features []string `json:"features"`
+	} `json:"ita"`
 }
 
 type RelatedSoftware struct {

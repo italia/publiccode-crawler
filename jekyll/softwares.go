@@ -153,34 +153,31 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 
 				softwareExtracted.RelatedSoftwares = append(softwareExtracted.RelatedSoftwares, related)
 			}
-
 		}
-		//
-		// 	// Search softwares basedOn this one.
-		// 	isBasedOnSoftware := findisBasedOnSoftwares(i.URL, elasticClient)
-		//
-		// 	// otherVariantsFeaturesList will be populated with every feature not present into this software.
-		// 	var otherVariantsFeaturesList map[string][]string
-		// 	var oldVariant []OldVariant
-		//
-		// 	for _, pc := range isBasedOnSoftware {
-		// 		variant := OldVariant{
-		// 			Name: i.Name,
-		// 			URL:  i.URL,
-		// 		}
-		// 		// for every language in Description
-		// 		for language, desc := range pc.Description {
-		// 			// Prepare the list of otherVariantsFeaturesList.
-		// 			for _, feature := range desc.FeatureList {
-		// 				if !contains(i.Description[language].FeatureList, feature) {
-		// 					otherVariantsFeaturesList[language] = append(otherVariantsFeaturesList[language], feature)
-		// 				}
-		// 			}
-		// 		}
-		// 		oldVariant = append(oldVariant, variant)
-		//
-		// 	}
-		//
+
+		// Search softwares basedOn this one.
+		isBasedOnSoftware := findIsBasedOnSoftwares(i.URL, elasticClient)
+		for _, v := range isBasedOnSoftware {
+			// Remove the extracted software.
+			if v.URL != softwareExtracted.URL {
+				basedOn := OldVariantData{
+					Name:          v.Name,
+					VitalityScore: v.VitalityScore,
+				}
+				basedOn.Legal.RepoOwner = v.LegalRepoOwner
+
+				if d, ok := v.Description["eng"]; ok {
+					basedOn.Eng.Features = d.FeatureList
+					basedOn.Eng.URL = v.URL
+				}
+				if d, ok := v.Description["ita"]; ok {
+					basedOn.Ita.Features = d.FeatureList
+					basedOn.Ita.URL = v.URL
+				}
+
+				softwareExtracted.OldVariant = append(softwareExtracted.OldVariant, basedOn)
+			}
+		}
 
 		// Append.
 		softwares = append(softwares, softwareExtracted)
@@ -228,35 +225,34 @@ func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, elasticCli
 
 }
 
-//
-// func findisBasedOnSoftwares(url string, elasticClient *elastic.Client) []Software {
-// 	var pcs []PublicCode
-// 	query := elastic.NewBoolQuery()
-// 	query = query.Must(elastic.NewTermQuery("is-based-on", url))
-//
-// 	searchResult, err := elasticClient.Search().
-// 		Index("publiccode").     // search in index "publiccode"
-// 		Query(query).            // specify the query
-// 		Pretty(true).            // pretty print request and response JSON
-// 		Do(context.Background()) // execute
-// 	if err != nil {
-// 		log.Error(err)
-// 	}
-// 	var pctype PublicCode
-// 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
-// 		i := item.(PublicCode)
-// 		pcs = append(pcs, i)
-// 	}
-//
-// 	return pcs
-// }
-//
-// // contains returns true if the slice of strings contains the searched string.
-// func contains(slice []string, item string) bool {
-// 	for _, s := range slice {
-// 		if s == item {
-// 			return true
-// 		}
-// 	}
-// 	return false
-// }
+func findIsBasedOnSoftwares(url string, elasticClient *elastic.Client) []crawler.PublicCodeES {
+	var pcs []crawler.PublicCodeES
+	query := elastic.NewBoolQuery()
+	query = query.Must(elastic.NewTermQuery("is-based-on", url))
+
+	searchResult, err := elasticClient.Search().
+		Index("publiccode").     // search in index "publiccode"
+		Query(query).            // specify the query
+		Pretty(true).            // pretty print request and response JSON
+		Do(context.Background()) // execute
+	if err != nil {
+		log.Error(err)
+	}
+	var pctype crawler.PublicCodeES
+	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
+		i := item.(crawler.PublicCodeES)
+		pcs = append(pcs, i)
+	}
+
+	return pcs
+}
+
+// contains returns true if the slice of strings contains the searched string.
+func contains(slice []string, item string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
