@@ -1,33 +1,38 @@
-- RelatedSoftware: ""
-  applicationSuite: MegaProductivitySuite
-  dependencies-hardware:
-  - name: NFC Reader
-    optional: true
-    version: ""
-    versionMax: ""
-    versionMin: ""
-  dependencies-open:
-  - name: MySQL
-    optional: true
-    version: ""
-    versionMax: "1.3"
-    versionMin: "1.1"
-  - name: PostgreSQL
-    optional: true
-    version: "3.2"
-    versionMax: ""
-    versionMin: ""
-  dependencies-proprietary:
-  - name: Oracle
-    optional: false
-    version: ""
-    versionMax: ""
-    versionMin: "11.4"
-  - name: IBM SoftLayer
-    optional: false
-    version: ""
-    versionMax: ""
-    versionMin: ""
+- applicationSuite: MiniProductivitySuite
+  dependencies:
+    hardware:
+    - name: Oracle
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: "11.4"
+    - name: IBM SoftLayer
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: ""
+    open:
+    - name: MySQL
+      optional: true
+      version: ""
+      versionMax: "1.3"
+      versionMin: "1.1"
+    - name: PostgreSQL
+      optional: true
+      version: "3.2"
+      versionMax: ""
+      versionMin: ""
+    proprietary:
+    - name: Oracle
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: "11.4"
+    - name: IBM SoftLayer
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: ""
   description:
     eng:
       apiDocumentation: https://developers.italia.it/it/api
@@ -47,98 +52,110 @@
       shortDescription: A really interesting software.
       videos:
       - https://www.youtube.com/watch?v=RaHmGbBOP84
-  development-status: development
-  free-tags:
+  developmentStatus: development
+  freeTags:
     eng:
     - english-free-tag
     ita:
     - tag-libero-italiano
-  inputTypes:
-  - text/plain
-  intended-audience-countries:
-  - it
-  - de
-  intended-audience-only-for:
-  - cities
-  - health-services
-  - it-ag-agricolo
-  intended-audience-unsupported-countries:
-  - us
+  intendedAudience:
+    countries:
+    - it
+    - de
+    onlyFor:
+    - cities
+    - health-services
+    - it-ag-agricolo
+    unsupportedCountries:
+    - us
   isBasedOn:
-  - https://github.com/italia/developers.italia.it.git
-  it-anpr: true
-  it-cie: true
-  it-conforme-accessibile: true
-  it-conforme-interoperabile: true
-  it-conforme-privacy: true
-  it-conforme-sicuro: true
-  it-design-kit-content: false
-  it-design-kit-seo: false
-  it-design-kit-ui: true
-  it-design-kit-web: true
-  it-ecosistemi:
-  - scuola
-  it-pagopa: true
-  it-riuso-codice-ipa: c_h501
-  it-spid: true
+  - https://github.com/gith002/publiccode-org2.git
+  it:
+    accessibile: true
+    anpr: true
+    cie: true
+    designKit:
+      seo: false
+      ui: true
+      web: true
+    interoperabile: true
+    pagopa: true
+    riuso:
+      codiceIPA: c_h502
+    spid: true
   landingURL: https://developers.italia.it
-  legal-authors-file: ""
-  legal-license: AGPL-3.0-or-later
-  legal-main-copyright-owner: City of Chicago
-  legal-repo-owner: City of Chicago
-  localisation-available-languages:
-  - eng
-  - ita
-  - fra
-  - deu
-  localisation-localisation-ready: true
+  legal:
+    authorsFile: ""
+    license: AGPL-3.0-or-later
+    mainCopyrightOwner: City of Chicago
+    repoOwner: City of Chicago
+  localisation:
+    availableLanguages:
+    - eng
+    - ita
+    - fra
+    - deu
+    localisationReady: true
   logo: tests/img/logo.png
-  maintenance-contacts:
-  - affiliation: Comune di Reggio Emilia
-    email: francesco.rossi@comune.reggioemilia.it
-    name: Francesco Rossi
-    phone: +39 231 13215112
-  - affiliation: Fornitore Privato S.P.A.
-    email: dario.bianchi@fornitore.it
-    name: Dario Bianchi
-    phone: +39 16 24231322
-  - affiliation: Fornitore Privato S.P.A.
-    email: dario.bianchi@fornitore.it
-    name: Giancarlo Verdi
-    phone: +39 16 24231322
-  maintenance-contractors:
-  - name: Fornitore Privato SPA
-    until: "2019-01-01"
-    website: https://developers.italia.it
-  maintenance-type: contract
+  maintenance:
+    contacts:
+    - affiliation: Comune di Reggio Emilia
+      email: francesco.rossi@comune.reggioemilia.it
+      name: Francesco Rossi
+      phone: +39 231 13215112
+    - affiliation: Fornitore Privato S.P.A.
+      email: dario.bianchi@fornitore.it
+      name: Dario Bianchi
+      phone: +39 16 24231322
+    - affiliation: Fornitore Privato S.P.A.
+      email: dario.bianchi@fornitore.it
+      name: Giancarlo Verdi
+      phone: +39 16 24231322
+    contractors:
+    - name: Fornitore Privato SPA
+      until: "2019-01-01"
+      website: https://developers.italia.it
+    type: contract
   monochromeLogo: tests/img/logo-mono.svg
-  name: Medusa
-  old-variant: []
-  outputTypes:
-  - text/plain
+  name: MedusaGith003
+  oldFeatureList:
+    eng: null
+    ita: null
+  oldVariant: []
   platforms:
   - android
   - ios
+  popularTags:
+  - todo
+  - popularTagsToCalculate
+  relatedSoftwares:
+  - eng:
+      localisedName: Medusa
+      url: https://github.com/italia/developers.italia.it.git
+    image: tests/img/logo.png
+    ita:
+      localisedName: ""
+      url: ""
+    name: Medusa
   releaseDate: "2017-04-15"
   roadmap: https://designers.italia.it/roadmap/
-  software-type: standalone
+  shareTags:
+  - todo
+  - shareTagsToCalculate
+  softwareType:
+    isRelatedTo: null
+    type: standalone
   softwareVersion: "1.0"
   tags:
   - calendar
-  - chat
-  - classroom-management
-  - museum
-  - music
-  - news
-  - ocr
-  - parallel-computing
-  - revision-control
   - robotics
-  - scanning
   - security
   - sports
-  url: https://github.com/italia/developers.italia.it.git
-  used-by:
+  tagsRelate:
+  - todo
+  - tagsRelated
+  url: https://github.com/gith003/publiccode-org3.git
+  usedBy:
   - Comune di Firenze
   - Comune di Roma
   vitalityDataChart:
@@ -152,36 +169,41 @@
   - 96
   - 48
   vitalityScore: 16
-- RelatedSoftware: ""
-  applicationSuite: MegaProductivitySuite
-  dependencies-hardware:
-  - name: NFC Reader
-    optional: true
-    version: ""
-    versionMax: ""
-    versionMin: ""
-  dependencies-open:
-  - name: MySQL
-    optional: true
-    version: ""
-    versionMax: "1.3"
-    versionMin: "1.1"
-  - name: PostgreSQL
-    optional: true
-    version: "3.2"
-    versionMax: ""
-    versionMin: ""
-  dependencies-proprietary:
-  - name: Oracle
-    optional: false
-    version: ""
-    versionMax: ""
-    versionMin: "11.4"
-  - name: IBM SoftLayer
-    optional: false
-    version: ""
-    versionMax: ""
-    versionMin: ""
+- applicationSuite: MegaProductivitySuite
+  dependencies:
+    hardware:
+    - name: Oracle
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: "11.4"
+    - name: IBM SoftLayer
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: ""
+    open:
+    - name: MySQL
+      optional: true
+      version: ""
+      versionMax: "1.3"
+      versionMin: "1.1"
+    - name: PostgreSQL
+      optional: true
+      version: "3.2"
+      versionMax: ""
+      versionMin: ""
+    proprietary:
+    - name: Oracle
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: "11.4"
+    - name: IBM SoftLayer
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: ""
   description:
     eng:
       apiDocumentation: https://developers.italia.it/it/api
@@ -201,81 +223,99 @@
       shortDescription: A really interesting software.
       videos:
       - https://www.youtube.com/watch?v=RaHmGbBOP84
-  development-status: development
-  free-tags:
+  developmentStatus: development
+  freeTags:
     eng:
     - english-free-tag
     ita:
     - tag-libero-italiano
-  inputTypes:
-  - text/plain
-  intended-audience-countries:
-  - it
-  - de
-  intended-audience-only-for:
-  - cities
-  - health-services
-  - it-ag-agricolo
-  intended-audience-unsupported-countries:
-  - us
+  intendedAudience:
+    countries:
+    - it
+    - de
+    onlyFor:
+    - cities
+    - health-services
+    - it-ag-agricolo
+    unsupportedCountries:
+    - us
   isBasedOn:
   - https://github.com/italia/developers.italia.it.git
-  it-anpr: true
-  it-cie: true
-  it-conforme-accessibile: true
-  it-conforme-interoperabile: true
-  it-conforme-privacy: true
-  it-conforme-sicuro: true
-  it-design-kit-content: false
-  it-design-kit-seo: false
-  it-design-kit-ui: true
-  it-design-kit-web: true
-  it-ecosistemi:
-  - scuola
-  it-pagopa: true
-  it-riuso-codice-ipa: c_h501
-  it-spid: true
+  it:
+    accessibile: true
+    anpr: true
+    cie: true
+    designKit:
+      seo: false
+      ui: true
+      web: true
+    interoperabile: true
+    pagopa: true
+    riuso:
+      codiceIPA: c_h501
+    spid: true
   landingURL: https://developers.italia.it
-  legal-authors-file: ""
-  legal-license: AGPL-3.0-or-later
-  legal-main-copyright-owner: City of Chicago
-  legal-repo-owner: City of Chicago
-  localisation-available-languages:
-  - eng
-  - ita
-  - fra
-  - deu
-  localisation-localisation-ready: true
+  legal:
+    authorsFile: ""
+    license: AGPL-3.0-or-later
+    mainCopyrightOwner: City of Chicago
+    repoOwner: City of Chicago
+  localisation:
+    availableLanguages:
+    - eng
+    - ita
+    - fra
+    - deu
+    localisationReady: true
   logo: tests/img/logo.png
-  maintenance-contacts:
-  - affiliation: Comune di Reggio Emilia
-    email: francesco.rossi@comune.reggioemilia.it
-    name: Francesco Rossi
-    phone: +39 231 13215112
-  - affiliation: Fornitore Privato S.P.A.
-    email: dario.bianchi@fornitore.it
-    name: Dario Bianchi
-    phone: +39 16 24231322
-  - affiliation: Fornitore Privato S.P.A.
-    email: dario.bianchi@fornitore.it
-    name: Giancarlo Verdi
-    phone: +39 16 24231322
-  maintenance-contractors:
-  - name: Fornitore Privato SPA
-    until: "2019-01-01"
-    website: https://developers.italia.it
-  maintenance-type: contract
+  maintenance:
+    contacts:
+    - affiliation: Comune di Reggio Emilia
+      email: francesco.rossi@comune.reggioemilia.it
+      name: Francesco Rossi
+      phone: +39 231 13215112
+    - affiliation: Fornitore Privato S.P.A.
+      email: dario.bianchi@fornitore.it
+      name: Dario Bianchi
+      phone: +39 16 24231322
+    - affiliation: Fornitore Privato S.P.A.
+      email: dario.bianchi@fornitore.it
+      name: Giancarlo Verdi
+      phone: +39 16 24231322
+    contractors:
+    - name: Fornitore Privato SPA
+      until: "2019-01-01"
+      website: https://developers.italia.it
+    type: contract
   monochromeLogo: tests/img/logo-mono.svg
   name: Medusa
-  old-variant: []
-  outputTypes:
-  - text/plain
+  oldFeatureList:
+    eng: null
+    ita: null
+  oldVariant: []
   platforms:
   - android
   - ios
+  popularTags:
+  - todo
+  - popularTagsToCalculate
+  relatedSoftwares:
+  - eng:
+      localisedName: Medusa
+      url: https://github.com/gith003/publiccode-org3.git
+    image: tests/img/logo.png
+    ita:
+      localisedName: ""
+      url: ""
+    name: MedusaGith003
   releaseDate: "2017-04-15"
   roadmap: https://designers.italia.it/roadmap/
-  software-type: standalone
+  shareTags:
+  - todo
+  - shareTagsToCalculate
+  softwareType:
+    isRelatedTo: null
+    type: standalone
   softwareVersion: "1.0"
   tags:
   - calendar
@@ -291,8 +331,11 @@
   - scanning
   - security
   - sports
+  tagsRelate:
+  - todo
+  - tagsRelated
   url: https://github.com/italia/developers.italia.it.git
-  used-by:
+  usedBy:
   - Comune di Firenze
   - Comune di Roma
   vitalityDataChart:

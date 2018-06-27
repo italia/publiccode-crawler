@@ -23,6 +23,9 @@ var crawlCmd = &cobra.Command{
 	Long:  `Start whitelist file. It's possible to add multiple files adding them as args.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Index for actual process.
+		index := strconv.FormatInt(time.Now().Unix(), 10)
+
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
 			viper.GetString("ELASTIC_URL"),
@@ -31,6 +34,7 @@ var crawlCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		crawler.ElasticIndexMapping(index, elasticClient)
 
 		// Read and parse list of domains.
 		domains, err := crawler.ReadAndParseDomains(domainsFile)
@@ -54,9 +58,6 @@ var crawlCmd = &cobra.Command{
 		repositories := make(chan crawler.Repository, 1000)
 		// Prepare WaitGroup.
 		var wg sync.WaitGroup
-
-		// Index for actual process.
-		index := strconv.FormatInt(time.Now().Unix(), 10)
 
 		// Register Prometheus metrics.
 		metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", index)

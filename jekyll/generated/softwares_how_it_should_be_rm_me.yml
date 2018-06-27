@@ -1,22 +1,22 @@
-- name: Medusa
-  applicationSuite: MegaProductivitySuite
-  url: https://example.com/italia/medusa.git
-  landingURL: https://example.com/italia/medusa
-  isBasedOn: https://github.com/italia/otello.git
-  softwareVersion: 1.0
-  releaseDate: 2017-04-15
-  logo: http://via.placeholder.com/50x50
-  monochromeLogo: http://via.placeholder.com/50x50
-  platforms:
-    - android
-    - ios
-  tags:
-    - content-management
-    - artificial-intelligence
-    - museum
-    - emulator
-    - compression
-    - dictionary
+- ✓ name: Medusa
+  ✓ applicationSuite: MegaProductivitySuite
+  ✓ url: https://example.com/italia/medusa.git
+  ✓ landingURL: https://example.com/italia/medusa
+  ✓ isBasedOn: https://github.com/italia/otello.git
+  ✓ softwareVersion: 1.0
+  ✓ releaseDate: 2017-04-15
+  ✓ logo: http://via.placeholder.com/50x50
+  ✓ monochromeLogo: http://via.placeholder.com/50x50
+  ✓ platforms:
+  ✓   - android
+  ✓   - ios
+  ✓ tags:
+  ✓   - content-management
+  ✓   - artificial-intelligence
+  ✓   - museum
+  ✓   - emulator
+  ✓   - compression
+  ✓   - dictionary
   freeTags:
     eng:
       - english-free-tag
@@ -30,36 +30,36 @@
     - compression
     - emulator
     - dictionary
-  usedBy:
-    - Comune di Firenze
-    - Comune di Roma
-  roadmap: https://example.com/italia/medusa/roadmap
-  developmentStatus: development
-  vitalityScore: 55
-  vitalityDataChart:
-    - 12
-    - 19
-    - 3
-    - 17
-    - 6
-    - 3
-    - 7
+  ✓ usedBy:
+  ✓   - Comune di Firenze
+  ✓   - Comune di Roma
+  ✓ roadmap: https://example.com/italia/medusa/roadmap
+  ✓ developmentStatus: development
+  ✓ vitalityScore: 55
+  ✓ vitalityDataChart:
+  ✓   - 12
+  ✓   - 19
+  ✓   - 3
+  ✓   - 17
+  ✓   - 6
+  ✓   - 3
+  ✓   - 7
   softwareType:
     type: standalone
     isRelatedTo:
       - https://example.com/italia/software1.git
       - https://example.com/italia/software2.git
       - https://example.com/italia/software3.git
-  intendedAudience:
-    onlyFor:
-      - cities
-      - health-services
-      - it-ag-agricolo
-    countries:
-      - it
-      - de
-    unsupportedCountries:
-      - us
+  ✓ intendedAudience:
+  ✓   onlyFor:
+  ✓     - cities
+  ✓     - health-services
+  ✓     - it-ag-agricolo
+  ✓   countries:
+  ✓     - it
+  ✓     - de
+  ✓   unsupportedCountries:
+  ✓     - us
   description:
     eng:
       localisedName: MedusaEN

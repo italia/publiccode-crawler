@@ -135,3 +135,9 @@ type OldDesc struct {
 	GenericName   string   `json:"genericName"`
 	FeatureList   []string `json:"featureList"`
 }
+
+type Audience struct {
+	OnlyFor              []string `json:"intended-audience-only-for"`
+	Countries            []string `json:"intended-audience-countries"`
+	UnsupportedCountries []string `json:"intended-audience-unsupported-countries"`
+}

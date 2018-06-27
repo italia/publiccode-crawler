@@ -5,6 +5,7 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
@@ -56,9 +57,9 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	}
 
 	// Foreach search result check if codiceIPA is not empty.
-	var pctype PublicCode
+	var pctype crawler.PublicCodeES
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
-		i := item.(PublicCode)
+		i := item.(crawler.PublicCodeES)
 		if i.ItRiusoCodiceIPA != "" {
 			administrations = append(administrations, Administration{
 				Name:      i.Name,

@@ -14,6 +14,12 @@
   revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
 
 [[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
+  version = "v1.1.0"
+
+[[projects]]
   name = "github.com/emirpasic/gods"
   packages = [
     "containers",
@@ -431,6 +437,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a50def9becc0cc3833ed45bb7e1539793d5b2805319923c65f2786d9508f5ad6"
+  inputs-digest = "1657ad7b7256eaa50f2b21954d7943a00be7d88158d2266e9f755df8198fa3c3"
   solver-name = "gps-cdcl"
   solver-version = 1
