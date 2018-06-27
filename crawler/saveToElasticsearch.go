@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"context"
+	"errors"
 	"net/url"
 
 	"github.com/italia/developers-italia-backend/metrics"
@@ -439,7 +440,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 	    }
 	  }
 	}
-` // nolint: misspell
+`
 	)
 
 	// Starting with elastic.v5, you must pass a context to execute each service.
@@ -448,15 +449,12 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 	// Generate publiccode data using the parser.
 	pc := pcode.PublicCode{}
 	err := pcode.Parse(data, &pc)
-	//	yaml.Unmarshal([]byte(data), &pc)
 	if err != nil {
-		log.Errorf("Error in publiccode.yml for %s: %v", name, err)
+		log.Errorf("Error parsing publiccode.yml for %s: %v", name, err)
 	}
 
 	// Add a document to the index.
 	file := PublicCodeES{
-		PubliccodeYamlVersion: pc.PubliccodeYamlVersion,
-
 		Name:             pc.Name,
 		ApplicationSuite: pc.ApplicationSuite,
 		URL:              pc.URL.String(),
@@ -494,7 +492,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 		IntendedAudienceUnsupportedCountries: pc.IntendedAudience.UnsupportedCountries,
 
 		Description: map[string]Desc{},
-		//OldVariants: oldVariant will be added in the search function.
+		OldVariants: []OldVariant{},
 
 		LegalLicense:            pc.Legal.License,
 		LegalMainCopyrightOwner: pc.Legal.MainCopyrightOwner,
@@ -536,7 +534,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 		file.MaintenanceContractors = append(file.MaintenanceContractors, Contractor{
 			Name:    contractor.Name,
 			Website: contractor.Website.String(),
-			Until:   contractor.Until.String(),
+			Until:   contractor.Until.Format("2006-01-02"),
 		})
 	}
 	for _, contact := range pc.Maintenance.Contacts {
@@ -601,15 +599,14 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 	}
 
 	// Use the IndexExists service to check if a specified index exists.
-	exists, err := elasticClient.IndexExists(index).Do(context.Background())
+	exists, err := elasticClient.IndexExists(index).Do(ctx)
 	if err != nil {
-		return err
+		return errors.New("cannot check if ES index exists for '" + index + "' exists: " + err.Error())
 	}
 	if !exists {
-		_, err := elasticClient.CreateIndex(index).Body(mapping).Do(context.Background())
+		_, err := elasticClient.CreateIndex(index).Body(mapping).Do(ctx)
 		if err != nil {
-			// Handle error
-			return err
+			return errors.New("cannot create ES index for '" + index + "': " + err.Error())
 		}
 	}
 

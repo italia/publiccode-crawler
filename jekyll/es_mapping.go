@@ -2,8 +2,6 @@ package jekyll
 
 // PublicCode describe the data used in jekyll that includes publiccode and meta informations.
 type PublicCode struct {
-	PubliccodeYamlVersion string `json:"publiccode-yaml-version"`
-
 	Name             string `json:"name"`
 	ApplicationSuite string `json:"applicationSuite"`
 	URL              string `json:"url"`

@@ -6,9 +6,9 @@ import (
 	"os"
 	"reflect"
 
+	yaml "github.com/ghodss/yaml"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
 )
 
 func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient *elastic.Client) error {
