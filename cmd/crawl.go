@@ -103,4 +103,11 @@ var crawlCmd = &cobra.Command{
 			log.Errorf("Error exporting jekyll file of all the software : %v", err)
 		}
 
+		// amministrazioni.yml
+		log.Debug("Saving amministrazioni.yml ...")
+		err = jekyll.AmministrazioniYML("jekyll/generated/amministrazioni.yml", elasticClient)
+		if err != nil {
+			log.Error(err)
+		}
+
 	}}

@@ -99,7 +99,7 @@ No organizations! Only single repositories!`,
 		}
 
 		// Generate the jekyll files.
-		// Create and populate amministrazioni.yml
+		// amministrazioni.yml
 		err = jekyll.AmministrazioniYML("jekyll/generated/amministrazioni.yml", elasticClient)
 		if err != nil {
 			log.Error(err)
