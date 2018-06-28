@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/jekyll"
 	"github.com/italia/developers-italia-backend/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -26,12 +27,18 @@ No organizations! Only single repositories!`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Read repository URL.
 		repo := args[0]
+		// Index for actual process.
+		index := strconv.FormatInt(time.Now().Unix(), 10)
 
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
 			viper.GetString("ELASTIC_URL"),
 			viper.GetString("ELASTIC_USER"),
 			viper.GetString("ELASTIC_PWD"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = crawler.ElasticIndexMapping(index, elasticClient)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -46,9 +53,6 @@ No organizations! Only single repositories!`,
 		repositories := make(chan crawler.Repository, 1)
 		// Prepare WaitGroup.
 		var wg sync.WaitGroup
-
-		// Index for actual process.
-		index := strconv.FormatInt(time.Now().Unix(), 10)
 
 		// Register Prometheus metrics.
 		metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", index)
@@ -98,19 +102,10 @@ No organizations! Only single repositories!`,
 		}
 
 		// Generate the jekyll files.
-		// amministrazioni.yml
-		// err = jekyll.AmministrazioniYML("jekyll/generated/amministrazioni.yml", elasticClient)
-		// if err != nil {
-		// 	log.Error(err)
-		// }
-		//
-		// // Create and populate softwares.yml
-		// log.Debug("Saving softwares.yml ...")
-		// numberOfSimilarSoftware := 4
-		// err = jekyll.AllSoftwareYML("jekyll/generated/softwares.yml", numberOfSimilarSoftware, elasticClient)
-		// if err != nil {
-		// 	log.Errorf("Error exporting jekyll file of all the software : %v", err)
-		// }
+		err = jekyll.GenerateJekyllYML(elasticClient)
+		if err != nil {
+			log.Errorf("Error generating Jekyll yml data: %v", err)
+		}
 
 	},
 }

@@ -345,9 +345,26 @@ func calculateVitality(r *git.Repository) ([]int, error) {
 	for _, commit := range commitsLastYear {
 		vitality[commit.Author.When.Month()-1]++
 	}
-	// Rotate for sorting.
+	// Rotate for sorting. This month is the last index.
 	monthNow := time.Now().Month()
 	rotateL(vitality, int(monthNow))
+
+	// Normalize and rescaling.
+	max := vitality[0]
+	for _, e := range vitality {
+		if e > max {
+			max = e
+		}
+	}
+	min := vitality[0]
+	for _, e := range vitality {
+		if e < min {
+			min = e
+		}
+	}
+	for index, x := range vitality {
+		vitality[index] = (x - min) / (max - min) * 100 // simple rescaling [0-100]
+	}
 
 	return vitality, err
 }
@@ -388,6 +405,5 @@ func gcd(a, b int) int {
 	for b != 0 {
 		a, b = b, a%b
 	}
-
 	return a
 }

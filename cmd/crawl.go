@@ -34,7 +34,10 @@ var crawlCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		crawler.ElasticIndexMapping(index, elasticClient)
+		err = crawler.ElasticIndexMapping(index, elasticClient)
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		// Read and parse list of domains.
 		domains, err := crawler.ReadAndParseDomains(domainsFile)
@@ -90,6 +93,8 @@ var crawlCmd = &cobra.Command{
 		}
 
 		// Generate the jekyll files.
-		jekyll.GenerateJekyllYML(elasticClient)
-
+		err = jekyll.GenerateJekyllYML(elasticClient)
+		if err != nil {
+			log.Errorf("Error generating Jekyll yml data: %v", err)
+		}
 	}}

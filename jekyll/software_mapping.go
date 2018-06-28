@@ -2,7 +2,7 @@ package jekyll
 
 import "github.com/italia/developers-italia-backend/crawler"
 
-// PublicCode describe the data used in jekyll that includes publiccode and meta informations.
+// Software describe the data used in jekyll that includes publiccode and meta informations.
 type Software struct {
 	Name              string                  `json:"name,omitempty"`
 	ApplicationSuite  string                  `json:"applicationSuite,omitempty"`
@@ -43,6 +43,7 @@ type Software struct {
 	It           ExtensionIT      `json:"it,omitempty"`
 }
 
+// LegalData contains the legal infos of the project.
 type LegalData struct {
 	License            string `json:"license,omitempty"`
 	MainCopyrightOwner string `json:"mainCopyrightOwner,omitempty"`
@@ -50,38 +51,45 @@ type LegalData struct {
 	AuthorsFile        string `json:"authorsFile,omitempty"`
 }
 
+// LocalisationData contains available languages of the software and if it's ready to be localised.
 type LocalisationData struct {
 	LocalisationReady  bool     `json:"localisationReady,omitempty"`
 	AvailableLanguages []string `json:"availableLanguages,omitempty"`
 }
 
+// DependenciesData contains infos about software and hardware dependencies.
 type DependenciesData struct {
 	Open        []crawler.Dependency `json:"open,omitempty"`
 	Proprietary []crawler.Dependency `json:"proprietary,omitempty"`
 	Hardware    []crawler.Dependency `json:"hardware,omitempty"`
 }
 
+// FreeTagsData contains localised infos (ita-eng) for FreeTags
 type FreeTagsData struct {
 	Eng []string `json:"eng,omitempty"`
 	Ita []string `json:"ita,omitempty"`
 }
 
+// SoftwareTypeData contains the type of the software and related software urls.
 type SoftwareTypeData struct {
 	Type        string   `json:"type,omitempty"`
 	IsRelatedTo []string `json:"isRelatedTo,omitempty"`
 }
 
+// IntendedAudienceData contains infos about actors intended to use or not the software.
 type IntendedAudienceData struct {
 	OnlyFor              []string `json:"onlyFor,omitempty"`
 	Countries            []string `json:"countries,omitempty"`
 	UnsupportedCountries []string `json:"unsupportedCountries,omitempty"`
 }
 
+// OldFeatureListData contains the data of other variant features.
 type OldFeatureListData struct {
 	Eng []string `json:"eng,omitempty"`
 	Ita []string `json:"ita,omitempty"`
 }
 
+// OldVariantData contains infos about other variants.
 type OldVariantData struct {
 	Name          string  `json:"name,omitempty"`
 	VitalityScore float64 `json:"vitalityScore,omitempty"`
@@ -98,6 +106,7 @@ type OldVariantData struct {
 	} `json:"ita,omitempty"`
 }
 
+// RelatedSoftware contains info of software related to.
 type RelatedSoftware struct {
 	Name  string `json:"name,omitempty"`
 	Image string `json:"image,omitempty"`
@@ -111,6 +120,7 @@ type RelatedSoftware struct {
 	} `json:"ita,omitempty"`
 }
 
+// ExtensionIT describe the fields in italian extension.
 type ExtensionIT struct {
 	Accessibile    bool          `json:"accessibile,omitempty"`
 	Interoperabile bool          `json:"interoperabile,omitempty"`
@@ -122,10 +132,12 @@ type ExtensionIT struct {
 	DesignKit      DesignKitData `json:"designKit,omitempty"`
 }
 
+// ItRiusoData is the codiceIPA of the software.
 type ItRiusoData struct {
 	CodiceIPA string `json:"codiceIPA,omitempty"`
 }
 
+// DesignKitData describe Design Kit variables for italian extension.
 type DesignKitData struct {
 	Seo bool `json:"seo,omitempty"`
 	UI  bool `json:"ui,omitempty"`

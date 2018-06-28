@@ -34,7 +34,10 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	if err != nil {
 		return err
 	}
-	file.Close() // nolint: errcheck
+	err = file.Close()
+	if err != nil {
+		return err
+	}
 	// Open file.
 	f, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {

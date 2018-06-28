@@ -137,6 +137,7 @@ type OldDesc struct {
 	FeatureList   []string `json:"featureList"`
 }
 
+//Audience describe who is the audience of this software.
 type Audience struct {
 	OnlyFor              []string `json:"intended-audience-only-for"`
 	Countries            []string `json:"intended-audience-countries"`

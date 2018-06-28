@@ -15,6 +15,6 @@ jobs:
       # Install and run go linter.
       - run: go get -u github.com/alecthomas/gometalinter
       - run: gometalinter --install
-      - run:  gometalinter ./... --vendor --skip=publiccode --config=.gometalinter.json --deadline=2m
+      - run: gometalinter ./... --vendor --skip=publiccode.yml-parser-go --config=.gometalinter.json --deadline=2m
       # Test go code.
       - run: go test -race ./...

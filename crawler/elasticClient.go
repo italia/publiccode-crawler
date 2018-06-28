@@ -29,6 +29,7 @@ func ElasticClientFactory(URL, user, password string) (*elastic.Client, error) {
 	return client, nil
 }
 
+// ElasticIndexMapping adds (if not exists) the mapping for the crawler data in ES.
 func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
 	const (
 		// Elasticsearch mapping for publiccode. Check elasticsearch/mappings/.

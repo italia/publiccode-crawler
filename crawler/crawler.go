@@ -146,7 +146,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	if resp.Status.Code == http.StatusOK && err == nil {
 
 		// Validate file. If invalid, terminate the check.
-		err = validateRemoteFile(resp.Body, fileRawURL, index)
+		err = validateRemoteFile(resp.Body, fileRawURL)
 		if err != nil {
 			log.Errorf("Validator fails for: " + fileRawURL)
 			log.Errorf("Validator errors:" + err.Error())
@@ -190,7 +190,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	wg.Done()
 }
 
-func validateRemoteFile(data []byte, fileRawURL, index string) error {
+func validateRemoteFile(data []byte, fileRawURL string) error {
 	// Generate publiccode data using the parser.
 	pc := pcode.PublicCode{}
 	pcode.BaseDir = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
