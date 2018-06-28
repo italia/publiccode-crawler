@@ -91,8 +91,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 			},
 			Description:    i.Description,
 			OldVariant:     []OldVariantData{},
-			OldFeatureList: OldFeatureListData{}, //todo
-			TagsRelate:     []string{"todo", "tagsRelated"},
+			OldFeatureList: OldFeatureListData{},
+			TagsRelate:     i.Tags,
 			Legal: LegalData{
 				License:            i.LegalLicense,
 				MainCopyrightOwner: i.LegalMainCopyrightOwner,
@@ -144,7 +144,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 			if v.URL != softwareExtracted.URL {
 				related := RelatedSoftware{
 					Name:  v.Name,
-					Image: v.Logo,
+					Image: concatenateLink(rawBaseDir, v.Logo),
 				}
 				if d, ok := v.Description["eng"]; ok {
 					related.Eng.LocalisedName = d.LocalisedName
