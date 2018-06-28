@@ -4,130 +4,130 @@ import "github.com/italia/developers-italia-backend/crawler"
 
 // PublicCode describe the data used in jekyll that includes publiccode and meta informations.
 type Software struct {
-	Name              string                  `json:"name"`
-	ApplicationSuite  string                  `json:"applicationSuite"`
-	URL               string                  `json:"url"`
-	LandingURL        string                  `json:"landingURL"`
-	IsBasedOn         []string                `json:"isBasedOn"`
-	SoftwareVersion   string                  `json:"softwareVersion"`
-	ReleaseDate       string                  `json:"releaseDate"`
-	Logo              string                  `json:"logo"`
-	MonochromeLogo    string                  `json:"monochromeLogo"`
-	Platforms         []string                `json:"platforms"`
-	Tags              []string                `json:"tags"`
-	FreeTags          FreeTagsData            `json:"freeTags"`
-	PopularTags       []string                `json:"popularTags"`
-	ShareTags         []string                `json:"shareTags"`
-	UsedBy            []string                `json:"usedBy"`
-	Roadmap           string                  `json:"roadmap"`
-	DevelopmentStatus string                  `json:"developmentStatus"`
-	VitalityScore     float64                 `json:"vitalityScore"`
-	VitalityDataChart []int                   `json:"vitalityDataChart"`
-	SoftwareType      SoftwareTypeData        `json:"softwareType"`
-	IntendedAudience  IntendedAudienceData    `json:"intendedAudience"`
-	Description       map[string]crawler.Desc `json:"description"`
-	OldVariant        []OldVariantData        `json:"oldVariant"`
-	OldFeatureList    OldFeatureListData      `json:"oldFeatureList"`
-	TagsRelate        []string                `json:"tagsRelate"`
+	Name              string                  `json:"name,omitempty"`
+	ApplicationSuite  string                  `json:"applicationSuite,omitempty"`
+	URL               string                  `json:"url,omitempty"`
+	LandingURL        string                  `json:"landingURL,omitempty"`
+	IsBasedOn         []string                `json:"isBasedOn,omitempty"`
+	SoftwareVersion   string                  `json:"softwareVersion,omitempty"`
+	ReleaseDate       string                  `json:"releaseDate,omitempty"`
+	Logo              string                  `json:"logo,omitempty"`
+	MonochromeLogo    string                  `json:"monochromeLogo,omitempty"`
+	Platforms         []string                `json:"platforms,omitempty"`
+	Tags              []string                `json:"tags,omitempty"`
+	FreeTags          FreeTagsData            `json:"freeTags,omitempty"`
+	PopularTags       []string                `json:"popularTags,omitempty"`
+	ShareTags         []string                `json:"shareTags,omitempty"`
+	UsedBy            []string                `json:"usedBy,omitempty"`
+	Roadmap           string                  `json:"roadmap,omitempty"`
+	DevelopmentStatus string                  `json:"developmentStatus,omitempty"`
+	VitalityScore     float64                 `json:"vitalityScore,omitempty"`
+	VitalityDataChart []int                   `json:"vitalityDataChart,omitempty"`
+	SoftwareType      SoftwareTypeData        `json:"softwareType,omitempty"`
+	IntendedAudience  IntendedAudienceData    `json:"intendedAudience,omitempty"`
+	Description       map[string]crawler.Desc `json:"description,omitempty"`
+	OldVariant        []OldVariantData        `json:"oldVariant,omitempty"`
+	OldFeatureList    OldFeatureListData      `json:"oldFeatureList,omitempty"`
+	TagsRelate        []string                `json:"tagsRelate,omitempty"`
 
-	RelatedSoftwares []RelatedSoftware `json:"relatedSoftwares"`
+	RelatedSoftwares []RelatedSoftware `json:"relatedSoftwares,omitempty"`
 
-	Legal       LegalData `json:"legal"`
+	Legal       LegalData `json:"legal,omitempty"`
 	Maintenance struct {
-		Type        string               `json:"type"`
-		Contractors []crawler.Contractor `json:"contractors"`
-		Contacts    []crawler.Contact    `json:"contacts"`
-	} `json:"maintenance"`
-	Localisation LocalisationData `json:"localisation"`
-	Dependencies DependenciesData `json:"dependencies"`
-	It           ExtensionIT      `json:"it"`
+		Type        string               `json:"type,omitempty"`
+		Contractors []crawler.Contractor `json:"contractors,omitempty"`
+		Contacts    []crawler.Contact    `json:"contacts,omitempty"`
+	} `json:"maintenance,omitempty"`
+	Localisation LocalisationData `json:"localisation,omitempty"`
+	Dependencies DependenciesData `json:"dependencies,omitempty"`
+	It           ExtensionIT      `json:"it,omitempty"`
 }
 
 type LegalData struct {
-	License            string `json:"license"`
-	MainCopyrightOwner string `json:"mainCopyrightOwner"`
-	RepoOwner          string `json:"repoOwner"`
-	AuthorsFile        string `json:"authorsFile"`
+	License            string `json:"license,omitempty"`
+	MainCopyrightOwner string `json:"mainCopyrightOwner,omitempty"`
+	RepoOwner          string `json:"repoOwner,omitempty"`
+	AuthorsFile        string `json:"authorsFile,omitempty"`
 }
 
 type LocalisationData struct {
-	LocalisationReady  bool     `json:"localisationReady"`
-	AvailableLanguages []string `json:"availableLanguages"`
+	LocalisationReady  bool     `json:"localisationReady,omitempty"`
+	AvailableLanguages []string `json:"availableLanguages,omitempty"`
 }
 
 type DependenciesData struct {
-	Open        []crawler.Dependency `json:"open"`
-	Proprietary []crawler.Dependency `json:"proprietary"`
-	Hardware    []crawler.Dependency `json:"hardware"`
+	Open        []crawler.Dependency `json:"open,omitempty"`
+	Proprietary []crawler.Dependency `json:"proprietary,omitempty"`
+	Hardware    []crawler.Dependency `json:"hardware,omitempty"`
 }
 
 type FreeTagsData struct {
-	Eng []string `json:"eng"`
-	Ita []string `json:"ita"`
+	Eng []string `json:"eng,omitempty"`
+	Ita []string `json:"ita,omitempty"`
 }
 
 type SoftwareTypeData struct {
-	Type        string   `json:"type"`
-	IsRelatedTo []string `json:"isRelatedTo"`
+	Type        string   `json:"type,omitempty"`
+	IsRelatedTo []string `json:"isRelatedTo,omitempty"`
 }
 
 type IntendedAudienceData struct {
-	OnlyFor              []string `json:"onlyFor"`
-	Countries            []string `json:"countries"`
-	UnsupportedCountries []string `json:"unsupportedCountries"`
+	OnlyFor              []string `json:"onlyFor,omitempty"`
+	Countries            []string `json:"countries,omitempty"`
+	UnsupportedCountries []string `json:"unsupportedCountries,omitempty"`
 }
 
 type OldFeatureListData struct {
-	Eng []string `json:"eng"`
-	Ita []string `json:"ita"`
+	Eng []string `json:"eng,omitempty"`
+	Ita []string `json:"ita,omitempty"`
 }
 
 type OldVariantData struct {
-	Name          string  `json:"name"`
-	VitalityScore float64 `json:"vitalityScore"`
+	Name          string  `json:"name,omitempty"`
+	VitalityScore float64 `json:"vitalityScore,omitempty"`
 	Legal         struct {
-		RepoOwner string `json:"repoOwner"`
-	} `json:"legal"`
+		RepoOwner string `json:"repoOwner,omitempty"`
+	} `json:"legal,omitempty"`
 	Eng struct {
-		URL      string   `json:"url"`
-		Features []string `json:"features"`
-	} `json:"eng"`
+		URL      string   `json:"url,omitempty"`
+		Features []string `json:"features,omitempty"`
+	} `json:"eng,omitempty"`
 	Ita struct {
-		URL      string   `json:"url"`
-		Features []string `json:"features"`
-	} `json:"ita"`
+		URL      string   `json:"url,omitempty"`
+		Features []string `json:"features,omitempty"`
+	} `json:"ita,omitempty"`
 }
 
 type RelatedSoftware struct {
-	Name  string `json:"name"`
-	Image string `json:"image"`
+	Name  string `json:"name,omitempty"`
+	Image string `json:"image,omitempty"`
 	Eng   struct {
-		LocalisedName string `json:"localisedName"`
-		URL           string `json:"url"`
-	} `json:"eng"`
+		LocalisedName string `json:"localisedName,omitempty"`
+		URL           string `json:"url,omitempty"`
+	} `json:"eng,omitempty"`
 	Ita struct {
-		LocalisedName string `json:"localisedName"`
-		URL           string `json:"url"`
-	} `json:"ita"`
+		LocalisedName string `json:"localisedName,omitempty"`
+		URL           string `json:"url,omitempty"`
+	} `json:"ita,omitempty"`
 }
 
 type ExtensionIT struct {
-	Accessibile    bool          `json:"accessibile"`
-	Interoperabile bool          `json:"interoperabile"`
-	Riuso          ItRiusoData   `json:"riuso"`
-	Spid           bool          `json:"spid"`
-	Pagopa         bool          `json:"pagopa"`
-	Cie            bool          `json:"cie"`
-	Anpr           bool          `json:"anpr"`
-	DesignKit      DesignKitData `json:"designKit"`
+	Accessibile    bool          `json:"accessibile,omitempty"`
+	Interoperabile bool          `json:"interoperabile,omitempty"`
+	Riuso          ItRiusoData   `json:"riuso,omitempty"`
+	Spid           bool          `json:"spid,omitempty"`
+	Pagopa         bool          `json:"pagopa,omitempty"`
+	Cie            bool          `json:"cie,omitempty"`
+	Anpr           bool          `json:"anpr,omitempty"`
+	DesignKit      DesignKitData `json:"designKit,omitempty"`
 }
 
 type ItRiusoData struct {
-	CodiceIPA string `json:"codiceIPA"`
+	CodiceIPA string `json:"codiceIPA,omitempty"`
 }
 
 type DesignKitData struct {
-	Seo bool `json:"seo"`
-	UI  bool `json:"ui"`
-	Web bool `json:"web"`
+	Seo bool `json:"seo,omitempty"`
+	UI  bool `json:"ui,omitempty"`
+	Web bool `json:"web,omitempty"`
 }

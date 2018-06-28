@@ -11,15 +11,15 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
-// CalculateRepoActivity return the repository activity index calculated on the git clone.
+// CalculateRepoActivity return the repository activity index and the vitality slice calculated on the git clone.
 // It follows the document https://lg-acquisizione-e-riuso-software-per-la-pa.readthedocs.io/
 // In reference to section: fase-2-2-valutazione-soluzioni-riusabili-per-la-pa
-func CalculateRepoActivity(domain Domain, hostname string, name string) (float64, error) {
+func CalculateRepoActivity(domain Domain, hostname string, name string) (float64, []int, error) {
 	if domain.Host == "" {
-		return 0, errors.New("cannot calculate repository activity without domain host")
+		return 0, []int{}, errors.New("cannot calculate repository activity without domain host")
 	}
 	if name == "" {
-		return 0, errors.New("cannot  calculate repository activity without name")
+		return 0, []int{}, errors.New("cannot  calculate repository activity without name")
 	}
 
 	vendor, repo := splitFullName(name)
@@ -28,7 +28,7 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return 0, err
+		return 0, []int{}, err
 	}
 
 	// Repository activity score.
@@ -74,10 +74,16 @@ func CalculateRepoActivity(domain Domain, hostname string, name string) (float64
 		log.Error(err)
 	}
 
+	// Commits and merges vitality for year. (commits per months)
+	vitality, err := calculateVitality(r)
+	if err != nil {
+		log.Error(err)
+	}
+
 	// Calculate repoActivity index. (sum of all the others indexes)
 	repoActivity = userCommunity + codeActivity + releaseHistory + longevity
 
-	return repoActivity, err
+	return repoActivity, vitality, err
 }
 
 // extractLastYearMerges returns a slice of commits of merges from last year.
@@ -311,4 +317,77 @@ func calculateCodeActivityIndex(r *git.Repository) (float64, error) {
 
 	return codeActivity, err
 
+}
+
+// calculateVitality returns monthly commits for the last year.
+func calculateVitality(r *git.Repository) ([]int, error) {
+	vitality := make([]int, 12)
+
+	ref, err := r.Head()
+	if err != nil {
+		log.Error(err)
+		return vitality, err
+	}
+
+	// Commits.
+	// Return to HEAD.
+	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
+	if err != nil {
+		log.Error(err)
+		return vitality, err
+	}
+	commitsLastYear, err := extractLastYearCommits(cIter)
+	if err != nil {
+		log.Error(err)
+		return vitality, err
+	}
+
+	for _, commit := range commitsLastYear {
+		vitality[commit.Author.When.Month()-1]++
+	}
+	// Rotate for sorting.
+	monthNow := time.Now().Month()
+	rotateL(vitality, int(monthNow))
+
+	return vitality, err
+}
+
+// https://play.golang.org/p/UwrHJYskNS
+func rotateL(a []int, i int) {
+	// Ensure the shift amount is less than the length of the array,
+	// and that it is positive.
+	i = i % len(a)
+	if i < 0 {
+		i += len(a)
+	}
+
+	for c := 0; c < gcd(i, len(a)); c++ {
+		t := a[c]
+		j := c
+
+		for {
+			k := j + i
+			// loop around if we go past the end of the slice
+			if k >= len(a) {
+				k -= len(a)
+			}
+			// end when we get to where we started
+			if k == c {
+				break
+			}
+			// move the element directly into its final position
+			a[j] = a[k]
+			j = k
+		}
+
+		a[j] = t
+	}
+}
+
+func gcd(a, b int) int {
+	for b != 0 {
+		a, b = b, a%b
+	}
+
+	return a
 }

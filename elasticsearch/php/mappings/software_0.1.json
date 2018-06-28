@@ -11,10 +11,7 @@
           "type": "ngram",
           "min_gram": 2,
           "max_gram": 20,
-          "token_chars": [
-            "letter",
-            "digit"
-          ]
+          "token_chars": ["letter", "digit"]
         }
       }
     }
@@ -92,7 +89,7 @@
         },
         {
           "dynamic-suggestions": {
-            "match":   "suggest-*",
+            "match": "suggest-*",
             "mapping": {
               "type": "completion",
               "preserve_separators": false
@@ -101,6 +98,10 @@
         }
       ],
       "properties": {
+        "fileRawURL": {
+          "type": "text",
+          "index": false
+        },
         "publiccode-yaml-version": {
           "type": "text",
           "index": false

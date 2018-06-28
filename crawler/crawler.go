@@ -3,6 +3,7 @@ package crawler
 import (
 	"crypto/rand"
 	"math/big"
+	"strings"
 	"sync"
 	"time"
 
@@ -11,7 +12,9 @@ import (
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
+	pcode "github.com/italia/developers-italia-backend/publiccode.yml-parser-go"
 	"github.com/olivere/elastic"
+	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -141,6 +144,16 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
+
+		// Validate file. If invalid, terminate the check.
+		err = validateRemoteFile(resp.Body, fileRawURL, index)
+		if err != nil {
+			log.Errorf("Validator fails for: " + fileRawURL)
+			log.Errorf("Validator errors:" + err.Error())
+			wg.Done()
+			return
+		}
+
 		// Save Metadata.
 		err = SaveToFile(domain, hostname, name, metadata, index+"_metadata")
 		if err != nil {
@@ -159,32 +172,34 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 			log.Errorf("error cloning repository %s: %v", gitURL, err)
 		}
 
-		// Calculate Repository activity index.
-		activityIndex, err := CalculateRepoActivity(domain, hostname, name)
+		// Calculate Repository activity index and vitality.
+		activityIndex, vitality, err := CalculateRepoActivity(domain, hostname, name)
 		if err != nil {
 			log.Errorf("error calculating repository Activity to file: %v", err)
 		}
 		log.Debugf("Activity Index for %s: %f", name, activityIndex)
 
 		// Save to ES.
-		err = SaveToES(domain, name, activityIndex, resp.Body, index, elasticClient)
+		err = SaveToES(fileRawURL, domain, name, activityIndex, vitality, resp.Body, index, elasticClient)
 		if err != nil {
 			log.Errorf("error saving to ElastcSearch: %v", err)
 		}
-		// TODO: save "metadata" on ES. When mapping is ready.
-
-		// Validate file.
-		// TODO: uncomment these lines when mapping and File structure are ready for publiccode.
-		// TODO: now validation is useless because we test on .gitignore file.
-		// err := validateRemoteFile(resp.Body, fileRawURL, index)
-		// if err != nil {
-		// 	log.Errorf("Validator fails for: " + fileRawURL)
-		// 	log.Errorf("Validator errors:" + err.Error())
-		//	wg.Done()
-		//	return
-		// }
 	}
 
 	// Defer waiting group close.
 	wg.Done()
+}
+
+func validateRemoteFile(data []byte, fileRawURL, index string) error {
+	// Generate publiccode data using the parser.
+	pc := pcode.PublicCode{}
+	pcode.BaseDir = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
+
+	err := pcode.Parse(data, &pc)
+	if err != nil {
+		log.Errorf("Error parsing publiccode.yml for %s: %v", fileRawURL, err)
+		return err
+	}
+
+	return err
 }

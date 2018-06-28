@@ -79,7 +79,6 @@
     anpr: true
     cie: true
     designKit:
-      seo: false
       ui: true
       web: true
     interoperabile: true
@@ -125,7 +124,6 @@
   oldFeatureList:
     eng:
     - Solves all the problems of the world
-    ita: null
   oldVariant:
   - eng:
       features:
@@ -134,9 +132,7 @@
       - Has zero bugs
       - Solves all the problems of the world
       url: https://github.com/gith002/publiccode-org2.git
-    ita:
-      features: null
-      url: ""
+    ita: {}
     legal:
       repoOwner: City of Chicago
     name: Medusa
@@ -152,9 +148,7 @@
       localisedName: Medusa
       url: https://github.com/gith002/publiccode-org2.git
     image: img/logo.png
-    ita:
-      localisedName: ""
-      url: ""
+    ita: {}
     name: Medusa
   releaseDate: "2017-04-15"
   roadmap: https://designers.italia.it/roadmap/
@@ -162,7 +156,6 @@
   - todo
   - shareTagsToCalculate
   softwareType:
-    isRelatedTo: null
     type: standalone
   softwareVersion: "1.0"
   tags:
@@ -178,15 +171,18 @@
   - Comune di Firenze
   - Comune di Roma
   vitalityDataChart:
-  - 12
-  - 24
-  - 36
-  - 48
-  - 60
-  - 72
-  - 84
-  - 96
-  - 48
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 4
   vitalityScore: 16
 - applicationSuite: MegaProductivitySuite
   dependencies:
@@ -268,7 +264,6 @@
     anpr: true
     cie: true
     designKit:
-      seo: false
       ui: true
       web: true
     interoperabile: true
@@ -315,7 +310,6 @@
     eng:
     - Solves all the problems of the universe!
     - Supports Vorgon poems
-    ita: null
   oldVariant:
   - eng:
       features:
@@ -325,9 +319,7 @@
       - Solves all the problems of the universe!
       - Supports Vorgon poems
       url: https://github.com/gith003/publiccode-org3.git
-    ita:
-      features: null
-      url: ""
+    ita: {}
     legal:
       repoOwner: City of Chicago
     name: MedusaGith003
@@ -343,9 +335,7 @@
       localisedName: Medusa
       url: https://github.com/gith003/publiccode-org3.git
     image: img/logo.png
-    ita:
-      localisedName: ""
-      url: ""
+    ita: {}
     name: MedusaGith003
   releaseDate: "2017-04-15"
   roadmap: https://designers.italia.it/roadmap/
@@ -353,7 +343,6 @@
   - todo
   - shareTagsToCalculate
   softwareType:
-    isRelatedTo: null
     type: standalone
   softwareVersion: "1.0"
   tags:
@@ -378,13 +367,16 @@
   - Comune di Firenze
   - Comune di Roma
   vitalityDataChart:
-  - 12
-  - 24
-  - 36
-  - 48
-  - 60
-  - 72
-  - 84
-  - 96
-  - 48
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 4
   vitalityScore: 16

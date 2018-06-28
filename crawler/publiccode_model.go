@@ -2,6 +2,7 @@ package crawler
 
 // PublicCodeES describe the data in ElasticSearch that includes publiccode and meta informations.
 type PublicCodeES struct {
+	FileRawURL       string `json:"fileRawURL"`
 	Name             string `json:"name"`
 	ApplicationSuite string `json:"applicationSuite,omitempty"`
 	URL              string `json:"url"`

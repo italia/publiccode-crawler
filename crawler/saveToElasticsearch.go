@@ -5,13 +5,13 @@ import (
 	"net/url"
 
 	"github.com/italia/developers-italia-backend/metrics"
+	pcode "github.com/italia/developers-italia-backend/publiccode.yml-parser-go"
 	"github.com/olivere/elastic"
-	pcode "github.com/publiccodenet/publiccode.yml-parser-go"
 	log "github.com/sirupsen/logrus"
 )
 
 // SaveToES save the chosen data []byte in elasticsearch
-func SaveToES(domain Domain, name string, activityIndex float64, data []byte, index string, elasticClient *elastic.Client) error {
+func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float64, vitality []int, data []byte, index string, elasticClient *elastic.Client) error {
 	// Starting with elastic.v5, you must pass a context to execute each service.
 	ctx := context.Background()
 
@@ -22,12 +22,10 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 		log.Errorf("Error parsing publiccode.yml for %s: %v", name, err)
 	}
 
-	// log.Debug("----")
-	// spew.Dump(pc)
-	// log.Debug("----")
-
 	// Add a document to the index.
 	file := PublicCodeES{
+		FileRawURL: fileRawURL,
+
 		Name:             pc.Name,
 		ApplicationSuite: pc.ApplicationSuite,
 		URL:              pc.URL.String(),
@@ -54,7 +52,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 		DevelopmentStatus: pc.DevelopmentStatus,
 
 		VitalityScore:     activityIndex,
-		VitalityDataChart: []int{12, 24, 36, 48, 60, 72, 84, 96, 48},
+		VitalityDataChart: vitality,
 
 		RelatedSoftware: nil,
 
