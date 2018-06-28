@@ -2,13 +2,17 @@ package jekyll
 
 import (
 	"context"
+	"net/url"
 	"os"
+	"path"
 	"reflect"
+	"strings"
 
 	yaml "github.com/ghodss/yaml"
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // AllSoftwareYML generate the softwares.yml file
@@ -52,6 +56,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
 
+		rawBaseDir := strings.TrimRight(i.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
+
 		softwareExtracted := Software{
 			Name:             i.Name,
 			ApplicationSuite: i.ApplicationSuite,
@@ -60,8 +66,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 			IsBasedOn:        i.IsBasedOn,
 			SoftwareVersion:  i.SoftwareVersion,
 			ReleaseDate:      i.ReleaseDate,
-			Logo:             i.Logo,
-			MonochromeLogo:   i.MonochromeLogo,
+			Logo:             concatenateLink(rawBaseDir, i.Logo),
+			MonochromeLogo:   concatenateLink(rawBaseDir, i.MonochromeLogo),
 			Platforms:        i.Platforms,
 			Tags:             i.Tags,
 			FreeTags: func(freeTags map[string][]string) FreeTagsData {
@@ -92,14 +98,14 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 				UnsupportedCountries: i.IntendedAudienceUnsupportedCountries,
 			},
 			Description:    i.Description,
-			OldVariant:     []OldVariantData{},   //todo
+			OldVariant:     []OldVariantData{},
 			OldFeatureList: OldFeatureListData{}, //todo
 			TagsRelate:     []string{"todo", "tagsRelated"},
 			Legal: LegalData{
 				License:            i.LegalLicense,
 				MainCopyrightOwner: i.LegalMainCopyrightOwner,
 				RepoOwner:          i.LegalRepoOwner,
-				AuthorsFile:        i.LegalAuthorsFile,
+				AuthorsFile:        concatenateLink(rawBaseDir, i.LegalAuthorsFile),
 			},
 			Localisation: LocalisationData{
 				LocalisationReady:  i.LocalisationLocalisationReady,
@@ -133,6 +139,12 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 		softwareExtracted.Maintenance.Contacts = i.MaintenanceContacts
 		softwareExtracted.Maintenance.Type = i.MaintenanceType
 
+		for lang, _ := range softwareExtracted.Description {
+			for n := range softwareExtracted.Description[lang].Screenshots {
+				softwareExtracted.Description[lang].Screenshots[n] = concatenateLink(rawBaseDir, softwareExtracted.Description[lang].Screenshots[n])
+			}
+		}
+
 		// Search similar softwares for this software and add them to olSoftwares.
 		similarSoftware := findSimilarSoftwares(i.Tags, numberOfSimilarSoftware, elasticClient)
 		for _, v := range similarSoftware {
@@ -156,7 +168,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 		}
 
 		// Search softwares basedOn this one.
-		isBasedOnSoftware := findIsBasedOnSoftwares(i.URL, elasticClient)
+		isBasedOnSoftware := findIsBasedOnSoftwares(i, elasticClient)
 		for _, v := range isBasedOnSoftware {
 			// Remove the extracted software.
 			if v.URL != softwareExtracted.URL {
@@ -178,6 +190,25 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 				softwareExtracted.OldVariant = append(softwareExtracted.OldVariant, basedOn)
 			}
 		}
+
+		// Diff features.
+		var diffFeatures OldFeatureListData
+		for _, variant := range softwareExtracted.OldVariant {
+			// Diff for eng.
+			for _, oldFeature := range variant.Eng.Features {
+				if !contains(softwareExtracted.Description["eng"].FeatureList, oldFeature) {
+					diffFeatures.Eng = append(diffFeatures.Eng, oldFeature)
+				}
+			}
+			//Diff for ita.
+			for _, oldFeature := range variant.Ita.Features {
+				if !contains(softwareExtracted.Description["ita"].FeatureList, oldFeature) {
+					diffFeatures.Ita = append(diffFeatures.Ita, oldFeature)
+				}
+			}
+		}
+		softwareExtracted.OldFeatureList.Eng = diffFeatures.Eng
+		softwareExtracted.OldFeatureList.Ita = diffFeatures.Ita
 
 		// Append.
 		softwares = append(softwares, softwareExtracted)
@@ -225,23 +256,34 @@ func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, elasticCli
 
 }
 
-func findIsBasedOnSoftwares(url string, elasticClient *elastic.Client) []crawler.PublicCodeES {
+func findIsBasedOnSoftwares(document crawler.PublicCodeES, elasticClient *elastic.Client) []crawler.PublicCodeES {
 	var pcs []crawler.PublicCodeES
-	query := elastic.NewBoolQuery()
-	query = query.Must(elastic.NewTermQuery("is-based-on", url))
 
+	// Extract all the documents. It should filter only the ones with isBaseOn=url
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").     // search in index "publiccode"
-		Query(query).            // specify the query
-		Pretty(true).            // pretty print request and response JSON
-		Do(context.Background()) // execute
+		Index("publiccode").               // search in index "publiccode"
+		Query(elastic.NewMatchAllQuery()). // specify the query
+		Pretty(true).                      // pretty print request and response JSON
+		From(0).Size(10000).               // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background())           // execute
 	if err != nil {
 		log.Error(err)
 	}
+
 	var pctype crawler.PublicCodeES
+	// Range over isBasedOn
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
-		pcs = append(pcs, i)
+		// If isBasedOn contains url, append to returned software.
+		for _, name := range i.IsBasedOn {
+			if name == document.URL {
+				pcs = append(pcs, i)
+			}
+		}
+		// And viceversa.
+		if contains(document.IsBasedOn, i.URL) {
+			pcs = append(pcs, i)
+		}
 	}
 
 	return pcs
@@ -255,4 +297,15 @@ func contains(slice []string, item string) bool {
 		}
 	}
 	return false
+}
+
+func concatenateLink(host, file string) string {
+	u, err := url.Parse(host)
+	if err != nil {
+		return ""
+	}
+
+	u.Path = path.Join(u.Path, file)
+
+	return u.String()
 }

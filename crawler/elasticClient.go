@@ -88,6 +88,10 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
 					}
 				],
 				"properties": {
+					"fileRawURL": {
+						"type": "text",
+						"index": false
+					},
 					"publiccode-yaml-version": {
 						"type": "text",
 						"index": false

@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/Jeffail/gabs"
+  packages = ["."]
+  revision = "7a0fed31069aba77993a518cc2f37b28ee7aa883"
+  version = "1.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/alecthomas/units"
   packages = ["."]
@@ -14,10 +20,10 @@
   revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
 
 [[projects]]
-  name = "github.com/davecgh/go-spew"
-  packages = ["spew"]
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  branch = "master"
+  name = "github.com/dyatlov/go-oembed"
+  packages = ["oembed"]
+  revision = "4bc5ab7a42e91e45e957f9b0c47f911efed16710"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -212,12 +218,6 @@
     "xfs"
   ]
   revision = "7d6f385de8bea29190f15ba9931442a0eaef9af7"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/publiccodenet/publiccode.yml-parser-go"
-  packages = ["."]
-  revision = "3870eb6f03e3863018c6cccce36cd73417e9ef15"
 
 [[projects]]
   branch = "master"
@@ -437,6 +437,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1657ad7b7256eaa50f2b21954d7943a00be7d88158d2266e9f755df8198fa3c3"
+  inputs-digest = "0c6c2b039eb4cdeaf2bd1b6e0c3779f6043bd499dbb8ebbabeffd37bb7109faa"
   solver-name = "gps-cdcl"
   solver-version = 1
