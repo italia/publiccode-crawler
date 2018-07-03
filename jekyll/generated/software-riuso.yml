@@ -1,0 +1,16 @@
+- name: Euriale
+  logo: https://raw.githubusercontent.com/gith002/Euriale/master/img/logo.png
+  url: https://github.com/gith002/euriale.git
+  codiceipa: c_h501
+- name: Steno
+  logo: https://raw.githubusercontent.com/gith002/Steno/master/img/logo.png
+  url: https://github.com/gith002/steno.git
+  codiceipa: c_h501
+- name: Medusa
+  logo: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo.png
+  url: https://github.com/gith002/medusa.git
+  codiceipa: c_h501
+- name: Medusa
+  logo: https://raw.githubusercontent.com/gith002/publiccode-org2/master/img/logo.png
+  url: https://github.com/gith002/publiccode-org2.git
+  codiceipa: c_h501
