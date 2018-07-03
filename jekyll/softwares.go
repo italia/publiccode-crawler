@@ -142,9 +142,10 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 		for _, v := range similarSoftware {
 			// Remove the extracted software.
 			if v.URL != softwareExtracted.URL {
+				similarBaseDir := strings.TrimRight(v.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
 				related := RelatedSoftware{
 					Name:  v.Name,
-					Image: concatenateLink(rawBaseDir, v.Logo),
+					Image: concatenateLink(similarBaseDir, v.Logo),
 				}
 				if d, ok := v.Description["eng"]; ok {
 					related.Eng.LocalisedName = d.LocalisedName
