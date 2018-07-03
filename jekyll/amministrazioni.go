@@ -69,7 +69,7 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 		if i.ItRiusoCodiceIPA != "" {
 			administrations = append(administrations, Administration{
 				Name:      getNomeAmministrazione(i.ItRiusoCodiceIPA),
-				URL:       i.URL,
+				URL:       i.LandingURL,
 				CodiceIPA: i.ItRiusoCodiceIPA,
 			})
 		}
