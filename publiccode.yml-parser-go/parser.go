@@ -3,9 +3,12 @@ package publiccode
 import (
 	"bytes"
 	"fmt"
+	"sync"
 
 	"gopkg.in/yaml.v2"
 )
+
+var Lock sync.Mutex
 
 // Parse loads the yaml bytes and tries to parse it. Return an error if fails.
 func Parse(in []byte, pc *PublicCode) error {
@@ -25,6 +28,7 @@ type parser struct {
 }
 
 func newParser(pc *PublicCode) *parser {
+
 	var p parser
 	p.pc = pc
 	p.missing = make(map[string]bool)
@@ -32,15 +36,20 @@ func newParser(pc *PublicCode) *parser {
 		p.missing[k] = true
 	}
 	return &p
+
 }
 
 func (p *parser) parse(s map[interface{}]interface{}) error {
+	Lock.Lock()
 	if err := p.decoderec("", s); err != nil {
+		Lock.Unlock()
 		return err
 	}
 	if err := p.finalize(); err != nil {
+		Lock.Unlock()
 		return err
 	}
+	Lock.Unlock()
 	return nil
 }
 
