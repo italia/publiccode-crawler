@@ -74,8 +74,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 			Platforms:         i.Platforms,
 			Tags:              i.Tags,
 			FreeTags:          populateFreeTags(i.FreeTags),
-			PopularTags:       []string{"todo", "popularTagsToCalculate"},
-			ShareTags:         []string{"todo", "shareTagsToCalculate"},
+			PopularTags:       i.Tags, // todo
+			ShareTags:         i.Tags, // todo
 			UsedBy:            i.UsedBy,
 			Roadmap:           i.Roadmap,
 			DevelopmentStatus: i.DevelopmentStatus,
