@@ -1,4 +1,4 @@
-- applicationSuite: GorgonProductivitySuite
+- applicationSuite: MiniProductivitySuite
   dependencies:
     hardware:
     - name: Oracle
@@ -43,192 +43,16 @@
       - Very important feature
       - Will run without a problem
       - Has zero bugs
-      - Solves all the problems of the world
+      - Solves all the problems of the universe!
+      - Supports Vorgon poems
       genericName: Text Editor
       localisedName: Medusa
       longDescription: |
         Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 158 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 316 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 474 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 632 characters.
       screenshots:
-      - https://raw.githubusercontent.com/gith002/Medusa/master/img/sshot1.png
-      - https://raw.githubusercontent.com/gith002/Medusa/master/img/sshot2.png
-      - https://raw.githubusercontent.com/gith002/Medusa/master/img/sshot3.png
-      shortDescription: "Medusa is the first software gorgon. \U0001F40D"
-      videos:
-      - https://www.youtube.com/watch?v=RaHmGbBOP84
-  developmentStatus: development
-  freeTags:
-    eng:
-    - english-free-tag
-    ita:
-    - tag-libero-italiano
-  intendedAudience:
-    countries:
-    - it
-    onlyFor:
-    - cities
-    unsupportedCountries:
-    - us
-  isBasedOn:
-  - https://github.com/gith002/medusa.git
-  it:
-    accessibile: true
-    anpr: true
-    cie: true
-    designKit:
-      ui: true
-      web: true
-    interoperabile: true
-    pagopa: true
-    riuso:
-      codiceIPA: c_h501
-    spid: true
-  landingURL: https://designers.italia.it
-  legal:
-    authorsFile: https://raw.githubusercontent.com/gith002/Medusa/master/AUTHORS
-    license: AGPL-3.0-or-later
-    mainCopyrightOwner: City of Chicago
-    repoOwner: City of Chicago
-  localisation:
-    availableLanguages:
-    - eng
-    - ita
-    - fra
-    - deu
-    localisationReady: true
-  logo: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo.png
-  maintenance:
-    contacts:
-    - affiliation: Comune di Reggio Emilia
-      email: francesco.rossi@comune.reggioemilia.it
-      name: Francesco Rossi
-      phone: +39 231 13215112
-    - affiliation: Fornitore Privato S.P.A.
-      email: dario.bianchi@fornitore.it
-      name: Dario Bianchi
-      phone: +39 16 24231322
-    - affiliation: Fornitore Privato S.P.A.
-      email: dario.bianchi@fornitore.it
-      name: Giancarlo Verdi
-      phone: +39 16 24231322
-    contractors:
-    - name: Fornitore Privato SPA
-      until: "2019-01-01"
-      website: https://developers.italia.it
-    type: contract
-  monochromeLogo: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo-mono.svg
-  name: Medusa
-  oldFeatureList: {}
-  platforms:
-  - android
-  - ios
-  popularTags:
-  - todo
-  - popularTagsToCalculate
-  relatedSoftwares:
-  - eng:
-      localisedName: Medusa
-      url: https://github.com/gith002/publiccode-org2.git
-    image: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo.png
-    ita: {}
-    name: Medusa
-  - eng:
-      localisedName: Medusa
-      url: https://github.com/gith003/publiccode-org3.git
-    image: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo.png
-    ita: {}
-    name: MedusaGith003
-  - eng:
-      localisedName: Steno
-      url: https://github.com/gith002/steno.git
-    image: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo.png
-    ita: {}
-    name: Steno
-  releaseDate: "2018-06-28"
-  roadmap: https://designers.italia.it/roadmap/
-  shareTags:
-  - todo
-  - shareTagsToCalculate
-  softwareType:
-    type: standalone
-  softwareVersion: "1.0"
-  tags:
-  - robotics
-  - security
-  tagsRelate:
-  - robotics
-  - security
-  url: https://github.com/gith002/medusa.git
-  usedBy:
-  - Comune di Milano
-  - Comune di Cagliari
-  vitalityDataChart:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 100
-  - 0
-  vitalityScore: 17
-- applicationSuite: MegaProductivitySuite
-  dependencies:
-    hardware:
-    - name: Oracle
-      optional: false
-      version: ""
-      versionMax: ""
-      versionMin: "11.4"
-    - name: IBM SoftLayer
-      optional: false
-      version: ""
-      versionMax: ""
-      versionMin: ""
-    open:
-    - name: MySQL
-      optional: true
-      version: ""
-      versionMax: "1.3"
-      versionMin: "1.1"
-    - name: PostgreSQL
-      optional: true
-      version: "3.2"
-      versionMax: ""
-      versionMin: ""
-    proprietary:
-    - name: Oracle
-      optional: false
-      version: ""
-      versionMax: ""
-      versionMin: "11.4"
-    - name: IBM SoftLayer
-      optional: false
-      version: ""
-      versionMax: ""
-      versionMin: ""
-  description:
-    eng:
-      apiDocumentation: https://developers.italia.it/it/api
-      awards:
-      - 1st Price Software of the year
-      documentation: https://docs.developers.italia.it
-      featureList:
-      - Very important feature
-      - Will run without a problem
-      - Has zero bugs
-      - Solves all the problems of the world
-      genericName: Text Editor
-      localisedName: Medusa
-      longDescription: |
-        Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 158 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 316 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 474 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 632 characters.
-      screenshots:
-      - https://raw.githubusercontent.com/gith002/publiccode-org2/master/img/sshot1.png
-      - https://raw.githubusercontent.com/gith002/publiccode-org2/master/img/sshot2.png
-      - https://raw.githubusercontent.com/gith002/publiccode-org2/master/img/sshot3.png
+      - https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/sshot1.png
+      - https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/sshot2.png
+      - https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/sshot3.png
       shortDescription: A really interesting software.
       videos:
       - https://www.youtube.com/watch?v=RaHmGbBOP84
@@ -249,7 +73,7 @@
     unsupportedCountries:
     - us
   isBasedOn:
-  - https://github.com/italia/developers.italia.it.git
+  - https://github.com/gith002/publiccode-org2.git
   it:
     accessibile: true
     anpr: true
@@ -260,11 +84,11 @@
     interoperabile: true
     pagopa: true
     riuso:
-      codiceIPA: c_h501
+      codiceIPA: c_h502
     spid: true
   landingURL: https://developers.italia.it
   legal:
-    authorsFile: https://raw.githubusercontent.com/gith002/publiccode-org2/master/AUTHORS
+    authorsFile: https://raw.githubusercontent.com/gith003/publiccode-org3/master/AUTHORS
     license: AGPL-3.0-or-later
     mainCopyrightOwner: City of Chicago
     repoOwner: City of Chicago
@@ -275,7 +99,7 @@
     - fra
     - deu
     localisationReady: true
-  logo: https://raw.githubusercontent.com/gith002/publiccode-org2/master/img/logo.png
+  logo: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo.png
   maintenance:
     contacts:
     - affiliation: Comune di Reggio Emilia
@@ -295,26 +119,9 @@
       until: "2019-01-01"
       website: https://developers.italia.it
     type: contract
-  monochromeLogo: https://raw.githubusercontent.com/gith002/publiccode-org2/master/img/logo-mono.svg
-  name: Medusa
-  oldFeatureList:
-    eng:
-    - Solves all the problems of the universe!
-    - Supports Vorgon poems
-  oldVariant:
-  - eng:
-      features:
-      - Very important feature
-      - Will run without a problem
-      - Has zero bugs
-      - Solves all the problems of the universe!
-      - Supports Vorgon poems
-      url: https://github.com/gith003/publiccode-org3.git
-    ita: {}
-    legal:
-      repoOwner: City of Chicago
-    name: MedusaGith003
-    vitalityScore: 16
+  monochromeLogo: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo-mono.svg
+  name: MedusaGith003
+  oldFeatureList: {}
   platforms:
   - android
   - ios
@@ -324,22 +131,22 @@
   relatedSoftwares:
   - eng:
       localisedName: Medusa
-      url: https://github.com/gith003/publiccode-org3.git
-    image: https://raw.githubusercontent.com/gith002/publiccode-org2/master/img/logo.png
+      url: https://github.com/gith002/medusa.git
+    image: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo.png
     ita: {}
-    name: MedusaGith003
-  - eng:
-      localisedName: Steno
-      url: https://github.com/gith002/steno.git
-    image: https://raw.githubusercontent.com/gith002/publiccode-org2/master/img/logo.png
-    ita: {}
-    name: Steno
+    name: Medusa
   - eng:
       localisedName: Euriale
       url: https://github.com/gith002/euriale.git
-    image: https://raw.githubusercontent.com/gith002/publiccode-org2/master/img/logo.png
+    image: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo.png
     ita: {}
     name: Euriale
+  - eng:
+      localisedName: Steno
+      url: https://github.com/gith002/steno.git
+    image: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo.png
+    ita: {}
+    name: Steno
   releaseDate: "2017-04-15"
   roadmap: https://designers.italia.it/roadmap/
   shareTags:
@@ -350,33 +157,15 @@
   softwareVersion: "1.0"
   tags:
   - calendar
-  - chat
-  - classroom-management
-  - museum
-  - music
-  - news
-  - ocr
-  - parallel-computing
-  - revision-control
   - robotics
-  - scanning
   - security
   - sports
   tagsRelate:
   - calendar
-  - chat
-  - classroom-management
-  - museum
-  - music
-  - news
-  - ocr
-  - parallel-computing
-  - revision-control
   - robotics
-  - scanning
   - security
   - sports
-  url: https://github.com/gith002/publiccode-org2.git
+  url: https://github.com/gith003/publiccode-org3.git
   usedBy:
   - Comune di Firenze
   - Comune di Roma
@@ -522,7 +311,7 @@
   relatedSoftwares:
   - eng:
       localisedName: Medusa
-      url: https://github.com/gith002/publiccode-org2.git
+      url: https://github.com/gith002/medusa.git
     image: https://raw.githubusercontent.com/gith002/Steno/master/img/logo.png
     ita: {}
     name: Medusa
@@ -532,12 +321,6 @@
     image: https://raw.githubusercontent.com/gith002/Steno/master/img/logo.png
     ita: {}
     name: MedusaGith003
-  - eng:
-      localisedName: Medusa
-      url: https://github.com/gith002/medusa.git
-    image: https://raw.githubusercontent.com/gith002/Steno/master/img/logo.png
-    ita: {}
-    name: Medusa
   releaseDate: "2018-06-29"
   roadmap: https://designers.italia.it/roadmap/
   shareTags:
@@ -556,6 +339,177 @@
   usedBy:
   - Comune di Modena
   - Comune di Cesano Maderno
+  vitalityDataChart:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 0
+  - 100
+  - 0
+  vitalityScore: 17
+- applicationSuite: GorgonProductivitySuite
+  dependencies:
+    hardware:
+    - name: Oracle
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: "11.4"
+    - name: IBM SoftLayer
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: ""
+    open:
+    - name: MySQL
+      optional: true
+      version: ""
+      versionMax: "1.3"
+      versionMin: "1.1"
+    - name: PostgreSQL
+      optional: true
+      version: "3.2"
+      versionMax: ""
+      versionMin: ""
+    proprietary:
+    - name: Oracle
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: "11.4"
+    - name: IBM SoftLayer
+      optional: false
+      version: ""
+      versionMax: ""
+      versionMin: ""
+  description:
+    eng:
+      apiDocumentation: https://developers.italia.it/it/api
+      awards:
+      - 1st Price Software of the year
+      documentation: https://docs.developers.italia.it
+      featureList:
+      - Very important feature
+      - Will run without a problem
+      - Has zero bugs
+      - Solves all the problems of the world
+      genericName: Text Editor
+      localisedName: Medusa
+      longDescription: |
+        Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 158 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 316 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 474 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 632 characters.
+      screenshots:
+      - https://raw.githubusercontent.com/gith002/Medusa/master/img/sshot1.png
+      - https://raw.githubusercontent.com/gith002/Medusa/master/img/sshot2.png
+      - https://raw.githubusercontent.com/gith002/Medusa/master/img/sshot3.png
+      shortDescription: "Medusa is the first software gorgon. \U0001F40D"
+      videos:
+      - https://www.youtube.com/watch?v=RaHmGbBOP84
+  developmentStatus: development
+  freeTags:
+    eng:
+    - english-free-tag
+    ita:
+    - tag-libero-italiano
+  intendedAudience:
+    countries:
+    - it
+    onlyFor:
+    - cities
+    unsupportedCountries:
+    - us
+  isBasedOn:
+  - https://github.com/gith002/medusa.git
+  it:
+    accessibile: true
+    anpr: true
+    cie: true
+    designKit:
+      ui: true
+      web: true
+    interoperabile: true
+    pagopa: true
+    riuso:
+      codiceIPA: c_h501
+    spid: true
+  landingURL: https://designers.italia.it
+  legal:
+    authorsFile: https://raw.githubusercontent.com/gith002/Medusa/master/AUTHORS
+    license: AGPL-3.0-or-later
+    mainCopyrightOwner: City of Chicago
+    repoOwner: City of Chicago
+  localisation:
+    availableLanguages:
+    - eng
+    - ita
+    - fra
+    - deu
+    localisationReady: true
+  logo: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo.png
+  maintenance:
+    contacts:
+    - affiliation: Comune di Reggio Emilia
+      email: francesco.rossi@comune.reggioemilia.it
+      name: Francesco Rossi
+      phone: +39 231 13215112
+    - affiliation: Fornitore Privato S.P.A.
+      email: dario.bianchi@fornitore.it
+      name: Dario Bianchi
+      phone: +39 16 24231322
+    - affiliation: Fornitore Privato S.P.A.
+      email: dario.bianchi@fornitore.it
+      name: Giancarlo Verdi
+      phone: +39 16 24231322
+    contractors:
+    - name: Fornitore Privato SPA
+      until: "2019-01-01"
+      website: https://developers.italia.it
+    type: contract
+  monochromeLogo: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo-mono.svg
+  name: Medusa
+  oldFeatureList: {}
+  platforms:
+  - android
+  - ios
+  popularTags:
+  - todo
+  - popularTagsToCalculate
+  relatedSoftwares:
+  - eng:
+      localisedName: Medusa
+      url: https://github.com/gith003/publiccode-org3.git
+    image: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo.png
+    ita: {}
+    name: MedusaGith003
+  - eng:
+      localisedName: Steno
+      url: https://github.com/gith002/steno.git
+    image: https://raw.githubusercontent.com/gith002/Medusa/master/img/logo.png
+    ita: {}
+    name: Steno
+  releaseDate: "2018-06-28"
+  roadmap: https://designers.italia.it/roadmap/
+  shareTags:
+  - todo
+  - shareTagsToCalculate
+  softwareType:
+    type: standalone
+  softwareVersion: "1.0"
+  tags:
+  - robotics
+  - security
+  tagsRelate:
+  - robotics
+  - security
+  url: https://github.com/gith002/medusa.git
+  usedBy:
+  - Comune di Milano
+  - Comune di Cagliari
   vitalityDataChart:
   - 0
   - 0
@@ -700,12 +654,6 @@
   relatedSoftwares:
   - eng:
       localisedName: Medusa
-      url: https://github.com/gith002/publiccode-org2.git
-    image: https://raw.githubusercontent.com/gith002/Euriale/master/img/logo.png
-    ita: {}
-    name: Medusa
-  - eng:
-      localisedName: Medusa
       url: https://github.com/gith003/publiccode-org3.git
     image: https://raw.githubusercontent.com/gith002/Euriale/master/img/logo.png
     ita: {}
@@ -742,203 +690,3 @@
   - 100
   - 0
   vitalityScore: 17
-- applicationSuite: MiniProductivitySuite
-  dependencies:
-    hardware:
-    - name: Oracle
-      optional: false
-      version: ""
-      versionMax: ""
-      versionMin: "11.4"
-    - name: IBM SoftLayer
-      optional: false
-      version: ""
-      versionMax: ""
-      versionMin: ""
-    open:
-    - name: MySQL
-      optional: true
-      version: ""
-      versionMax: "1.3"
-      versionMin: "1.1"
-    - name: PostgreSQL
-      optional: true
-      version: "3.2"
-      versionMax: ""
-      versionMin: ""
-    proprietary:
-    - name: Oracle
-      optional: false
-      version: ""
-      versionMax: ""
-      versionMin: "11.4"
-    - name: IBM SoftLayer
-      optional: false
-      version: ""
-      versionMax: ""
-      versionMin: ""
-  description:
-    eng:
-      apiDocumentation: https://developers.italia.it/it/api
-      awards:
-      - 1st Price Software of the year
-      documentation: https://docs.developers.italia.it
-      featureList:
-      - Very important feature
-      - Will run without a problem
-      - Has zero bugs
-      - Solves all the problems of the universe!
-      - Supports Vorgon poems
-      genericName: Text Editor
-      localisedName: Medusa
-      longDescription: |
-        Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 158 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 316 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 474 characters. Very long description of this software, also split on multiple rows. You should note what the software is and why one should need it. This is 632 characters.
-      screenshots:
-      - https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/sshot1.png
-      - https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/sshot2.png
-      - https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/sshot3.png
-      shortDescription: A really interesting software.
-      videos:
-      - https://www.youtube.com/watch?v=RaHmGbBOP84
-  developmentStatus: development
-  freeTags:
-    eng:
-    - english-free-tag
-    ita:
-    - tag-libero-italiano
-  intendedAudience:
-    countries:
-    - it
-    - de
-    onlyFor:
-    - cities
-    - health-services
-    - it-ag-agricolo
-    unsupportedCountries:
-    - us
-  isBasedOn:
-  - https://github.com/gith002/publiccode-org2.git
-  it:
-    accessibile: true
-    anpr: true
-    cie: true
-    designKit:
-      ui: true
-      web: true
-    interoperabile: true
-    pagopa: true
-    riuso:
-      codiceIPA: c_h502
-    spid: true
-  landingURL: https://developers.italia.it
-  legal:
-    authorsFile: https://raw.githubusercontent.com/gith003/publiccode-org3/master/AUTHORS
-    license: AGPL-3.0-or-later
-    mainCopyrightOwner: City of Chicago
-    repoOwner: City of Chicago
-  localisation:
-    availableLanguages:
-    - eng
-    - ita
-    - fra
-    - deu
-    localisationReady: true
-  logo: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo.png
-  maintenance:
-    contacts:
-    - affiliation: Comune di Reggio Emilia
-      email: francesco.rossi@comune.reggioemilia.it
-      name: Francesco Rossi
-      phone: +39 231 13215112
-    - affiliation: Fornitore Privato S.P.A.
-      email: dario.bianchi@fornitore.it
-      name: Dario Bianchi
-      phone: +39 16 24231322
-    - affiliation: Fornitore Privato S.P.A.
-      email: dario.bianchi@fornitore.it
-      name: Giancarlo Verdi
-      phone: +39 16 24231322
-    contractors:
-    - name: Fornitore Privato SPA
-      until: "2019-01-01"
-      website: https://developers.italia.it
-    type: contract
-  monochromeLogo: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo-mono.svg
-  name: MedusaGith003
-  oldFeatureList:
-    eng:
-    - Solves all the problems of the world
-  oldVariant:
-  - eng:
-      features:
-      - Very important feature
-      - Will run without a problem
-      - Has zero bugs
-      - Solves all the problems of the world
-      url: https://github.com/gith002/publiccode-org2.git
-    ita: {}
-    legal:
-      repoOwner: City of Chicago
-    name: Medusa
-    vitalityScore: 16
-  platforms:
-  - android
-  - ios
-  popularTags:
-  - todo
-  - popularTagsToCalculate
-  relatedSoftwares:
-  - eng:
-      localisedName: Medusa
-      url: https://github.com/gith002/publiccode-org2.git
-    image: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo.png
-    ita: {}
-    name: Medusa
-  - eng:
-      localisedName: Steno
-      url: https://github.com/gith002/steno.git
-    image: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo.png
-    ita: {}
-    name: Steno
-  - eng:
-      localisedName: Medusa
-      url: https://github.com/gith002/medusa.git
-    image: https://raw.githubusercontent.com/gith003/publiccode-org3/master/img/logo.png
-    ita: {}
-    name: Medusa
-  releaseDate: "2017-04-15"
-  roadmap: https://designers.italia.it/roadmap/
-  shareTags:
-  - todo
-  - shareTagsToCalculate
-  softwareType:
-    type: standalone
-  softwareVersion: "1.0"
-  tags:
-  - calendar
-  - robotics
-  - security
-  - sports
-  tagsRelate:
-  - calendar
-  - robotics
-  - security
-  - sports
-  url: https://github.com/gith003/publiccode-org3.git
-  usedBy:
-  - Comune di Firenze
-  - Comune di Roma
-  vitalityDataChart:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 100
-  - 0
-  vitalityScore: 16
