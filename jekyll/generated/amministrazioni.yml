@@ -1,15 +1,6 @@
-- name: Medusa
-  url: https://github.com/gith002/publiccode-org2.git
-  codiceipa: c_h501
-- name: MedusaGith003
-  url: https://github.com/gith003/publiccode-org3.git
-  codiceipa: c_h502
-- name: Steno
-  url: https://github.com/gith002/steno.git
-  codiceipa: c_h501
-- name: Euriale
+- name: ROMA CAPITALE
   url: https://github.com/gith002/euriale.git
   codiceipa: c_h501
-- name: Medusa
-  url: https://github.com/gith002/medusa.git
-  codiceipa: c_h501
+- name: Comune di Romagnano Sesia
+  url: https://github.com/gith003/publiccode-org3.git
+  codiceipa: c_h502
