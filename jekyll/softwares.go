@@ -162,10 +162,11 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 
 		// Search softwares basedOn this one.
 		isBasedOnSoftware := findIsBasedOnSoftwares(i, elasticClient)
-		softwareExtracted.OldVariant = append(softwareExtracted.OldVariant, findOldVariant(isBasedOnSoftware, softwareExtracted)...)
+		softwareExtracted.OldVariant = findOldVariants(isBasedOnSoftware, softwareExtracted)
 
 		// Diff features.
 		diffFeatures := findDiffFeatures(softwareExtracted)
+		log.Debugf("DiffFeatures: %v", diffFeatures)
 		softwareExtracted.OldFeatureList.Eng = diffFeatures.Eng
 		softwareExtracted.OldFeatureList.Ita = diffFeatures.Ita
 
@@ -186,7 +187,9 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 	return err
 }
 
-func findOldVariant(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted Software) []OldVariantData {
+func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted Software) []OldVariantData {
+	var oldVariantData []OldVariantData
+
 	for _, v := range isBasedOnSoftware {
 		// Remove the extracted software.
 		if v.URL != softwareExtracted.URL {
@@ -205,15 +208,14 @@ func findOldVariant(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted 
 				basedOn.Ita.URL = v.URL
 			}
 
-			softwareExtracted.OldVariant = append(softwareExtracted.OldVariant, basedOn)
+			oldVariantData = append(oldVariantData, basedOn)
 		}
 	}
-	return softwareExtracted.OldVariant
+	return oldVariantData
 }
 
 func findDiffFeatures(softwareExtracted Software) OldFeatureListData {
-	var diffFeatures OldFeatureListData
-
+	diffFeatures := OldFeatureListData{}
 	for _, variant := range softwareExtracted.OldVariant {
 		// Diff for eng.
 		for _, oldFeature := range variant.Eng.Features {
