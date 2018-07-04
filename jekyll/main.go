@@ -33,7 +33,8 @@ func GenerateJekyllYML(elasticClient *elastic.Client) error {
 	// Create and populate softwares.yml
 	softwaresFilePath := "jekyll/generated/softwares.yml"
 	numberOfSimilarSoftware := 4
-	err = AllSoftwareYML(softwaresFilePath, numberOfSimilarSoftware, elasticClient)
+	numberOfPopularTags := 5
+	err = AllSoftwareYML(softwaresFilePath, numberOfSimilarSoftware, numberOfPopularTags, elasticClient)
 	if err != nil {
 		log.Errorf("Error exporting jekyll file of all the software : %v", err)
 	}

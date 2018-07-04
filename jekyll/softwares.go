@@ -17,7 +17,7 @@ import (
 )
 
 // AllSoftwareYML generate the softwares.yml file
-func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient *elastic.Client) error {
+func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopularTags int, elasticClient *elastic.Client) error {
 	log.Debug("Generating softwares.yml")
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
@@ -75,8 +75,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 			Platforms:         i.Platforms,
 			Tags:              i.Tags,
 			FreeTags:          i.FreeTags,
-			PopularTags:       populatePopularTags(i.Tags, 5, elasticClient), // PopularTags are the first n tags that are more popular.
-			ShareTags:         i.Tags,                                        // ShareTags are tags.
+			PopularTags:       populatePopularTags(i.Tags, numberOfPopularTags, elasticClient), // PopularTags are the first n tags that are more popular.
+			ShareTags:         i.Tags,                                                          // ShareTags are tags.
 			UsedBy:            i.UsedBy,
 			Roadmap:           i.Roadmap,
 			DevelopmentStatus: i.DevelopmentStatus,
@@ -332,7 +332,7 @@ func populatePopularTags(tags []string, number int, elasticClient *elastic.Clien
 		log.Error(err)
 	}
 
-	var results map[string]int
+	results := map[string]int{}
 
 	// Range over the publiccodes in ES.
 	var pctype crawler.PublicCodeES
