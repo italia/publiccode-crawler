@@ -15,7 +15,7 @@ type Software struct {
 	MonochromeLogo    string                  `json:"monochromeLogo,omitempty"`
 	Platforms         []string                `json:"platforms,omitempty"`
 	Tags              []string                `json:"tags,omitempty"`
-	FreeTags          FreeTagsData            `json:"freeTags,omitempty"`
+	FreeTags          map[string][]string     `json:"freeTags,omitempty"`
 	PopularTags       []string                `json:"popularTags,omitempty"`
 	ShareTags         []string                `json:"shareTags,omitempty"`
 	UsedBy            []string                `json:"usedBy,omitempty"`
@@ -27,7 +27,7 @@ type Software struct {
 	IntendedAudience  IntendedAudienceData    `json:"intendedAudience,omitempty"`
 	Description       map[string]crawler.Desc `json:"description,omitempty"`
 	OldVariant        []OldVariantData        `json:"oldVariant,omitempty"`
-	OldFeatureList    OldFeatureListData      `json:"oldFeatureList,omitempty"`
+	OldFeatureList    map[string][]string     `json:"oldFeatureList,omitempty"`
 	TagsRelate        []string                `json:"tagsRelate,omitempty"`
 
 	RelatedSoftwares []RelatedSoftware `json:"relatedSoftwares,omitempty"`
@@ -64,12 +64,6 @@ type DependenciesData struct {
 	Hardware    []crawler.Dependency `json:"hardware,omitempty"`
 }
 
-// FreeTagsData contains localised infos (ita-eng) for FreeTags
-type FreeTagsData struct {
-	Eng []string `json:"eng,omitempty"`
-	Ita []string `json:"ita,omitempty"`
-}
-
 // SoftwareTypeData contains the type of the software and related software urls.
 type SoftwareTypeData struct {
 	Type        string   `json:"type,omitempty"`
@@ -81,12 +75,6 @@ type IntendedAudienceData struct {
 	OnlyFor              []string `json:"onlyFor,omitempty"`
 	Countries            []string `json:"countries,omitempty"`
 	UnsupportedCountries []string `json:"unsupportedCountries,omitempty"`
-}
-
-// OldFeatureListData contains the data of other variant features.
-type OldFeatureListData struct {
-	Eng []string `json:"eng,omitempty"`
-	Ita []string `json:"ita,omitempty"`
 }
 
 // OldVariantData contains infos about other variants.

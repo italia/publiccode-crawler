@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"sort"
 	"strings"
 
 	yaml "github.com/ghodss/yaml"
@@ -73,9 +74,9 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 			MonochromeLogo:    concatenateLink(rawBaseDir, i.MonochromeLogo),
 			Platforms:         i.Platforms,
 			Tags:              i.Tags,
-			FreeTags:          populateFreeTags(i.FreeTags),
-			PopularTags:       i.Tags, // todo
-			ShareTags:         i.Tags, // todo
+			FreeTags:          i.FreeTags,
+			PopularTags:       populatePopularTags(i.Tags, 5, elasticClient), // PopularTags are the first n tags that are more popular.
+			ShareTags:         i.Tags,                                        // ShareTags are tags.
 			UsedBy:            i.UsedBy,
 			Roadmap:           i.Roadmap,
 			DevelopmentStatus: i.DevelopmentStatus,
@@ -91,7 +92,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 			},
 			Description:    i.Description,
 			OldVariant:     []OldVariantData{},
-			OldFeatureList: OldFeatureListData{},
+			OldFeatureList: map[string][]string{},
 			TagsRelate:     i.Tags,
 			Legal: LegalData{
 				License:            i.LegalLicense,
@@ -165,10 +166,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, elasticClient 
 		softwareExtracted.OldVariant = findOldVariants(isBasedOnSoftware, softwareExtracted)
 
 		// Diff features.
-		diffFeatures := findDiffFeatures(softwareExtracted)
-		log.Debugf("DiffFeatures: %v", diffFeatures)
-		softwareExtracted.OldFeatureList.Eng = diffFeatures.Eng
-		softwareExtracted.OldFeatureList.Ita = diffFeatures.Ita
+		softwareExtracted.OldFeatureList = findDiffFeatures(softwareExtracted)
 
 		// Append.
 		softwares = append(softwares, softwareExtracted)
@@ -214,19 +212,19 @@ func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted
 	return oldVariantData
 }
 
-func findDiffFeatures(softwareExtracted Software) OldFeatureListData {
-	diffFeatures := OldFeatureListData{}
+func findDiffFeatures(softwareExtracted Software) map[string][]string {
+	diffFeatures := map[string][]string{}
 	for _, variant := range softwareExtracted.OldVariant {
 		// Diff for eng.
 		for _, oldFeature := range variant.Eng.Features {
 			if !contains(softwareExtracted.Description["eng"].FeatureList, oldFeature) {
-				diffFeatures.Eng = append(diffFeatures.Eng, oldFeature)
+				diffFeatures["eng"] = append(diffFeatures["eng"], oldFeature)
 			}
 		}
 		//Diff for ita.
 		for _, oldFeature := range variant.Ita.Features {
 			if !contains(softwareExtracted.Description["ita"].FeatureList, oldFeature) {
-				diffFeatures.Ita = append(diffFeatures.Ita, oldFeature)
+				diffFeatures["ita"] = append(diffFeatures["ita"], oldFeature)
 			}
 		}
 	}
@@ -316,15 +314,54 @@ func concatenateLink(host, file string) string {
 	return u.String()
 }
 
-func populateFreeTags(freeTags map[string][]string) FreeTagsData {
-	var tags FreeTagsData
-	for lang, v := range freeTags {
-		if lang == "ita" {
-			tags.Ita = append(tags.Ita, v...)
-		}
-		if lang == "eng" {
-			tags.Eng = append(tags.Eng, v...)
+func populatePopularTags(tags []string, number int, elasticClient *elastic.Client) []string {
+	if len(tags) < number {
+		return tags
+	}
+
+	var popularTags []string
+
+	// Extract all the documents. It should filter only the ones with isBaseOn=url.
+	searchResult, err := elasticClient.Search().
+		Index("publiccode").               // search in index "publiccode"
+		Query(elastic.NewMatchAllQuery()). // specify the query
+		Pretty(true).                      // pretty print request and response JSON
+		From(0).Size(10000).               // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background())           // execute
+	if err != nil {
+		log.Error(err)
+	}
+
+	var results map[string]int
+
+	// Range over the publiccodes in ES.
+	var pctype crawler.PublicCodeES
+	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
+		i := item.(crawler.PublicCodeES)
+		for _, v := range i.Tags {
+			results[v]++
 		}
 	}
-	return tags
+
+	// Order the map into a slice.
+	type kv struct {
+		Key   string
+		Value int
+	}
+	var ss []kv
+	for k, v := range results {
+		ss = append(ss, kv{k, v})
+	}
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].Value > ss[j].Value
+	})
+	// Populate the popularTags slice with most popular tags.
+	for n, kv := range ss {
+		if n < number {
+			break
+		}
+		popularTags = append(popularTags, kv.Key)
+	}
+
+	return popularTags
 }
