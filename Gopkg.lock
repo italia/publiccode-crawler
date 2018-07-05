@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/Jeffail/gabs"
+  packages = ["."]
+  revision = "7a0fed31069aba77993a518cc2f37b28ee7aa883"
+  version = "1.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/alecthomas/units"
   packages = ["."]
@@ -12,6 +18,12 @@
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
   revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/dyatlov/go-oembed"
+  packages = ["oembed"]
+  revision = "4bc5ab7a42e91e45e957f9b0c47f911efed16710"
 
 [[projects]]
   name = "github.com/emirpasic/gods"
@@ -31,6 +43,12 @@
   packages = ["."]
   revision = "c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9"
   version = "v1.4.7"
+
+[[projects]]
+  name = "github.com/ghodss/yaml"
+  packages = ["."]
+  revision = "0ca9ea5df5451ffdf184b4428c902747c2c11cd7"
+  version = "v1.0.0"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -94,7 +112,7 @@
     "jlexer",
     "jwriter"
   ]
-  revision = "8b799c424f57fa123fc63a99d6383bc6e4c02578"
+  revision = "3fdea8d05856a0c8df22ed4bc71b3219245e4485"
 
 [[projects]]
   name = "github.com/mattn/go-runewidth"
@@ -105,8 +123,8 @@
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
-  revision = "3247c84500bff8d9fb6d579d800f20b3e091582c"
-  version = "v1.0.0"
+  revision = "c12348ce28de40eed0136aa2b644d0ee0650e56c"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
@@ -144,8 +162,8 @@
     "config",
     "uritemplates"
   ]
-  revision = "dc11d9b87f1a959dd65a760471161a30cbbc6cb2"
-  version = "v6.1.20"
+  revision = "dabcc5de0a3fd6313870c223c3119e2b1e942ba3"
+  version = "v6.1.23"
 
 [[projects]]
   name = "github.com/pelletier/go-buffruneio"
@@ -156,8 +174,8 @@
 [[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
-  revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
-  version = "v1.1.0"
+  revision = "c01d1270ff3e442a8a57cddc1c92dc1138598194"
+  version = "v1.2.0"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -199,7 +217,13 @@
     "nfs",
     "xfs"
   ]
-  revision = "8b1c2da0d56deffdbb9e48d4414b4e674bd8083e"
+  revision = "7d6f385de8bea29190f15ba9931442a0eaef9af7"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/r3vit/go-spdx"
+  packages = ["spdx"]
+  revision = "34a46ab144b126fb74a7531834e20a1fcf739f2a"
 
 [[projects]]
   name = "github.com/sergi/go-diff"
@@ -219,8 +243,8 @@
     ".",
     "mem"
   ]
-  revision = "63644898a8da0bc22138abf860edaf5277b6102e"
-  version = "v1.1.0"
+  revision = "787d034dfe70e44075ccc060d346146ef53270ad"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/spf13/cast"
@@ -284,6 +308,7 @@
     "ed25519",
     "ed25519/internal/edwards25519",
     "internal/chacha20",
+    "internal/subtle",
     "openpgp",
     "openpgp/armor",
     "openpgp/elgamal",
@@ -296,13 +321,13 @@
     "ssh/knownhosts",
     "ssh/terminal"
   ]
-  revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["context"]
-  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
+  revision = "afe8f62b1d6bbd81f31868121a50b06d8188e1f9"
 
 [[projects]]
   branch = "master"
@@ -311,7 +336,7 @@
     "unix",
     "windows"
   ]
-  revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
+  revision = "c4afb3effaa53fd9a06ca61262dc7ce8df4c081b"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -329,8 +354,8 @@
 [[projects]]
   name = "gopkg.in/alecthomas/gometalinter.v2"
   packages = ["."]
-  revision = "46cc1ea3778b247666c2949669a3333c532fa9c6"
-  version = "v2.0.5"
+  revision = "a0a6cc517e763fe2cfe7618b819ec02fc11651f3"
+  version = "v2.0.6"
 
 [[projects]]
   branch = "v3-unstable"
@@ -347,8 +372,8 @@
     "osfs",
     "util"
   ]
-  revision = "df053870ae7070b0350624ba5a22161ba3796cc0"
-  version = "v4.1.1"
+  revision = "83cf655d40b15b427014d7875d10850f96edba14"
+  version = "v4.2.0"
 
 [[projects]]
   name = "gopkg.in/src-d/go-git.v4"
@@ -412,6 +437,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3baebd85e901b17aa078b29c8ee7961577698a7ecf60bee434f263b3fa396f9d"
+  inputs-digest = "0c6c2b039eb4cdeaf2bd1b6e0c3779f6043bd499dbb8ebbabeffd37bb7109faa"
   solver-name = "gps-cdcl"
   solver-version = 1

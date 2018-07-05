@@ -150,10 +150,10 @@
           "type": "text",
           "index": false
         },
-        "maintainance-type": {
+        "maintenance-type": {
           "type": "keyword"
         },
-        "maintainance-contractors": {
+        "maintenance-contractors": {
           "type": "nested",
           "properties": {
             "name": {
@@ -169,7 +169,7 @@
             }
           }
         },
-        "maintainance-contacts": {
+        "maintenance-contacts": {
           "type": "nested",
           "properties": {
             "name": {

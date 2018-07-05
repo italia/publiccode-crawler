@@ -1,10 +1,6 @@
 # whitelistGeneric.yml is a list of every organization repository not from iPA.
 
-- id: "Wellnet Srl" #id name
-  codice-iPA: ""
-  organizations:
-    - "https://github.com/publiccodenet"
-    - "https://github.com/cryptography-training"
-    - "https://bitbucket.org/blowmeaway"
-    - "https://gitlab.com/blockninja"
-#- "https://gitlab.comune.firenze.it/ufficioABC"
+# - id: "Generic-Org"
+#   codice-iPA: ""
+#   organizations:
+#     - "https://github.com/gith002"

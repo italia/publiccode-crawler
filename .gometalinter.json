@@ -19,10 +19,9 @@
     "gas",
     "lll",
     "unparam",
-    "misspell",
     "safesql"
   ],
 
-  "Cyclo": 15,
+  "Cyclo": 16,
   "LineLength": 200
 }

@@ -27,10 +27,10 @@
         "repo-owner": {
           "type": "text"
         },
-        "maintainance-type": {
+        "maintenance-type": {
           "type": "keyword"
         },
-        "maintainance-until": { 
+        "maintenance-until": {
           "type": "date",
           "format": "strict_date"
         },
@@ -107,7 +107,7 @@
           "type": "text",
           "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
-        "maintainance-maintainer": {
+        "maintenance-maintainer": {
           "type": "text",
           "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
