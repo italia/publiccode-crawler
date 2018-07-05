@@ -173,14 +173,19 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		}
 
 		// Calculate Repository activity index and vitality.
-		activityIndex, vitality, err := CalculateRepoActivity(domain, hostname, name)
+		days := 60 // to add in configs.
+		activityIndex, vitality, err := CalculateRepoActivity(domain, hostname, name, days)
 		if err != nil {
 			log.Errorf("error calculating repository Activity to file: %v", err)
 		}
 		log.Debugf("Activity Index for %s: %f", name, activityIndex)
+		var vitalitySlice []int
+		for i := 0; i < len(vitality); i++ {
+			vitalitySlice = append(vitalitySlice, int(vitality[i]))
+		}
 
 		// Save to ES.
-		err = SaveToES(fileRawURL, domain, name, activityIndex, vitality, resp.Body, index, elasticClient)
+		err = SaveToES(fileRawURL, domain, name, activityIndex, vitalitySlice, resp.Body, index, elasticClient)
 		if err != nil {
 			log.Errorf("error saving to ElastcSearch: %v", err)
 		}
