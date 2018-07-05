@@ -2,10 +2,9 @@ package crawler
 
 // PublicCodeES describe the data in ElasticSearch that includes publiccode and meta informations.
 type PublicCodeES struct {
-	PubliccodeYamlVersion string `json:"publiccode-yaml-version"`
-
+	FileRawURL       string `json:"fileRawURL"`
 	Name             string `json:"name"`
-	ApplicationSuite string `json:"applicationSuite"`
+	ApplicationSuite string `json:"applicationSuite,omitempty"`
 	URL              string `json:"url"`
 	LandingURL       string `json:"landingURL"`
 
@@ -43,7 +42,7 @@ type PublicCodeES struct {
 	IntendedAudienceUnsupportedCountries []string `json:"intended-audience-unsupported-countries"`
 
 	Description map[string]Desc `json:"description"`
-	//OldVariants []OldVariant    `json:"old-variant"`
+	OldVariants []OldVariant    `json:"old-variant"`
 
 	LegalLicense            string `json:"legal-license"`
 	LegalMainCopyrightOwner string `json:"legal-main-copyright-owner"`
@@ -62,7 +61,7 @@ type PublicCodeES struct {
 	DependenciesHardware    []Dependency `json:"dependencies-hardware"`
 
 	// Italian extension.
-	ItConformeAccessibile    bool `json:"it-conforme-accessibile"` // nolint: misspell
+	ItConformeAccessibile    bool `json:"it-conforme-accessibile"`
 	ItConformeInteroperabile bool `json:"it-conforme-interoperabile"`
 	ItConformeSicuro         bool `json:"it-conforme-sicuro"`
 	ItConformePrivacy        bool `json:"it-conforme-privacy"`
@@ -136,4 +135,11 @@ type OldDesc struct {
 	LocalisedName string   `json:"localisedName"`
 	GenericName   string   `json:"genericName"`
 	FeatureList   []string `json:"featureList"`
+}
+
+//Audience describe who is the audience of this software.
+type Audience struct {
+	OnlyFor              []string `json:"intended-audience-only-for"`
+	Countries            []string `json:"intended-audience-countries"`
+	UnsupportedCountries []string `json:"intended-audience-unsupported-countries"`
 }

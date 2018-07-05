@@ -873,6 +873,7 @@ class generatorRandomDocuments {
       $tags = $this->getRandomTags();
 
       $documents[] = [
+        "fileRawURL" => "https://example.com/italia/medusa/publiccode.yml",
         "publiccode-yaml-version" => "http://w3id.org/publiccode/version/0.1",
         "name" => $name,
         "applicationSuite" => $this->getRandomApplicationSuite(),

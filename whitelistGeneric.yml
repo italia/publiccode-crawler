@@ -1,7 +1,6 @@
 # whitelistGeneric.yml is a list of every organization repository not from iPA.
 
-- id: "Generic" #id name
-  codice-iPA: ""
-  organizations:
-    - "https://github.com/gith002"
-    - "https://github.com/gith003"
+# - id: "Generic-Org"
+#   codice-iPA: ""
+#   organizations:
+#     - "https://github.com/gith002"

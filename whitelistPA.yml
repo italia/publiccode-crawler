@@ -1,10 +1,11 @@
-# whitelistGeneric.yml is a list of every organization repository not from iPA.
+# whitelistPA.yml is a list of every organization repository with an iPA.
 
-# - id: "Comune Firenze" # id name
-#   codice-iPA: "cmfi"
-#   organizations:
-#     - "https://github.com/recursecenter"
-#     - "https://github.com/italia"
-#     - "https://bitbucket.org/wellnet-team"
-#     - "https://gitlab.com/MicroRL"
-#     - "https://gitlab.comune.firenze.it/ufficioABC"
+- id: "GenericIPA1"
+  codice-iPA: "c_h501"
+  organizations:
+    - "https://github.com/gith002"
+
+- id: "GenericIPA2"
+  codice-iPA: "c_h502"
+  organizations:
+    - "https://github.com/gith003"

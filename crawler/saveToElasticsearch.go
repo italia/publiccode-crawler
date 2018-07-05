@@ -5,457 +5,26 @@ import (
 	"net/url"
 
 	"github.com/italia/developers-italia-backend/metrics"
+	pcode "github.com/italia/developers-italia-backend/publiccode.yml-parser-go"
 	"github.com/olivere/elastic"
-	pcode "github.com/publiccodenet/publiccode.yml-parser-go"
 	log "github.com/sirupsen/logrus"
 )
 
 // SaveToES save the chosen data []byte in elasticsearch
-func SaveToES(domain Domain, name string, activityIndex float64, data []byte, index string, elasticClient *elastic.Client) error {
-	const (
-		// Elasticsearch mapping for publiccode. Check elasticsearch/mappings/.
-		mapping = `{
-	  "mappings": {
-	    "software": {
-	      "dynamic_templates": [
-	        {
-	          "description": {
-	            "path_match": "description.*",
-	            "mapping": {
-	              "type": "object",
-	              "properties": {
-	                "localisedName": {
-	                  "type": "text"
-	                },
-	                "genericName": {
-	                  "type": "text",
-	                  "fields": {
-	                    "keyword": { "type": "keyword", "ignore_above": 256 }
-	                  }
-	                },
-	                "shortDescription": {
-	                  "type": "text"
-	                },
-	                "longDescription": {
-	                  "type": "text"
-	                },
-	                "documentation": {
-	                  "type": "text",
-	                  "index": false
-	                },
-	                "apiDocumentation": {
-	                  "type": "text",
-	                  "index": false
-	                },
-	                "featureList": {
-	                  "type": "keyword"
-	                },
-	                "freeTags": {
-	                  "type": "keyword"
-	                },
-	                "screenshots": {
-	                  "type": "keyword",
-	                  "index": false
-	                },
-	                "videos": {
-	                  "type": "keyword",
-	                  "index": false
-	                },
-	                "awards": {
-	                  "type": "keyword"
-	                }
-	              }
-	            }
-	          }
-	        }
-	      ],
-	      "properties": {
-	        "publiccode-yaml-version": {
-	          "type": "text",
-	          "index": false
-	        },
-	        "name": {
-	          "type": "text"
-	        },
-	        "applicationSuite": {
-	          "type": "text",
-	          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-	        },
-	        "url": {
-	          "type": "text",
-	          "index": false,
-	          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-	        },
-	        "landingURL": {
-	          "type": "text",
-	          "index": false
-	        },
-	        "isBasedOn": {
-	          "type": "text",
-	          "index": false
-	        },
-	        "softwareVersion": {
-	          "type": "keyword"
-	        },
-	        "releaseDate": {
-	          "type": "date",
-	          "format": "strict_date"
-	        },
-	        "logo": {
-	          "type": "text",
-	          "index": false
-	        },
-	        "monochromeLogo": {
-	          "type": "text",
-	          "index": false
-	        },
-	        "inputTypes": {
-	          "type": "keyword"
-	        },
-	        "outputTypes": {
-	          "type": "keyword"
-	        },
-	        "platforms": {
-	          "type": "keyword"
-	        },
-	        "tags": {
-	          "type": "keyword"
-	        },
-	        "usedBy": {
-	          "type": "text",
-	          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-	        },
-	        "roadmap": {
-	          "type": "text",
-	          "index": false
-	        },
-	        "developmentStatus": {
-	          "type": "keyword"
-	        },
-	        "softwareType": {
-	          "type": "keyword"
-	        },
-	        "intendedAudience-onlyFor": {
-	          "type": "keyword"
-	        },
-	        "intendedAudience-countries": {
-	          "type": "keyword"
-	        },
-	        "intendedAudience-unsupportedCountries": {
-	          "type": "keyword"
-	        },
-	        "legal-license": {
-	          "type": "text",
-	          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-	        },
-	        "legal-mainCopyrightOwner": {
-	          "type": "text"
-	        },
-	        "legal-repoOwner": {
-	          "type": "text"
-	        },
-	        "legal-authorsFile": {
-	          "type": "text",
-	          "index": false
-	        },
-	        "maintenance-type": {
-	          "type": "keyword"
-	        },
-	        "maintenance-contractors": {
-	          "type": "nested",
-	          "properties": {
-	            "name": {
-	              "type": "text"
-	            },
-	            "until": {
-	              "type": "date",
-	              "format": "strict_date"
-	            },
-	            "website": {
-	              "type": "text",
-	              "index": false
-	            }
-	          }
-	        },
-	        "maintenance-contacts": {
-	          "type": "nested",
-	          "properties": {
-	            "name": {
-	              "type": "text"
-	            },
-	            "email": {
-	              "type": "text"
-	            },
-	            "phone": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "affiliation": {
-	              "type": "text"
-	            }
-	          }
-	        },
-	        "localisation-localisationReady": {
-	          "type": "boolean"
-	        },
-	        "localisation-availableLanguages": {
-	          "type": "keyword"
-	        },
-	        "dependsOn-open": {
-	          "type": "nested",
-	          "properties": {
-	            "name": {
-	              "type": "text"
-	            },
-	            "version-min": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "version-max": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "version": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "optional": {
-	              "type": "boolean"
-	            }
-	          }
-	        },
-	        "dependsOn-proprietary": {
-	          "type": "nested",
-	          "properties": {
-	            "name": {
-	              "type": "text"
-	            },
-	            "version-min": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "version-max": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "version": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "optional": {
-	              "type": "boolean"
-	            }
-	          }
-	        },
-	        "dependsOn-hardware": {
-	          "type": "nested",
-	          "properties": {
-	            "name": {
-	              "type": "text"
-	            },
-	            "version-min": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "version-max": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "version": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "optional": {
-	              "type": "boolean"
-	            }
-	          }
-	        },
-	        "it-conforme-accessibile": {
-	          "type": "boolean"
-	        },
-	        "it-conforme-interoperabile": {
-	          "type": "boolean"
-	        },
-	        "it-conforme-sicuro": {
-	          "type": "boolean"
-	        },
-	        "it-conforme-privacy": {
-	          "type": "boolean"
-	        },
-	        "it-spid": {
-	          "type": "boolean"
-	        },
-	        "it-cie": {
-	          "type": "boolean"
-	        },
-	        "it-anpr": {
-	          "type": "boolean"
-	        },
-	        "it-pagopa": {
-	          "type": "boolean"
-	        },
-	        "it-riuso-codiceIPA": {
-	          "type": "keyword"
-	        },
-	        "it-ecosistemi": {
-	          "type": "keyword"
-	        },
-	        "it-designKit-seo": {
-	          "type": "boolean"
-	        },
-	        "it-designKit-ui": {
-	          "type": "boolean"
-	        },
-	        "it-designKit-web": {
-	          "type": "boolean"
-	        },
-	        "it-designKit-content": {
-	          "type": "boolean"
-	        },
-	        "suggest-name": {
-	          "type": "completion"
-	        },
-	        "vitality-score": {
-	          "type": "text",
-	          "index": false
-	        },
-	        "vitality-dataChart": {
-	          "type": "integer"
-	        },
-	        "related-software": {
-	          "properties": {
-	            "name": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "image": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "eng": {
-	              "properties": {
-	                "localised-name": {
-	                  "type": "text",
-	                  "index": false
-	                },
-	                "url": {
-	                  "type": "text",
-	                  "index": false
-	                }
-	              }
-	            },
-	            "ita": {
-	              "properties": {
-	                "localised-name": {
-	                  "type": "text",
-	                  "index": false
-	                },
-	                "url": {
-	                  "type": "text",
-	                  "index": false
-	                }
-	              }
-	            }
-	          }
-	        },
-	        "tags-related": {
-	          "type": "keyword"
-	        },
-	        "popular-tags": {
-	          "type": "keyword"
-	        },
-	        "share-tags": {
-	          "type": "keyword"
-	        },
-	        "old-variant": {
-	          "properties": {
-	            "name": {
-	              "type": "text",
-	              "index": false
-	            },
-	            "eng": {
-	              "properties": {
-	                "localised-name": {
-	                  "type": "text",
-	                  "index": false
-	                },
-	                "url": {
-	                  "type": "text",
-	                  "index": false
-	                },
-	                "feature-list": {
-	                  "type": "keyword",
-	                  "index": false
-	                },
-	                "vitality-score": {
-	                  "type": "integer",
-	                  "index": false
-	                },
-	                "legal-repo-owner": {
-	                  "type": "text",
-	                  "index": false
-	                }
-	              }
-	            },
-	            "ita": {
-	              "properties": {
-	                "localised-name": {
-	                  "type": "text",
-	                  "index": false
-	                },
-	                "url": {
-	                  "type": "text",
-	                  "index": false
-	                },
-	                "feature-list": {
-	                  "type": "keyword",
-	                  "index": false
-	                },
-	                "vitality-score": {
-	                  "type": "integer",
-	                  "index": false
-	                },
-	                "legal-repo-owner": {
-	                  "type": "text",
-	                  "index": false
-	                }
-	              }
-	            }
-	          }
-	        },
-	        "old-feature-list": {
-	          "properties": {
-	            "ita": {
-	              "type": "keyword",
-	              "index": false
-	            },
-	            "eng": {
-	              "type": "keyword",
-	              "index": false
-	            }
-	          }
-	        }
-	      }
-	    }
-	  }
-	}
-` // nolint: misspell
-	)
-
+func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float64, vitality []int, data []byte, index string, elasticClient *elastic.Client) error {
 	// Starting with elastic.v5, you must pass a context to execute each service.
 	ctx := context.Background()
 
 	// Generate publiccode data using the parser.
 	pc := pcode.PublicCode{}
 	err := pcode.Parse(data, &pc)
-	//	yaml.Unmarshal([]byte(data), &pc)
 	if err != nil {
-		log.Errorf("Error in publiccode.yml for %s: %v", name, err)
+		log.Errorf("Error parsing publiccode.yml for %s: %v", name, err)
 	}
 
 	// Add a document to the index.
 	file := PublicCodeES{
-		PubliccodeYamlVersion: pc.PubliccodeYamlVersion,
+		FileRawURL: fileRawURL,
 
 		Name:             pc.Name,
 		ApplicationSuite: pc.ApplicationSuite,
@@ -483,7 +52,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 		DevelopmentStatus: pc.DevelopmentStatus,
 
 		VitalityScore:     activityIndex,
-		VitalityDataChart: []int{12, 24, 36, 48, 60, 72, 84, 96, 48},
+		VitalityDataChart: vitality,
 
 		RelatedSoftware: nil,
 
@@ -494,7 +63,7 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 		IntendedAudienceUnsupportedCountries: pc.IntendedAudience.UnsupportedCountries,
 
 		Description: map[string]Desc{},
-		//OldVariants: oldVariant will be added in the search function.
+		OldVariants: []OldVariant{},
 
 		LegalLicense:            pc.Legal.License,
 		LegalMainCopyrightOwner: pc.Legal.MainCopyrightOwner,
@@ -531,12 +100,11 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 		ItDesignKitWeb:     pc.It.DesignKit.Web,
 		ItDesignKitContent: pc.It.DesignKit.Content,
 	}
-	// Populate complex fields.
 	for _, contractor := range pc.Maintenance.Contractors {
 		file.MaintenanceContractors = append(file.MaintenanceContractors, Contractor{
 			Name:    contractor.Name,
 			Website: contractor.Website.String(),
-			Until:   contractor.Until.String(),
+			Until:   contractor.Until.Format("2006-01-02"),
 		})
 	}
 	for _, contact := range pc.Maintenance.Contacts {
@@ -599,20 +167,6 @@ func SaveToES(domain Domain, name string, activityIndex float64, data []byte, in
 			Version:    dependency.Version,
 		})
 	}
-
-	// Use the IndexExists service to check if a specified index exists.
-	exists, err := elasticClient.IndexExists(index).Do(context.Background())
-	if err != nil {
-		return err
-	}
-	if !exists {
-		_, err := elasticClient.CreateIndex(index).Body(mapping).Do(context.Background())
-		if err != nil {
-			// Handle error
-			return err
-		}
-	}
-
 	// Put publiccode data in ES.
 	_, err = elasticClient.Index().
 		Index(index).
