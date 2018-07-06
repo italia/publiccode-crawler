@@ -387,8 +387,7 @@
           "type": "completion"
         },
         "vitality-score": {
-          "type": "text",
-          "index": false
+          "type": "integer"
         },
         "vitality-dataChart": {
           "type": "integer"
