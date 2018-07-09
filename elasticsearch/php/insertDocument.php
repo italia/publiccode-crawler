@@ -25,8 +25,9 @@ foreach ($aliases as $a => $a_indexes) {
 }
 $posts = insert_jekyll_posts($client, 'jekyll', 'jekyll_data.json');
 $documents = insert_publiccode_documents($client, $index, $type);
-insert_suggestions_agencies($client, 'suggestions', 'suggestion');
-insert_suggestions_software_type($client, 'suggestions', 'suggestion');
+
+// insert_suggestions_agencies($client, 'suggestions', 'suggestion');
+// insert_suggestions_software_type($client, 'suggestions', 'suggestion');
 
 function create_indexes($client, $indexes) {
   foreach ($indexes as $index => $filename_mapping) {

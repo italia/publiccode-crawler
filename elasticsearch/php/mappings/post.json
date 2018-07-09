@@ -3,7 +3,30 @@
     "analysis": {
       "analyzer": {
         "suggest_analyzer": {
-          "tokenizer": "suggest_tokenizer"
+          "tokenizer": "suggest_tokenizer",
+          "filter": [
+            "lowercase"
+          ]
+        },
+        "evolutionAnalyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "standard",
+            "lowercase",
+            "custom_stop",
+            "custom_shingle"
+          ]
+        }
+      },
+      "filter": {
+        "custom_stop": {
+          "type": "stop",
+          "stopwords": "_english_"
+        },
+        "custom_shingle": {
+            "type": "shingle",
+            "min_shingle_size": "2",
+            "max_shingle_size": "3"
         }
       },
       "tokenizer": {
@@ -43,7 +66,7 @@
         "comingsoon": {
           "type": "boolean"
         },
-        "release-date": {
+        "releaseDate": {
           "type": "date",
           "format": "yyyy-MM-dd HH:mm:ss Z"
         },
@@ -127,21 +150,11 @@
           "properties": {
             "link": {
               "type": "text",
-              "fields": {
-                "keyword": {
-                  "type": "keyword",
-                  "ignore_above": 256
-                }
-              }
+              "index": false
             },
             "title": {
               "type": "text",
-              "fields": {
-                "keyword": {
-                  "type": "keyword",
-                  "ignore_above": 256
-                }
-              }
+              "index": false
             }
           }
         },
@@ -188,7 +201,15 @@
             "ngram": {
               "type": "text",
               "analyzer": "suggest_analyzer"
-            }
+            },
+            "sort": { "type": "keyword", "ignore_above": 256 }
+          }
+        },
+        "name": {
+          "type": "text",
+          "index": false,
+          "fields": {
+            "sort": { "type": "keyword", "ignore_above": 256 }
           }
         },
         "toc": {

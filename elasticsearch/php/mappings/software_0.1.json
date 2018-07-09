@@ -3,14 +3,37 @@
     "analysis": {
       "analyzer": {
         "suggest_analyzer": {
-          "tokenizer": "suggest_tokenizer"
+          "tokenizer": "suggest_tokenizer",
+          "filter": [
+            "lowercase"
+          ]
+        },
+        "evolutionAnalyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "standard",
+            "lowercase",
+            "custom_stop",
+            "custom_shingle"
+          ]
+        }
+      },
+      "filter": {
+        "custom_stop": {
+          "type": "stop",
+          "stopwords": "_english_"
+        },
+        "custom_shingle": {
+            "type": "shingle",
+            "min_shingle_size": "2",
+            "max_shingle_size": "3"
         }
       },
       "tokenizer": {
         "suggest_tokenizer": {
           "type": "ngram",
           "min_gram": 2,
-          "max_gram": 20,
+          "max_gram": 10,
           "token_chars": ["letter", "digit"]
         }
       }
@@ -112,7 +135,8 @@
             "ngram": {
               "type": "text",
               "analyzer": "suggest_analyzer"
-            }
+            },
+            "sort": { "type": "keyword", "ignore_above": 256 }
           }
         },
         "applicationSuite": {
@@ -335,6 +359,15 @@
         "it-riuso-codiceIPA": {
           "type": "keyword"
         },
+        "it-riuso-codiceIPA-label": {
+          "type": "text",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "suggest_analyzer"
+            }
+          }
+        },
         "it-ecosistemi": {
           "type": "keyword"
         },
@@ -354,8 +387,7 @@
           "type": "completion"
         },
         "vitality-score": {
-          "type": "text",
-          "index": false
+          "type": "integer"
         },
         "vitality-dataChart": {
           "type": "integer"
