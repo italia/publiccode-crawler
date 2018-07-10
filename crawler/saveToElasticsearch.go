@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/url"
 
+	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/metrics"
 	pcode "github.com/italia/developers-italia-backend/publiccode.yml-parser-go"
 	"github.com/olivere/elastic"
@@ -24,7 +25,8 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 
 	// Add a document to the index.
 	file := PublicCodeES{
-		FileRawURL: fileRawURL,
+		FileRawURL:      fileRawURL,
+		Amministrazione: ipa.GetAdministrationName(pc.It.Riuso.CodiceIPA),
 
 		Name:             pc.Name,
 		ApplicationSuite: pc.ApplicationSuite,
