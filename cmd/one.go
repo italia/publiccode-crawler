@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/jekyll"
 	"github.com/italia/developers-italia-backend/metrics"
 	log "github.com/sirupsen/logrus"
@@ -25,6 +26,12 @@ var oneCmd = &cobra.Command{
 No organizations! Only single repositories!`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Update ipa to lastest data.
+		err := ipa.UpdateFile("./ipa/amministrazioni.txt", "http://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		// Read repository URL.
 		repo := args[0]
 		// Index for actual process.

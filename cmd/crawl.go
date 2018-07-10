@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/jekyll"
 	"github.com/italia/developers-italia-backend/metrics"
 	log "github.com/sirupsen/logrus"
@@ -23,6 +24,11 @@ var crawlCmd = &cobra.Command{
 	Long:  `Start whitelist file. It's possible to add multiple files adding them as args.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Update ipa to lastest data.
+		err := ipa.UpdateFile("./ipa/amministrazioni.txt", "http://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt")
+		if err != nil {
+			log.Fatal(err)
+		}
 		// Index for actual process.
 		index := strconv.FormatInt(time.Now().Unix(), 10)
 

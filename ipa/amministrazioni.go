@@ -2,8 +2,13 @@ package ipa
 
 import (
 	"bufio"
+	"fmt"
+	"io"
 	"io/ioutil"
+	"net/http"
+	"os"
 	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -42,6 +47,30 @@ type Amministrazione struct {
 	urlGoogleplus     string
 	urlYoutube        string
 	livAccessibili    string
+}
+
+// UpdateFile download the amministrazioni.txt file if it's older than 2 days.
+func UpdateFile(fileName, fileURL string) error {
+	info, err := os.Stat(fileName)
+	if err != nil {
+		return err
+	}
+	today := time.Now()
+	older := today.AddDate(0, 0, -2)
+
+	downloadTime := info.ModTime()
+
+	// If amministrazioni.txt is older that 2 days
+	if downloadTime.Before(older) {
+		fmt.Println("download a new amministrazioni.txt ...")
+
+		err := downloadFile(fileName, fileURL)
+		if err != nil {
+			return err
+		}
+	}
+
+	return err
 }
 
 // GetAdministrationName return the administration name associated to the "codice iPA" asssociated.
@@ -104,4 +133,29 @@ func manageLine(line string) Amministrazione {
 	}
 
 	return amm
+}
+
+func downloadFile(filepath string, url string) error {
+
+	// Create the file
+	out, err := os.Create(filepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
