@@ -49,13 +49,16 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	// Administrations data.
 	var administrations []Administration
 
-	// Extract all the documents.
+	// Extract all the softwares.
+	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery("software"))
+
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").               // search in index "publiccode"
-		Query(elastic.NewMatchAllQuery()). // specify the query
-		Pretty(true).                      // pretty print request and response JSON
-		From(0).Size(10000).               // get first 10k elements. It can be changed.
-		Do(context.Background())           // execute
+		Index("publiccode").     // search in index "publiccode"
+		Query(query).            // specify the query
+		Pretty(true).            // pretty print request and response JSON
+		From(0).Size(10000).     // get first 10k elements. It can be changed.
+		Do(context.Background()) // execute
 	if err != nil {
 		log.Error(err)
 	}

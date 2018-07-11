@@ -1,11 +1,11 @@
 # whitelistPA.yml is a list of every organization repository with an iPA.
 
-- id: "GenericIPA1"
-  codice-iPA: "c_h501"
+- id: "Comune di Bagnacavallo"
+  codice-iPA: "c_a547"
   organizations:
     - "https://github.com/gith002"
 
-- id: "GenericIPA2"
+- id: "Comune di Romagnano Sesia"
   codice-iPA: "c_h502"
   organizations:
     - "https://github.com/gith003"

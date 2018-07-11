@@ -173,7 +173,7 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 	_, err = elasticClient.Index().
 		Index(index).
 		Type("software").
-		Id(domain.Host + "/" + name + "_" + index).
+		Id(domain.Host + "/" + name).
 		BodyJson(file).
 		Do(ctx)
 	if err != nil {
@@ -182,5 +182,28 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 
 	metrics.GetCounter("repository_file_indexed", index).Inc()
 
+	// Add administration data.
+	if file.ItRiusoCodiceIPA != "" {
+
+		// Put administrations data in ES.
+		_, err = elasticClient.Index().
+			Index("administration").
+			Type("administration").
+			Id(file.ItRiusoCodiceIPA).
+			BodyJson(administration{
+				Name:      file.ItRiusoCodiceIPALabel,
+				CodiceIPA: file.ItRiusoCodiceIPA,
+			}).
+			Do(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+type administration struct {
+	Name      string `json:"it-riuso-codiceIPA-label"`
+	CodiceIPA string `json:"it-riuso-codiceIPA"`
 }

@@ -484,6 +484,67 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
 	return err
 }
 
+// ElasticAdministrationsMapping adds (if not exists) the mapping for the whitelist administrations in ES.
+func ElasticAdministrationsMapping(index string, elasticClient *elastic.Client) error {
+	const (
+		// Elasticsearch mapping for administrations.
+		mapping = `{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "suggest_analyzer": {
+          "tokenizer": "suggest_tokenizer",
+          "filter": ["lowercase"]
+        }
+      },
+      "tokenizer": {
+        "suggest_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 10,
+          "token_chars": ["letter", "digit"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "administration": {
+      "properties": {
+        "it-riuso-codiceIPA": {
+          "type": "keyword"
+        },
+        "it-riuso-codiceIPA-label": {
+          "type": "text",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "suggest_analyzer"
+            }
+          }
+        }
+      }
+    }
+  }
+}`
+	)
+
+	// Generating index with mapping.
+	// Use the IndexExists service to check if a specified index exists.
+	exists, err := elasticClient.IndexExists(index).Do(context.Background())
+	if err != nil {
+		return errors.New("cannot check if ES index exists for '" + index + "' exists: " + err.Error())
+	}
+	// Generate new index.
+	if !exists {
+		_, err = elasticClient.CreateIndex(index).Body(mapping).Do(context.Background())
+		if err != nil {
+			return errors.New("cannot create ES index for '" + index + "': " + err.Error())
+		}
+	}
+
+	return err
+}
+
 // ElasticFlush wrap the ElasticSearch flush command.
 func ElasticFlush(index string, elasticClient *elastic.Client) error {
 	// Flush to make sure the documents got written.
@@ -502,14 +563,16 @@ func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) erro
 	aliasService := elasticClient.Alias()
 	indices := res.IndicesByAlias(alias)
 	for _, name := range indices {
-		log.Debugf("Remove alias from %s to %s", alias, name)
-		// Remove the publiccode alias.
-		_, err := aliasService.Remove(name, alias).Do(context.Background())
-		if err != nil {
-			return err
+		// Does not remove "administration" aliased index.
+		if name != "administration" {
+			log.Debugf("Remove alias from %s to %s", alias, name)
+			// Remove the publiccode alias.
+			_, err := aliasService.Remove(name, alias).Do(context.Background())
+			if err != nil {
+				return err
+			}
 		}
 	}
-
 	// Add an alias to the new index.
 	log.Debugf("Add alias from %s to %s", index, alias)
 	_, err = aliasService.Add(index, alias).Do(context.Background())

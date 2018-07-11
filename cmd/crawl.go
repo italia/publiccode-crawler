@@ -40,7 +40,13 @@ var crawlCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		// Create ES idex with mapping for PublicCode.
 		err = crawler.ElasticIndexMapping(index, elasticClient)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// Create ES index with mapping "administration-codiceIPA".
+		err = crawler.ElasticAdministrationsMapping(index, elasticClient)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -103,6 +109,10 @@ var crawlCmd = &cobra.Command{
 		}
 
 		// Update Elastic alias.
+		err = crawler.ElasticAliasUpdate("administration", "publiccode", elasticClient)
+		if err != nil {
+			log.Errorf("Error updating Elastic Alias: %v", err)
+		}
 		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)
 		if err != nil {
 			log.Errorf("Error updating Elastic Alias: %v", err)

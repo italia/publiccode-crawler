@@ -131,10 +131,8 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
-		Lock.Lock()
 		// Validate file. If invalid, terminate the check.
 		err = validateRemoteFile(resp.Body, fileRawURL)
-		Lock.Unlock()
 		if err != nil {
 			log.Errorf("Validator fails for: " + fileRawURL)
 			log.Errorf("Validator errors:" + err.Error())
