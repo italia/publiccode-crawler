@@ -6,7 +6,7 @@ import "github.com/italia/developers-italia-backend/crawler"
 type Software struct {
 	Name              string                  `json:"name,omitempty"`
 	ApplicationSuite  string                  `json:"applicationSuite,omitempty"`
-	URL               string                  `json:"url,omitempty"`
+	URL               string                  `json:"repoUrl,omitempty"`
 	LandingURL        string                  `json:"landingURL,omitempty"`
 	IsBasedOn         []string                `json:"isBasedOn,omitempty"`
 	SoftwareVersion   string                  `json:"softwareVersion,omitempty"`
