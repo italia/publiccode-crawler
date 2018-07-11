@@ -63,25 +63,26 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 		rawBaseDir := strings.TrimRight(i.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
 		softwareExtracted := Software{
-			Name:              i.Name,
-			ApplicationSuite:  i.ApplicationSuite,
-			URL:               i.URL,
-			LandingURL:        i.LandingURL,
-			IsBasedOn:         i.IsBasedOn,
-			SoftwareVersion:   i.SoftwareVersion,
-			ReleaseDate:       i.ReleaseDate,
-			Logo:              concatenateLink(rawBaseDir, i.Logo),
-			MonochromeLogo:    concatenateLink(rawBaseDir, i.MonochromeLogo),
-			Platforms:         i.Platforms,
-			Tags:              i.Tags,
-			FreeTags:          i.FreeTags,
-			PopularTags:       populatePopularTags(i.Tags, numberOfPopularTags, elasticClient), // PopularTags are the first n tags that are more popular.
-			ShareTags:         i.Tags,                                                          // ShareTags are tags.
-			UsedBy:            i.UsedBy,
-			Roadmap:           i.Roadmap,
-			DevelopmentStatus: i.DevelopmentStatus,
-			VitalityScore:     i.VitalityScore,
-			VitalityDataChart: i.VitalityDataChart,
+			AmministrazioneLabel: i.ItRiusoCodiceIPALabel,
+			Name:                 i.Name,
+			ApplicationSuite:     i.ApplicationSuite,
+			URL:                  i.URL,
+			LandingURL:           i.LandingURL,
+			IsBasedOn:            i.IsBasedOn,
+			SoftwareVersion:      i.SoftwareVersion,
+			ReleaseDate:          i.ReleaseDate,
+			Logo:                 concatenateLink(rawBaseDir, i.Logo),
+			MonochromeLogo:       concatenateLink(rawBaseDir, i.MonochromeLogo),
+			Platforms:            i.Platforms,
+			Tags:                 i.Tags,
+			FreeTags:             i.FreeTags,
+			PopularTags:          populatePopularTags(i.Tags, numberOfPopularTags, elasticClient), // PopularTags are the first n tags that are more popular.
+			ShareTags:            i.Tags,                                                          // ShareTags are tags.
+			UsedBy:               i.UsedBy,
+			Roadmap:              i.Roadmap,
+			DevelopmentStatus:    i.DevelopmentStatus,
+			VitalityScore:        i.VitalityScore,
+			VitalityDataChart:    i.VitalityDataChart,
 			SoftwareType: SoftwareTypeData{
 				Type: i.SoftwareType,
 			},

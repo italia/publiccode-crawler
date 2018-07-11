@@ -30,6 +30,8 @@ type Repository struct {
 	Metadata    []byte
 }
 
+var Lock sync.Mutex
+
 // ProcessPA delegates the work to single PA crawlers.
 func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	log.Infof("Start ProcessPA on '%s'", pa.ID)
@@ -129,9 +131,10 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
-
+		Lock.Lock()
 		// Validate file. If invalid, terminate the check.
 		err = validateRemoteFile(resp.Body, fileRawURL)
+		Lock.Unlock()
 		if err != nil {
 			log.Errorf("Validator fails for: " + fileRawURL)
 			log.Errorf("Validator errors:" + err.Error())

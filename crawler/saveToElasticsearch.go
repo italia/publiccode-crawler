@@ -25,8 +25,8 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 
 	// Add a document to the index.
 	file := PublicCodeES{
-		FileRawURL:      fileRawURL,
-		Amministrazione: ipa.GetAdministrationName(pc.It.Riuso.CodiceIPA),
+		FileRawURL:            fileRawURL,
+		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(pc.It.Riuso.CodiceIPA),
 
 		Name:             pc.Name,
 		ApplicationSuite: pc.ApplicationSuite,

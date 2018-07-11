@@ -93,7 +93,7 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
 						"type": "text",
 						"index": false
 					},
-					"amministrazione": {
+					"it-riuso-codiceIPA-label": {
 						"type": "text"
 					},
 					"publiccode-yaml-version": {
