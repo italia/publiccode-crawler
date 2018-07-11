@@ -30,8 +30,6 @@ type Repository struct {
 	Metadata    []byte
 }
 
-var Lock sync.Mutex
-
 // ProcessPA delegates the work to single PA crawlers.
 func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.WaitGroup) {
 	log.Infof("Start ProcessPA on '%s'", pa.ID)
@@ -109,7 +107,11 @@ func generateRandomInt(max int) (int, error) {
 // ProcessRepositories process the repositories channel and check the availability of the file.
 func ProcessRepositories(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	log.Debug("Repositories are going to be processed...")
-
+	for repository := range repositories {
+		wg.Add(1)
+		go CheckAvailability(repository, index, wg, elasticClient)
+	}
+	wg.Wait()
 }
 
 // CheckAvailability looks for the FileRawURL and, if found, save it.
