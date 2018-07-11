@@ -5,7 +5,6 @@ import (
 	"math/big"
 	"strings"
 	"sync"
-	"time"
 
 	"net/http"
 	"net/url"
@@ -54,7 +53,6 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 	}
 
 	wg.Done()
-
 	log.Infof("End ProcessPA on '%s'", pa.ID)
 }
 
@@ -67,7 +65,6 @@ func ProcessPADomain(orgURL string, domain Domain, repositories chan Repository,
 	}
 	// Process the pages until the end is reached.
 	for {
-		wg.Add(1)
 		log.Debugf("processAndGetNextURL handler: %s", orgURL)
 		nextURL, err := domain.processAndGetNextURL(orgURL, wg, repositories)
 		if err != nil {
@@ -79,24 +76,16 @@ func ProcessPADomain(orgURL string, domain Domain, repositories chan Repository,
 		// If end is reached, nextUrl is empty.
 		if nextURL == "" {
 			log.Infof("Url: %s - is the last one.", orgURL)
-			wg.Done()
 			return
 		}
 		// Update url to nextURL.
 		orgURL = nextURL
-		wg.Done()
 	}
 }
 
 // WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
 func WaitingLoop(repositories chan Repository, wg *sync.WaitGroup) {
-	// Waiting initial timer.
-	time.Sleep(5 * time.Second)
-
 	wg.Wait()
-
-	// Waiting final timer.
-	time.Sleep(5 * time.Second)
 
 	// Close repositories channel.
 	log.Debugf("closing repositories chan: len=%d", len(repositories))
@@ -119,14 +108,10 @@ func generateRandomInt(max int) (int, error) {
 func ProcessRepositories(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	log.Debug("Repositories are going to be processed...")
 
-	for repository := range repositories {
-		wg.Add(1)
-		go checkAvailability(repository, index, wg, elasticClient)
-	}
 }
 
-// checkAvailability looks for the FileRawURL and, if found, save it.
-func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
+// CheckAvailability looks for the FileRawURL and, if found, save it.
+func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
 	name := repository.Name
 	hostname := repository.Hostname
 	fileRawURL := repository.FileRawURL

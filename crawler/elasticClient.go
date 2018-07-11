@@ -484,6 +484,13 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
 	return err
 }
 
+// ElasticFlush wrap the ElasticSearch flush command.
+func ElasticFlush(index string, elasticClient *elastic.Client) error {
+	// Flush to make sure the documents got written.
+	_, err := elasticClient.Flush().Index(index).Do(context.Background())
+	return err
+}
+
 // ElasticAliasUpdate update the Alias to the index.
 func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) error {
 	// Retrieve all the aliases.
@@ -501,7 +508,6 @@ func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) erro
 		if err != nil {
 			return err
 		}
-
 	}
 
 	// Add an alias to the new index.

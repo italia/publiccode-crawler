@@ -102,6 +102,12 @@ No organizations! Only single repositories!`,
 
 		log.Infof("End ProcessSingleRepository '%s'", repo)
 
+		// ElasticFlush to flush all the operations on ES.
+		err = crawler.ElasticFlush(index, elasticClient)
+		if err != nil {
+			log.Errorf("Error flushing ElasticSearch: %v", err)
+		}
+
 		// Update Elastic alias.
 		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)
 		if err != nil {

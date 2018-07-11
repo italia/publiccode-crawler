@@ -89,8 +89,18 @@ var crawlCmd = &cobra.Command{
 		go crawler.WaitingLoop(repositories, &wg)
 
 		// Process the repositories in order to retrieve the file.
-		// ProcessRepositories is blocking (wait until repositories is closed by WaitingLoop).
-		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
+		// ProcessRepositories loop is blocking (wait until repositories is closed by WaitingLoop).
+		for repository := range repositories {
+			wg.Add(1)
+			go crawler.CheckAvailability(repository, index, &wg, elasticClient)
+		}
+		wg.Wait()
+
+		// ElasticFlush to flush all the operations on ES.
+		err = crawler.ElasticFlush(index, elasticClient)
+		if err != nil {
+			log.Errorf("Error flushing ElasticSearch: %v", err)
+		}
 
 		// Update Elastic alias.
 		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)
