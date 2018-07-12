@@ -79,6 +79,7 @@ services:
       - ./domains.yml:/app/domains.yml
       - ./config.toml:/app/config.toml
       - ./jekyll/generated:/app/jekyll/generated
+      - ./vitality-ranges.yml:/app/ranges.yml
 
 
 volumes:
