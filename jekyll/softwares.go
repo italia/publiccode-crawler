@@ -45,13 +45,16 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 	// Publiccodes data.
 	var softwares []Software
 
-	// Extract all the documents.
+	// Extract all the softwares.
+	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery("software"))
+
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").               // search in index "publiccode"
-		Query(elastic.NewMatchAllQuery()). // specify the query
-		Pretty(true).                      // pretty print request and response JSON
-		From(0).Size(10000).               // get first 10k elements. The limit can be changed in ES.
-		Do(context.Background())           // execute
+		Index("publiccode").     // search in index "publiccode"
+		Query(query).            // specify the query
+		Pretty(true).            // pretty print request and response JSON
+		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background()) // execute
 	if err != nil {
 		log.Error(err)
 	}
@@ -63,25 +66,26 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 		rawBaseDir := strings.TrimRight(i.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
 		softwareExtracted := Software{
-			Name:              i.Name,
-			ApplicationSuite:  i.ApplicationSuite,
-			URL:               i.URL,
-			LandingURL:        i.LandingURL,
-			IsBasedOn:         i.IsBasedOn,
-			SoftwareVersion:   i.SoftwareVersion,
-			ReleaseDate:       i.ReleaseDate,
-			Logo:              concatenateLink(rawBaseDir, i.Logo),
-			MonochromeLogo:    concatenateLink(rawBaseDir, i.MonochromeLogo),
-			Platforms:         i.Platforms,
-			Tags:              i.Tags,
-			FreeTags:          i.FreeTags,
-			PopularTags:       populatePopularTags(i.Tags, numberOfPopularTags, elasticClient), // PopularTags are the first n tags that are more popular.
-			ShareTags:         i.Tags,                                                          // ShareTags are tags.
-			UsedBy:            i.UsedBy,
-			Roadmap:           i.Roadmap,
-			DevelopmentStatus: i.DevelopmentStatus,
-			VitalityScore:     i.VitalityScore,
-			VitalityDataChart: i.VitalityDataChart,
+			AmministrazioneLabel: i.ItRiusoCodiceIPALabel,
+			Name:                 i.Name,
+			ApplicationSuite:     i.ApplicationSuite,
+			URL:                  i.URL,
+			LandingURL:           i.LandingURL,
+			IsBasedOn:            i.IsBasedOn,
+			SoftwareVersion:      i.SoftwareVersion,
+			ReleaseDate:          i.ReleaseDate,
+			Logo:                 concatenateLink(rawBaseDir, i.Logo),
+			MonochromeLogo:       concatenateLink(rawBaseDir, i.MonochromeLogo),
+			Platforms:            i.Platforms,
+			Tags:                 i.Tags,
+			FreeTags:             i.FreeTags,
+			PopularTags:          populatePopularTags(i.Tags, numberOfPopularTags, elasticClient), // PopularTags are the first n tags that are more popular.
+			ShareTags:            i.Tags,                                                          // ShareTags are tags.
+			UsedBy:               i.UsedBy,
+			Roadmap:              i.Roadmap,
+			DevelopmentStatus:    i.DevelopmentStatus,
+			VitalityScore:        i.VitalityScore,
+			VitalityDataChart:    i.VitalityDataChart,
 			SoftwareType: SoftwareTypeData{
 				Type: i.SoftwareType,
 			},

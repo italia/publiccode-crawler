@@ -12,13 +12,15 @@ var Lock sync.Mutex
 
 // Parse loads the yaml bytes and tries to parse it. Return an error if fails.
 func Parse(in []byte, pc *PublicCode) error {
+	Lock.Lock()
 	var s map[interface{}]interface{}
 
 	d := yaml.NewDecoder(bytes.NewReader(in))
 	if err := d.Decode(&s); err != nil {
+		Lock.Unlock()
 		return err
 	}
-
+	Lock.Unlock()
 	return newParser(pc).parse(s)
 }
 
@@ -40,16 +42,13 @@ func newParser(pc *PublicCode) *parser {
 }
 
 func (p *parser) parse(s map[interface{}]interface{}) error {
-	Lock.Lock()
+
 	if err := p.decoderec("", s); err != nil {
-		Lock.Unlock()
 		return err
 	}
 	if err := p.finalize(); err != nil {
-		Lock.Unlock()
 		return err
 	}
-	Lock.Unlock()
 	return nil
 }
 

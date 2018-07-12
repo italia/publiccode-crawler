@@ -4,31 +4,32 @@ import "github.com/italia/developers-italia-backend/crawler"
 
 // Software describe the data used in jekyll that includes publiccode and meta informations.
 type Software struct {
-	Name              string                  `json:"name,omitempty"`
-	ApplicationSuite  string                  `json:"applicationSuite,omitempty"`
-	URL               string                  `json:"url,omitempty"`
-	LandingURL        string                  `json:"landingURL,omitempty"`
-	IsBasedOn         []string                `json:"isBasedOn,omitempty"`
-	SoftwareVersion   string                  `json:"softwareVersion,omitempty"`
-	ReleaseDate       string                  `json:"releaseDate,omitempty"`
-	Logo              string                  `json:"logo,omitempty"`
-	MonochromeLogo    string                  `json:"monochromeLogo,omitempty"`
-	Platforms         []string                `json:"platforms,omitempty"`
-	Tags              []string                `json:"tags,omitempty"`
-	FreeTags          map[string][]string     `json:"freeTags,omitempty"`
-	PopularTags       []string                `json:"popularTags,omitempty"`
-	ShareTags         []string                `json:"shareTags,omitempty"`
-	UsedBy            []string                `json:"usedBy,omitempty"`
-	Roadmap           string                  `json:"roadmap,omitempty"`
-	DevelopmentStatus string                  `json:"developmentStatus,omitempty"`
-	VitalityScore     float64                 `json:"vitalityScore,omitempty"`
-	VitalityDataChart []int                   `json:"vitalityDataChart,omitempty"`
-	SoftwareType      SoftwareTypeData        `json:"softwareType,omitempty"`
-	IntendedAudience  IntendedAudienceData    `json:"intendedAudience,omitempty"`
-	Description       map[string]crawler.Desc `json:"description,omitempty"`
-	OldVariant        []OldVariantData        `json:"oldVariant,omitempty"`
-	OldFeatureList    map[string][]string     `json:"oldFeatureList,omitempty"`
-	TagsRelate        []string                `json:"tagsRelate,omitempty"`
+	AmministrazioneLabel string                  `json:"it-riuso-codiceIPA-label,omitempty"`
+	Name                 string                  `json:"name,omitempty"`
+	ApplicationSuite     string                  `json:"applicationSuite,omitempty"`
+	URL                  string                  `json:"url,omitempty"`
+	LandingURL           string                  `json:"landingURL,omitempty"`
+	IsBasedOn            []string                `json:"isBasedOn,omitempty"`
+	SoftwareVersion      string                  `json:"softwareVersion,omitempty"`
+	ReleaseDate          string                  `json:"releaseDate,omitempty"`
+	Logo                 string                  `json:"logo,omitempty"`
+	MonochromeLogo       string                  `json:"monochromeLogo,omitempty"`
+	Platforms            []string                `json:"platforms,omitempty"`
+	Tags                 []string                `json:"tags,omitempty"`
+	FreeTags             map[string][]string     `json:"freeTags,omitempty"`
+	PopularTags          []string                `json:"popularTags,omitempty"`
+	ShareTags            []string                `json:"shareTags,omitempty"`
+	UsedBy               []string                `json:"usedBy,omitempty"`
+	Roadmap              string                  `json:"roadmap,omitempty"`
+	DevelopmentStatus    string                  `json:"developmentStatus,omitempty"`
+	VitalityScore        float64                 `json:"vitalityScore,omitempty"`
+	VitalityDataChart    []int                   `json:"vitalityDataChart,omitempty"`
+	SoftwareType         SoftwareTypeData        `json:"softwareType,omitempty"`
+	IntendedAudience     IntendedAudienceData    `json:"intendedAudience,omitempty"`
+	Description          map[string]crawler.Desc `json:"description,omitempty"`
+	OldVariant           []OldVariantData        `json:"oldVariant,omitempty"`
+	OldFeatureList       map[string][]string     `json:"oldFeatureList,omitempty"`
+	TagsRelate           []string                `json:"tagsRelate,omitempty"`
 
 	RelatedSoftwares []RelatedSoftware `json:"relatedSoftwares,omitempty"`
 
