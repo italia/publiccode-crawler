@@ -12,14 +12,12 @@ $aliases = [
   'publiccode' => [
     'publiccode_20180614',
     'jekyll',
-  ],
-  'suggestions' => [
-    'suggestions_20180614'
+    'administrations',
   ]
 ];
 
 $indexes = [
   'jekyll' => 'mappings/post.json',
   'publiccode_20180614' => 'mappings/software_0.1.json',
-  'suggestions_20180614' => 'mappings/suggestion.json',
+  'administrations' => 'mappings/administrations.json',
 ];

@@ -1396,7 +1396,7 @@ class generatorRandomDocuments {
     $screenshots = [];
     $n = rand(1, 8);
     for ($i=0; $i < $n; $i++) {
-      $screenshots[] = "img/sshot".($i+1).".jpg";
+      $screenshots[] = "http://via.placeholder.com/350x150";
     }
     return [
       "localisedName" => $name,
