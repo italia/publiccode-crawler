@@ -7,7 +7,7 @@ type Software struct {
 	AmministrazioneLabel string                  `json:"it-riuso-codiceIPA-label,omitempty"`
 	Name                 string                  `json:"name,omitempty"`
 	ApplicationSuite     string                  `json:"applicationSuite,omitempty"`
-	URL                  string                  `json:"url,omitempty"`
+	URL                  string                  `json:"repoUrl,omitempty"`
 	LandingURL           string                  `json:"landingURL,omitempty"`
 	IsBasedOn            []string                `json:"isBasedOn,omitempty"`
 	SoftwareVersion      string                  `json:"softwareVersion,omitempty"`
