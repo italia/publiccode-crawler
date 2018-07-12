@@ -222,7 +222,7 @@ type GithubFiles []struct {
 // If a next page is available return its url.
 // Otherwise returns an empty ("") string.
 func RegisterGithubAPI() OrganizationHandler {
-	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
+	return func(domain Domain, link string, repositories chan Repository, pa PA, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -281,7 +281,7 @@ func RegisterGithubAPI() OrganizationHandler {
 				log.Infof("Repository is empty: %s", link)
 			}
 
-			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, v.DefaultBranch, domain.Host, domain, headers, metadata, repositories)
+			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, v.DefaultBranch, domain.Host, domain, pa, headers, metadata, repositories)
 			if err != nil {
 				log.Infof("addGithubProectsToRepositories %v", err)
 			}
@@ -396,7 +396,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 
 // addGithubProjectsToRepositories adds the projects from api response to repository channel.
 func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defaultBranch, hostname string,
-	domain Domain, headers map[string]string, metadata []byte, repositories chan Repository) error {
+	domain Domain, pa PA, headers map[string]string, metadata []byte, repositories chan Repository) error {
 	// Search a file with a valid name and a downloadURL.
 	for _, f := range files {
 		if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
@@ -408,6 +408,7 @@ func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defa
 				GitCloneURL: cloneURL,
 				GitBranch:   defaultBranch,
 				Domain:      domain,
+				Pa:          pa,
 				Headers:     headers,
 				Metadata:    metadata,
 			}

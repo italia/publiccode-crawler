@@ -192,7 +192,7 @@ type GitlabSharedProject struct {
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
 func RegisterGitlabAPI() OrganizationHandler {
-	return func(domain Domain, link string, repositories chan Repository, wg *sync.WaitGroup) (string, error) {
+	return func(domain Domain, link string, repositories chan Repository, pa PA, wg *sync.WaitGroup) (string, error) {
 		log.Debugf("RegisterGitlabAPI: %s ", link)
 
 		// Set BasicAuth header.
@@ -231,12 +231,12 @@ func RegisterGitlabAPI() OrganizationHandler {
 		}
 
 		// Add repositories to the channel that will perform the check on every project.
-		err = addGitlabProjectsToRepositories(results.Projects, domain, headers, repositories)
+		err = addGitlabProjectsToRepositories(results.Projects, domain, pa, headers, repositories)
 		if err != nil {
 			return link, err
 		}
 		// Add repositories to the channel that will perform the check on every sharedd project.
-		err = addGitlabSharedProjectsToRepositories(results.SharedProjects, domain, headers, repositories)
+		err = addGitlabSharedProjectsToRepositories(results.SharedProjects, domain, pa, headers, repositories)
 		if err != nil {
 			return link, err
 		}
@@ -345,7 +345,7 @@ func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 }
 
 // addGitlabProjectsToRepositories adds the projects from api response to repository channel.
-func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, headers map[string]string, repositories chan Repository) error {
+func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, pa PA, headers map[string]string, repositories chan Repository) error {
 	for _, v := range projects {
 		// Join file raw URL string.
 		rawURL, err := generateGitlabRawURL(v.WebURL, v.DefaultBranch)
@@ -368,6 +368,7 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 				GitCloneURL: v.HTTPURLToRepo,
 				GitBranch:   v.DefaultBranch,
 				Domain:      domain,
+				Pa:          pa,
 				Headers:     headers,
 				Metadata:    metadata,
 			}
@@ -378,7 +379,7 @@ func addGitlabProjectsToRepositories(projects []GitlabProject, domain Domain, he
 }
 
 // addGitlabSharedProjectsToRepositories adds the shared projects from api response to repository channel.
-func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domain Domain, headers map[string]string, repositories chan Repository) error {
+func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domain Domain, pa PA, headers map[string]string, repositories chan Repository) error {
 	for _, v := range projects {
 		// Join file raw URL string.
 		rawURL, err := generateGitlabRawURL(v.WebURL, v.DefaultBranch)
@@ -401,6 +402,7 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 				GitCloneURL: v.HTTPURLToRepo,
 				GitBranch:   v.DefaultBranch,
 				Domain:      domain,
+				Pa:          pa,
 				Headers:     headers,
 				Metadata:    metadata,
 			}

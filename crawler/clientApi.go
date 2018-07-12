@@ -14,7 +14,7 @@ type ClientAPI struct {
 }
 
 // OrganizationHandler returns the client handler for an organization/team/group page (every domain has a different handler implementation).
-type OrganizationHandler func(domain Domain, url string, repositories chan Repository, wg *sync.WaitGroup) (string, error)
+type OrganizationHandler func(domain Domain, url string, repositories chan Repository, pa PA, wg *sync.WaitGroup) (string, error)
 
 // SingleRepoHandler returns the client handler for an a single repository (every domain has a different handler implementation).
 type SingleRepoHandler func(domain Domain, url string, repositories chan Repository) error
