@@ -176,11 +176,6 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 		softwares = append(softwares, softwareExtracted)
 	}
 
-	// Debug note if file will be empty.
-	if len(softwares) == 0 {
-		log.Warn("%s is empty.", filename)
-	}
-
 	// Marshal yml.
 	d, err := yaml.Marshal(&softwares)
 	if err != nil {
