@@ -60,12 +60,12 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 	return domains, err
 }
 
-func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository) (string, error) {
+func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository, pa PA) (string, error) {
 	crawler, err := GetClientAPICrawler(domain.API())
 	if err != nil {
 		return "", err
 	}
-	return crawler(domain, url, repositories, wg)
+	return crawler(domain, url, repositories, pa, wg)
 }
 
 func (domain Domain) processSingleRepo(url string, repositories chan Repository) error {

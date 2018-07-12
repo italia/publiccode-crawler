@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"net/url"
-	"strconv"
 	"sync"
-	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/jekyll"
@@ -28,7 +26,7 @@ No organizations! Only single repositories!`,
 		// Read repository URL.
 		repo := args[0]
 		// Index for actual process.
-		index := strconv.FormatInt(time.Now().Unix(), 10)
+		index := "publiccode"
 
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
@@ -94,12 +92,6 @@ No organizations! Only single repositories!`,
 		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
 
 		log.Infof("End ProcessSingleRepository '%s'", repo)
-
-		// Update Elastic alias.
-		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)
-		if err != nil {
-			log.Errorf("Error updating Elastic Alias: %v", err)
-		}
 
 		// Generate the jekyll files.
 		err = jekyll.GenerateJekyllYML(elasticClient)

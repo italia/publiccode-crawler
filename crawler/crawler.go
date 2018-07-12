@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"crypto/rand"
+	"errors"
 	"math/big"
 	"strings"
 	"sync"
@@ -27,6 +28,7 @@ type Repository struct {
 	GitCloneURL string
 	GitBranch   string
 	Domain      Domain
+	Pa          PA
 	Headers     map[string]string
 	Metadata    []byte
 }
@@ -50,7 +52,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 		}
 
 		// Process the PA domain
-		ProcessPADomain(org, domain, repositories, wg)
+		ProcessPADomain(org, domain, pa, repositories, wg)
 	}
 
 	wg.Done()
@@ -59,7 +61,7 @@ func ProcessPA(pa PA, domains []Domain, repositories chan Repository, wg *sync.W
 }
 
 // ProcessPADomain starts from the org page and process all the next.
-func ProcessPADomain(orgURL string, domain Domain, repositories chan Repository, wg *sync.WaitGroup) {
+func ProcessPADomain(orgURL string, domain Domain, pa PA, repositories chan Repository, wg *sync.WaitGroup) {
 	// generateAPIURL
 	orgURL, err := domain.generateAPIURL(orgURL)
 	if err != nil {
@@ -69,7 +71,7 @@ func ProcessPADomain(orgURL string, domain Domain, repositories chan Repository,
 	for {
 		wg.Add(1)
 		log.Debugf("processAndGetNextURL handler: %s", orgURL)
-		nextURL, err := domain.processAndGetNextURL(orgURL, wg, repositories)
+		nextURL, err := domain.processAndGetNextURL(orgURL, wg, repositories, pa)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", orgURL, err, nextURL)
 			log.Errorf("Retry: %s", nextURL)
@@ -135,6 +137,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	domain := repository.Domain
 	headers := repository.Headers
 	metadata := repository.Metadata
+	pa := repository.Pa
 
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", index).Inc()
@@ -146,7 +149,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	if resp.Status.Code == http.StatusOK && err == nil {
 
 		// Validate file. If invalid, terminate the check.
-		err = validateRemoteFile(resp.Body, fileRawURL)
+		err = validateRemoteFile(resp.Body, fileRawURL, pa)
 		if err != nil {
 			log.Errorf("Validator fails for: " + fileRawURL)
 			log.Errorf("Validator errors:" + err.Error())
@@ -190,7 +193,7 @@ func checkAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	wg.Done()
 }
 
-func validateRemoteFile(data []byte, fileRawURL string) error {
+func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 	// Generate publiccode data using the parser.
 	pc := pcode.PublicCode{}
 	pcode.BaseDir = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
@@ -199,6 +202,13 @@ func validateRemoteFile(data []byte, fileRawURL string) error {
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml for %s: %v", fileRawURL, err)
 		return err
+	}
+
+	if pc.It.Riuso.CodiceIPA != "" {
+		return errors.New("codiceIPA for a single url cannot be checked. Use the whitelist for the organizazions instead.")
+	}
+	if pc.It.Riuso.CodiceIPA != pa.CodiceIPA {
+		return errors.New("codiceIPA for: " + fileRawURL + " is " + pc.It.Riuso.CodiceIPA + ", that is different to whitelist: " + pa.CodiceIPA)
 	}
 
 	return err
