@@ -51,14 +51,17 @@ func FirstSoftwareOpenSource(filename string, results int, elasticClient *elasti
 	// Administrations data.
 	var softwareOS []SoftwareOpenSource
 
-	// Extract all the documents.
+	// Extract all the softwares.
+	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery("software"))
+
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").               // search in index "publiccode"
-		Query(elastic.NewMatchAllQuery()). // specify the query
-		Sort("releaseDate", false).        // sort by releaseDate, from newest to oldest.
-		Pretty(true).                      // pretty print request and response JSON
-		From(0).Size(results).             // get first 10k elements. It can be changed.
-		Do(context.Background())           // execute
+		Index("publiccode").        // search in index "publiccode"
+		Query(query).               // specify the query
+		Sort("releaseDate", false). // sort by releaseDate, from newest to oldest.
+		Pretty(true).               // pretty print request and response JSON
+		From(0).Size(results).      // get first 10k elements. It can be changed.
+		Do(context.Background())    // execute
 	if err != nil {
 		log.Error(err)
 	}

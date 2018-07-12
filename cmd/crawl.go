@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/jekyll"
 	"github.com/italia/developers-italia-backend/metrics"
 	log "github.com/sirupsen/logrus"
@@ -23,6 +24,11 @@ var crawlCmd = &cobra.Command{
 	Long:  `Start whitelist file. It's possible to add multiple files adding them as args.`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Update ipa to lastest data.
+		err := ipa.UpdateFile("./ipa/amministrazioni.txt", "http://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt")
+		if err != nil {
+			log.Fatal(err)
+		}
 		// Index for actual process.
 		index := strconv.FormatInt(time.Now().Unix(), 10)
 
@@ -34,7 +40,13 @@ var crawlCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		// Create ES idex with mapping for PublicCode.
 		err = crawler.ElasticIndexMapping(index, elasticClient)
+		if err != nil {
+			log.Fatal(err)
+		}
+		// Create ES index with mapping "administration-codiceIPA".
+		err = crawler.ElasticAdministrationsMapping(index, elasticClient)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -83,10 +95,20 @@ var crawlCmd = &cobra.Command{
 		go crawler.WaitingLoop(repositories, &wg)
 
 		// Process the repositories in order to retrieve the file.
-		// ProcessRepositories is blocking (wait until repositories is closed by WaitingLoop).
+		// ProcessRepositories loop is blocking (wait until repositories is closed by WaitingLoop).
 		crawler.ProcessRepositories(repositories, index, &wg, elasticClient)
 
+		// ElasticFlush to flush all the operations on ES.
+		err = crawler.ElasticFlush(index, elasticClient)
+		if err != nil {
+			log.Errorf("Error flushing ElasticSearch: %v", err)
+		}
+
 		// Update Elastic alias.
+		err = crawler.ElasticAliasUpdate("administration", "publiccode", elasticClient)
+		if err != nil {
+			log.Errorf("Error updating Elastic Alias: %v", err)
+		}
 		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)
 		if err != nil {
 			log.Errorf("Error updating Elastic Alias: %v", err)
