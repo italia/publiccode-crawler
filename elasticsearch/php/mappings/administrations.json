@@ -1,0 +1,38 @@
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "suggest_analyzer": {
+          "tokenizer": "suggest_tokenizer",
+          "filter": ["lowercase"]
+        }
+      },
+      "tokenizer": {
+        "suggest_tokenizer": {
+          "type": "ngram",
+          "min_gram": 2,
+          "max_gram": 10,
+          "token_chars": ["letter", "digit"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "administration": {
+      "properties": {
+        "it-riuso-codiceIPA": {
+          "type": "keyword"
+        },
+        "it-riuso-codiceIPA-label": {
+          "type": "text",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "suggest_analyzer"
+            }
+          }
+        }
+      }
+    }
+  }
+}
