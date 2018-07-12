@@ -12,8 +12,8 @@ import (
 
 	"github.com/italia/developers-italia-backend/httpclient"
 	"github.com/italia/developers-italia-backend/metrics"
-	pcode "github.com/italia/developers-italia-backend/publiccode.yml-parser-go"
 	"github.com/olivere/elastic"
+	pcode "github.com/r3vit/publiccode.yml-parser-go"
 	"github.com/spf13/viper"
 
 	log "github.com/sirupsen/logrus"
@@ -136,6 +136,8 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
+		var Lock sync.Mutex
+		Lock.Lock()
 		// Validate file. If invalid, terminate the check.
 		err = validateRemoteFile(resp.Body, fileRawURL, pa)
 		if err != nil {
@@ -144,6 +146,7 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 			wg.Done()
 			return
 		}
+		Lock.Unlock()
 
 		// Save Metadata.
 		err = SaveToFile(domain, hostname, name, metadata, index+"_metadata")
@@ -197,7 +200,7 @@ func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 		return err
 	}
 
-	if pc.It.Riuso.CodiceIPA != "" {
+	if pa.CodiceIPA == "" {
 		return errors.New("codiceIPA for a single url cannot be checked. Use the whitelist for the organizazions instead")
 	}
 	if pc.It.Riuso.CodiceIPA != pa.CodiceIPA {

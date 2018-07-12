@@ -6,8 +6,8 @@ import (
 
 	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/metrics"
-	pcode "github.com/italia/developers-italia-backend/publiccode.yml-parser-go"
 	"github.com/olivere/elastic"
+	pcode "github.com/r3vit/publiccode.yml-parser-go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -45,8 +45,6 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 
 		Tags: pc.Tags,
 
-		FreeTags: pc.FreeTags,
-
 		UsedBy: pc.UsedBy,
 
 		Roadmap: pc.Roadmap.String(),
@@ -79,9 +77,9 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 		LocalisationLocalisationReady:  pc.Localisation.LocalisationReady,
 		LocalisationAvailableLanguages: pc.Localisation.AvailableLanguages,
 
-		DependenciesOpen:        []Dependency{},
-		DependenciesProprietary: []Dependency{},
-		DependenciesHardware:    []Dependency{},
+		DependsOnOpen:        []Dependency{},
+		DependsOnProprietary: []Dependency{},
+		DependsOnHardware:    []Dependency{},
 
 		ItConformeAccessibile:    pc.It.Conforme.Accessibile,
 		ItConformeInteroperabile: pc.It.Conforme.Interoperabile,
@@ -138,12 +136,13 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 				}
 				return v
 			}(pc.Description[lang].Videos),
-			Awards: pc.Description[lang].Awards,
+			Awards:   pc.Description[lang].Awards,
+			FreeTags: pc.Description[lang].FreeTags,
 		}
 
 	}
-	for _, dependency := range pc.Dependencies.Open {
-		file.DependenciesOpen = append(file.DependenciesOpen, Dependency{
+	for _, dependency := range pc.DependsOn.Open {
+		file.DependsOnOpen = append(file.DependsOnOpen, Dependency{
 			Name:       dependency.Name,
 			VersionMin: dependency.VersionMin,
 			VersionMax: dependency.VersionMax,
@@ -151,8 +150,8 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 			Version:    dependency.Version,
 		})
 	}
-	for _, dependency := range pc.Dependencies.Proprietary {
-		file.DependenciesProprietary = append(file.DependenciesProprietary, Dependency{
+	for _, dependency := range pc.DependsOn.Proprietary {
+		file.DependsOnProprietary = append(file.DependsOnProprietary, Dependency{
 			Name:       dependency.Name,
 			VersionMin: dependency.VersionMin,
 			VersionMax: dependency.VersionMax,
@@ -160,8 +159,8 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 			Version:    dependency.Version,
 		})
 	}
-	for _, dependency := range pc.Dependencies.Hardware {
-		file.DependenciesHardware = append(file.DependenciesHardware, Dependency{
+	for _, dependency := range pc.DependsOn.Hardware {
+		file.DependsOnHardware = append(file.DependsOnHardware, Dependency{
 			Name:       dependency.Name,
 			VersionMin: dependency.VersionMin,
 			VersionMax: dependency.VersionMax,

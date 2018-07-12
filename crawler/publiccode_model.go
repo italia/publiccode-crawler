@@ -23,8 +23,6 @@ type PublicCodeES struct {
 
 	Tags []string `json:"tags"`
 
-	FreeTags map[string][]string `json:"free-tags"`
-
 	UsedBy []string `json:"used-by"`
 
 	Roadmap string `json:"roadmap"`
@@ -58,9 +56,9 @@ type PublicCodeES struct {
 	LocalisationLocalisationReady  bool     `json:"localisation-localisation-ready"`
 	LocalisationAvailableLanguages []string `json:"localisation-available-languages"`
 
-	DependenciesOpen        []Dependency `json:"dependencies-open"`
-	DependenciesProprietary []Dependency `json:"dependencies-proprietary"`
-	DependenciesHardware    []Dependency `json:"dependencies-hardware"`
+	DependsOnOpen        []Dependency `json:"dependencies-open"`
+	DependsOnProprietary []Dependency `json:"dependencies-proprietary"`
+	DependsOnHardware    []Dependency `json:"dependencies-hardware"`
 
 	// Italian extension.
 	ItConformeAccessibile    bool `json:"it-conforme-accessibile"`
@@ -96,6 +94,7 @@ type Desc struct {
 	Screenshots      []string `json:"screenshots"`
 	Videos           []string `json:"videos"`
 	Awards           []string `json:"awards"`
+	FreeTags         []string `json:"freeTags"`
 }
 
 // Contractor is an entity or entities, if any, that are currently contracted for maintaining the software.

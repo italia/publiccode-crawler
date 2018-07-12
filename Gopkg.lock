@@ -226,6 +226,12 @@
   revision = "34a46ab144b126fb74a7531834e20a1fcf739f2a"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/r3vit/publiccode.yml-parser-go"
+  packages = ["."]
+  revision = "e15505df23b3bdae283dbee80fe3d49438d902cb"
+
+[[projects]]
   name = "github.com/sergi/go-diff"
   packages = ["diffmatchpatch"]
   revision = "1744e2970ca51c86172c8190fadad617561ed6e7"
@@ -437,6 +443,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0c6c2b039eb4cdeaf2bd1b6e0c3779f6043bd499dbb8ebbabeffd37bb7109faa"
+  inputs-digest = "38e3db5d5592a43fd19b039cb9fa258a817c055bd30a7b1eb72dd55b87ef27d7"
   solver-name = "gps-cdcl"
   solver-version = 1
