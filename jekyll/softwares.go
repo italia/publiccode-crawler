@@ -18,7 +18,7 @@ import (
 
 // AllSoftwareYML generate the softwares.yml file
 func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopularTags int, elasticClient *elastic.Client) error {
-	log.Debug("Generating softwares.yml")
+	log.Infof("Generating %s", filename)
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
 		err := os.Remove(filename)
@@ -174,6 +174,11 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 
 		// Append.
 		softwares = append(softwares, softwareExtracted)
+	}
+
+	// Debug note if file will be empty.
+	if len(softwares) == 0 {
+		log.Warn("%s is empty.", filename)
 	}
 
 	// Marshal yml.

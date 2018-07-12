@@ -85,7 +85,7 @@ func FirstSoftwareOpenSource(filename string, results int, elasticClient *elasti
 	}
 	// Debug note if file will be empty.
 	if len(softwareOS) == 0 {
-		log.Debugf("%s is empty.", filename)
+		log.Warnf("%s is empty.", filename)
 	}
 
 	// Marshal yml.

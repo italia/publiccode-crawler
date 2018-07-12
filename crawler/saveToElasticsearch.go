@@ -20,7 +20,7 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 	pc := pcode.PublicCode{}
 	err := pcode.Parse(data, &pc)
 	if err != nil {
-		log.Errorf("Error parsing publiccode.yml for %s: %v", name, err)
+		log.Errorf("Error parsing publiccode.yml for %s.", name)
 	}
 
 	// Add a document to the index.

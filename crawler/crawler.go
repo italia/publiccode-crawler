@@ -108,7 +108,7 @@ func generateRandomInt(max int) (int, error) {
 
 // ProcessRepositories process the repositories channel and check the availability of the file.
 func ProcessRepositories(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
-	log.Debug("Repositories are going to be processed...")
+	log.Info("Repositories are going to be processed...")
 	for repository := range repositories {
 		wg.Add(1)
 		go CheckAvailability(repository, index, wg, elasticClient)
@@ -136,17 +136,13 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
-		var Lock sync.Mutex
-		Lock.Lock()
 		// Validate file. If invalid, terminate the check.
 		err = validateRemoteFile(resp.Body, fileRawURL, pa)
 		if err != nil {
-			log.Errorf("Validator fails for: " + fileRawURL)
-			log.Errorf("Validator errors:" + err.Error())
+			log.Errorf("%s is an invalid publiccode.", fileRawURL)
 			wg.Done()
 			return
 		}
-		Lock.Unlock()
 
 		// Save Metadata.
 		err = SaveToFile(domain, hostname, name, metadata, index+"_metadata")
@@ -172,7 +168,7 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		if err != nil {
 			log.Errorf("error calculating repository Activity to file: %v", err)
 		}
-		log.Debugf("Activity Index for %s: %f", name, activityIndex)
+		log.Infof("Activity Index for %s: %f", name, activityIndex)
 		var vitalitySlice []int
 		for i := 0; i < len(vitality); i++ {
 			vitalitySlice = append(vitalitySlice, int(vitality[i]))
@@ -196,7 +192,7 @@ func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 
 	err := pcode.Parse(data, &pc)
 	if err != nil {
-		log.Errorf("Error parsing publiccode.yml for %s: %v", fileRawURL, err)
+		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
 		return err
 	}
 
