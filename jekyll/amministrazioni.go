@@ -21,7 +21,7 @@ type Administration struct {
 
 // AmministrazioniYML generate a yml file with all the amministrazioni in es.
 func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
-	log.Debug("Generating amministrazioni.yml")
+	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
@@ -77,7 +77,7 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	}
 	// Debug note if file will be empty.
 	if len(administrations) == 0 {
-		log.Debug("amministrazioni.yml is empty.")
+		log.Warn("%s is empty.", filename)
 	}
 
 	// Remove duplicates.

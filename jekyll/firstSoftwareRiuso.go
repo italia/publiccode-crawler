@@ -23,7 +23,7 @@ type SoftwareRiuso struct {
 
 // FirstSoftwareRiuso generate a yml file with simplified info about SoftwareRiuso, ordered by releaseDate.
 func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Client) error {
-	log.Debugf("Generating %s", filename)
+	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
@@ -85,7 +85,7 @@ func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Cli
 	}
 	// Debug note if file will be empty.
 	if len(softwareRiuso) == 0 {
-		log.Debugf("%s is empty.", filename)
+		log.Warn("%s is empty.", filename)
 	}
 
 	// Marshal yml.

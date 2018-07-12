@@ -18,7 +18,7 @@ import (
 
 // AllSoftwareYML generate the softwares.yml file
 func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopularTags int, elasticClient *elastic.Client) error {
-	log.Debug("Generating softwares.yml")
+	log.Infof("Generating %s", filename)
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
 		err := os.Remove(filename)
@@ -78,7 +78,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 			MonochromeLogo:       concatenateLink(rawBaseDir, i.MonochromeLogo),
 			Platforms:            i.Platforms,
 			Tags:                 i.Tags,
-			FreeTags:             i.FreeTags,
+			FreeTags:             populateFreeTags(i.Description),
 			PopularTags:          populatePopularTags(i.Tags, numberOfPopularTags, elasticClient), // PopularTags are the first n tags that are more popular.
 			ShareTags:            i.Tags,                                                          // ShareTags are tags.
 			UsedBy:               i.UsedBy,
@@ -109,9 +109,9 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 				AvailableLanguages: i.LocalisationAvailableLanguages,
 			},
 			Dependencies: DependenciesData{
-				Open:        i.DependenciesOpen,
-				Proprietary: i.DependenciesProprietary,
-				Hardware:    i.DependenciesProprietary,
+				Open:        i.DependsOnOpen,
+				Proprietary: i.DependsOnHardware,
+				Hardware:    i.DependsOnProprietary,
 			},
 			It: ExtensionIT{
 				Accessibile:    i.ItConformeAccessibile,
@@ -316,6 +316,14 @@ func concatenateLink(host, file string) string {
 	u.Path = path.Join(u.Path, file)
 
 	return u.String()
+}
+
+func populateFreeTags(description map[string]crawler.Desc) map[string][]string {
+	freeTags := make(map[string][]string)
+	for lang, desc := range description {
+		freeTags[lang] = desc.FreeTags
+	}
+	return freeTags
 }
 
 func populatePopularTags(tags []string, number int, elasticClient *elastic.Client) []string {
