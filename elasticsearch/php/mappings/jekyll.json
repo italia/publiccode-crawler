@@ -6,7 +6,8 @@
           "tokenizer": "suggest_tokenizer",
           "filter": [
             "lowercase"
-          ]
+          ],
+          "char_filter":  [ "html_strip" ]
         },
         "evolutionAnalyzer": {
           "tokenizer": "standard",
@@ -15,13 +16,14 @@
             "lowercase",
             "custom_stop",
             "custom_shingle"
-          ]
+          ],
+          "char_filter":  [ "html_strip" ]
         }
       },
       "filter": {
         "custom_stop": {
           "type": "stop",
-          "stopwords": "_english_"
+          "stopwords": "_italian_"
         },
         "custom_shingle": {
             "type": "shingle",
@@ -33,11 +35,8 @@
         "suggest_tokenizer": {
           "type": "ngram",
           "min_gram": 2,
-          "max_gram": 20,
-          "token_chars": [
-            "letter",
-            "digit"
-          ]
+          "max_gram": 10,
+          "token_chars": ["letter", "digit"]
         }
       }
     }
@@ -75,7 +74,7 @@
           "fields": {
             "ngram": {
               "type": "text",
-              "analyzer": "suggest_analyzer"
+              "analyzer": "evolutionAnalyzer"
             }
           }
         },
@@ -102,7 +101,13 @@
           "type": "boolean"
         },
         "html": {
-          "type": "text"
+          "type": "text",
+          "fields": {
+            "ngram": {
+              "type": "text",
+              "analyzer": "evolutionAnalyzer"
+            }
+          }
         },
         "id": {
           "type": "text",
@@ -185,7 +190,7 @@
           "fields": {
             "ngram": {
               "type": "text",
-              "analyzer": "suggest_analyzer"
+              "analyzer": "evolutionAnalyzer"
             }
           }
         },
@@ -200,7 +205,7 @@
           "fields": {
             "ngram": {
               "type": "text",
-              "analyzer": "suggest_analyzer"
+              "analyzer": "evolutionAnalyzer"
             },
             "sort": { "type": "keyword", "ignore_above": 256 }
           }

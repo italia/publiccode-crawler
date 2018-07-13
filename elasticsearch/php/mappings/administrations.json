@@ -4,7 +4,31 @@
       "analyzer": {
         "suggest_analyzer": {
           "tokenizer": "suggest_tokenizer",
-          "filter": ["lowercase"]
+          "filter": [
+            "lowercase"
+          ],
+          "char_filter":  [ "html_strip" ]
+        },
+        "evolutionAnalyzer": {
+          "tokenizer": "standard",
+          "filter": [
+            "standard",
+            "lowercase",
+            "custom_stop",
+            "custom_shingle"
+          ],
+          "char_filter":  [ "html_strip" ]
+        }
+      },
+      "filter": {
+        "custom_stop": {
+          "type": "stop",
+          "stopwords": "_italian_"
+        },
+        "custom_shingle": {
+            "type": "shingle",
+            "min_shingle_size": "2",
+            "max_shingle_size": "3"
         }
       },
       "tokenizer": {
@@ -28,7 +52,7 @@
           "fields": {
             "ngram": {
               "type": "text",
-              "analyzer": "suggest_analyzer"
+              "analyzer": "evolutionAnalyzer"
             }
           }
         }
