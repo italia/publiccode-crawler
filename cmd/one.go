@@ -66,7 +66,7 @@ No organizations! Only single repositories!`,
 		metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", index)
 		//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", index)
 
-		log.Debugf("Processing Single Repo: %s", repo)
+		log.Infof("Processing Single Repo: %s", repo)
 
 		// Parse as url.URL.
 		u, err := url.Parse(repo)

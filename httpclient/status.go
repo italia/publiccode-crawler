@@ -52,7 +52,7 @@ func statusNotFound(resp *http.Response) (HTTPResponse, error) {
 		Body:    nil,
 		Status:  ResponseStatus{Text: resp.Status, Code: resp.StatusCode},
 		Headers: resp.Header,
-	}, nil
+	}, fmt.Errorf("not found")
 }
 
 // statusTooManyRequests returns an HTTPResponse with the data from response.
