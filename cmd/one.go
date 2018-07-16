@@ -27,7 +27,7 @@ No organizations! Only single repositories!`,
 		// Update ipa to lastest data.
 		err := ipa.UpdateFile("./ipa/amministrazioni.txt", "http://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt")
 		if err != nil {
-			log.Fatal(err)
+			log.Error(err)
 		}
 
 		// Read repository URL.

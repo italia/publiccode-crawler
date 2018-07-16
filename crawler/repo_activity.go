@@ -32,7 +32,7 @@ type Range struct {
 
 // CalculateRepoActivity return the repository activity index and the vitality slice calculated on the git clone.
 // It follows the document https://lg-acquisizione-e-riuso-software-per-la-pa.readthedocs.io/
-// In reference to section: fase-2-2-valutazione-soluzioni-riusabili-per-la-pa
+// In reference to section: 2.5.2. Fase 2.2: Valutazione soluzioni riusabili per la PA
 func CalculateRepoActivity(domain Domain, hostname string, name string, days int) (float64, map[int]float64, error) {
 	if domain.Host == "" {
 		return 0, nil, errors.New("cannot calculate repository activity without domain host")
@@ -102,10 +102,17 @@ func CalculateRepoActivity(domain Domain, hostname string, name string, days int
 		releaseHistory = ranges("releaseHistory", releaseHistoryLastDays(tagsPerDays[i]))
 
 		repoActivity = userCommunity + codeActivity + releaseHistory + ranges("longevity", longevity)
+		if repoActivity > 100 {
+			repoActivity = 100
+		}
 		vitalityIndex[i] = repoActivity
 	}
 
-	return vitalityIndex[0], vitalityIndex, nil
+	vitalityIndexTotal := meanActivity(vitalityIndex)
+	if vitalityIndexTotal > 100 {
+		vitalityIndexTotal = float64(100)
+	}
+	return float64(int(vitalityIndexTotal)), vitalityIndex, nil
 }
 
 // userCommunityLastDays returns the number of unique commits authors.
@@ -119,7 +126,7 @@ func userCommunityLastDays(commits []*object.Commit) float64 {
 	return float64(len(totalAuthors))
 }
 
-// activityLastDays: # commits and # merges
+// activityLastDays: # commits and # merges.
 func activityLastDays(commits []*object.Commit) float64 {
 	numberCommits := float64(len(commits))
 	numberMerges := 0
@@ -132,7 +139,7 @@ func activityLastDays(commits []*object.Commit) float64 {
 	return numberCommits + float64(numberMerges)
 }
 
-// releaseHistoryLastDays: number of releases
+// releaseHistoryLastDays: number of releases.
 func releaseHistoryLastDays(tags []*object.Commit) float64 {
 	return float64(len(tags))
 }
@@ -159,6 +166,7 @@ func extractAllTagsCommit(r *git.Repository) ([]*object.Commit, error) {
 	return allTags, nil
 }
 
+// extractAllCommits returns a slice of all the commits from the passed repository.
 func extractAllCommits(r *git.Repository) ([]*object.Commit, error) {
 	var commits []*object.Commit
 
@@ -183,7 +191,7 @@ func extractAllCommits(r *git.Repository) ([]*object.Commit, error) {
 	return commits, nil
 }
 
-// calculateLongevityIndex
+// calculateLongevityIndex cal
 func calculateLongevityIndex(r *git.Repository) (float64, error) {
 	ref, err := r.Head()
 	if err != nil {
@@ -256,6 +264,7 @@ func ranges(name string, value float64) float64 {
 	return 0
 }
 
+// extractCommitsLastDays returns a map of last days commits.
 func extractCommitsLastDays(days int, commits []*object.Commit) map[int][]*object.Commit {
 	commitsLastDays := map[int][]*object.Commit{}
 	// Populate the slice of commits in every day.
@@ -271,6 +280,7 @@ func extractCommitsLastDays(days int, commits []*object.Commit) map[int][]*objec
 	return commitsLastDays
 }
 
+// extractCommitsPerDay returns a map of number of commits per day, in the last [days].
 func extractCommitsPerDay(days int, commits []*object.Commit) map[int][]*object.Commit {
 	commitsPerDay := map[int][]*object.Commit{}
 	// Populate the slice of commits in every day.
@@ -286,6 +296,7 @@ func extractCommitsPerDay(days int, commits []*object.Commit) map[int][]*object.
 	return commitsPerDay
 }
 
+// extractTagsPerDay returns a map of #[days] commits where a tag is created.
 func extractTagsPerDay(days int, tags []*object.Commit) map[int][]*object.Commit {
 	tagsPerDays := map[int][]*object.Commit{}
 	for i := 0; i < days; i++ {
@@ -301,4 +312,14 @@ func extractTagsPerDay(days int, tags []*object.Commit) map[int][]*object.Commit
 	}
 
 	return tagsPerDays
+}
+
+// meanActivity return the mean of all the points.
+func meanActivity(points map[int]float64) float64 {
+	var total float64
+	for _, point := range points {
+		total += point
+	}
+
+	return total / float64(len(points))
 }
