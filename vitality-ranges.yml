@@ -23,7 +23,7 @@
       points: 28
     - min: 24
       max: 28
-      points: 24
+      points: 32
     - min: 28
       max: 10000
       points: 36
@@ -31,11 +31,8 @@
 - name: codeActivity #number of commits and merges per day
   ranges:
     - min: 0
-      max: 2
-      points: 4
-    - min: 2
       max: 4
-      points: 6
+      points: 2
     - min: 4
       max: 6
       points: 8
