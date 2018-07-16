@@ -2,7 +2,6 @@ package ipa
 
 import (
 	"bufio"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -53,6 +52,7 @@ type Amministrazione struct {
 func UpdateFile(fileName, fileURL string) error {
 	info, err := os.Stat(fileName)
 	if err != nil {
+		log.Fatal(err)
 		return err
 	}
 	today := time.Now()
@@ -62,10 +62,11 @@ func UpdateFile(fileName, fileURL string) error {
 
 	// If amministrazioni.txt is older that 2 days.
 	if downloadTime.Before(older) {
-		fmt.Println("download a new amministrazioni.txt ...")
+		log.Info("download a new amministrazioni.txt ...")
 
 		err := downloadFile(fileName, fileURL)
 		if err != nil {
+			log.Error(err)
 			return err
 		}
 	}
@@ -140,7 +141,7 @@ func manageLine(line string) Amministrazione {
 
 func downloadFile(filepath string, url string) error {
 
-	// Create the file
+	// Create the file.
 	out, err := os.Create(filepath)
 	if err != nil {
 		return err
