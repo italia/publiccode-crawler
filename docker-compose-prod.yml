@@ -3,35 +3,47 @@ version: "3.1"
 services:
   elasticsearch:
     container_name: "${NAME}_elasticsearch"
-    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.2
+    image: khezen/elasticsearch:6.2.2
     environment:
-      - "cluster.name=developers-italia"
-      - "network.host=0.0.0.0"
-      - "discovery.zen.minimum_master_nodes=1"
-      - "discovery.type=single-node"
+      - "CLUSTER_NAME=developers-italia"
+      - "ELASTIC_PWD=${ELASTIC_PWD}"
+      - "KIBANA_PWD=${KIBANA_PWD}"
+      - "ES_TMPDIR=/tmp"
+      - "HTTP_SSL=false"
     labels:
       - "traefik.enable=true"
-      - 'traefik.backend=elasticsearch'
-      - 'traefik.port=9200'
-      - 'traefik.frontend.rule=Host:elasticsearch.${PROJECT_BASE_URL}'
-    networks:
-      - web
+      - "traefik.backend=elasticsearch"
+      - "traefik.port=9200"
+      - "traefik.frontend.rule=Host:elasticsearch.${PROJECT_BASE_URL}"
+      - "traefik.frontend.headers.customRequestHeaders=Authorization: Basic ${ELASTIC_BASIC_AUTH_TOKEN}"
+      - "traefik.frontend.headers.customResponseHeaders.Access-Control-Allow-Origin = '*'"
+      - "traefik.frontend.rateLimit.extractorFunc=client.ip"
+      - "traefik.frontend.rateLimit.rateSet.elasticsearch.period=60s"
+      - "traefik.frontend.rateLimit.rateSet.elasticsearch.average=100"
+      - "traefik.frontend.rateLimit.rateSet.elasticsearch.burst=200"
     volumes:
-      - es_data:/usr/share/elasticsearch/data
+      - es_data:/elasticsearch/data
       - ./docker/elasticsearch/config/elasticsearch.yml:/elasticsearch/config/elasticsearch.yml
+      - ./docker/elasticsearch/config/searchguard/sg_action_groups.yml:/elasticsearch/config/searchguard/sg_action_groups.yml
+      - ./docker/elasticsearch/config/searchguard/sg_internal_users.yml:/elasticsearch/config/searchguard/sg_internal_users.yml
+      - ./docker/elasticsearch/config/searchguard/sg_roles.yml:/elasticsearch/config/searchguard/sg_roles.yml
+      - ./docker/elasticsearch/config/searchguard/sg_roles_mapping.yml:/elasticsearch/config/searchguard/sg_roles_mapping.yml
+    ports:
+      - "9200:9200"
 
   kibana:
     container_name: "${NAME}_kibana"
-    image: docker.elastic.co/kibana/kibana-oss:6.2.2
+    image: khezen/kibana:6.2.2
     environment:
-      - "elasticsearch.url=http://elasticsearch:9200"
+      - "ELASTICSEARCH_PROTOCOL=http"
+      - "ELASTICSEARCH_HOST=elasticsearch"
+      - "ELASTICSEARCH_PORT=9200"
+      - "KIBANA_PWD=${KIBANA_PWD}"
     labels:
       - "traefik.enable=true"
-      - 'traefik.backend=kibana'
-      - 'traefik.port=5601'
-      - 'traefik.frontend.rule=Host:kibana.${PROJECT_BASE_URL}'
-    networks:
-      - web
+      - "traefik.backend=kibana"
+      - "traefik.port=5601"
+      - "traefik.frontend.rule=Host:kibana.${PROJECT_BASE_URL}"
     volumes:
       - ./docker/kibana/config/kibana.yml:/opt/kibana-6.2.2-linux-x86_64/config/kibana.yml
 
@@ -40,11 +52,9 @@ services:
     image: quay.io/prometheus/prometheus:v2.2.1
     labels:
       - "traefik.enable=true"
-      - 'traefik.backend=prometheus'
-      - 'traefik.port=9090'
-      - 'traefik.frontend.rule=Host:prometheus.${PROJECT_BASE_URL}'
-    networks:
-      - web
+      - "traefik.backend=prometheus"
+      - "traefik.port=9090"
+      - "traefik.frontend.rule=Host:prometheus.${PROJECT_BASE_URL}"
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
@@ -52,35 +62,25 @@ services:
    command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
    container_name: "${NAME}_proxy"
    image: containous/traefik:experimental
-   networks:
-     - web
    ports:
      - "80:80"
-     - "443:443"
      - "8080:8080"
    volumes:
      - /var/run/docker.sock:/var/run/docker.sock
 
-  redis:
-    container_name: "${NAME}_redis"
-    image: redis:4.0
-    networks:
-      - web
-
-  crawler:
-    container_name: "${NAME}_crawler"
-    image: italia/developers-italia-backend:0.0.1
-    networks:
-      - web
-    volumes:
-      - ./data:/app/data
-      - ./whitelistGeneric.yml:/app/whitelistGeneric.yml
-      - ./whitelistPA.yml:/app/whitelistPA.yml
-      - ./domains.yml:/app/domains.yml
-      - ./config.toml:/app/config.toml
-      - ./jekyll/generated:/app/jekyll/generated
-      - ./vitality-ranges.yml:/app/ranges.yml
-
+#  crawler:
+#    container_name: "${NAME}_crawler"
+#    image: italia/developers-italia-backend:0.0.1
+#    networks:
+#      - web
+#    volumes:
+#      - ./data:/app/data
+#      - ./whitelistGeneric.yml:/app/whitelistGeneric.yml
+#      - ./whitelistPA.yml:/app/whitelistPA.yml
+#      - ./domains.yml:/app/domains.yml
+#      - ./config.toml:/app/config.toml
+#      - ./jekyll/generated:/app/jekyll/generated
+#      - ./vitality-ranges.yml:/app/ranges.yml
 
 volumes:
   es_data:

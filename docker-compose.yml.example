@@ -12,9 +12,9 @@ services:
       - "HTTP_SSL=false"
     labels:
       - "traefik.enable=true"
-      - 'traefik.backend=elasticsearch'
-      - 'traefik.port=9200'
-      - 'traefik.frontend.rule=Host:elasticsearch.${PROJECT_BASE_URL};Path:/publiccode/_search;Method:GET,OPTIONS,POST'
+      - "traefik.backend=elasticsearch"
+      - "traefik.port=9200"
+      - "traefik.frontend.rule=Host:elasticsearch.${PROJECT_BASE_URL}"
       - "traefik.frontend.headers.customRequestHeaders=Authorization: Basic ${ELASTIC_BASIC_AUTH_TOKEN}"
       - "traefik.frontend.headers.customResponseHeaders.Access-Control-Allow-Origin = '*'"
       - "traefik.frontend.rateLimit.extractorFunc=client.ip"

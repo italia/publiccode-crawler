@@ -23,6 +23,9 @@ developers-italia-backend
 # Elasticsearch data volume
 es_data
 
+# Local Search Guard sg_internal_users
+sg_internal_users.yml
+
 # Local docker-compose file
 docker-compose.yml
 

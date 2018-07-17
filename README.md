@@ -30,7 +30,7 @@ If a user that is not an Organization wants to add his work to the catalog, he h
 
 #### Stack
 
-##### 1) rename docker-compose.yml.dist to docker-compose.yml
+##### 1) rename docker-compose.yml.example to docker-compose.yml
 
 ##### 2) set up Træfik
 
@@ -50,9 +50,12 @@ networks:
 - default Kibana user and password are `kibana`
 - basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
-##### 4) rename config.toml.example to config.toml and fill the variables with your values
+##### 4) rename docker/elasticsearch/config/searchguard/sg_internal_users.yml.example to
+docker/elasticsearch/config/searchguard/sg_internal_users.yml and inserti the correct password
 
-##### 5) add mapping in `/etc/hosts` for exposed services
+##### 5) rename config.toml.example to config.toml and fill the variables with your values
+
+##### 6) add mapping in `/etc/hosts` for exposed services
 
 For example, if `PROJECT_BASE_URL` in `.env` is `developers.loc`, add (if your Docker daemon is listening on localhost):
 
@@ -63,7 +66,7 @@ For example, if `PROJECT_BASE_URL` in `.env` is `developers.loc`, add (if your D
 Or use a local DNS (like [dnsmasq](https://en.wikipedia.org/wiki/Dnsmasq)) to resolve all DNS request to `.loc` domains
 to localhost.
 
-##### 6) start the Docker stack: `make up`
+##### 7) start the Docker stack: `make up`
 
 #### Crawler
 
