@@ -23,10 +23,10 @@ create_indexes($client, $indexes);
 foreach ($aliases as $a => $a_indexes) {
   create_aliases($client, $a, $a_indexes);
 }
+
 $posts = insert_jekyll_posts($client, 'jekyll', 'jekyll_data.json');
 $documents = insert_publiccode_documents($client, $index, $type);
-
-insert_administrations_administration($client, 'administrations', 'administrations.csv');
+$administrations = insert_administrations_administration($client, 'administrations', 'administrations.csv');
 
 function create_indexes($client, $indexes) {
   foreach ($indexes as $index => $filename_mapping) {
