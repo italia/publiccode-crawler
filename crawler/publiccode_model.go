@@ -82,7 +82,7 @@ type PublicCodeES struct {
 }
 
 // Desc is a general description of the software.
-// Reference: https://github.com/publiccodenet/publiccode.yml/blob/develop/schema.md#section-description
+// Reference: http://w3id.org/publiccode/version/0.1/schema.html#section-description
 type Desc struct {
 	LocalisedName    string   `json:"localisedName"`
 	GenericName      string   `json:"genericName"`
@@ -98,7 +98,7 @@ type Desc struct {
 }
 
 // Contractor is an entity or entities, if any, that are currently contracted for maintaining the software.
-// Reference: https://github.com/publiccodenet/publiccode.yml/blob/develop/schema.md#contractor
+// Reference: http://w3id.org/publiccode/version/0.1/schema.html#contractor
 type Contractor struct {
 	Name    string `json:"name"`
 	Website string `json:"website"`
@@ -106,7 +106,7 @@ type Contractor struct {
 }
 
 // Contact is a contact info maintaining the software.
-// Reference: https://github.com/publiccodenet/publiccode.yml/blob/develop/schema.md#contact
+// Reference: http://w3id.org/publiccode/version/0.1/schema.html#contact
 type Contact struct {
 	Name        string `json:"name"`
 	Email       string `json:"email"`
@@ -115,7 +115,7 @@ type Contact struct {
 }
 
 // Dependency describe system-level dependencies required to install and use this software.
-// Reference: https://github.com/publiccodenet/publiccode.yml/blob/develop/schema.md#section-dependencies
+// Reference: http://w3id.org/publiccode/version/0.1/schema.html#section-dependencies
 type Dependency struct {
 	Name       string `json:"name"`
 	VersionMin string `json:"versionMin"`
