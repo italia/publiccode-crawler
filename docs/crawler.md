@@ -1,6 +1,6 @@
 ## Crawler
 
-**Crawler steps**
+**Crawler flow**
 
 1.  Start crawler
 

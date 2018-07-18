@@ -10,5 +10,6 @@ Table of contents:
 - Data mapping (elasticsearch)
 - Configuration files
 - Crawler
+- Jekyll files generation
 
 - References
