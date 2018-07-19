@@ -51,7 +51,7 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
         "autocomplete": {
           "type": "edge_ngram",
           "min_gram": 3,
-          "max_gram": 10,
+          "max_gram": 30,
           "token_chars": [
             "letter"
           ]
@@ -548,7 +548,7 @@ func ElasticAdministrationsMapping(index string, elasticClient *elastic.Client) 
         "autocomplete": {
           "type": "edge_ngram",
           "min_gram": 3,
-          "max_gram": 10,
+          "max_gram": 30,
           "token_chars": [
             "letter"
           ]
