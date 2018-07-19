@@ -25,14 +25,12 @@ test:
 	go test -race "${PROJECT}"/...
 
 up:
-	docker-compose pull --parallel
 	docker-compose up -d --remove-orphans
 
 stop:
 	docker-compose stop
 
 prod-up:
-	docker-compose --file=docker-compose-prod.yml pull --parallel
 	docker-compose --file=docker-compose-prod.yml up -d --remove-orphans
 
 prod-stop:

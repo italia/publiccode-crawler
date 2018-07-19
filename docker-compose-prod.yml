@@ -58,13 +58,23 @@ services:
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
+  web:
+    container_name: "${NAME}_web"
+    image: nginx:1.15-alpine
+    labels:
+      - "traefik.enable=true"
+      - "traefik.backend=web"
+      - "traefik.port=80"
+      - "traefik.frontend.rule=Host:${PROJECT_BASE_URL}"
+    volumes:
+      - /var/www/developers.italia.it/_site:/usr/share/nginx/html
+
   proxy:
-   command: --api --docker --docker.exposedByDefault=false --logLevel=DEBUG
+   command: --docker --docker.exposedByDefault=false --entryPoints="Name:http Address::8095"
    container_name: "${NAME}_proxy"
    image: containous/traefik:experimental
    ports:
-     - "80:80"
-     - "8080:8080"
+     - "8095:8095"
    volumes:
      - /var/run/docker.sock:/var/run/docker.sock
 
