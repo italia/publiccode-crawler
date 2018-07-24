@@ -13,3 +13,7 @@ Table of contents:
 - Jekyll files generation
 
 - References
+
+## Run crawler in cron job
+
+Execute every 12 hours `0 */12 * * * make crawler > crawler.log`
