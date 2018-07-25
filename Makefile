@@ -31,7 +31,10 @@ stop:
 	docker-compose stop
 
 prod-up:
-	docker-compose --file=docker-compose-prod.yml up -d --remove-orphans
+	docker-compose --file=docker-compose-prod.yml up -d
 
 prod-stop:
 	docker-compose --file=docker-compose-prod.yml stop
+
+crawl:
+	docker-compose --file=docker-compose-crawler.yml up -d

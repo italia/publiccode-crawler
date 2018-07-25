@@ -50,8 +50,7 @@ networks:
 - default Kibana user and password are `kibana`
 - basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
-##### 4) rename docker/elasticsearch/config/searchguard/sg_internal_users.yml.example to
-docker/elasticsearch/config/searchguard/sg_internal_users.yml and inserti the correct password
+##### 4) rename docker/elasticsearch/config/searchguard/sg_internal_users.yml.example to docker/elasticsearch/config/searchguard/sg_internal_users.yml and insert the correct passwords
 
 ##### 5) rename config.toml.example to config.toml and fill the variables with your values
 
@@ -92,6 +91,25 @@ to localhost.
 
   Probably you should increase the container memory:
   `docker-machine stop && VBoxManage modifyvm default --cpus 2 && VBoxManage modifyvm default --memory 2048 && docker-machine stop`
+
+## Run in production
+
+##### 1) rename .env.example to .env and fill the variables with your values
+
+- default Elasticsearch user and password are `elastic`
+- default Kibana user and password are `kibana`
+- basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
+
+##### 2) rename docker/elasticsearch/config/searchguard/sg_internal_users.yml.example to docker/elasticsearch/config/searchguard/sg_internal_users.yml and insert the correct passwords
+
+##### 3) start the production Docker stack: `make prod-up`
+
+##### 4) rename docker-compose-crawler.yml.example to docker-compose-crawler.yml. Setup the volumes mapping. Replace
+`network_created_by_docker_compose_prod` with the correct network name
+
+##### 6) rename config.toml.example to config.toml and fill the variables with your values
+
+##### 5) run `make crawl` in a crontab process
 
 ### Copyright
 

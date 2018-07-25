@@ -1,0 +1,30 @@
+version: "3.1"
+
+services:
+  crawler:
+    container_name: "${NAME}_crawler"
+    image: italia/developers-italia-backend:0.0.1
+    ports:
+      - 8081:8081
+    networks:
+      - web
+    volumes:
+      - ./data:/app/data
+      - ./whitelistGeneric.yml:/app/whitelistGeneric.yml
+      - ./whitelistPA.yml:/app/whitelistPA.yml
+      - ./domains.yml:/app/domains.yml
+      - ./config.toml:/app/config.toml
+      - /var/www/developers.italia.it/_site/_data/amministrazioni.yml:/app/jekyll/generated/amministrazioni.yml
+      - /var/www/developers.italia.it/_site/_data/software-open-source.yml:/app/jekyll/generated/software-open-source.yml
+      - /var/www/developers.italia.it/_site/_data/software-riuso.yml:/app/jekyll/generated/software-riuso.yml
+      - /var/www/developers.italia.it/_site/_data/softwares.yml:/app/jekyll/generated/softwares.yml
+      - ./vitality-ranges.yml:/app/ranges.yml
+
+volumes:
+  es_data:
+    driver: local
+
+networks:
+  web:
+    external:
+      name: network_created_by_docker_compose_prod

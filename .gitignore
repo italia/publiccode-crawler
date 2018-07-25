@@ -28,6 +28,7 @@ sg_internal_users.yml
 
 # Local docker-compose file
 docker-compose.yml
+docker-compose-crawler.yml
 
 # Env
 .env

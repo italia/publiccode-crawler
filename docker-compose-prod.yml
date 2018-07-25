@@ -21,6 +21,7 @@ services:
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.period=60s"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.average=100"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.burst=200"
+    restart: always
     volumes:
       - es_data:/elasticsearch/data
       - ./docker/elasticsearch/config/elasticsearch.yml:/elasticsearch/config/elasticsearch.yml
@@ -28,8 +29,6 @@ services:
       - ./docker/elasticsearch/config/searchguard/sg_internal_users.yml:/elasticsearch/config/searchguard/sg_internal_users.yml
       - ./docker/elasticsearch/config/searchguard/sg_roles.yml:/elasticsearch/config/searchguard/sg_roles.yml
       - ./docker/elasticsearch/config/searchguard/sg_roles_mapping.yml:/elasticsearch/config/searchguard/sg_roles_mapping.yml
-    ports:
-      - "9200:9200"
 
   kibana:
     container_name: "${NAME}_kibana"
@@ -44,6 +43,7 @@ services:
       - "traefik.backend=kibana"
       - "traefik.port=5601"
       - "traefik.frontend.rule=Host:kibana.${PROJECT_BASE_URL}"
+    restart: always
     volumes:
       - ./docker/kibana/config/kibana.yml:/opt/kibana-6.2.2-linux-x86_64/config/kibana.yml
 
@@ -55,6 +55,7 @@ services:
       - "traefik.backend=prometheus"
       - "traefik.port=9090"
       - "traefik.frontend.rule=Host:prometheus.${PROJECT_BASE_URL}"
+    restart: always
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
@@ -66,31 +67,19 @@ services:
       - "traefik.backend=web"
       - "traefik.port=80"
       - "traefik.frontend.rule=Host:${PROJECT_BASE_URL}"
+    restart: always
     volumes:
       - /var/www/developers.italia.it/_site:/usr/share/nginx/html
 
   proxy:
-   command: --docker --docker.exposedByDefault=false --entryPoints="Name:http Address::8095"
-   container_name: "${NAME}_proxy"
-   image: containous/traefik:experimental
-   ports:
-     - "8095:8095"
-   volumes:
-     - /var/run/docker.sock:/var/run/docker.sock
-
-#  crawler:
-#    container_name: "${NAME}_crawler"
-#    image: italia/developers-italia-backend:0.0.1
-#    networks:
-#      - web
-#    volumes:
-#      - ./data:/app/data
-#      - ./whitelistGeneric.yml:/app/whitelistGeneric.yml
-#      - ./whitelistPA.yml:/app/whitelistPA.yml
-#      - ./domains.yml:/app/domains.yml
-#      - ./config.toml:/app/config.toml
-#      - ./jekyll/generated:/app/jekyll/generated
-#      - ./vitality-ranges.yml:/app/ranges.yml
+    command: --docker --docker.exposedByDefault=false --entryPoints="Name:http Address::8095"
+    container_name: "${NAME}_proxy"
+    image: containous/traefik:experimental
+    ports:
+      - "8095:8095"
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 
 volumes:
   es_data:
