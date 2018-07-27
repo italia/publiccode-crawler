@@ -21,6 +21,8 @@ services:
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.period=60s"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.average=100"
       - "traefik.frontend.rateLimit.rateSet.elasticsearch.burst=200"
+    ports:
+      - "9200:9200"
     restart: always
     volumes:
       - es_data:/elasticsearch/data
