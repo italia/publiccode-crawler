@@ -1,4 +1,5 @@
-version: "3.1"
+# Ubuntu 16.04.3 LTS has docker-compose 1.8.0, so it doesn't support 3.x
+version: "2.0"
 
 services:
   elasticsearch:
@@ -86,3 +87,12 @@ services:
 volumes:
   es_data:
     driver: local
+
+# SPC Cloud machines have MTU 1400, and docker-compose does not automatically pick
+# the host daemon MTU.
+# https://github.com/moby/moby/issues/22297
+# https://github.com/docker/compose/issues/3438
+networks:
+  default:
+    driver_opts:
+      com.docker.network.driver.mtu: 1400
