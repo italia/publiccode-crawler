@@ -50,7 +50,13 @@ networks:
 - default Kibana user and password are `kibana`
 - basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
-##### 4) rename docker/elasticsearch/config/searchguard/sg_internal_users.yml.example to docker/elasticsearch/config/searchguard/sg_internal_users.yml and insert the correct passwords
+##### 4) rename `docker/elasticsearch/config/searchguard/sg_internal_users.yml.example` to `docker/elasticsearch/config/searchguard/sg_internal_users.yml` and insert the correct passwords
+
+Hashed passwords can be generated with:
+
+```
+docker exec -t -i developers-italia-backend_elasticsearch elasticsearch/plugins/search-guard-6/tools/hash.sh -p <password>
+```
 
 ##### 5) rename config.toml.example to config.toml and fill the variables with your values
 
@@ -100,7 +106,13 @@ to localhost.
 - default Kibana user and password are `kibana`
 - basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
-##### 2) rename docker/elasticsearch/config/searchguard/sg_internal_users.yml.example to docker/elasticsearch/config/searchguard/sg_internal_users.yml and insert the correct passwords
+##### 2) rename `docker/elasticsearch/config/searchguard/sg_internal_users.yml.example` to `docker/elasticsearch/config/searchguard/sg_internal_users.yml` and insert the correct passwords
+
+Hashed passwords can be generated with:
+
+```
+docker exec -t -i developers-italia-backend_elasticsearch elasticsearch/plugins/search-guard-6/tools/hash.sh -p <password>
+```
 
 ##### 3) start the production Docker stack: `make prod-up`
 
@@ -109,7 +121,9 @@ to localhost.
 
 ##### 6) rename config.toml.example to config.toml and fill the variables with your values
 
-##### 5) run `make crawl` in a crontab process
+##### 5) build the crawler image: `make build`
+
+##### 6) run `make crawl` in a crontab process
 
 ### Copyright
 
