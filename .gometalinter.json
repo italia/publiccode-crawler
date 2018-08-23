@@ -16,7 +16,6 @@
     "interfacer",
     "unconvert",
     "goconst",
-    "gas",
     "lll",
     "unparam",
     "safesql"
