@@ -21,6 +21,6 @@ search:
     'publiccode':
       '*':
         - SEARCH
-    'jekyll_*':
+    'jekyll-*':
       '*':
         - SEARCH

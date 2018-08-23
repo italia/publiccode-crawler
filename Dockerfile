@@ -29,6 +29,7 @@ RUN apk update && \
 
 WORKDIR /app
 COPY --from=build-env /go/src/$PROJECT/$NAME /app/
+COPY ipa /app/ipa
 
 EXPOSE 8081
 

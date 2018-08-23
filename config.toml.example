@@ -1,4 +1,6 @@
 CRAWLED_FILENAME = "publiccode.yml"
-ELASTIC_URL = ""
-ELASTIC_USER = ""
+
+# This URL should be visible from within the network created by docker-compose-prod
+ELASTIC_URL = "http://developers-italia-backend_elasticsearch:9200"
+ELASTIC_USER = "elastic"
 ELASTIC_PWD = ""

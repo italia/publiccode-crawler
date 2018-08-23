@@ -14,10 +14,7 @@ services:
       - ./whitelistPA.yml:/app/whitelistPA.yml
       - ./domains.yml:/app/domains.yml
       - ./config.toml:/app/config.toml
-      - /var/www/developers.italia.it/_site/_data/amministrazioni.yml:/app/jekyll/generated/amministrazioni.yml
-      - /var/www/developers.italia.it/_site/_data/software-open-source.yml:/app/jekyll/generated/software-open-source.yml
-      - /var/www/developers.italia.it/_site/_data/software-riuso.yml:/app/jekyll/generated/software-riuso.yml
-      - /var/www/developers.italia.it/_site/_data/softwares.yml:/app/jekyll/generated/softwares.yml
+      - /var/www/developers.italia.it/_site/_data/:/app/jekyll/generated/
       - ./vitality-ranges.yml:/app/ranges.yml
 
 volumes:
