@@ -85,7 +85,7 @@ func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Cli
 	}
 	// Debug note if file will be empty.
 	if len(softwareRiuso) == 0 {
-		log.Warn("%s is empty.", filename)
+		log.Warnf("%s is empty.", filename)
 	}
 
 	// Marshal yml.
