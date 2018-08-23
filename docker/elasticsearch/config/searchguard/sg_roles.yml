@@ -18,7 +18,7 @@ kibana_user:
 
 search:
   indices:
-    'publiccode_*':
+    'publiccode':
       '*':
         - SEARCH
     'jekyll_*':
