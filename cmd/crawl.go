@@ -40,13 +40,13 @@ var crawlCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		// Create ES idex with mapping for PublicCode.
+		// Create ES index with mapping for PublicCode.
 		err = crawler.ElasticIndexMapping(index, elasticClient)
 		if err != nil {
 			log.Fatal(err)
 		}
 		// Create ES index with mapping "administration-codiceIPA".
-		err = crawler.ElasticAdministrationsMapping(index, elasticClient)
+		err = crawler.ElasticAdministrationsMapping("administration", elasticClient)
 		if err != nil {
 			log.Fatal(err)
 		}

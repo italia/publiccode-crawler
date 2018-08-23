@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"regexp"
 	"time"
 
 	"github.com/olivere/elastic"
@@ -608,8 +609,9 @@ func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) erro
 	aliasService := elasticClient.Alias()
 	indices := res.IndicesByAlias(alias)
 	for _, name := range indices {
-		// Does not remove "administration" aliased index.
-		if name != "administration" {
+		var validJekyllIndex = regexp.MustCompile(`^jekyll-.+$`)
+		// Does not remove "administration" or "jekyll" aliased index.
+		if name != "administration" || !validJekyllIndex.MatchString(name) {
 			log.Debugf("Remove alias from %s to %s", alias, name)
 			// Remove the publiccode alias.
 			_, err := aliasService.Remove(name, alias).Do(context.Background())
