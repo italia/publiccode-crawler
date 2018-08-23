@@ -77,7 +77,7 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	}
 	// Debug note if file will be empty.
 	if len(administrations) == 0 {
-		log.Warn("%s is empty.", filename)
+		log.Warnf("%s is empty.", filename)
 	}
 
 	// Remove duplicates.
