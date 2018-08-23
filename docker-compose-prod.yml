@@ -62,17 +62,18 @@ services:
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
-  web:
-    container_name: "${NAME}_web"
-    image: nginx:1.15-alpine
-    labels:
-      - "traefik.enable=true"
-      - "traefik.backend=web"
-      - "traefik.port=80"
-      - "traefik.frontend.rule=Host:${PROJECT_BASE_URL}"
-    restart: always
-    volumes:
-      - /var/www/developers.italia.it/_site:/usr/share/nginx/html
+# We're currently serving the website from the nginx of the host machine, so this is not needed
+#  web:
+#    container_name: "${NAME}_web"
+#    image: nginx:1.15-alpine
+#    labels:
+#      - "traefik.enable=true"
+#      - "traefik.backend=web"
+#      - "traefik.port=80"
+#      - "traefik.frontend.rule=Host:${PROJECT_BASE_URL}"
+#    restart: always
+#    volumes:
+#      - /var/www/developers.italia.it/_site:/usr/share/nginx/html
 
   proxy:
     command: --docker --docker.exposedByDefault=false --entryPoints="Name:http Address::8095"
