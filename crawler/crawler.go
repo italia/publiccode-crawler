@@ -140,6 +140,7 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		err = validateRemoteFile(resp.Body, fileRawURL, pa)
 		if err != nil {
 			log.Errorf("%s is an invalid publiccode.", fileRawURL)
+			log.Errorf("Errors:%+v", err)
 			wg.Done()
 			return
 		}
