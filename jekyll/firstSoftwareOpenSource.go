@@ -88,6 +88,9 @@ func FirstSoftwareOpenSource(filename string, results int, elasticClient *elasti
 		log.Warnf("%s is empty.", filename)
 	}
 
+	// Remove duplicates.
+	softwareOS = removeDuplicatesSoftwareOS(softwareOS)
+
 	// Marshal yml.
 	d, err := yaml.Marshal(&softwareOS)
 	if err != nil {
@@ -99,4 +102,23 @@ func FirstSoftwareOpenSource(filename string, results int, elasticClient *elasti
 	}
 
 	return err
+}
+
+func removeDuplicatesSoftwareOS(elements []SoftwareOpenSource) []SoftwareOpenSource {
+	// Use map to record duplicates as we find them.
+	encountered := map[string]bool{}
+	result := []SoftwareOpenSource{}
+
+	for v := range elements {
+		if encountered[elements[v].Name] {
+			// Do not add duplicate.
+		} else {
+			// Record this element as an encountered element.
+			encountered[elements[v].Name] = true
+			// Append to result slice.
+			result = append(result, elements[v])
+		}
+	}
+	// Return the new slice.
+	return result
 }

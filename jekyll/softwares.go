@@ -176,6 +176,9 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 		softwares = append(softwares, softwareExtracted)
 	}
 
+	// Remove duplicates.
+	softwares = removeDuplicatesSofwares(softwares)
+
 	// Marshal yml.
 	d, err := yaml.Marshal(&softwares)
 	if err != nil {
@@ -376,4 +379,23 @@ func populatePopularTags(tags []string, number int, elasticClient *elastic.Clien
 	}
 
 	return popularTags
+}
+
+func removeDuplicatesSofwares(elements []Software) []Software {
+	// Use map to record duplicates as we find them.
+	encountered := map[string]bool{}
+	result := []Software{}
+
+	for v := range elements {
+		if encountered[elements[v].Name] {
+			// Do not add duplicate.
+		} else {
+			// Record this element as an encountered element.
+			encountered[elements[v].Name] = true
+			// Append to result slice.
+			result = append(result, elements[v])
+		}
+	}
+	// Return the new slice.
+	return result
 }

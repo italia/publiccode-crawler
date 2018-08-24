@@ -198,7 +198,8 @@ func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 	}
 
 	if pa.CodiceIPA == "" {
-		return errors.New("codiceIPA for a single url cannot be checked. Use the whitelist for the organizazions instead")
+		log.Warning("WARNING: codiceIPA for a single url cannot be compared with existing organization. Use the whitelist instead.")
+		return nil
 	}
 	if pc.It.Riuso.CodiceIPA != pa.CodiceIPA {
 		return errors.New("codiceIPA for: " + fileRawURL + " is " + pc.It.Riuso.CodiceIPA + ", that is different to whitelist: " + pa.CodiceIPA)

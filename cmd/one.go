@@ -33,7 +33,7 @@ No organizations! Only single repositories!`,
 		// Read repository URL.
 		repo := args[0]
 		// Index for actual process.
-		index := "publiccode"
+		index := "publiccode_single"
 
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
@@ -46,6 +46,10 @@ No organizations! Only single repositories!`,
 		err = crawler.ElasticIndexMapping(index, elasticClient)
 		if err != nil {
 			log.Fatal(err)
+		}
+		err = crawler.ElasticAliasAdd(index, "publiccode", elasticClient)
+		if err != nil {
+			log.Errorf("Error adding Elastic Alias: %v", err)
 		}
 
 		// Read and parse list of domains.
