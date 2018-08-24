@@ -229,7 +229,7 @@
   branch = "master"
   name = "github.com/r3vit/publiccode.yml-parser-go"
   packages = ["."]
-  revision = "e15505df23b3bdae283dbee80fe3d49438d902cb"
+  revision = "ca7ba0b438c1264d5714372f7df0648798b25838"
 
 [[projects]]
   name = "github.com/sergi/go-diff"
