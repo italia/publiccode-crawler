@@ -4,21 +4,23 @@ The crawler uses Elasticsearch as search engine for publiccode files, administra
 
 **Indices (ES):**
 
-There are a main aliase and three main indices. In addition there is an index used from the website for searching purposes:
+There are three main indices with a single alias. In addition there is an index used from the website for searching purposes:
 
-| Alias      | Index             | Description                                                                 |
-| ---------- | ----------------- | --------------------------------------------------------------------------- |
-| publiccode | <timestamp>       | All the software (publiccode and metadata) crawled at using the whitelists. |
-| publiccode | publiccode_single | The software (publiccode and metadata) crawled from a single repository.    |
-| publiccode | administration    | All the administrations in the crawled publiccode files.                    |
-|            |                   |                                                                             |
-| publiccode | jekyll-<date>     | All the data from jekyll developers.italia.it website.                      |
+| Alias      | Index             | Mapping        | Description                                                                 |
+| ---------- | ----------------- | -------------- | --------------------------------------------------------------------------- |
+| publiccode | <timestamp>       | software       | All the software (publiccode and metadata) crawled at using the whitelists. |
+| publiccode | publiccode_single | software       | The software (publiccode and metadata) crawled from a single repository.    |
+| publiccode | administration    | administration | All the administrations in the crawled publiccode files.                    |
+|            |                   |                |                                                                             |
+| publiccode | jekyll-<date>     | jekyll         | All the data from jekyll developers.italia.it website.                      |
 
 **Data mapping (ES):**
 
-1.  <mapping-software>
-2.  <mapping-amministrazioni>
-3.  <alias>
+There are three data mapping (data schema):
+
+1.  software: publiccode.yml data and metadata added after the crawling (like vitality index and old features)
+2.  administrations: name and codiceIPA from a crawled administration
+3.  jekyll: website data (like pages, posts)
 
 **software**
 
@@ -498,6 +500,208 @@ There are a main aliase and three main indices. In addition there is an index us
 }
 ```
 
-**alias**
+**jekyll**
 
-The main alias is `publiccode`. It works as elasticsearch _alias_ for software and amministrazioni.
+```
+{
+  "settings": {
+    "analysis": {
+      "analyzer": {
+        "autocomplete": {
+          "tokenizer": "autocomplete",
+          "filter": [
+            "lowercase"
+          ]
+        },
+        "autocomplete_search": {
+          "tokenizer": "lowercase"
+        }
+      },
+      "tokenizer": {
+        "autocomplete": {
+          "type": "edge_ngram",
+          "min_gram": 3,
+          "max_gram": 30,
+          "token_chars": [
+            "letter"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "post": {
+      "properties": {
+        "author": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "categories": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "comingsoon": {
+          "type": "boolean"
+        },
+        "releaseDate": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss Z"
+        },
+        "description": {
+          "type": "text",
+          "analyzer": "autocomplete",
+          "search_analyzer": "autocomplete_search"
+        },
+        "draft": {
+          "type": "boolean"
+        },
+        "excerpt": {
+          "type": "text"
+        },
+        "ext": {
+          "type": "text",
+          "index": false
+        },
+        "github_team": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "highlight": {
+          "type": "boolean"
+        },
+        "html": {
+          "type": "text",
+          "analyzer": "autocomplete",
+          "search_analyzer": "autocomplete_search"
+        },
+        "id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "image": {
+          "type": "text",
+          "index": false
+        },
+        "lang": {
+          "type": "keyword"
+        },
+        "layout": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256
+            }
+          }
+        },
+        "logo": {
+          "type": "text",
+          "index": false
+        },
+        "maintainers": {
+          "type": "keyword"
+        },
+        "order": {
+          "type": "long"
+        },
+        "payoff": {
+          "type": "text"
+        },
+        "permalink": {
+          "type": "text",
+          "index": false
+        },
+        "pills": {
+          "properties": {
+            "link": {
+              "type": "text",
+              "index": false
+            },
+            "title": {
+              "type": "text",
+              "index": false
+            }
+          }
+        },
+        "redirect_from": {
+          "type": "text",
+          "index": false
+        },
+        "slug": {
+          "type": "keyword"
+        },
+        "socials": {
+          "properties": {
+            "icon": {
+              "type": "text",
+              "index": false
+            },
+            "link": {
+              "type": "text",
+              "index": false
+            },
+            "name": {
+              "type": "text"
+            }
+          }
+        },
+        "subtitle": {
+          "type": "text",
+          "analyzer": "autocomplete",
+          "search_analyzer": "autocomplete_search"
+        },
+        "tags": {
+          "type": "keyword"
+        },
+        "text": {
+          "type": "text"
+        },
+        "title": {
+          "type": "text",
+          "analyzer": "autocomplete",
+          "search_analyzer": "autocomplete_search"
+        },
+        "name": {
+          "type": "text",
+          "analyzer": "autocomplete",
+          "search_analyzer": "autocomplete_search"
+        },
+        "toc": {
+          "type": "boolean"
+        },
+        "top_projects_link": {
+          "type": "text",
+          "index": false
+        },
+        "type": {
+          "type": "keyword"
+        },
+        "url": {
+          "type": "text",
+          "index": false
+        }
+      }
+    }
+  }
+}
+```

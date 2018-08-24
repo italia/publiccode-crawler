@@ -7,7 +7,7 @@ Table of contents:
 - README
 - Deploy Architecture (Docker & Containers)
 - Files and folders description
-- Data mapping (elasticsearch)
+- Elasticsearch details and data mapping
 - Configuration files
 - Crawler
 - Jekyll files generation
