@@ -2,7 +2,7 @@
 
 The crawler uses Elasticsearch as search engine for publiccode files, administrations and website search.
 
-###Indices (ES)
+### Indices (ES)
 
 There are three main indices with a single alias. In addition there is an index used from the website for searching purposes:
 
@@ -14,7 +14,7 @@ There are three main indices with a single alias. In addition there is an index 
 |            |                   |                |                                                                             |
 | publiccode | jekyll-<date>     | jekyll         | All the data from jekyll developers.italia.it website.                      |
 
-###Data mapping (ES)
+### Data mapping (ES)
 
 There are three data mapping (data schema):
 
