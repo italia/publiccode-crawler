@@ -1,5 +1,19 @@
 ## Mappings Elasticsearch
 
+The crawler uses Elasticsearch as search engine for publiccode files, administrations and website search.
+
+**Indices (ES):**
+
+There are a main aliase and three main indices. In addition there is an index used from the website for searching purposes:
+
+| Alias      | Index             | Description                                                                 |
+| ---------- | ----------------- | --------------------------------------------------------------------------- |
+| publiccode | <timestamp>       | All the software (publiccode and metadata) crawled at using the whitelists. |
+| publiccode | publiccode_single | The software (publiccode and metadata) crawled from a single repository.    |
+| publiccode | administration    | All the administrations in the crawled publiccode files.                    |
+|            |                   |                                                                             |
+| publiccode | jekyll-<date>     | All the data from jekyll developers.italia.it website.                      |
+
 **Data mapping (ES):**
 
 1.  <mapping-software>
@@ -486,4 +500,4 @@
 
 **alias**
 
-The main alias is `publiccode`. It alias software and amministrazioni.
+The main alias is `publiccode`. It works as elasticsearch _alias_ for software and amministrazioni.
