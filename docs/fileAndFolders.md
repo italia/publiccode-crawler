@@ -1,6 +1,6 @@
 ## File and folders description
 
-**Generic file and folders :**
+###Generic file and folders
 
 .circleci: CircleCI folder
 
@@ -22,7 +22,7 @@ vitality-ranges.yml: ranges for vitality index (Ref: vitality-ranges.md)
 
 whitelistGeneric.yml and whitelistPA.yml: whitelist for Public Administrations and generic organizations (Ref: whitelist.md)
 
-**Configuration files**
+###Configuration files
 
 - Docker and crawler building configurations: .env
 - Crawler specific configurations: config.toml
