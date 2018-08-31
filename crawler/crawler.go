@@ -194,6 +194,7 @@ func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 	err := pcode.Parse(data, &pc)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
+		logBadYamlToFile(fileRawURL)
 		return err
 	}
 
