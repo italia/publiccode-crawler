@@ -9,6 +9,7 @@ import (
 
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/spf13/viper"
+	log "github.com/sirupsen/logrus"
 )
 
 // SaveToFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<crawler_timestamp>_<file_name>.
@@ -46,4 +47,24 @@ func SaveToFile(domain Domain, hostname string, name string, data []byte, index 
 func splitFullName(fullName string) (string, string) {
 	s := strings.Split(fullName, "/")
 	return s[0], s[1]
+}
+
+// Save the bad publiccode.yaml url to a file used by the publiccode-issueopener script
+func logBadYamlToFile(fileRawURL string) {
+  log.Errorf("Appending the bad file url to the list: %s", fileRawURL)
+
+  filePath := "./data/bad_yaml_repos.lst"
+
+  f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+  if err != nil {
+    log.Errorf(err.Error())
+  }
+
+  _, err = f.WriteString(fileRawURL + "\r\n")
+  if err != nil {
+    log.Errorf(err.Error())
+  }
+
+  f.Sync()
+  defer f.Close()
 }
