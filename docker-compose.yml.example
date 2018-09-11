@@ -113,7 +113,7 @@ services:
 #    networks:
 #      - web
 #    volumes:
-#      - data:/data:z
+#      - data:/app/data:z
 #      - ./whitelistGeneric.yml:/app/whitelistGeneric.yml
 #      - ./whitelistPA.yml:/app/whitelistPA.yml
 #      - ./domains.yml:/app/domains.yml
