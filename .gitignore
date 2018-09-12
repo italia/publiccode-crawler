@@ -48,3 +48,6 @@ elasticsearch/html/assets/utils/node_modules
 
 # Elasticsearch js tests
 elasticsearch/html/assets/js/config.js
+
+# Jekyll generated files
+jekyll/generated

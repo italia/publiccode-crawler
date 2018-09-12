@@ -113,7 +113,7 @@ services:
 #    networks:
 #      - web
 #    volumes:
-#      - ./data:/app/data
+#      - data:/app/data:z
 #      - ./whitelistGeneric.yml:/app/whitelistGeneric.yml
 #      - ./whitelistPA.yml:/app/whitelistPA.yml
 #      - ./domains.yml:/app/domains.yml
@@ -121,7 +121,16 @@ services:
 #      - ./jekyll/generated:/app/jekyll/generated
 #      - ./vitality-ranges.yml:/app/ranges.yml
 
+  issueopener:
+    image: italia/publiccode-issueopener:latest
+    container_name: "${NAME}_issueopener"
+    networks:
+      - web
+    env_file: .env
+    volumes:
+      - data:/data:z
 volumes:
+  data:
   es_data:
     driver: local
 
