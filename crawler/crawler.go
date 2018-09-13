@@ -71,11 +71,10 @@ func ProcessPADomain(orgURL string, domain Domain, pa PA, repositories chan Repo
 		nextURL, err := domain.processAndGetNextURL(orgURL, wg, repositories, pa)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", orgURL, err, nextURL)
-			log.Errorf("Retry: %s", nextURL)
-			nextURL = orgURL
+			nextURL = ""
 		}
 
-		// If end is reached, nextUrl is empty.
+		// If end is reached or fails, nextUrl is empty.
 		if nextURL == "" {
 			log.Infof("Url: %s - is the last one.", orgURL)
 			return
@@ -194,7 +193,6 @@ func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 	err := pcode.Parse(data, &pc)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
-		logBadYamlToFile(fileRawURL)
 		return err
 	}
 
