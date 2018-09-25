@@ -1,6 +1,6 @@
 ## File and folders description
 
-**Generic file and folders :**
+### Generic file and folders
 
 .circleci: CircleCI folder
 
@@ -18,11 +18,11 @@ cmd, crawler, httpclient, ipa, jekyll, metrics, vendor, version: golang packages
 
 ./elasticsearch: the tree for elasticsearch mappings and example files
 
-vitality-ranges.yml: ranges for vitality index (Ref: vitality-ranges.md)
+vitality-ranges.yml: ranges for vitality index
 
-whitelistGeneric.yml and whitelistPA.yml: whitelist for Public Administrations and generic organizations (Ref: whitelist.md)
+whitelistGeneric.yml and whitelistPA.yml: whitelist for Public Administrations and generic organizations ([Reference](references.md))
 
-**Configuration files**
+### Configuration files
 
 - Docker and crawler building configurations: .env
 - Crawler specific configurations: config.toml

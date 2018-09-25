@@ -598,9 +598,22 @@ func ElasticFlush(index string, elasticClient *elastic.Client) error {
 	return err
 }
 
+// ElasticAliasAdd add the alias to the index.
+func ElasticAliasAdd(index, alias string, elasticClient *elastic.Client) error {
+	aliasService := elasticClient.Alias()
+	// Add an alias to the index.
+	log.Debugf("Add alias from %s to %s", index, alias)
+	_, err := aliasService.Add(index, alias).Do(context.Background())
+	if err != nil {
+		return err
+	}
+
+	return ElasticFlush(index, elasticClient)
+}
+
 // ElasticAliasUpdate update the Alias to the index.
 func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) error {
-	log.Errorf("Alias ElasticAliasUpdate index-alias: %v - %v", index, alias)
+	log.Debugf("Alias ElasticAliasUpdate index-alias: %v - %v", index, alias)
 	// Retrieve all the aliases.
 	res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
 	if err != nil {
@@ -611,7 +624,7 @@ func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) erro
 	indices := res.IndicesByAlias(alias)
 	for _, indexName := range indices {
 		// Does not remove "administration" or "jekyll" aliased indices.
-		if indexName != "administration" && !strings.Contains(indexName, "jekyll") {
+		if indexName != "administration" && !strings.Contains(indexName, "jekyll") && indexName != "publiccode_single" {
 			log.Debugf("Remove from alias %s the index %s", alias, indexName)
 			// Remove the publiccode alias.
 			_, err := aliasService.Remove(indexName, alias).Do(context.Background())

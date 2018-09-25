@@ -81,7 +81,7 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	}
 
 	// Remove duplicates.
-	administrations = removeDuplicates(administrations)
+	administrations = removeDuplicatesAdministrations(administrations)
 
 	// Marshal yml.
 	d, err := yaml.Marshal(&administrations)
@@ -96,7 +96,7 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	return err
 }
 
-func removeDuplicates(elements []Administration) []Administration {
+func removeDuplicatesAdministrations(elements []Administration) []Administration {
 	// Use map to record duplicates as we find them.
 	encountered := map[string]bool{}
 	result := []Administration{}
