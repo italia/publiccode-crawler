@@ -173,7 +173,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, domain Domain, name string, acti
 	_, err = elasticClient.Index().
 		Index(index).
 		Type("software").
-		Id(domain.Host + "/" + name).
+		Id(hashedRepoURL).
 		BodyJson(file).
 		Do(ctx)
 	if err != nil {

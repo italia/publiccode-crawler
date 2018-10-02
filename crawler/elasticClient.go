@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/olivere/elastic"
@@ -605,28 +604,11 @@ func ElasticFlush(index string, elasticClient *elastic.Client) error {
 // ElasticAliasUpdate update the Alias to the index.
 func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) error {
 	log.Errorf("Alias ElasticAliasUpdate index-alias: %v - %v", index, alias)
-	// Retrieve all the aliases.
-	res, err := elasticClient.Aliases().Index("_all").Do(context.Background())
-	if err != nil {
-		return err
-	}
 	// Range over all the indices for alias service.
 	aliasService := elasticClient.Alias()
-	indices := res.IndicesByAlias(alias)
-	for _, indexName := range indices {
-		// Does not remove "administration" or "jekyll" aliased indices.
-		if indexName != "administration" && !strings.Contains(indexName, "jekyll") {
-			log.Debugf("Remove from alias %s the index %s", alias, indexName)
-			// Remove the publiccode alias.
-			_, err := aliasService.Remove(indexName, alias).Do(context.Background())
-			if err != nil {
-				return err
-			}
-		}
-	}
 	// Add an alias to the new index.
 	log.Debugf("Add alias from %s to %s", index, alias)
-	_, err = aliasService.Add(index, alias).Do(context.Background())
+	_, err := aliasService.Add(index, alias).Do(context.Background())
 
 	return err
 }

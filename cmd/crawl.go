@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"strconv"
 	"sync"
-	"time"
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/italia/developers-italia-backend/ipa"
@@ -30,7 +28,7 @@ var crawlCmd = &cobra.Command{
 			log.Error(err)
 		}
 		// Index for actual process.
-		index := strconv.FormatInt(time.Now().Unix(), 10)
+		index := "publiccodes"
 
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
