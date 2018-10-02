@@ -6,6 +6,7 @@ import "github.com/italia/developers-italia-backend/crawler"
 type Software struct {
 	AmministrazioneLabel string                  `json:"it-riuso-codiceIPA-label,omitempty"`
 	Id                   string                  `json:"id,omitempty"`
+	CrawlTime            string                  `json:"crawltime,omitempty"`
 	Name                 string                  `json:"name,omitempty"`
 	ApplicationSuite     string                  `json:"applicationSuite,omitempty"`
 	URL                  string                  `json:"repoUrl,omitempty"`

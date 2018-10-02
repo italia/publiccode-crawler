@@ -137,6 +137,10 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
 					"type": "text",
 					"index": false
 				},
+				"crawltime": {
+					"type": "text",
+					"index": false
+				},
         "publiccode-yaml-version": {
           "type": "text",
           "index": false

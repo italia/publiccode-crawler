@@ -17,6 +17,7 @@ import (
 type SoftwareRiuso struct {
 	Name      string `json:"name"`
 	Id        string `json:"id"`
+	CrawlTime string `json:"crawltime"`
 	Logo      string `json:"logo"`
 	URL       string `json:"url"`
 	CodiceIPA string `json:"ipa"`
@@ -78,6 +79,7 @@ func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Cli
 			softwareRiuso = append(softwareRiuso, SoftwareRiuso{
 				Name:      i.Name,
 				Id:        i.Id,
+				CrawlTime: i.CrawlTime,
 				Logo:      concatenateLink(rawBaseDir, i.Logo),
 				URL:       i.URL,
 				CodiceIPA: i.ItRiusoCodiceIPA,

@@ -3,6 +3,7 @@ package crawler
 import (
 	"context"
 	"net/url"
+	"time"
 
 	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/metrics"
@@ -25,8 +26,9 @@ func SaveToES(fileRawURL, hashedRepoURL string, domain Domain, name string, acti
 
 	// Add a document to the index.
 	file := PublicCodeES{
-		FileRawURL: fileRawURL,
-		Id:         hashedRepoURL,
+		FileRawURL:            fileRawURL,
+		Id:                    hashedRepoURL,
+		CrawlTime:             time.Now().String(),
 		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(pc.It.Riuso.CodiceIPA),
 
 		Name:             pc.Name,

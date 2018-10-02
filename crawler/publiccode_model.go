@@ -4,6 +4,7 @@ package crawler
 type PublicCodeES struct {
 	FileRawURL            string `json:"fileRawURL"`
 	Id                    string `json:"id"`
+	CrawlTime             string `json:"crawltime"`
 	ItRiusoCodiceIPALabel string `json:"it-riuso-codiceIPA-label"`
 
 	Name             string `json:"name"`
