@@ -67,6 +67,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 
 		softwareExtracted := Software{
 			AmministrazioneLabel: i.ItRiusoCodiceIPALabel,
+			Id:                   i.Id,
 			Name:                 i.Name,
 			ApplicationSuite:     i.ApplicationSuite,
 			URL:                  i.URL,

@@ -16,6 +16,7 @@ import (
 // SoftwareRiuso is a simple description of a Software with  it/riuso/codiceIPA key.
 type SoftwareRiuso struct {
 	Name      string `json:"name"`
+	Id        string `json:"id"`
 	Logo      string `json:"logo"`
 	URL       string `json:"url"`
 	CodiceIPA string `json:"ipa"`
@@ -76,6 +77,7 @@ func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Cli
 		if i.ItRiusoCodiceIPA != "" {
 			softwareRiuso = append(softwareRiuso, SoftwareRiuso{
 				Name:      i.Name,
+				Id:        i.Id,
 				Logo:      concatenateLink(rawBaseDir, i.Logo),
 				URL:       i.URL,
 				CodiceIPA: i.ItRiusoCodiceIPA,

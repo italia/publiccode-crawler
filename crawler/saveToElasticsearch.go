@@ -12,7 +12,7 @@ import (
 )
 
 // SaveToES save the chosen data []byte in elasticsearch
-func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float64, vitality []int, data []byte, index string, elasticClient *elastic.Client) error {
+func SaveToES(fileRawURL, hashedRepoURL string, domain Domain, name string, activityIndex float64, vitality []int, data []byte, index string, elasticClient *elastic.Client) error {
 	// Starting with elastic.v5, you must pass a context to execute each service.
 	ctx := context.Background()
 
@@ -25,7 +25,8 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 
 	// Add a document to the index.
 	file := PublicCodeES{
-		FileRawURL:            fileRawURL,
+		FileRawURL: fileRawURL,
+		Id:         hashedRepoURL,
 		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(pc.It.Riuso.CodiceIPA),
 
 		Name:             pc.Name,

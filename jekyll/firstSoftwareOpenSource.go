@@ -16,6 +16,7 @@ import (
 // SoftwareOpenSource is a simple description of a Software without it/riuso/codiceIPA key.
 type SoftwareOpenSource struct {
 	Name      string `json:"name"`
+	Id        string `json:"id"`
 	Logo      string `json:"logo"`
 	URL       string `json:"url"`
 	CodiceIPA string `json:"ipa"`
@@ -76,6 +77,7 @@ func FirstSoftwareOpenSource(filename string, results int, elasticClient *elasti
 		if i.ItRiusoCodiceIPA == "" {
 			softwareOS = append(softwareOS, SoftwareOpenSource{
 				Name:      i.Name,
+				Id:        i.Id,
 				Logo:      concatenateLink(rawBaseDir, i.Logo),
 				URL:       i.URL,
 				CodiceIPA: i.ItRiusoCodiceIPA,
