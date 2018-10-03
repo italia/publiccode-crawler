@@ -3,7 +3,7 @@ package crawler
 // PublicCodeES describe the data in ElasticSearch that includes publiccode and meta informations.
 type PublicCodeES struct {
 	FileRawURL            string `json:"fileRawURL"`
-	Id                    string `json:"id"`
+	ID                    string `json:"id"`
 	CrawlTime             string `json:"crawltime"`
 	ItRiusoCodiceIPALabel string `json:"it-riuso-codiceIPA-label"`
 

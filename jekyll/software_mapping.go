@@ -5,7 +5,7 @@ import "github.com/italia/developers-italia-backend/crawler"
 // Software describe the data used in jekyll that includes publiccode and meta informations.
 type Software struct {
 	AmministrazioneLabel string                  `json:"it-riuso-codiceIPA-label,omitempty"`
-	Id                   string                  `json:"id,omitempty"`
+	ID                   string                  `json:"id,omitempty"`
 	CrawlTime            string                  `json:"crawltime,omitempty"`
 	Name                 string                  `json:"name,omitempty"`
 	ApplicationSuite     string                  `json:"applicationSuite,omitempty"`
