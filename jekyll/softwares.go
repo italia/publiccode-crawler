@@ -162,12 +162,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 				}
 
 				// Append only supported countries.
-				unsupported := false
-				for _, unsupportedCountry := range unsupportedCountries {
-					if contains(v.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
-						unsupported = true
-					}
-				}
+				unsupported := checkUnsupportedCountries(v.IntendedAudienceUnsupportedCountries, unsupportedCountries)
 				if !unsupported {
 					softwareExtracted.RelatedSoftwares = append(softwareExtracted.RelatedSoftwares, related)
 				}
@@ -182,12 +177,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 		softwareExtracted.OldFeatureList = findDiffFeatures(softwareExtracted)
 
 		// Append only supported countries.
-		unsupported := false
-		for _, unsupportedCountry := range unsupportedCountries {
-			if contains(softwareExtracted.IntendedAudience.UnsupportedCountries, unsupportedCountry) {
-				unsupported = true
-			}
-		}
+		unsupported := checkUnsupportedCountries(softwareExtracted.IntendedAudience.UnsupportedCountries, unsupportedCountries)
 		if !unsupported {
 			softwares = append(softwares, softwareExtracted)
 		}
@@ -228,12 +218,7 @@ func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted
 			}
 
 			// Append only supported countries.
-			unsupported := false
-			for _, unsupportedCountry := range unsupportedCountries {
-				if contains(v.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
-					unsupported = true
-				}
-			}
+			unsupported := checkUnsupportedCountries(v.IntendedAudienceUnsupportedCountries, unsupportedCountries)
 			if !unsupported {
 				oldVariantData = append(oldVariantData, basedOn)
 			}
@@ -286,12 +271,7 @@ func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, unsupporte
 		i := item.(crawler.PublicCodeES)
 
 		// Append if only supported country.
-		unsupported := false
-		for _, unsupportedCountry := range unsupportedCountries {
-			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
-				unsupported = true
-			}
-		}
+		unsupported := checkUnsupportedCountries(i.IntendedAudienceUnsupportedCountries, unsupportedCountries)
 		if !unsupported {
 			pcs = append(pcs, i)
 		}
@@ -321,14 +301,9 @@ func findIsBasedOnSoftwares(document crawler.PublicCodeES, unsupportedCountries 
 		i := item.(crawler.PublicCodeES)
 
 		// Append if only supported country.
-		unsupported := false
-		for _, unsupportedCountry := range unsupportedCountries {
-			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
-				unsupported = true
-			}
-		}
-		if unsupported {
+		unsupported := checkUnsupportedCountries(i.IntendedAudienceUnsupportedCountries, unsupportedCountries)
 
+		if unsupported {
 			// If isBasedOn contains url, append to returned software.
 			for _, name := range i.IsBasedOn {
 				if name == document.URL {
@@ -339,7 +314,6 @@ func findIsBasedOnSoftwares(document crawler.PublicCodeES, unsupportedCountries 
 			if contains(document.IsBasedOn, i.URL) {
 				pcs = append(pcs, i)
 			}
-
 		}
 
 	}
@@ -427,4 +401,13 @@ func populatePopularTags(tags []string, number int, elasticClient *elastic.Clien
 	}
 
 	return popularTags
+}
+
+func checkUnsupportedCountries(listCountries, unsupportedCountries []string) bool {
+	for _, unsupportedCountry := range unsupportedCountries {
+		if contains(listCountries, unsupportedCountry) {
+			return true
+		}
+	}
+	return false
 }

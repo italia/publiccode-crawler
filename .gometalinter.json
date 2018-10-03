@@ -21,6 +21,6 @@
     "safesql"
   ],
 
-  "Cyclo": 16,
+  "Cyclo": 20,
   "LineLength": 200
 }
