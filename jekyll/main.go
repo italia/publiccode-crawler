@@ -3,12 +3,13 @@ package jekyll
 import (
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // GenerateJekyllYML generate all the yml files that will be used by Jekyll to generate the static site.
 func GenerateJekyllYML(elasticClient *elastic.Client) error {
 	// unsupportedCountries list.
-	unsupportedCountries := []string{"it"}
+	unsupportedCountries := viper.GetStringSlice("UNSUPPORTED_COUNTRIES")
 
 	// Create and populate amministrazioni.yml
 	amministrazioniFilePath := "jekyll/generated/amministrazioni.yml"

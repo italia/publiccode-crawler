@@ -1,4 +1,7 @@
+# Crawled filename.
 CRAWLED_FILENAME = "publiccode.yml"
+# Publiccode unsupported countries to ignore.
+UNSUPPORTED_COUNTRIES = [ "it" ]
 
 # This URL should be visible from within the network created by docker-compose-prod
 ELASTIC_URL = "http://developers-italia-backend_elasticsearch:9200"
