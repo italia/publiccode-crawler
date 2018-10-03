@@ -12,11 +12,13 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
+// Tag represent a single tag translated in two languages: english (en) and italian (it).
 type Tag struct {
 	En string `yaml:"en"`
 	It string `yaml:"it"`
 }
 
+// TagsYML generate the software-tags.yml that will contain all the tags in ES.
 func TagsYML(tagsDestFile, tagsSrcFile string, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s from %s and ES", tagsDestFile, tagsSrcFile)
 
@@ -51,7 +53,7 @@ func TagsYML(tagsDestFile, tagsSrcFile string, elasticClient *elastic.Client) er
 		return err
 	}
 
-	err = yaml.Unmarshal([]byte(data), &tags)
+	err = yaml.Unmarshal(data, &tags)
 	if err != nil {
 		return err
 	}
@@ -102,7 +104,7 @@ func TagsYML(tagsDestFile, tagsSrcFile string, elasticClient *elastic.Client) er
 	if err != nil {
 		return err
 	}
-	//Append data to file.
+	// Append data to file.
 	if _, err = f.WriteString(string(d)); err != nil {
 		return err
 	}
@@ -112,7 +114,7 @@ func TagsYML(tagsDestFile, tagsSrcFile string, elasticClient *elastic.Client) er
 
 // containsTags returns true if the map key contains the given string.
 func containsTags(m map[string]Tag, name string) bool {
-	for k, _ := range m {
+	for k := range m {
 		if k == name {
 			return true
 		}
@@ -120,6 +122,7 @@ func containsTags(m map[string]Tag, name string) bool {
 	return false
 }
 
+// checkUnsupportedCountries returns true if an unsupported country is in a list of countries.
 func checkUnsupportedCountries(listCountries, unsupportedCountries []string) bool {
 	for _, unsupportedCountry := range unsupportedCountries {
 		if contains(listCountries, unsupportedCountry) {
