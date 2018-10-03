@@ -22,7 +22,7 @@ type SoftwareRiuso struct {
 }
 
 // FirstSoftwareRiuso generate a yml file with simplified info about SoftwareRiuso, ordered by releaseDate.
-func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Client) error {
+func FirstSoftwareRiuso(filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
@@ -73,15 +73,24 @@ func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Cli
 
 		rawBaseDir := strings.TrimRight(i.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
-		if i.ItRiusoCodiceIPA != "" {
-			softwareRiuso = append(softwareRiuso, SoftwareRiuso{
-				Name:      i.Name,
-				Logo:      concatenateLink(rawBaseDir, i.Logo),
-				URL:       i.URL,
-				CodiceIPA: i.ItRiusoCodiceIPA,
-			})
-
+		// Append only supported countries.
+		unsupported := false
+		for _, unsupportedCountry := range unsupportedCountries {
+			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
+				unsupported = true
+			}
 		}
+		if !unsupported {
+			if i.ItRiusoCodiceIPA != "" {
+				softwareRiuso = append(softwareRiuso, SoftwareRiuso{
+					Name:      i.Name,
+					Logo:      concatenateLink(rawBaseDir, i.Logo),
+					URL:       i.URL,
+					CodiceIPA: i.ItRiusoCodiceIPA,
+				})
+			}
+		}
+
 	}
 	// Debug note if file will be empty.
 	if len(softwareRiuso) == 0 {

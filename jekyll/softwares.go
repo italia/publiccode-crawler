@@ -17,7 +17,7 @@ import (
 )
 
 // AllSoftwareYML generate the softwares.yml file
-func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopularTags int, elasticClient *elastic.Client) error {
+func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTags int, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s", filename)
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
@@ -143,7 +143,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 		}
 
 		// Search similar softwares for this software and add them to olSoftwares.
-		similarSoftware := findSimilarSoftwares(i.Tags, numberOfSimilarSoftware, elasticClient)
+		similarSoftware := findSimilarSoftwares(i.Tags, numberOfSimilarSoftware, unsupportedCountries, elasticClient)
 		for _, v := range similarSoftware {
 			// Remove the extracted software.
 			if v.URL != softwareExtracted.URL {
@@ -161,19 +161,36 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 					related.Ita.URL = v.URL
 				}
 
-				softwareExtracted.RelatedSoftwares = append(softwareExtracted.RelatedSoftwares, related)
+				// Append only supported countries.
+				unsupported := false
+				for _, unsupportedCountry := range unsupportedCountries {
+					if contains(v.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
+						unsupported = true
+					}
+				}
+				if !unsupported {
+					softwareExtracted.RelatedSoftwares = append(softwareExtracted.RelatedSoftwares, related)
+				}
 			}
 		}
 
 		// Search softwares basedOn this one.
-		isBasedOnSoftware := findIsBasedOnSoftwares(i, elasticClient)
-		softwareExtracted.OldVariant = findOldVariants(isBasedOnSoftware, softwareExtracted)
+		isBasedOnSoftware := findIsBasedOnSoftwares(i, unsupportedCountries, elasticClient)
+		softwareExtracted.OldVariant = findOldVariants(isBasedOnSoftware, softwareExtracted, unsupportedCountries)
 
 		// Diff features.
 		softwareExtracted.OldFeatureList = findDiffFeatures(softwareExtracted)
 
-		// Append.
-		softwares = append(softwares, softwareExtracted)
+		// Append only supported countries.
+		unsupported := false
+		for _, unsupportedCountry := range unsupportedCountries {
+			if contains(softwareExtracted.IntendedAudience.UnsupportedCountries, unsupportedCountry) {
+				unsupported = true
+			}
+		}
+		if !unsupported {
+			softwares = append(softwares, softwareExtracted)
+		}
 	}
 
 	// Marshal yml.
@@ -189,7 +206,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware int, numberOfPopula
 	return err
 }
 
-func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted Software) []OldVariantData {
+func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted Software, unsupportedCountries []string) []OldVariantData {
 	var oldVariantData []OldVariantData
 
 	for _, v := range isBasedOnSoftware {
@@ -210,7 +227,17 @@ func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted
 				basedOn.Ita.URL = v.URL
 			}
 
-			oldVariantData = append(oldVariantData, basedOn)
+			// Append only supported countries.
+			unsupported := false
+			for _, unsupportedCountry := range unsupportedCountries {
+				if contains(v.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
+					unsupported = true
+				}
+			}
+			if !unsupported {
+				oldVariantData = append(oldVariantData, basedOn)
+			}
+
 		}
 	}
 	return oldVariantData
@@ -236,7 +263,7 @@ func findDiffFeatures(softwareExtracted Software) map[string][]string {
 	return diffFeatures
 }
 
-func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, elasticClient *elastic.Client) []crawler.PublicCodeES {
+func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, unsupportedCountries []string, elasticClient *elastic.Client) []crawler.PublicCodeES {
 	var pcs []crawler.PublicCodeES
 
 	// Generate query.
@@ -257,14 +284,24 @@ func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, elasticCli
 	var pctype crawler.PublicCodeES
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
-		pcs = append(pcs, i)
+
+		// Append if only supported country.
+		unsupported := false
+		for _, unsupportedCountry := range unsupportedCountries {
+			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
+				unsupported = true
+			}
+		}
+		if !unsupported {
+			pcs = append(pcs, i)
+		}
 	}
 
 	return pcs
 
 }
 
-func findIsBasedOnSoftwares(document crawler.PublicCodeES, elasticClient *elastic.Client) []crawler.PublicCodeES {
+func findIsBasedOnSoftwares(document crawler.PublicCodeES, unsupportedCountries []string, elasticClient *elastic.Client) []crawler.PublicCodeES {
 	var pcs []crawler.PublicCodeES
 
 	// Extract all the documents. It should filter only the ones with isBaseOn=url
@@ -282,16 +319,29 @@ func findIsBasedOnSoftwares(document crawler.PublicCodeES, elasticClient *elasti
 	// Range over isBasedOn
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
-		// If isBasedOn contains url, append to returned software.
-		for _, name := range i.IsBasedOn {
-			if name == document.URL {
-				pcs = append(pcs, i)
+
+		// Append if only supported country.
+		unsupported := false
+		for _, unsupportedCountry := range unsupportedCountries {
+			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
+				unsupported = true
 			}
 		}
-		// And viceversa.
-		if contains(document.IsBasedOn, i.URL) {
-			pcs = append(pcs, i)
+		if unsupported {
+
+			// If isBasedOn contains url, append to returned software.
+			for _, name := range i.IsBasedOn {
+				if name == document.URL {
+					pcs = append(pcs, i)
+				}
+			}
+			// And viceversa.
+			if contains(document.IsBasedOn, i.URL) {
+				pcs = append(pcs, i)
+			}
+
 		}
+
 	}
 
 	return pcs
@@ -307,6 +357,7 @@ func contains(slice []string, item string) bool {
 	return false
 }
 
+// concatenateLink returns the host path joined with the file name.
 func concatenateLink(host, file string) string {
 	u, err := url.Parse(host)
 	if err != nil {

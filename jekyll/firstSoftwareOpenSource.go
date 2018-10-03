@@ -22,7 +22,7 @@ type SoftwareOpenSource struct {
 }
 
 // FirstSoftwareOpenSource generate a yml file with simplified info about SoftwareRiuso, ordered by releaseDate.
-func FirstSoftwareOpenSource(filename string, results int, elasticClient *elastic.Client) error {
+func FirstSoftwareOpenSource(filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	log.Debugf("Generating %s", filename)
 
 	// Create file if not exists.
@@ -73,15 +73,24 @@ func FirstSoftwareOpenSource(filename string, results int, elasticClient *elasti
 
 		rawBaseDir := strings.TrimRight(i.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
-		if i.ItRiusoCodiceIPA == "" {
-			softwareOS = append(softwareOS, SoftwareOpenSource{
-				Name:      i.Name,
-				Logo:      concatenateLink(rawBaseDir, i.Logo),
-				URL:       i.URL,
-				CodiceIPA: i.ItRiusoCodiceIPA,
-			})
-
+		// Append only supported countries.
+		unsupported := false
+		for _, unsupportedCountry := range unsupportedCountries {
+			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
+				unsupported = true
+			}
 		}
+		if !unsupported {
+			if i.ItRiusoCodiceIPA == "" {
+				softwareOS = append(softwareOS, SoftwareOpenSource{
+					Name:      i.Name,
+					Logo:      concatenateLink(rawBaseDir, i.Logo),
+					URL:       i.URL,
+					CodiceIPA: i.ItRiusoCodiceIPA,
+				})
+			}
+		}
+
 	}
 	// Debug note if file will be empty.
 	if len(softwareOS) == 0 {

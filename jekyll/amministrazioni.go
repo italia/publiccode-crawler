@@ -20,7 +20,7 @@ type Administration struct {
 }
 
 // AmministrazioniYML generate a yml file with all the amministrazioni in es.
-func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
+func AmministrazioniYML(filename string, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
@@ -67,13 +67,24 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	var pctype crawler.PublicCodeES
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
-		if i.ItRiusoCodiceIPA != "" {
-			administrations = append(administrations, Administration{
-				Name:      ipa.GetAdministrationName(i.ItRiusoCodiceIPA),
-				URL:       i.LandingURL,
-				CodiceIPA: i.ItRiusoCodiceIPA,
-			})
+
+		// Append only supported countries.
+		unsupported := false
+		for _, unsupportedCountry := range unsupportedCountries {
+			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
+				unsupported = true
+			}
 		}
+		if !unsupported {
+			if i.ItRiusoCodiceIPA != "" {
+				administrations = append(administrations, Administration{
+					Name:      ipa.GetAdministrationName(i.ItRiusoCodiceIPA),
+					URL:       i.LandingURL,
+					CodiceIPA: i.ItRiusoCodiceIPA,
+				})
+			}
+		}
+
 	}
 	// Debug note if file will be empty.
 	if len(administrations) == 0 {
