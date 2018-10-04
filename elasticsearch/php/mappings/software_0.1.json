@@ -4,9 +4,7 @@
       "analyzer": {
         "autocomplete": {
           "tokenizer": "autocomplete",
-          "filter": [
-            "lowercase"
-          ]
+          "filter": ["lowercase"]
         },
         "autocomplete_search": {
           "tokenizer": "lowercase"
@@ -17,9 +15,7 @@
           "type": "edge_ngram",
           "min_gram": 3,
           "max_gram": 30,
-          "token_chars": [
-            "letter"
-          ]
+          "token_chars": ["letter"]
         }
       }
     }
@@ -106,6 +102,12 @@
           "type": "text",
           "analyzer": "autocomplete",
           "search_analyzer": "autocomplete_search"
+        },
+        "id": {
+          "type": "text"
+        },
+        "crawltime": {
+          "type": "text"
         },
         "applicationSuite": {
           "type": "text",

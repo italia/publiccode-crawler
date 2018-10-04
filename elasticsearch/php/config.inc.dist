@@ -10,7 +10,7 @@ $type = 'software';
 
 $aliases = [
   'publiccode' => [
-    'publiccode_20180614',
+    'publiccodes',
     'jekyll',
     'administrations',
   ]
@@ -18,6 +18,6 @@ $aliases = [
 
 $indexes = [
   'jekyll' => 'mappings/post.json',
-  'publiccode_20180614' => 'mappings/software_0.1.json',
+  'publiccodes' => 'mappings/software_0.1.json',
   'administrations' => 'mappings/administrations.json',
 ];

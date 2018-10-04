@@ -16,6 +16,8 @@ generate_document() {
 {
   "publiccode-yaml-version": "http://w3id.org/publiccode/version/0.1",
   "name": "Medusa",
+  "id": "04b5bfeb42a2f81cd3442692645ab174d672b460",
+  "crawltime": "Sat 15 August 2018 - 15:12...",
   "application-suite": "MegaProductivitySuite",
   "url": "https://example.com/italia/medusa.git",
   "landing-url": "https://example.com/italia/medusa",

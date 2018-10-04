@@ -9,7 +9,7 @@
 source config.sh
 
 TODAY=$(date '+%Y%m%d')
-INDEX="publiccode_$TODAY"
+INDEX="publiccodes"
 
 generate_index_settings() {
   cat <<EOF
@@ -80,6 +80,12 @@ generate_index_settings() {
           "index": false
         },
         "name": {
+          "type": "text"
+        },
+        "id": {
+          "type": "text"
+        },
+        "crawltime": {
           "type": "text"
         },
         "applicationSuite": {
