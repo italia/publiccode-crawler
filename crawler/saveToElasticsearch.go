@@ -1,15 +1,23 @@
 package crawler
 
 import (
+	"bytes"
 	"context"
 	"net/url"
 
+	"github.com/dyatlov/go-oembed/oembed"
 	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/olivere/elastic"
+
 	pcode "github.com/r3vit/publiccode.yml-parser-go"
 	log "github.com/sirupsen/logrus"
 )
+
+type administration struct {
+	Name      string `json:"it-riuso-codiceIPA-label"`
+	CodiceIPA string `json:"it-riuso-codiceIPA"`
+}
 
 // SaveToES save the chosen data []byte in elasticsearch
 func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float64, vitality []int, data []byte, index string, elasticClient *elastic.Client) error {
@@ -132,7 +140,7 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 			Videos: func(videos []*url.URL) []string {
 				var v []string
 				for _, video := range videos {
-					v = append(v, video.String())
+					v = append(v, getOembedInfo("video", video.String()))
 				}
 				return v
 			}(pc.Description[lang].Videos),
@@ -202,7 +210,49 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 	return nil
 }
 
-type administration struct {
-	Name      string `json:"it-riuso-codiceIPA-label"`
-	CodiceIPA string `json:"it-riuso-codiceIPA"`
+// getOembedInfo retrive the oembed info from a link.
+// Reference: https://oembed.com/providers.json
+func getOembedInfo(t, link string) string {
+	genericOembed := oembed.Info{
+		Type: t,
+		URL:  link,
+	}
+	// Fail fast on empty links.
+	if link == "" {
+		return genericOembed.String()
+	}
+
+	// Load oembed library and providers.js.
+	oe := oembed.NewOembed()
+	dataFile, err := Asset("data/oembed_providers.json")
+	if err != nil {
+		log.Errorf("Error retrieving assets in getOembedInfo.")
+		return genericOembed.String()
+	}
+	providers := dataFile
+	err = oe.ParseProviders(bytes.NewReader(providers))
+	if err != nil {
+		return genericOembed.String()
+	}
+
+	item := oe.FindItem(link)
+
+	if item != nil {
+		// Extract infos.
+		info, err := item.FetchOembed(oembed.Options{URL: link})
+		if err != nil {
+			log.Errorf("Error fetching oembed in getOembedInfo.")
+			return genericOembed.String()
+		} else {
+			if info.Status >= 300 {
+				log.Errorf("Error retrieving info in getOembedInfo.")
+				return genericOembed.String()
+			} else {
+				log.Debugf("Successfully extracted oembed data.")
+				return info.String()
+			}
+		}
+	}
+
+	return genericOembed.String()
 }
