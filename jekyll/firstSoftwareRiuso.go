@@ -51,8 +51,15 @@ func FirstSoftwareRiuso(filename string, results int, unsupportedCountries []str
 	// Administrations data.
 	var softwareRiuso []SoftwareRiuso
 
-	// Generate query.
-	query := elastic.NewExistsQuery("it-riuso-codice-ipa")
+	// UnsupportedCountries.
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
+	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.Must(elastic.NewExistsQuery("it-riuso-codice-ipa"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	// Extract all the documents.
 	searchResult, err := elasticClient.Search().
@@ -73,22 +80,13 @@ func FirstSoftwareRiuso(filename string, results int, unsupportedCountries []str
 
 		rawBaseDir := strings.TrimRight(i.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
-		// Append only supported countries.
-		unsupported := false
-		for _, unsupportedCountry := range unsupportedCountries {
-			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
-				unsupported = true
-			}
-		}
-		if !unsupported {
-			if i.ItRiusoCodiceIPA != "" {
-				softwareRiuso = append(softwareRiuso, SoftwareRiuso{
-					Name:      i.Name,
-					Logo:      concatenateLink(rawBaseDir, i.Logo),
-					URL:       i.URL,
-					CodiceIPA: i.ItRiusoCodiceIPA,
-				})
-			}
+		if i.ItRiusoCodiceIPA != "" {
+			softwareRiuso = append(softwareRiuso, SoftwareRiuso{
+				Name:      i.Name,
+				Logo:      concatenateLink(rawBaseDir, i.Logo),
+				URL:       i.URL,
+				CodiceIPA: i.ItRiusoCodiceIPA,
+			})
 		}
 
 	}

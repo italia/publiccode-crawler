@@ -51,9 +51,15 @@ func FirstSoftwareOpenSource(filename string, results int, unsupportedCountries 
 	// Administrations data.
 	var softwareOS []SoftwareOpenSource
 
-	// Extract all the softwares.
+	// UnsupportedCountries.
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
+
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	searchResult, err := elasticClient.Search().
 		Index("publiccode").        // search in index "publiccode"
@@ -73,22 +79,13 @@ func FirstSoftwareOpenSource(filename string, results int, unsupportedCountries 
 
 		rawBaseDir := strings.TrimRight(i.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
-		// Append only supported countries.
-		unsupported := false
-		for _, unsupportedCountry := range unsupportedCountries {
-			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
-				unsupported = true
-			}
-		}
-		if !unsupported {
-			if i.ItRiusoCodiceIPA == "" {
-				softwareOS = append(softwareOS, SoftwareOpenSource{
-					Name:      i.Name,
-					Logo:      concatenateLink(rawBaseDir, i.Logo),
-					URL:       i.URL,
-					CodiceIPA: i.ItRiusoCodiceIPA,
-				})
-			}
+		if i.ItRiusoCodiceIPA == "" {
+			softwareOS = append(softwareOS, SoftwareOpenSource{
+				Name:      i.Name,
+				Logo:      concatenateLink(rawBaseDir, i.Logo),
+				URL:       i.URL,
+				CodiceIPA: i.ItRiusoCodiceIPA,
+			})
 		}
 
 	}

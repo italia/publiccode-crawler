@@ -45,9 +45,15 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 	// Publiccodes data.
 	var softwares []Software
 
+	// UnsupportedCountries
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
 	// Extract all the softwares.
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	searchResult, err := elasticClient.Search().
 		Index("publiccode").     // search in index "publiccode"
@@ -161,11 +167,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 					related.Ita.URL = v.URL
 				}
 
-				// Append only supported countries.
-				unsupported := checkUnsupportedCountries(v.IntendedAudienceUnsupportedCountries, unsupportedCountries)
-				if !unsupported {
-					softwareExtracted.RelatedSoftwares = append(softwareExtracted.RelatedSoftwares, related)
-				}
+				softwareExtracted.RelatedSoftwares = append(softwareExtracted.RelatedSoftwares, related)
 			}
 		}
 
@@ -177,10 +179,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 		softwareExtracted.OldFeatureList = findDiffFeatures(softwareExtracted)
 
 		// Append only supported countries.
-		unsupported := checkUnsupportedCountries(softwareExtracted.IntendedAudience.UnsupportedCountries, unsupportedCountries)
-		if !unsupported {
-			softwares = append(softwares, softwareExtracted)
-		}
+		softwares = append(softwares, softwareExtracted)
+
 	}
 
 	// Marshal yml.
@@ -196,6 +196,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 	return err
 }
 
+// findOldVariants returns a list of variants for the given software.
 func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted Software, unsupportedCountries []string) []OldVariantData {
 	var oldVariantData []OldVariantData
 
@@ -217,17 +218,14 @@ func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted
 				basedOn.Ita.URL = v.URL
 			}
 
-			// Append only supported countries.
-			unsupported := checkUnsupportedCountries(v.IntendedAudienceUnsupportedCountries, unsupportedCountries)
-			if !unsupported {
-				oldVariantData = append(oldVariantData, basedOn)
-			}
+			oldVariantData = append(oldVariantData, basedOn)
 
 		}
 	}
 	return oldVariantData
 }
 
+// findDiffFeatures returns a list of features from a software.
 func findDiffFeatures(softwareExtracted Software) map[string][]string {
 	diffFeatures := map[string][]string{}
 	for _, variant := range softwareExtracted.OldVariant {
@@ -248,14 +246,23 @@ func findDiffFeatures(softwareExtracted Software) map[string][]string {
 	return diffFeatures
 }
 
+// findSimilarSoftwares returns a list of similar software based on tags.
 func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, unsupportedCountries []string, elasticClient *elastic.Client) []crawler.PublicCodeES {
 	var pcs []crawler.PublicCodeES
 
+	// UnsupportedCountries.
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
+
 	// Generate query.
 	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery("software"))
 	for _, tag := range tags {
 		query = query.Should(elastic.NewTermQuery("tags", tag))
 	}
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	searchResult, err := elasticClient.Search().
 		Index("publiccode").                   // search in index "publiccode"
@@ -270,11 +277,8 @@ func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, unsupporte
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
 
-		// Append if only supported country.
-		unsupported := checkUnsupportedCountries(i.IntendedAudienceUnsupportedCountries, unsupportedCountries)
-		if !unsupported {
-			pcs = append(pcs, i)
-		}
+		pcs = append(pcs, i)
+
 	}
 
 	return pcs
@@ -284,13 +288,22 @@ func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, unsupporte
 func findIsBasedOnSoftwares(document crawler.PublicCodeES, unsupportedCountries []string, elasticClient *elastic.Client) []crawler.PublicCodeES {
 	var pcs []crawler.PublicCodeES
 
-	// Extract all the documents. It should filter only the ones with isBaseOn=url
+	// UnsupportedCountries.
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
+
+	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
+	// Extract all the documents. It should filter only the ones with isBaseOn=url.
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").               // search in index "publiccode"
-		Query(elastic.NewMatchAllQuery()). // specify the query
-		Pretty(true).                      // pretty print request and response JSON
-		From(0).Size(10000).               // get first 10k elements. The limit can be changed in ES.
-		Do(context.Background())           // execute
+		Index("publiccode").     // search in index "publiccode"
+		Query(query).            // specify the query
+		Pretty(true).            // pretty print request and response JSON
+		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background()) // execute
 	if err != nil {
 		log.Error(err)
 	}
@@ -299,21 +312,15 @@ func findIsBasedOnSoftwares(document crawler.PublicCodeES, unsupportedCountries 
 	// Range over isBasedOn
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
-
-		// Append if only supported country.
-		unsupported := checkUnsupportedCountries(i.IntendedAudienceUnsupportedCountries, unsupportedCountries)
-
-		if unsupported {
-			// If isBasedOn contains url, append to returned software.
-			for _, name := range i.IsBasedOn {
-				if name == document.URL {
-					pcs = append(pcs, i)
-				}
-			}
-			// And viceversa.
-			if contains(document.IsBasedOn, i.URL) {
+		// If isBasedOn contains url, append to returned software.
+		for _, name := range i.IsBasedOn {
+			if name == document.URL {
 				pcs = append(pcs, i)
 			}
+		}
+		// And viceversa.
+		if contains(document.IsBasedOn, i.URL) {
+			pcs = append(pcs, i)
 		}
 
 	}
@@ -358,13 +365,16 @@ func populatePopularTags(tags []string, number int, elasticClient *elastic.Clien
 
 	var popularTags []string
 
+	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", "it", "us", "de"))
 	// Extract all the documents. It should filter only the ones with isBaseOn=url.
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").               // search in index "publiccode"
-		Query(elastic.NewMatchAllQuery()). // specify the query
-		Pretty(true).                      // pretty print request and response JSON
-		From(0).Size(10000).               // get first 10k elements. The limit can be changed in ES.
-		Do(context.Background())           // execute
+		Index("publiccode").     // search in index "publiccode"
+		Query(query).            // specify the query
+		Pretty(true).            // pretty print request and response JSON
+		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background()) // execute
 	if err != nil {
 		log.Error(err)
 	}
@@ -401,13 +411,4 @@ func populatePopularTags(tags []string, number int, elasticClient *elastic.Clien
 	}
 
 	return popularTags
-}
-
-func checkUnsupportedCountries(listCountries, unsupportedCountries []string) bool {
-	for _, unsupportedCountry := range unsupportedCountries {
-		if contains(listCountries, unsupportedCountry) {
-			return true
-		}
-	}
-	return false
 }

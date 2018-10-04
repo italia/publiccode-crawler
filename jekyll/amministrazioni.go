@@ -49,9 +49,15 @@ func AmministrazioniYML(filename string, unsupportedCountries []string, elasticC
 	// Administrations data.
 	var administrations []Administration
 
-	// Extract all the softwares.
+	// UnsupportedCountries.
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
+
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	searchResult, err := elasticClient.Search().
 		Index("publiccode").     // search in index "publiccode"
@@ -68,21 +74,12 @@ func AmministrazioniYML(filename string, unsupportedCountries []string, elasticC
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
 
-		// Append only supported countries.
-		unsupported := false
-		for _, unsupportedCountry := range unsupportedCountries {
-			if contains(i.IntendedAudienceUnsupportedCountries, unsupportedCountry) {
-				unsupported = true
-			}
-		}
-		if !unsupported {
-			if i.ItRiusoCodiceIPA != "" {
-				administrations = append(administrations, Administration{
-					Name:      ipa.GetAdministrationName(i.ItRiusoCodiceIPA),
-					URL:       i.LandingURL,
-					CodiceIPA: i.ItRiusoCodiceIPA,
-				})
-			}
+		if i.ItRiusoCodiceIPA != "" {
+			administrations = append(administrations, Administration{
+				Name:      ipa.GetAdministrationName(i.ItRiusoCodiceIPA),
+				URL:       i.LandingURL,
+				CodiceIPA: i.ItRiusoCodiceIPA,
+			})
 		}
 
 	}
