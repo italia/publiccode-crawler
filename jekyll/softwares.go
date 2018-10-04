@@ -173,7 +173,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 
 		// Search softwares basedOn this one.
 		isBasedOnSoftware := findIsBasedOnSoftwares(i, unsupportedCountries, elasticClient)
-		softwareExtracted.OldVariant = findOldVariants(isBasedOnSoftware, softwareExtracted, unsupportedCountries)
+		softwareExtracted.OldVariant = findOldVariants(isBasedOnSoftware, softwareExtracted)
 
 		// Diff features.
 		softwareExtracted.OldFeatureList = findDiffFeatures(softwareExtracted)
@@ -197,7 +197,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 }
 
 // findOldVariants returns a list of variants for the given software.
-func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted Software, unsupportedCountries []string) []OldVariantData {
+func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted Software) []OldVariantData {
 	var oldVariantData []OldVariantData
 
 	for _, v := range isBasedOnSoftware {
