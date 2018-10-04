@@ -212,7 +212,7 @@ func SaveToES(fileRawURL string, domain Domain, name string, activityIndex float
 
 // getOembedInfo retrive the oembed info from a link.
 // Reference: https://oembed.com/providers.json
-func getOembedInfo(t, link string) string {
+func getOembedInfo(t, link string) string { // nolint: unparam
 	genericOembed := oembed.Info{
 		Type: t,
 		URL:  link,
@@ -232,26 +232,26 @@ func getOembedInfo(t, link string) string {
 	providers := dataFile
 	err = oe.ParseProviders(bytes.NewReader(providers))
 	if err != nil {
+		log.Errorf("Error parsing providers in getOembedInfo.")
 		return genericOembed.String()
 	}
 
 	item := oe.FindItem(link)
-
 	if item != nil {
 		// Extract infos.
 		info, err := item.FetchOembed(oembed.Options{URL: link})
 		if err != nil {
 			log.Errorf("Error fetching oembed in getOembedInfo.")
 			return genericOembed.String()
-		} else {
-			if info.Status >= 300 {
-				log.Errorf("Error retrieving info in getOembedInfo.")
-				return genericOembed.String()
-			} else {
-				log.Debugf("Successfully extracted oembed data.")
-				return info.String()
-			}
 		}
+
+		if info.Status >= 300 {
+			log.Errorf("Error retrieving info in getOembedInfo.")
+			return genericOembed.String()
+		}
+
+		log.Debugf("Successfully extracted oembed data.")
+		return info.String()
 	}
 
 	return genericOembed.String()

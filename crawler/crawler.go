@@ -140,6 +140,7 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		if err != nil {
 			log.Errorf("%s is an invalid publiccode.", fileRawURL)
 			log.Errorf("Errors:%+v", err)
+			logBadYamlToFile(fileRawURL)
 			wg.Done()
 			return
 		}
