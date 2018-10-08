@@ -16,6 +16,8 @@ import (
 // SoftwareOpenSource is a simple description of a Software without it/riuso/codiceIPA key.
 type SoftwareOpenSource struct {
 	Name      string `json:"name"`
+	ID        string `json:"id"`
+	CrawlTime string `json:"crawltime"`
 	Logo      string `json:"logo"`
 	URL       string `json:"url"`
 	CodiceIPA string `json:"ipa"`
@@ -82,6 +84,8 @@ func FirstSoftwareOpenSource(filename string, results int, unsupportedCountries 
 		if i.ItRiusoCodiceIPA == "" {
 			softwareOS = append(softwareOS, SoftwareOpenSource{
 				Name:      i.Name,
+				ID:        i.ID,
+				CrawlTime: i.CrawlTime,
 				Logo:      concatenateLink(rawBaseDir, i.Logo),
 				URL:       i.URL,
 				CodiceIPA: i.ItRiusoCodiceIPA,

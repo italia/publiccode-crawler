@@ -1,6 +1,7 @@
 ## References
 
-**domains.yml**
+### domains.yml
+
 Contains all the basic auth token for the repositories APIs in the form `Basic <token>`
 
 ```- host: "gitlab.com"
@@ -14,7 +15,8 @@ Contains all the basic auth token for the repositories APIs in the form `Basic <
     - "Basic <base64-auth-token>"
 ```
 
-**whitelist.yml**
+### whitelist.yml
+
 Contains a list of every organization.
 
 ```
@@ -26,8 +28,10 @@ Contains a list of every organization.
     - "https://github.com/gith002"
 ```
 
-**amministrazioni.txt**
+### amministrazioni.txt
+
 Reference: http://www.indicepa.gov.it/documentale/n-opendata.php
 
-**publiccode.yml parsing and validation**
+### publiccode.yml parsing and validation
+
 Reference: https://github.com/publiccodenet/publiccode.yml-parser-go

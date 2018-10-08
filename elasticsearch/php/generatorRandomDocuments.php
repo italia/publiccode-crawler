@@ -1,70 +1,71 @@
 <?php
 
-class generatorRandomDocuments {
+class generatorRandomDocuments
+{
+    protected $licenses;
+    protected $licenses_numbers;
 
-  protected $licenses;
-  protected $licenses_numbers;
+    protected $main_copyright_owner;
+    protected $main_copyright_owner_numbers;
 
-  protected $main_copyright_owner;
-  protected $main_copyright_owner_numbers;
+    protected $repo_owner;
+    protected $repo_owner_numbers;
 
-  protected $repo_owner;
-  protected $repo_owner_numbers;
+    protected $maintenance_type;
+    protected $maintenance_type_numbers;
 
-  protected $maintenance_type;
-  protected $maintenance_type_numbers;
+    protected $technical_contacts;
 
-  protected $technical_contacts;
+    protected $platforms;
+    protected $platforms_numbers;
 
-  protected $platforms;
-  protected $platforms_numbers;
+    protected $descriptions;
 
-  protected $descriptions;
+    protected $scope;
+    protected $scope_numbers;
 
-  protected $scope;
-  protected $scope_numbers;
+    protected $patype;
+    protected $patype_numbers;
 
-  protected $patype;
-  protected $patype_numbers;
+    protected $usedby;
+    protected $usedby_numbers;
 
-  protected $usedby;
-  protected $usedby_numbers;
+    protected $tags;
+    protected $tags_numbers;
 
-  protected $tags;
-  protected $tags_numbers;
+    protected $category;
+    protected $category_numbers;
 
-  protected $category;
-  protected $category_numbers;
+    protected $dependencies;
+    protected $dependencies_numbers;
 
-  protected $dependencies;
-  protected $dependencies_numbers;
+    protected $dependencies_hardware;
+    protected $dependencies_hardware_numbers;
 
-  protected $dependencies_hardware;
-  protected $dependencies_hardware_numbers;
+    protected $metadata_repo;
+    protected $metadata_repo_numbers;
 
-  protected $metadata_repo;
-  protected $metadata_repo_numbers;
+    protected $development_status;
+    protected $development_status_numbers;
 
-  protected $development_status;
-  protected $development_status_numbers;
+    protected $software_type;
+    protected $software_type_numbers;
 
-  protected $software_type;
-  protected $software_type_numbers;
+    protected $ISO_639_3;
+    protected $ISO_639_3_numbers;
 
-  protected $ISO_639_3;
-  protected $ISO_639_3_numbers;
+    protected $mime_types;
+    protected $mime_types_numbers;
 
-  protected $mime_types;
-  protected $mime_types_numbers;
+    protected $ecosistemi;
+    protected $ecosistemi_numbers;
 
-  protected $ecosistemi;
-  protected $ecosistemi_numbers;
+    protected $codiceIPA;
+    protected $codiceIPA_numbers;
 
-  protected $codiceIPA;
-  protected $codiceIPA_numbers;
-
-  public function __construct() {
-    $this->licenses = [
+    public function __construct()
+    {
+        $this->licenses = [
       "0BSD",                                 // BSD Zero Clause License
       "AAL",                                  // Attribution Assurance License
       "Abstyles",                             // Abstyles License
@@ -411,9 +412,9 @@ class generatorRandomDocuments {
       "ZPL-2.0",                              // Zope Public License 2.0
       "ZPL-2.1",                              // Zope Public License 2.1
     ];
-    $this->licenses_numbers = count($this->licenses);
+        $this->licenses_numbers = count($this->licenses);
 
-    $this->main_copyright_owner = [
+        $this->main_copyright_owner = [
       'City of Roma',
       'City of Milano',
       'City of Napoli',
@@ -465,9 +466,9 @@ class generatorRandomDocuments {
       'City of Cesena',
       'City of Barletta',
     ];
-    $this->main_copyright_owner_numbers = count($this->main_copyright_owner);
+        $this->main_copyright_owner_numbers = count($this->main_copyright_owner);
 
-    $this->repo_owner = [
+        $this->repo_owner = [
       'City of Roma',
       'City of Milano',
       'City of Napoli',
@@ -519,14 +520,14 @@ class generatorRandomDocuments {
       'City of Cesena',
       'City of Barletta',
     ];
-    $this->repo_owner_numbers = count($this->repo_owner);
+        $this->repo_owner_numbers = count($this->repo_owner);
 
-    $this->maintenance_type = ["internal", "contract", "community", "none"];
-    $this->maintenance_type_numbers = count($this->maintenance_type);
+        $this->maintenance_type = ["internal", "contract", "community", "none"];
+        $this->maintenance_type_numbers = count($this->maintenance_type);
 
-    $this->technical_contacts = [];
+        $this->technical_contacts = [];
 
-    $this->platforms = [
+        $this->platforms = [
       'web',
       'linux',
       'windows',
@@ -534,15 +535,15 @@ class generatorRandomDocuments {
       'android',
       'ios'
     ];
-    $this->platforms_numbers = count($this->platforms);
+        $this->platforms_numbers = count($this->platforms);
 
-    $this->scope = ["it", "en", "es", "fr", "de", "sv", "sl", "nl", "cs"];
-    $this->scope_numbers = count($this->scope);
+        $this->scope = ["it", "en", "es", "fr", "de", "sv", "sl", "nl", "cs"];
+        $this->scope_numbers = count($this->scope);
 
-    $this->ISO_639_3 = ["ita", "eng", "spa", "fra", "deu", "swe", "slv", "nld", "ces"];
-    $this->ISO_639_3_numbers = count($this->ISO_639_3);
+        $this->ISO_639_3 = ["ita", "eng", "spa", "fra", "deu", "swe", "slv", "nld", "ces"];
+        $this->ISO_639_3_numbers = count($this->ISO_639_3);
 
-    $this->patype = [
+        $this->patype = [
       'city',
       'hospital',
       'police',
@@ -584,9 +585,9 @@ class generatorRandomDocuments {
       'school',
       'university',
     ];
-    $this->patype_numbers = count($this->patype);
+        $this->patype_numbers = count($this->patype);
 
-    $this->usedby = [
+        $this->usedby = [
       'Comune di Roma',
       'Comune di Milano',
       'Comune di Napoli',
@@ -638,80 +639,80 @@ class generatorRandomDocuments {
       'Comune di Cesena',
       'Comune di Barletta',
     ];
-    $this->usedby_numbers = count($this->usedby);
+        $this->usedby_numbers = count($this->usedby);
 
-    $this->tags = [
+        $this->tags = [
       // International tags.
-    	"3dgraphics",    // application for viewing, creating, or processing 3-d graphics
-    	"accessibility", // accessibility
-    	"accounting",    // accounting software
-    	"amusement",     // a simple amusement
-    	"archiving",     // a tool to archive/backup data
-    	"art",           // software to teach arts
-    	"artificial-intelligence", // artificial intelligence software
-    	"backend",                 // software not meant for end users
-    	"calculator",              // a calculator
-    	"calendar",                // calendar application
-    	"chat",                    // a chat client
-    	"classroom-management",    // classroom management software
-    	"clock",                   // a clock application/applet
-    	"content-management",      // a content management system (CMS)
-    	"compression",             // a tool to manage compressed data/archives
-    	"construction",            //
-    	"contact-management",      // e.g. an address book
-    	"database",                // application to manage a database
-    	"debugger",                // a tool to debug applications
-    	"dictionary",              // a dictionary
-    	"documentation",           // help or documentation
-    	"electronics",             // electronics software, e.g. a circuit designer
-    	"email",                   // email application
-    	"emulator",                // emulator of another platform, such as a dos emulator
-    	"engineering",             // engineering software, e.g. cad programs
-    	"file-manager",            // a file manager
-    	"file-transfer",           // tools like ftp or p2p programs
-    	"finance",                 // application to manage your finance
-    	"flowchart",               // a flowchart application
-    	"gui-designer",            // a gui designer application
-    	"identity",                // identity management
-    	"instant-messaging",       // an instant messaging client
-    	"library",                 // a library software
-    	"medical",                 // medical software
-    	"monitor",                 // monitor application/applet that monitors some resource or activity
-    	"museum",                  // museum software
-    	"music",                   // musical software
-    	"news",                    // software to manage and publish news
-    	"ocr",                     // optical character recognition application
-    	"parallel-computing",      // parallel computing software
-    	"photography",             // camera tools, etc.
-    	"presentation",            // presentation software
-    	"printing",                // a tool to manage printers
-    	"procurement",             // software for managing procurement
-    	"project-management",      // project management application
-    	"publishing",              // desktop publishing applications and color management tools
-    	"raster-graphics",         // application for viewing, creating, or processing raster (bitmap) graphics
-    	"remote-access",           // a tool to remotely manage your pc
-    	"revision-control",        // applications like git or subversion
-    	"robotics",                // robotics software
-    	"scanning",                // tool to scan a file/text
-    	"security",                // a security tool
-    	"sports",                  // sports software
-    	"spreadsheet",             // a spreadsheet
-    	"telephony",               // telephony via pc
-    	"terminal-emulator",       // a terminal emulator application
-    	"texteditor",              // a text editor
-    	"texttools",               // a text tool utility
-    	"translation",             // a translation tool
-    	"vector-graphics",         // application for viewing, creating, or processing vector graphics
-    	"video-conference",        // video conference software
-    	"viewer",                  // tool to view e.g. a graphic or pdf file
-    	"web-browser",             // a web browser
-    	"whistleblowing",          // software for whistleblowing / anticorruption
-    	"word-processor",          // a word processor
-    	"wordprocessor",           // a word processor
+        "3dgraphics",    // application for viewing, creating, or processing 3-d graphics
+        "accessibility", // accessibility
+        "accounting",    // accounting software
+        "amusement",     // a simple amusement
+        "archiving",     // a tool to archive/backup data
+        "art",           // software to teach arts
+        "artificial-intelligence", // artificial intelligence software
+        "backend",                 // software not meant for end users
+        "calculator",              // a calculator
+        "calendar",                // calendar application
+        "chat",                    // a chat client
+        "classroom-management",    // classroom management software
+        "clock",                   // a clock application/applet
+        "content-management",      // a content management system (CMS)
+        "compression",             // a tool to manage compressed data/archives
+        "construction",            //
+        "contact-management",      // e.g. an address book
+        "database",                // application to manage a database
+        "debugger",                // a tool to debug applications
+        "dictionary",              // a dictionary
+        "documentation",           // help or documentation
+        "electronics",             // electronics software, e.g. a circuit designer
+        "email",                   // email application
+        "emulator",                // emulator of another platform, such as a dos emulator
+        "engineering",             // engineering software, e.g. cad programs
+        "file-manager",            // a file manager
+        "file-transfer",           // tools like ftp or p2p programs
+        "finance",                 // application to manage your finance
+        "flowchart",               // a flowchart application
+        "gui-designer",            // a gui designer application
+        "identity",                // identity management
+        "instant-messaging",       // an instant messaging client
+        "library",                 // a library software
+        "medical",                 // medical software
+        "monitor",                 // monitor application/applet that monitors some resource or activity
+        "museum",                  // museum software
+        "music",                   // musical software
+        "news",                    // software to manage and publish news
+        "ocr",                     // optical character recognition application
+        "parallel-computing",      // parallel computing software
+        "photography",             // camera tools, etc.
+        "presentation",            // presentation software
+        "printing",                // a tool to manage printers
+        "procurement",             // software for managing procurement
+        "project-management",      // project management application
+        "publishing",              // desktop publishing applications and color management tools
+        "raster-graphics",         // application for viewing, creating, or processing raster (bitmap) graphics
+        "remote-access",           // a tool to remotely manage your pc
+        "revision-control",        // applications like git or subversion
+        "robotics",                // robotics software
+        "scanning",                // tool to scan a file/text
+        "security",                // a security tool
+        "sports",                  // sports software
+        "spreadsheet",             // a spreadsheet
+        "telephony",               // telephony via pc
+        "terminal-emulator",       // a terminal emulator application
+        "texteditor",              // a text editor
+        "texttools",               // a text tool utility
+        "translation",             // a translation tool
+        "vector-graphics",         // application for viewing, creating, or processing vector graphics
+        "video-conference",        // video conference software
+        "viewer",                  // tool to view e.g. a graphic or pdf file
+        "web-browser",             // a web browser
+        "whistleblowing",          // software for whistleblowing / anticorruption
+        "word-processor",          // a word processor
+        "wordprocessor",           // a word processor
     ];
-    $this->tags_numbers = count($this->tags);
+        $this->tags_numbers = count($this->tags);
 
-    $this->category = [
+        $this->category = [
       'it-mammoth',
       'it-giant',
       'it-spotty',
@@ -725,9 +726,9 @@ class generatorRandomDocuments {
       'de-sore',
       'en-fallacious',
     ];
-    $this->category_numbers = count($this->category);
+        $this->category_numbers = count($this->category);
 
-    $this->dependencies = [
+        $this->dependencies = [
       'Oracle',
       'MySQL',
       'Apache',
@@ -737,34 +738,34 @@ class generatorRandomDocuments {
       'MS SQL',
       'nginx',
     ];
-    $this->dependencies_numbers = count($this->dependencies);
+        $this->dependencies_numbers = count($this->dependencies);
 
-    $this->dependencies_hardware = [
+        $this->dependencies_hardware = [
       'NFC Reader (chipset xxx)'
     ];
-    $this->dependencies_hardware_numbers = count($this->dependencies);
+        $this->dependencies_hardware_numbers = count($this->dependencies);
 
-    $this->metadata_repo = $this->readExampleMetadataRepo();
-    $this->metadata_repo_numbers = count($this->metadata_repo);
+        $this->metadata_repo = $this->readExampleMetadataRepo();
+        $this->metadata_repo_numbers = count($this->metadata_repo);
 
-    $this->development_status = [
+        $this->development_status = [
       "concept",
       "development",
       "beta",
       "stable",
       "obsolete"
     ];
-    $this->development_status_numbers = count($this->development_status);
+        $this->development_status_numbers = count($this->development_status);
 
-    $this->software_type = [
+        $this->software_type = [
       "standalone",
       "addon",
       "library",
       "configurationFiles"
     ];
-    $this->software_type_numbers = count($this->software_type);
+        $this->software_type_numbers = count($this->software_type);
 
-    $this->mime_types = [
+        $this->mime_types = [
       "audio/aac",
       "application/x-abiword",
       "application/octet-stream",
@@ -831,9 +832,9 @@ class generatorRandomDocuments {
       "audio/3gpp",
       "application/x-7z-compressed",
     ];
-    $this->mime_types_numbers = count($this->mime_types);
+        $this->mime_types_numbers = count($this->mime_types);
 
-    $this->ecosistemi = [
+        $this->ecosistemi = [
       'sanita',
       'welfare',
       'finanza-pubblica',
@@ -847,9 +848,9 @@ class generatorRandomDocuments {
       'agricoltura',
       'italia-europa-mondo',
     ];
-    $this->ecosistemi_numbers = count($this->ecosistemi);
+        $this->ecosistemi_numbers = count($this->ecosistemi);
 
-    $this->codiceIPALabel = [
+        $this->codiceIPALabel = [
       '054' => "Azienda Unita' Sanitaria Locale Umbria 1",
       '055' => "Azienda Unita' Sanitaria Locale Umbria 2",
       '056' => "Azienda Unita' Sanitaria Locale Viterbo",
@@ -951,7 +952,7 @@ class generatorRandomDocuments {
       'abucfu' => "Amministrazione Beni Uso Civico Frazione di Fucine",
       'abucgra' => "Amministrazione Separata Dei Beni di Uso Civico Graun",
     ];
-    $this->codiceIPA = [
+        $this->codiceIPA = [
       '054',
       '055',
       '056',
@@ -1053,41 +1054,44 @@ class generatorRandomDocuments {
       'abucfu',
       'abucgra',
     ];
-    $this->codiceIPA_numbers = count($this->codiceIPA);
-  }
+        $this->codiceIPA_numbers = count($this->codiceIPA);
+    }
 
-  public function generateDocuments($n = 100) {
-    $documents = [];
-    $this->descriptions = $this->getDocumentsDescription($n);
+    public function generateDocuments($n = 100)
+    {
+        $documents = [];
+        $this->descriptions = $this->getDocumentsDescription($n);
 
-    // 1 January 2005 01:01:01
-    $start = 1104541261;
+        // 1 January 2005 01:01:01
+        $start = 1104541261;
 
-    $now = (new DateTime())->getTimestamp();
+        $now = (new DateTime())->getTimestamp();
 
-    // 1 January 2025 01:01:01
-    $end = 1735693261;
+        // 1 January 2025 01:01:01
+        $end = 1735693261;
 
-    for ($i=0; $i < $n; $i++) {
-      $name = $this->getRandomProjectName();
-      $audience_countries = $this->getRandomScope();
-      $audience_unsupported_countries = $this->getRandomScope();
-      $intended_audience_unsupported_countries = [];
-      foreach ($audience_unsupported_countries as $value) {
-        if (!in_array($value, $audience_countries)) {
-          $intended_audience_unsupported_countries[] = $value;
-        }
-      }
+        for ($i=0; $i < $n; $i++) {
+            $name = $this->getRandomProjectName();
+            $audience_countries = $this->getRandomScope();
+            $audience_unsupported_countries = $this->getRandomScope();
+            $intended_audience_unsupported_countries = [];
+            foreach ($audience_unsupported_countries as $value) {
+                if (!in_array($value, $audience_countries)) {
+                    $intended_audience_unsupported_countries[] = $value;
+                }
+            }
 
-      $tags = $this->getRandomTags();
-      $codiceIPA = $this->getRandomCodiceIPA();
+            $tags = $this->getRandomTags();
+            $codiceIPA = $this->getRandomCodiceIPA();
 
-      $documents[] = [
+            $documents[] = [
         "fileRawURL" => "https://example.com/italia/medusa/publiccode.yml",
         "publiccode-yaml-version" => "http://w3id.org/publiccode/version/0.1",
         "name" => $name,
+        "id" => $this->generateHash("https://example.com/".$this->generateRandomString(rand(5, 10), true)."/".$name.".git"),
+        "crawltime" => $this->getRandomDate($start, $now),
         "applicationSuite" => $this->getRandomApplicationSuite(),
-        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$name.".git",
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), true)."/".$name.".git",
         "landingURL" => "https://example.com/italia/medusa",
         "isBasedOn" => $this->getRandomIsBasedOn(),
         "softwareVersion" => $this->getRandomVersion(),
@@ -1119,23 +1123,23 @@ class generatorRandomDocuments {
         "maintenance-contacts" => $this->generateRandomMaintenanceContact(),
         "maintenance-contractors" => $this->getRandomMaintenanceContractors(),
         "maintenance-type" => $this->getRandommaintenanceType(),
-        "localisation-localisationReady" => boolval(rand(0,1)),
+        "localisation-localisationReady" => boolval(rand(0, 1)),
         "localisation-availableLanguages" => [],
-        "it-conforme-accessibile" => boolval(rand(0,1)),
-        "it-conforme-interoperabile" => boolval(rand(0,1)),
-        "it-conforme-sicuro" => boolval(rand(0,1)),
-        "it-conforme-privacy" => boolval(rand(0,1)),
-        "it-spid" => boolval(rand(0,1)),
-        "it-cie" => boolval(rand(0,1)),
-        "it-anpr" => boolval(rand(0,1)),
-        "it-pagopa" => boolval(rand(0,1)),
+        "it-conforme-accessibile" => boolval(rand(0, 1)),
+        "it-conforme-interoperabile" => boolval(rand(0, 1)),
+        "it-conforme-sicuro" => boolval(rand(0, 1)),
+        "it-conforme-privacy" => boolval(rand(0, 1)),
+        "it-spid" => boolval(rand(0, 1)),
+        "it-cie" => boolval(rand(0, 1)),
+        "it-anpr" => boolval(rand(0, 1)),
+        "it-pagopa" => boolval(rand(0, 1)),
         "it-riuso-codiceIPA" => $codiceIPA,
-        "it-riuso-codiceIPA-label" => ($codiceIPA == NULL) ? $codiceIPA : $this->codiceIPALabel[$codiceIPA],
+        "it-riuso-codiceIPA-label" => ($codiceIPA == null) ? $codiceIPA : $this->codiceIPALabel[$codiceIPA],
         "it-ecosistemi" => $this->getRandomEcosistemi(),
-        "it-design-kit-seo"  => boolval(rand(0,1)),
-        "it-design-kit-ui"  => boolval(rand(0,1)),
-        "it-design-kit-web" => boolval(rand(0,1)),
-        "it-design-kit-content" => boolval(rand(0,1)),
+        "it-design-kit-seo"  => boolval(rand(0, 1)),
+        "it-design-kit-ui"  => boolval(rand(0, 1)),
+        "it-design-kit-web" => boolval(rand(0, 1)),
+        "it-design-kit-content" => boolval(rand(0, 1)),
         "suggest-name" => explode(" ", $name),
         "metadata-repo" => $this->getRandomMetadataRepo(),
         "vitality-score" => rand(1, 100),
@@ -1150,255 +1154,282 @@ class generatorRandomDocuments {
           "eng" => $this->getRandomFeatureList(),
         ],
       ];
+        }
+
+        return $documents;
     }
 
-    return $documents;
-  }
-
-  public function getRandomLicense() {
-    return $this->licenses[rand(0, $this->licenses_numbers - 1)];
-  }
-
-  public function getRandomMainCopyrightOwner() {
-    return $this->main_copyright_owner[rand(0, $this->main_copyright_owner_numbers - 1)];
-  }
-
-  public function getRandomVersion() {
-    $maj = rand(1,3);
-    $min = rand(1,30);
-    $build = rand(1,1000);
-
-    return $maj . "." . $min . "." . $build;
-  }
-
-  public function getRandomDate($start, $end) {
-    $timestamp = rand($start, $end);
-    return date("Y-m-d", $timestamp);
-  }
-
-  public function getRandomVideoUrls() {
-    $n = rand(0,3);
-    $videos = [];
-    for ($i=0; $i < $n; $i++) {
-      $videos[] = 'https://youtube.com/' . $this->generateRandomString(8);
+    public function getRandomLicense()
+    {
+        return $this->licenses[rand(0, $this->licenses_numbers - 1)];
     }
 
-    return $videos;
-  }
-
-  public function getRandomPlatforms() {
-    $n = rand(1, $this->platforms_numbers);
-    $platforms = [];
-
-    for ($i=0; $i < $n;) {
-      $current = rand(0, $this->platforms_numbers - 1);
-      if(!in_array($this->platforms[$current], $platforms)) {
-        $platforms[] = $this->platforms[$current];
-        $i++;
-      }
+    public function getRandomMainCopyrightOwner()
+    {
+        return $this->main_copyright_owner[rand(0, $this->main_copyright_owner_numbers - 1)];
     }
 
-    return $platforms;
-  }
+    public function getRandomVersion()
+    {
+        $maj = rand(1, 3);
+        $min = rand(1, 30);
+        $build = rand(1, 1000);
 
-  public function getRandomScope() {
-    $n = rand(1, $this->scope_numbers);
-    $scope = [];
-
-    for ($i=0; $i < $n;) {
-      $current = rand(0, $this->scope_numbers - 1);
-      if(!in_array($this->scope[$current], $scope)) {
-        $scope[] = $this->scope[$current];
-        $i++;
-      }
+        return $maj . "." . $min . "." . $build;
     }
 
-    return $scope;
-  }
-
-  public function getRandomPaType() {
-    $n = rand(1, 10);
-    $patype = [];
-
-    for ($i=0; $i < $n;) {
-      $current = rand(0, $this->patype_numbers - 1);
-      if(!in_array($this->patype[$current], $patype)) {
-        $patype[] = $this->patype[$current];
-        $i++;
-      }
+    public function getRandomDate($start, $end)
+    {
+        $timestamp = rand($start, $end);
+        return date("Y-m-d", $timestamp);
     }
 
-    return $patype;
-  }
+    public function getRandomVideoUrls()
+    {
+        $n = rand(0, 3);
+        $videos = [];
+        for ($i=0; $i < $n; $i++) {
+            $videos[] = 'https://youtube.com/' . $this->generateRandomString(8);
+        }
 
-  public function getRandomUsedBy() {
-    $n = rand(1, 8);
-    $usedby = [];
-
-    for ($i=0; $i < $n;) {
-      $current = rand(0, $this->usedby_numbers - 1);
-      if(!in_array($this->usedby[$current], $usedby)) {
-        $usedby[] = $this->usedby[$current];
-        $i++;
-      }
+        return $videos;
     }
 
-    return $usedby;
-  }
+    public function getRandomPlatforms()
+    {
+        $n = rand(1, $this->platforms_numbers);
+        $platforms = [];
 
-  public function getRandomCodiceIPA() {
-    $codiceIPA = NULL;
-    if (rand(0,1) == 1) {
-      $codiceIPA = $this->codiceIPA[rand(0, ($this->codiceIPA_numbers - 1))];
+        for ($i=0; $i < $n;) {
+            $current = rand(0, $this->platforms_numbers - 1);
+            if (!in_array($this->platforms[$current], $platforms)) {
+                $platforms[] = $this->platforms[$current];
+                $i++;
+            }
+        }
+
+        return $platforms;
     }
 
-    return $codiceIPA;
-  }
+    public function getRandomScope()
+    {
+        $n = rand(1, $this->scope_numbers);
+        $scope = [];
 
-  public function getRandomTags() {
-    $n = rand(1, 15);
-    $tags = [];
+        for ($i=0; $i < $n;) {
+            $current = rand(0, $this->scope_numbers - 1);
+            if (!in_array($this->scope[$current], $scope)) {
+                $scope[] = $this->scope[$current];
+                $i++;
+            }
+        }
 
-    for ($i=0; $i < $n;) {
-      $current = rand(0, $this->tags_numbers - 1);
-      if(!in_array($this->tags[$current], $tags)) {
-        $tags[] = $this->tags[$current];
-        $i++;
-      }
+        return $scope;
     }
 
-    return $tags;
-  }
+    public function getRandomPaType()
+    {
+        $n = rand(1, 10);
+        $patype = [];
 
-  public function getRandomFreeTags() {
-    $free_tags = [];
-    // numero di tags
-    $n_tags = rand(0, 9);
-    $n_langs = rand(0, 5);
-    if($n_tags > 0) {
-      for ($i=0; $i < $n_langs; $i++) {
-        $free_tags[$this->getRandomISO6393()] = $this->generateRandomFreeTags($n_tags);
-      }
+        for ($i=0; $i < $n;) {
+            $current = rand(0, $this->patype_numbers - 1);
+            if (!in_array($this->patype[$current], $patype)) {
+                $patype[] = $this->patype[$current];
+                $i++;
+            }
+        }
+
+        return $patype;
     }
 
-    return $free_tags;
-  }
+    public function getRandomUsedBy()
+    {
+        $n = rand(1, 8);
+        $usedby = [];
 
-  public function generateRandomFreeTags($n = 3) {
-    $free_tags = [];
+        for ($i=0; $i < $n;) {
+            $current = rand(0, $this->usedby_numbers - 1);
+            if (!in_array($this->usedby[$current], $usedby)) {
+                $usedby[] = $this->usedby[$current];
+                $i++;
+            }
+        }
 
-    for ($i=0; $i < $n; $i++) {
-      $free_tags[] = $this->getRandomPhrase(2, 3, "-");
+        return $usedby;
     }
 
-    return $free_tags;
-  }
+    public function getRandomCodiceIPA()
+    {
+        $codiceIPA = null;
+        if (rand(0, 1) == 1) {
+            $codiceIPA = $this->codiceIPA[rand(0, ($this->codiceIPA_numbers - 1))];
+        }
 
-  public function getRandomDependencies() {
-    $n = rand(0, 5);
-    $dependencies = [];
+        return $codiceIPA;
+    }
 
-    for ($i=0; $i < $n;) {
-      $current = rand(0, $this->dependencies_numbers - 1);
-      if(!in_array($this->dependencies[$current], $dependencies)) {
-        if(($i % 2) == 0){
-          $dependencies[] = [
+    public function getRandomTags()
+    {
+        $n = rand(1, 15);
+        $tags = [];
+
+        for ($i=0; $i < $n;) {
+            $current = rand(0, $this->tags_numbers - 1);
+            if (!in_array($this->tags[$current], $tags)) {
+                $tags[] = $this->tags[$current];
+                $i++;
+            }
+        }
+
+        return $tags;
+    }
+
+    public function getRandomFreeTags()
+    {
+        $free_tags = [];
+        // numero di tags
+        $n_tags = rand(0, 9);
+        $n_langs = rand(0, 5);
+        if ($n_tags > 0) {
+            for ($i=0; $i < $n_langs; $i++) {
+                $free_tags[$this->getRandomISO6393()] = $this->generateRandomFreeTags($n_tags);
+            }
+        }
+
+        return $free_tags;
+    }
+
+    public function generateRandomFreeTags($n = 3)
+    {
+        $free_tags = [];
+
+        for ($i=0; $i < $n; $i++) {
+            $free_tags[] = $this->getRandomPhrase(2, 3, "-");
+        }
+
+        return $free_tags;
+    }
+
+    public function getRandomDependencies()
+    {
+        $n = rand(0, 5);
+        $dependencies = [];
+
+        for ($i=0; $i < $n;) {
+            $current = rand(0, $this->dependencies_numbers - 1);
+            if (!in_array($this->dependencies[$current], $dependencies)) {
+                if (($i % 2) == 0) {
+                    $dependencies[] = [
             'name' => $this->dependencies[$current],
             'version' => $this->getRandomVersion(),
-            'optional' => boolval(rand(0,1))
+            'optional' => boolval(rand(0, 1))
           ];
-        }
-        else {
-          $dependencies[] = [
+                } else {
+                    $dependencies[] = [
             'name' => $this->dependencies[$current],
             'version-min' => $this->getRandomVersion(),
             'version-max' => $this->getRandomVersion(),
-            'optional' => boolval(rand(0,1))
+            'optional' => boolval(rand(0, 1))
           ];
+                }
+                $i++;
+            }
         }
-        $i++;
-      }
+
+        return $dependencies;
     }
 
-    return $dependencies;
-  }
+    public function getRandomDependenciesHardware()
+    {
+        $n = rand(0, 1);
+        $dependencies_hardware = [];
 
-  public function getRandomDependenciesHardware() {
-    $n = rand(0, 1);
-    $dependencies_hardware = [];
-
-    if ($n == 1) {
-      return [
+        if ($n == 1) {
+            return [
         'name' => $this->dependencies_hardware,
-        'optional' => boolval(rand(0,1)),
+        'optional' => boolval(rand(0, 1)),
       ];
+        }
+
+        return $dependencies_hardware;
     }
 
-    return $dependencies_hardware;
-  }
-
-  public function getRandommaintenanceType() {
-    return $this->maintenance_type[rand(0, $this->maintenance_type_numbers -1)];
-  }
-
-  public function getRandomMaintenanceContractors() {
-    $maintenance_contractors = [];
-    $n = rand(1,3);
-    for ($i=0; $i < $n; $i++) {
-      $maintenance_contractors = $this->generateRandomMaintenanceContractor();
+    public function getRandommaintenanceType()
+    {
+        return $this->maintenance_type[rand(0, $this->maintenance_type_numbers -1)];
     }
 
-    return $maintenance_contractors;
-  }
+    public function getRandomMaintenanceContractors()
+    {
+        $maintenance_contractors = [];
+        $n = rand(1, 3);
+        for ($i=0; $i < $n; $i++) {
+            $maintenance_contractors = $this->generateRandomMaintenanceContractor();
+        }
 
-  public function getRandomProjectName() {
-    $n = rand(1, 4);
-    $name = "";
-
-    for ($i=0; $i < $n; $i++) {
-      $name .= ucfirst(strtolower($this->generateRandomString(rand(4, 10), TRUE))) . " ";
+        return $maintenance_contractors;
     }
 
-    return trim($name);
-  }
+    public function getRandomProjectName()
+    {
+        $n = rand(1, 4);
+        $name = "";
 
-  public function getRandomApplicationSuite() {
-    $n = rand(1, 4);
-    $application_suite = "";
+        for ($i=0; $i < $n; $i++) {
+            $name .= ucfirst(strtolower($this->generateRandomString(rand(4, 10), true))) . " ";
+        }
 
-    for ($i=0; $i < $n; $i++) {
-      $application_suite .= ucfirst(strtolower($this->generateRandomString(rand(4, 10), TRUE)));
+        return trim($name);
     }
 
-    return $application_suite;
-  }
-
-  public function getRandomIsBasedOn() {
-    $n = rand(1, 4);
-    $is_based_on = [];
-
-    for ($i=0; $i < $n; $i++) {
-      $is_based_on[] = "https://github.com/italia/otello.git";
+    public function generateHash($str = "http://www.example.com/Repo/repo.git")
+    {
+        return sha1($str);
     }
 
-    return $is_based_on;
-  }
+    public function getRandomApplicationSuite()
+    {
+        $n = rand(1, 4);
+        $application_suite = "";
 
-  public function getRandomDevelopmentStatus() {
-    return $this->development_status[rand(0, $this->development_status_numbers -1)];
-  }
+        for ($i=0; $i < $n; $i++) {
+            $application_suite .= ucfirst(strtolower($this->generateRandomString(rand(4, 10), true)));
+        }
 
-  public function getRandomSoftwareType() {
-    return $this->software_type[rand(0, $this->software_type_numbers - 1)];
-  }
-
-  public function getRandomDescription($name, $i_description) {
-    $screenshots = [];
-    $n = rand(1, 8);
-    for ($i=0; $i < $n; $i++) {
-      $screenshots[] = "http://via.placeholder.com/350x150";
+        return $application_suite;
     }
-    return [
+
+    public function getRandomIsBasedOn()
+    {
+        $n = rand(1, 4);
+        $is_based_on = [];
+
+        for ($i=0; $i < $n; $i++) {
+            $is_based_on[] = "https://github.com/italia/otello.git";
+        }
+
+        return $is_based_on;
+    }
+
+    public function getRandomDevelopmentStatus()
+    {
+        return $this->development_status[rand(0, $this->development_status_numbers -1)];
+    }
+
+    public function getRandomSoftwareType()
+    {
+        return $this->software_type[rand(0, $this->software_type_numbers - 1)];
+    }
+
+    public function getRandomDescription($name, $i_description)
+    {
+        $screenshots = [];
+        $n = rand(1, 8);
+        for ($i=0; $i < $n; $i++) {
+            $screenshots[] = "http://via.placeholder.com/350x150";
+        }
+        return [
       "localisedName" => $name,
       "genericName" => $this->getRandomPhrase(1, 3),
       "shortDescription" => substr($this->descriptions[$i_description*2], 0, rand(100, 150)),
@@ -1411,257 +1442,273 @@ class generatorRandomDocuments {
       "videos" => $this->getRandomVideoUrls(),
       "awards" => $this->getRandomAwardsList(),
     ];
-  }
+    }
 
-  public function getRandomISO6393() {
-    return $this->ISO_639_3[rand(0, ($this->ISO_639_3_numbers - 1))];
-  }
+    public function getRandomISO6393()
+    {
+        return $this->ISO_639_3[rand(0, ($this->ISO_639_3_numbers - 1))];
+    }
 
-  public function getDocumentsDescription($n = 100) {
+    public function getDocumentsDescription($n = 100)
+    {
+        $descriptions = [];
+        $numbers = $n * 2;
+        $retry = 3;
 
-    $descriptions = [];
-    $numbers = $n * 2;
-    $retry = 3;
-
-    while($numbers > 0 && $retry > 0) {
-      $curl = curl_init();
-      curl_setopt_array($curl, array(
+        while ($numbers > 0 && $retry > 0) {
+            $curl = curl_init();
+            curl_setopt_array($curl, array(
           CURLOPT_RETURNTRANSFER => 1,
           CURLOPT_URL => 'https://baconipsum.com/api/?type=all-meat&paras='.$numbers.'&format=json'
       ));
 
-      try {
-        $resp = curl_exec($curl);
-        $resp = json_decode($resp);
-        $descriptions = array_merge($descriptions, $resp);
+            try {
+                $resp = curl_exec($curl);
+                $resp = json_decode($resp);
+                $descriptions = array_merge($descriptions, $resp);
 
-        $retry = 3;
-        $numbers = $numbers - count($resp);
-      }
-      catch(Exeption $e) {
-        $retry--;
-      }
+                $retry = 3;
+                $numbers = $numbers - count($resp);
+            } catch (Exeption $e) {
+                $retry--;
+            }
+        }
+
+        return $descriptions;
     }
 
-    return $descriptions;
-  }
-
-  public function getRandomMetadataRepo() {
-    return $this->metadata_repo[rand(0, $this->metadata_repo_numbers - 1)];
-  }
-
-  public function getRandomVitalityDataChart() {
-    $months = rand(0, 12);
-    $vitality_data_chart = [];
-    for ($i=0; $i < $months ; $i++) {
-      $vitality_data_chart[] = rand(1, 10);
+    public function getRandomMetadataRepo()
+    {
+        return $this->metadata_repo[rand(0, $this->metadata_repo_numbers - 1)];
     }
 
-    return $vitality_data_chart;
-  }
+    public function getRandomVitalityDataChart()
+    {
+        $months = rand(0, 12);
+        $vitality_data_chart = [];
+        for ($i=0; $i < $months ; $i++) {
+            $vitality_data_chart[] = rand(1, 10);
+        }
 
-  public function getRandomItemFromArray($all_tags = []) {
-    if(empty($all_tags)){
-      return [];
+        return $vitality_data_chart;
     }
 
-    $c = count($all_tags);
-    $n = rand(1, $c);
+    public function getRandomItemFromArray($all_tags = [])
+    {
+        if (empty($all_tags)) {
+            return [];
+        }
 
-    $keys = array_rand($all_tags, $n);
-    if(!is_array($keys)){
-      return [
+        $c = count($all_tags);
+        $n = rand(1, $c);
+
+        $keys = array_rand($all_tags, $n);
+        if (!is_array($keys)) {
+            return [
         $all_tags[$keys]
       ];
+        }
+
+        $items = [];
+        foreach ($keys as $key) {
+            $items[] = $all_tags[$key];
+        }
+
+        return $items;
     }
 
-    $items = [];
-    foreach ($keys as $key) {
-      $items[] = $all_tags[$key];
+    public function getRandomRelatedSoftware()
+    {
+        $n = rand(0, 3);
+        $items = [];
+
+        for ($i=0; $i < $n; $i++) {
+            $items[] = $this->generateRandomRelatedSoftware();
+        }
+
+        return $items;
     }
 
-    return $items;
-  }
+    public function getRandomOldVariant()
+    {
+        $n = rand(0, 3);
+        $items = [];
 
-  public function getRandomRelatedSoftware() {
-    $n = rand(0, 3);
-    $items = [];
+        for ($i=0; $i < $n; $i++) {
+            $items[] = $this->generateRandomOldVariant();
+        }
 
-    for ($i=0; $i < $n; $i++) {
-      $items[] = $this->generateRandomRelatedSoftware();
+        return $items;
     }
 
-    return $items;
-  }
+    public function getRamdomMimeTypes($min = 0, $max = 5)
+    {
+        $n = rand($min, $max);
+        $mime_types = [];
 
-  public function getRandomOldVariant() {
-    $n = rand(0, 3);
-    $items = [];
+        for ($i=0; $i < $n; $i++) {
+            $mime_types[] = $this->mime_types[rand(0, $this->mime_types_numbers - 1)];
+        }
 
-    for ($i=0; $i < $n; $i++) {
-      $items[] = $this->generateRandomOldVariant();
+        return $mime_types;
     }
 
-    return $items;
-  }
+    public function getRandomEcosistemi($min = 0, $max = 5)
+    {
+        $n = rand($min, $max);
+        $ecosistemi = [];
 
-  public function getRamdomMimeTypes($min = 0, $max = 5) {
-    $n = rand($min, $max);
-    $mime_types = [];
+        for ($i=0; $i < $n; $i++) {
+            $ecosistemi[] = $this->ecosistemi[rand(0, $this->ecosistemi_numbers - 1)];
+        }
 
-    for ($i=0; $i < $n; $i++) {
-      $mime_types[] = $this->mime_types[rand(0, $this->mime_types_numbers - 1)];
+        return $ecosistemi;
     }
 
-    return $mime_types;
-  }
+    private function generateRandomString($length = 10, $only_letters = false)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        if ($only_letters) {
+            $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        }
+        $charactersLength = strlen($characters);
+        $randomString = '';
 
-  public function getRandomEcosistemi($min = 0, $max = 5) {
-    $n = rand($min, $max);
-    $ecosistemi = [];
+        for ($i = 0; $i < $length; $i++) {
+            $randomString .= $characters[rand(0, $charactersLength - 1)];
+        }
 
-    for ($i=0; $i < $n; $i++) {
-      $ecosistemi[] = $this->ecosistemi[rand(0, $this->ecosistemi_numbers - 1)];
+        return $randomString;
     }
 
-    return $ecosistemi;
-  }
+    private function getRandomAwardsList()
+    {
+        $n = rand(0, 3);
+        $awards_list = [];
 
-  private function generateRandomString($length = 10, $only_letters = FALSE) {
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    if ($only_letters) {
-      $characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    }
-    $charactersLength = strlen($characters);
-    $randomString = '';
+        for ($i=0; $i < $n; $i++) {
+            $awards_list[] = $this->getRandomPhrase(2, 4);
+        }
 
-    for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)];
+        return $awards_list;
     }
 
-    return $randomString;
-  }
+    private function getRandomFeatureList()
+    {
+        $n = rand(1, 5);
+        $feature_list = [];
 
-  private function getRandomAwardsList() {
-    $n = rand(0, 3);
-    $awards_list = [];
+        for ($i=0; $i < $n; $i++) {
+            $feature_list[] = $this->getRandomPhrase();
+        }
 
-    for ($i=0; $i < $n; $i++) {
-      $awards_list[] = $this->getRandomPhrase(2, 4);
+        return $feature_list;
     }
 
-    return $awards_list;
-  }
+    private function getRandomPhrase($min = 3, $max = 7, $blank = " ")
+    {
+        $n = rand($min, $max);
+        $feature = "";
 
-  private function getRandomFeatureList() {
-    $n = rand(1, 5);
-    $feature_list = [];
+        for ($i=0; $i < $n; $i++) {
+            $feature .= strtolower($this->generateRandomString(rand(2, 12), true)) . $blank;
+        }
 
-    for ($i=0; $i < $n; $i++) {
-      $feature_list[] = $this->getRandomPhrase();
+        return trim($feature, $blank);
     }
 
-    return $feature_list;
-  }
-
-  private function getRandomPhrase($min = 3, $max = 7, $blank = " ") {
-    $n = rand($min, $max);
-    $feature = "";
-
-    for ($i=0; $i < $n; $i++) {
-      $feature .= strtolower($this->generateRandomString(rand(2, 12), TRUE)) . $blank;
-    }
-
-    return trim($feature, $blank);
-  }
-
-  private function generateRandomMaintenanceContact() {
-    $name = strtolower($this->generateRandomString(rand(6, 15), TRUE));
-    $surname = strtolower($this->generateRandomString(rand(6, 15), TRUE));
-    $affiliation = $this->generateRandomAffiliation();
-    return [
+    private function generateRandomMaintenanceContact()
+    {
+        $name = strtolower($this->generateRandomString(rand(6, 15), true));
+        $surname = strtolower($this->generateRandomString(rand(6, 15), true));
+        $affiliation = $this->generateRandomAffiliation();
+        return [
       "name" => ucfirst($name) . " " . ucfirst($surname),
       "email" => $name.".".$surname."@example.com",
       "phone" => "123456789",
       "affiliation" => $this->generateRandomAffiliation(),
     ];
-  }
+    }
 
-  private function generateRandomMaintenanceContractor() {
-    $now = (new DateTime())->getTimestamp();
-    $end = 1735693261;
+    private function generateRandomMaintenanceContractor()
+    {
+        $now = (new DateTime())->getTimestamp();
+        $end = 1735693261;
 
-    return [
-      "name" => ucfirst(strtolower($this->generateRandomString(rand(6, 15), TRUE))) . " " . ucfirst(strtolower($this->generateRandomString(rand(6, 15), TRUE))) . " S.p.A.",
+        return [
+      "name" => ucfirst(strtolower($this->generateRandomString(rand(6, 15), true))) . " " . ucfirst(strtolower($this->generateRandomString(rand(6, 15), true))) . " S.p.A.",
       "website" => "https://www.companywebsite.com",
       "until" => $this->getRandomDate($now, $end),
     ];
-  }
-
-  private function generateRandomAffiliation() {
-    $n = rand(2, 4);
-    $affiliation = '';
-    for ($i=0; $i < $n; $i++) {
-      $affiliation .= ucfirst(strtolower($this->generateRandomString(rand(6, 15), TRUE))) . " ";
     }
 
-    return trim($affiliation);
-  }
+    private function generateRandomAffiliation()
+    {
+        $n = rand(2, 4);
+        $affiliation = '';
+        for ($i=0; $i < $n; $i++) {
+            $affiliation .= ucfirst(strtolower($this->generateRandomString(rand(6, 15), true))) . " ";
+        }
 
-  private function readExampleMetadataRepo() {
-    $metadata = [];
-    $files = [
+        return trim($affiliation);
+    }
+
+    private function readExampleMetadataRepo()
+    {
+        $metadata = [];
+        $files = [
       'metadata-repo-bitbucket.json',
       'metadata-repo-github.json',
       'metadata-repo-gitlab.json',
     ];
 
-    foreach ($files as $file) {
-      $json = file_get_contents($file);
-      $metadata[] = json_decode($json);
+        foreach ($files as $file) {
+            $json = file_get_contents($file);
+            $metadata[] = json_decode($json);
+        }
+
+        return $metadata;
     }
 
-    return $metadata;
-  }
-
-  private function generateRandomRelatedSoftware() {
-    return [
-      "name" => $this->generateRandomString(rand(6, 15), TRUE),
+    private function generateRandomRelatedSoftware()
+    {
+        return [
+      "name" => $this->generateRandomString(rand(6, 15), true),
       "image" => "img/screenshot.jpg",
       "eng" => [
         "localised-name" => $this->getRandomPhrase(1, 3),
-        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), true)."/".$this->generateRandomString(rand(5, 10), true).".git",
       ],
       "ita" => [
         "localised-name" => $this->getRandomPhrase(1, 3),
-        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), true)."/".$this->generateRandomString(rand(5, 10), true).".git",
       ],
     ];
-  }
+    }
 
-  private function generateRandomOldVariant() {
-    $old_variant = [
+    private function generateRandomOldVariant()
+    {
+        $old_variant = [
       "name" => $this->getRandomPhrase($min = 1, $max = 4),
       "vitality-score" => rand(1, 99),
       "legal-repo-owner" => $this->getRandomMainCopyrightOwner(),
       "eng" => [
         "localised-name" => $this->getRandomPhrase(1, 3),
         "feature-list" => $this->getRandomFeatureList(),
-        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), true)."/".$this->generateRandomString(rand(5, 10), true).".git",
       ],
       "ita" => [
         "localised-name" => $this->getRandomPhrase(1, 3),
         "feature-list" => $this->getRandomFeatureList(),
-        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), TRUE)."/".$this->generateRandomString(rand(5, 10), TRUE).".git",
+        "url" => "https://example.com/".$this->generateRandomString(rand(5, 10), true)."/".$this->generateRandomString(rand(5, 10), true).".git",
       ],
     ];
 
-    if (rand(0,1) == 0) {
-      unset($old_variant["eng"]["localised-name"]);
-      unset($old_variant["ita"]["localised-name"]);
+        if (rand(0, 1) == 0) {
+            unset($old_variant["eng"]["localised-name"]);
+            unset($old_variant["ita"]["localised-name"]);
+        }
+
+        return $old_variant;
     }
-
-    return $old_variant;
-  }
-
 }
