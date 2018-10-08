@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	log.SetLevel(log.InfoLevel)
+	log.SetLevel(log.DebugLevel)
 
 	// Read configurations.
 	viper.SetConfigName("config")

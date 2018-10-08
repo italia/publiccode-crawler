@@ -1,5 +1,13 @@
 ## Mappings Elasticsearch
 
+The crawler uses Elasticsearch as database of publiccodes.
+
+There are two main indices:
+
+- publiccodes (that contains all the publiccode files and metadata linked to
+  crawling process and related software calculations)
+- administrations (that contains all the public administrations that are in elasticsearch)
+
 **Data mapping (ES):**
 
 1.  <mapping-software>
@@ -76,6 +84,12 @@
         "index": false
       },
       "name": {
+        "type": "text"
+      },
+      "id": {
+        "type": "text"
+      },
+      "crawltime": {
         "type": "text"
       },
       "applicationSuite": {
@@ -486,4 +500,4 @@
 
 **alias**
 
-The main alias is `publiccode`. It alias software and amministrazioni.
+The main alias is `publiccode`. It works as alias for software and amministrazioni.

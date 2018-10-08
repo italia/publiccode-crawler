@@ -16,13 +16,15 @@ import (
 // SoftwareOpenSource is a simple description of a Software without it/riuso/codiceIPA key.
 type SoftwareOpenSource struct {
 	Name      string `json:"name"`
+	ID        string `json:"id"`
+	CrawlTime string `json:"crawltime"`
 	Logo      string `json:"logo"`
 	URL       string `json:"url"`
 	CodiceIPA string `json:"ipa"`
 }
 
 // FirstSoftwareOpenSource generate a yml file with simplified info about SoftwareRiuso, ordered by releaseDate.
-func FirstSoftwareOpenSource(filename string, results int, elasticClient *elastic.Client) error {
+func FirstSoftwareOpenSource(filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	log.Debugf("Generating %s", filename)
 
 	// Create file if not exists.
@@ -51,9 +53,15 @@ func FirstSoftwareOpenSource(filename string, results int, elasticClient *elasti
 	// Administrations data.
 	var softwareOS []SoftwareOpenSource
 
-	// Extract all the softwares.
+	// UnsupportedCountries.
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
+
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	searchResult, err := elasticClient.Search().
 		Index("publiccode").        // search in index "publiccode"
@@ -76,12 +84,14 @@ func FirstSoftwareOpenSource(filename string, results int, elasticClient *elasti
 		if i.ItRiusoCodiceIPA == "" {
 			softwareOS = append(softwareOS, SoftwareOpenSource{
 				Name:      i.Name,
+				ID:        i.ID,
+				CrawlTime: i.CrawlTime,
 				Logo:      concatenateLink(rawBaseDir, i.Logo),
 				URL:       i.URL,
 				CodiceIPA: i.ItRiusoCodiceIPA,
 			})
-
 		}
+
 	}
 	// Debug note if file will be empty.
 	if len(softwareOS) == 0 {

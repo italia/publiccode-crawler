@@ -16,13 +16,15 @@ import (
 // SoftwareRiuso is a simple description of a Software with  it/riuso/codiceIPA key.
 type SoftwareRiuso struct {
 	Name      string `json:"name"`
+	ID        string `json:"id"`
+	CrawlTime string `json:"crawltime"`
 	Logo      string `json:"logo"`
 	URL       string `json:"url"`
 	CodiceIPA string `json:"ipa"`
 }
 
 // FirstSoftwareRiuso generate a yml file with simplified info about SoftwareRiuso, ordered by releaseDate.
-func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Client) error {
+func FirstSoftwareRiuso(filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
@@ -51,8 +53,15 @@ func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Cli
 	// Administrations data.
 	var softwareRiuso []SoftwareRiuso
 
-	// Generate query.
-	query := elastic.NewExistsQuery("it-riuso-codice-ipa")
+	// UnsupportedCountries.
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
+	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.Must(elastic.NewExistsQuery("it-riuso-codice-ipa"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	// Extract all the documents.
 	searchResult, err := elasticClient.Search().
@@ -76,12 +85,14 @@ func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Cli
 		if i.ItRiusoCodiceIPA != "" {
 			softwareRiuso = append(softwareRiuso, SoftwareRiuso{
 				Name:      i.Name,
+				ID:        i.ID,
+				CrawlTime: i.CrawlTime,
 				Logo:      concatenateLink(rawBaseDir, i.Logo),
 				URL:       i.URL,
 				CodiceIPA: i.ItRiusoCodiceIPA,
 			})
-
 		}
+
 	}
 	// Debug note if file will be empty.
 	if len(softwareRiuso) == 0 {
