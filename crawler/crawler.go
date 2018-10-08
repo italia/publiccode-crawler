@@ -2,7 +2,9 @@ package crawler
 
 import (
 	"crypto/rand"
+	"crypto/sha1"
 	"errors"
+	"fmt"
 	"math/big"
 	"strings"
 	"sync"
@@ -127,6 +129,16 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 	metadata := repository.Metadata
 	pa := repository.Pa
 
+	// Hash based on unique git repo URL.
+	hash := sha1.New()
+	_, err := hash.Write([]byte(gitURL))
+	if err != nil {
+		log.Errorf("Error generating the repository hash: %+v", err)
+		wg.Done()
+		return
+	}
+	hashedRepoURL := fmt.Sprintf("%x", hash.Sum(nil))
+
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", index).Inc()
 
@@ -139,7 +151,8 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		err = validateRemoteFile(resp.Body, fileRawURL, pa)
 		if err != nil {
 			log.Errorf("%s is an invalid publiccode.", fileRawURL)
-			log.Errorf("Errors:%+v", err)
+			log.Errorf("Errors: %+v", err)
+			logBadYamlToFile(fileRawURL)
 			wg.Done()
 			return
 		}
@@ -175,7 +188,7 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 		}
 
 		// Save to ES.
-		err = SaveToES(fileRawURL, domain, name, activityIndex, vitalitySlice, resp.Body, index, elasticClient)
+		err = SaveToES(fileRawURL, hashedRepoURL, name, activityIndex, vitalitySlice, resp.Body, index, elasticClient)
 		if err != nil {
 			log.Errorf("error saving to ElastcSearch: %v", err)
 		}

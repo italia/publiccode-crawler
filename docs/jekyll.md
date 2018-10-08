@@ -7,9 +7,9 @@ It uses ElasticSearch data store as source of truth.
 
 The result files are saved into: `jekyll/generated/` (mounted as volume in docker-compose stack).
 
-**File generation**
+### File generation
 
-The four yaml files are:
+The crawler generate four yml files:
 
 - amministrazioni.yml
 - softwares.yml

@@ -33,7 +33,7 @@ No organizations! Only single repositories!`,
 		// Read repository URL.
 		repo := args[0]
 		// Index for actual process.
-		index := "publiccode"
+		index := "publiccodes"
 
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(

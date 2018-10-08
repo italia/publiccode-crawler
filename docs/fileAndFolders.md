@@ -10,8 +10,8 @@ cmd, crawler, httpclient, ipa, jekyll, metrics, vendor, version: golang packages
 
 ./data: the tree for publiccode.yml files:
 
-- ./data/<host>/<org>/<repo>/<index>\_publiccode.yml.
-- ./data/<host>/<org>/<repo>/<index>\_metadata_publiccode.yml.
+- ./data/<host>/<org>/<repo>/publiccodes_publiccode.yml.
+- ./data/<host>/<org>/<repo>/publiccodes_metadata_publiccode.yml.
 - ./data/<host>/<org>/<repo>/gitClone/<git_clone_files>
 
 ./docker: the tree for docker config files
@@ -20,7 +20,7 @@ cmd, crawler, httpclient, ipa, jekyll, metrics, vendor, version: golang packages
 
 vitality-ranges.yml: ranges for vitality index (Ref: vitality-ranges.md)
 
-whitelistGeneric.yml and whitelistPA.yml: whitelist for Public Administrations and generic organizations (Ref: whitelist.md)
+whitelistGeneric.yml and whitelistPA.yml: whitelist for Public Administrations and generic organizations ([Reference](references.md))
 
 **Configuration files**
 
