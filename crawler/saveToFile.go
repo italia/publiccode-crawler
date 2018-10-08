@@ -49,7 +49,7 @@ func splitFullName(fullName string) (string, string) {
 	return s[0], s[1]
 }
 
-// Save the bad publiccode.yaml url to a file used by the publiccode-issueopener script
+// Save the bad publiccode.yaml url to a file used by the publiccode-issueopener script.
 func logBadYamlToFile(fileRawURL string) {
 	log.Errorf("Appending the bad file url to the list: %s", fileRawURL)
 
