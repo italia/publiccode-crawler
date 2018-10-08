@@ -20,7 +20,7 @@ type Administration struct {
 }
 
 // AmministrazioniYML generate a yml file with all the amministrazioni in es.
-func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
+func AmministrazioniYML(filename string, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
@@ -49,9 +49,15 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	// Administrations data.
 	var administrations []Administration
 
-	// Extract all the softwares.
+	// UnsupportedCountries.
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
+
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	searchResult, err := elasticClient.Search().
 		Index("publiccode").     // search in index "publiccode"
@@ -67,6 +73,7 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	var pctype crawler.PublicCodeES
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
+
 		if i.ItRiusoCodiceIPA != "" {
 			administrations = append(administrations, Administration{
 				Name:      ipa.GetAdministrationName(i.ItRiusoCodiceIPA),
@@ -74,6 +81,7 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 				CodiceIPA: i.ItRiusoCodiceIPA,
 			})
 		}
+
 	}
 	// Debug note if file will be empty.
 	if len(administrations) == 0 {

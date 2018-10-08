@@ -24,7 +24,7 @@ type SoftwareRiuso struct {
 }
 
 // FirstSoftwareRiuso generate a yml file with simplified info about SoftwareRiuso, ordered by releaseDate.
-func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Client) error {
+func FirstSoftwareRiuso(filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
@@ -53,8 +53,15 @@ func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Cli
 	// Administrations data.
 	var softwareRiuso []SoftwareRiuso
 
-	// Generate query.
-	query := elastic.NewExistsQuery("it-riuso-codice-ipa")
+	// UnsupportedCountries.
+	uc := make([]interface{}, len(unsupportedCountries))
+	for i, v := range unsupportedCountries {
+		uc[i] = v
+	}
+	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery("software"))
+	query = query.Must(elastic.NewExistsQuery("it-riuso-codice-ipa"))
+	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	// Extract all the documents.
 	searchResult, err := elasticClient.Search().
@@ -84,8 +91,8 @@ func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Cli
 				URL:       i.URL,
 				CodiceIPA: i.ItRiusoCodiceIPA,
 			})
-
 		}
+
 	}
 	// Debug note if file will be empty.
 	if len(softwareRiuso) == 0 {
