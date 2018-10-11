@@ -252,7 +252,7 @@ func getOembedInfo(t, link string) string { // nolint: unparam
 
 		log.Debugf("Successfully extracted oembed data.")
 		html = info.HTML
-		return info.HTML
+		return html
 	}
 
 	return html
