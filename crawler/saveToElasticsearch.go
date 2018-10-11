@@ -216,13 +216,10 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 // getOembedInfo retrive the oembed info from a link.
 // Reference: https://oembed.com/providers.json
 func getOembedInfo(t, link string) string { // nolint: unparam
-	genericOembed := oembed.Info{
-		Type: t,
-		URL:  link,
-	}
+	html := ""
 	// Fail fast on empty links.
 	if link == "" {
-		return genericOembed.String()
+		return html
 	}
 
 	// Load oembed library and providers.js.
@@ -230,13 +227,13 @@ func getOembedInfo(t, link string) string { // nolint: unparam
 	dataFile, err := Asset("data/oembed_providers.json")
 	if err != nil {
 		log.Errorf("Error retrieving assets in getOembedInfo.")
-		return genericOembed.String()
+		return html
 	}
 	providers := dataFile
 	err = oe.ParseProviders(bytes.NewReader(providers))
 	if err != nil {
 		log.Errorf("Error parsing providers in getOembedInfo.")
-		return genericOembed.String()
+		return html
 	}
 
 	item := oe.FindItem(link)
@@ -245,17 +242,18 @@ func getOembedInfo(t, link string) string { // nolint: unparam
 		info, err := item.FetchOembed(oembed.Options{URL: link})
 		if err != nil {
 			log.Errorf("Error fetching oembed in getOembedInfo.")
-			return genericOembed.String()
+			return html
 		}
 
 		if info.Status >= 300 {
 			log.Errorf("Error retrieving info in getOembedInfo.")
-			return genericOembed.String()
+			return html
 		}
 
 		log.Debugf("Successfully extracted oembed data.")
-		return info.String()
+		html = info.HTML
+		return info.HTML
 	}
 
-	return genericOembed.String()
+	return html
 }
