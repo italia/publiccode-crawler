@@ -85,7 +85,9 @@ to localhost.
 
 ##### As golang binary
 
-- start the crawler: `./crawler crawl whitelistPA.yml whitelistGeneric.yml`
+- download dependencies: `dep ensure`
+- build the crawler binary: `go build -o bin/crawler`
+- start the crawler: `bin/crawler crawl whitelistPA.yml whitelistGeneric.yml`
 
 ### Troubleshooting
 

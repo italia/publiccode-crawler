@@ -30,6 +30,7 @@ RUN apk update && \
 WORKDIR /app
 COPY --from=build-env /go/src/$PROJECT/$NAME /app/
 COPY ipa /app/ipa
+COPY jekyll/tags.yml /app/jekyll/tags.yml
 
 EXPOSE 8081
 
