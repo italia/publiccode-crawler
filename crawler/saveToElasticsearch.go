@@ -141,11 +141,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 			Documentation:    pc.Description[lang].Documentation.String(),
 			APIDocumentation: pc.Description[lang].APIDocumentation.String(),
 			FeatureList:      pc.Description[lang].FeatureList,
-			Screenshots: func(screenshots []string) []string {
-				var s []string
-				s = append(s, screenshots...)
-				return s
-			}(pc.Description[lang].Screenshots),
+			Screenshots:      concatenateLinks(rawBaseDir, pc.Description[lang].Screenshots),
 			Videos: func(videos []*url.URL) []string {
 				var v []string
 				for _, video := range videos {
@@ -274,4 +270,15 @@ func concatenateLink(host, file string) string {
 	u.Path = path.Join(u.Path, file)
 
 	return u.String()
+}
+
+// concatenateLinks returns a list of host paths joined with the file name.
+func concatenateLinks(host string, files []string) []string {
+	var concatenateFiles []string
+
+	for _, file := range files {
+		concatenateFiles = append(concatenateFiles, concatenateLink(host, file))
+	}
+
+	return concatenateFiles
 }

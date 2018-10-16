@@ -138,12 +138,6 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 		softwareExtracted.Maintenance.Contacts = i.MaintenanceContacts
 		softwareExtracted.Maintenance.Type = i.MaintenanceType
 
-		for lang := range softwareExtracted.Description {
-			for n := range softwareExtracted.Description[lang].Screenshots {
-				softwareExtracted.Description[lang].Screenshots[n] = softwareExtracted.Description[lang].Screenshots[n]
-			}
-		}
-
 		// Search similar softwares for this software and add them to olSoftwares.
 		similarSoftware := findSimilarSoftwares(i.Tags, numberOfSimilarSoftware, unsupportedCountries, elasticClient)
 		for _, v := range similarSoftware {
