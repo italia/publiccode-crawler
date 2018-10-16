@@ -4,12 +4,10 @@ import (
 	"context"
 	"os"
 	"reflect"
-	"strings"
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -79,14 +77,12 @@ func FirstSoftwareOpenSource(filename string, results int, unsupportedCountries 
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
 
-		rawBaseDir := strings.TrimRight(i.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
-
 		if i.ItRiusoCodiceIPA == "" {
 			softwareOS = append(softwareOS, SoftwareOpenSource{
 				Name:      i.Name,
 				ID:        i.ID,
 				CrawlTime: i.CrawlTime,
-				Logo:      concatenateLink(rawBaseDir, i.Logo),
+				Logo:      i.Logo,
 				URL:       i.URL,
 				CodiceIPA: i.ItRiusoCodiceIPA,
 			})

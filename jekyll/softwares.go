@@ -2,18 +2,14 @@ package jekyll
 
 import (
 	"context"
-	"net/url"
 	"os"
-	"path"
 	"reflect"
 	"sort"
-	"strings"
 
 	yaml "github.com/ghodss/yaml"
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
 
 // AllSoftwareYML generate the softwares.yml file
@@ -69,8 +65,6 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
 		i := item.(crawler.PublicCodeES)
 
-		rawBaseDir := strings.TrimRight(i.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
-
 		softwareExtracted := Software{
 			AmministrazioneLabel: i.ItRiusoCodiceIPALabel,
 			ID:                   i.ID,
@@ -82,8 +76,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 			IsBasedOn:            i.IsBasedOn,
 			SoftwareVersion:      i.SoftwareVersion,
 			ReleaseDate:          i.ReleaseDate,
-			Logo:                 concatenateLink(rawBaseDir, i.Logo),
-			MonochromeLogo:       concatenateLink(rawBaseDir, i.MonochromeLogo),
+			Logo:                 i.Logo,
+			MonochromeLogo:       i.MonochromeLogo,
 			Platforms:            i.Platforms,
 			Tags:                 i.Tags,
 			FreeTags:             populateFreeTags(i.Description),
@@ -110,7 +104,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 				License:            i.LegalLicense,
 				MainCopyrightOwner: i.LegalMainCopyrightOwner,
 				RepoOwner:          i.LegalRepoOwner,
-				AuthorsFile:        concatenateLink(rawBaseDir, i.LegalAuthorsFile),
+				AuthorsFile:        i.LegalAuthorsFile,
 			},
 			Localisation: LocalisationData{
 				LocalisationReady:  i.LocalisationLocalisationReady,
@@ -146,7 +140,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 
 		for lang := range softwareExtracted.Description {
 			for n := range softwareExtracted.Description[lang].Screenshots {
-				softwareExtracted.Description[lang].Screenshots[n] = concatenateLink(rawBaseDir, softwareExtracted.Description[lang].Screenshots[n])
+				softwareExtracted.Description[lang].Screenshots[n] = softwareExtracted.Description[lang].Screenshots[n]
 			}
 		}
 
@@ -155,10 +149,9 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 		for _, v := range similarSoftware {
 			// Remove the extracted software.
 			if v.URL != softwareExtracted.URL {
-				similarBaseDir := strings.TrimRight(v.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
 				related := RelatedSoftware{
 					Name:  v.Name,
-					Image: concatenateLink(similarBaseDir, v.Logo),
+					Image: v.Logo,
 				}
 				if d, ok := v.Description["eng"]; ok {
 					related.Eng.LocalisedName = d.LocalisedName
@@ -338,18 +331,6 @@ func contains(slice []string, item string) bool {
 		}
 	}
 	return false
-}
-
-// concatenateLink returns the host path joined with the file name.
-func concatenateLink(host, file string) string {
-	u, err := url.Parse(host)
-	if err != nil {
-		return ""
-	}
-
-	u.Path = path.Join(u.Path, file)
-
-	return u.String()
 }
 
 func populateFreeTags(description map[string]crawler.Desc) map[string][]string {

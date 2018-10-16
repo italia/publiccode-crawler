@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"context"
 	"net/url"
+	"path"
+	"strings"
 	"time"
 
 	"github.com/dyatlov/go-oembed/oembed"
 	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/olivere/elastic"
+	"github.com/spf13/viper"
 
 	pcode "github.com/r3vit/publiccode.yml-parser-go"
 	log "github.com/sirupsen/logrus"
@@ -32,6 +35,9 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		log.Errorf("Error parsing publiccode.yml for %s.", name)
 	}
 
+	// Extract raw base url.
+	rawBaseDir := strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
+
 	// Add a document to the index.
 	file := PublicCodeES{
 		FileRawURL:            fileRawURL,
@@ -47,8 +53,8 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		IsBasedOn:       pc.IsBasedOn,
 		SoftwareVersion: pc.SoftwareVersion,
 		ReleaseDate:     pc.ReleaseDate.Format("2006-01-02"),
-		Logo:            pc.Logo,
-		MonochromeLogo:  pc.MonochromeLogo,
+		Logo:            concatenateLink(rawBaseDir, pc.Logo),
+		MonochromeLogo:  concatenateLink(rawBaseDir, pc.MonochromeLogo),
 		InputTypes:      pc.InputTypes,
 		OutputTypes:     pc.OutputTypes,
 
@@ -79,7 +85,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		LegalLicense:            pc.Legal.License,
 		LegalMainCopyrightOwner: pc.Legal.MainCopyrightOwner,
 		LegalRepoOwner:          pc.Legal.RepoOwner,
-		LegalAuthorsFile:        pc.Legal.AuthorsFile,
+		LegalAuthorsFile:        concatenateLink(rawBaseDir, pc.Legal.AuthorsFile),
 
 		MaintenanceType:        pc.Maintenance.Type,
 		MaintenanceContractors: []Contractor{},
@@ -256,4 +262,16 @@ func getOembedInfo(t, link string) string { // nolint: unparam
 	}
 
 	return html
+}
+
+// concatenateLink returns the host path joined with the file name.
+func concatenateLink(host, file string) string {
+	u, err := url.Parse(host)
+	if err != nil {
+		return ""
+	}
+
+	u.Path = path.Join(u.Path, file)
+
+	return u.String()
 }
