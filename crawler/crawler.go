@@ -21,6 +21,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Sync mutex guard.
+var mu sync.Mutex
+
 // Repository is a single code repository. FileRawURL contains the direct url to the raw file.
 type Repository struct {
 	Name        string
@@ -147,8 +150,10 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 
 	// If it's available and no error returned.
 	if resp.Status.Code == http.StatusOK && err == nil {
+		mu.Lock()
 		// Validate file. If invalid, terminate the check.
 		err = validateRemoteFile(resp.Body, fileRawURL, pa)
+		mu.Unlock()
 		if err != nil {
 			log.Errorf("%s is an invalid publiccode.", fileRawURL)
 			log.Errorf("Errors: %+v", err)
@@ -200,10 +205,10 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 
 func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 	// Generate publiccode data using the parser.
-	pc := pcode.PublicCode{}
+	pc := new(pcode.PublicCode)
 	pcode.BaseDir = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
-	err := pcode.Parse(data, &pc)
+	err := pcode.Parse(data, pc)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
 		return err
