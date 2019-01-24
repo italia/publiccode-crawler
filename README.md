@@ -55,7 +55,7 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
 
 5. add mapping in `/etc/hosts` for exposed services
 
-    For example, if `PROJECT_BASE_URL` in `.env` is `developers.loc`, add (if your Docker daemon is listening on localhost):
+    For example, if `DOMAIN` in `.env` is `developers.loc`, add (if your Docker daemon is listening on localhost):
 
     ```
     127.0.0.1 elasticsearch.developers.loc
