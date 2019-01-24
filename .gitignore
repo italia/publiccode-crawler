@@ -1,5 +1,6 @@
 # IDEs config files
 .idea
+.vscode
 
 # OS generated files
 .DS_Store
@@ -18,7 +19,7 @@ log/
 vendor
 
 # Compiled binary
-developers-italia-backend
+crawler/bin/crawler
 
 # Elasticsearch data volume
 es_data
@@ -34,7 +35,7 @@ docker-compose-crawler.yml
 .env
 
 # Configurations
-config.toml
+crawler/config.toml
 
 # Downloaded files
 data

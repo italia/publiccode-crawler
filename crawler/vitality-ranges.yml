@@ -1,0 +1,89 @@
+- name: userCommunity #number of authors
+  ranges:
+    - min: 0
+      max: 2
+      points: 4
+    - min: 2
+      max: 4
+      points: 8
+    - min: 4
+      max: 8
+      points: 12
+    - min: 8
+      max: 12
+      points: 16
+    - min: 12
+      max: 16
+      points: 20
+    - min: 16
+      max: 20
+      points: 24
+    - min: 20
+      max: 24
+      points: 28
+    - min: 24
+      max: 28
+      points: 32
+    - min: 28
+      max: 10000
+      points: 36
+
+- name: codeActivity #number of commits and merges per day
+  ranges:
+    - min: 0
+      max: 4
+      points: 2
+    - min: 4
+      max: 6
+      points: 8
+    - min: 6
+      max: 9
+      points: 14
+    - min: 9
+      max: 12
+      points: 20
+    - min: 12
+      max: 15
+      points: 26
+    - min: 15
+      max: 18
+      points: 32
+    - min: 18
+      max: 25
+      points: 38
+    - min: 25
+      max: 30
+      points: 44
+    - min: 30
+      max: 35
+      points: 50
+    - min: 35
+      max: 10000
+      points: 60
+
+- name: releaseHistory #number of releases per day
+  ranges:
+    - min: 0
+      max: 1
+      points: 20
+    - min: 1
+      max: 2
+      points: 30
+    - min: 2
+      max: 4
+      points: 40
+    - min: 4
+      max: 100
+      points: 50
+
+- name: longevity #repository age in days
+  ranges:
+    - min: 0
+      max: 365
+      points: 20
+    - min: 365
+      max: 730
+      points: 30
+    - min: 730
+      max: 10000
+      points: 35

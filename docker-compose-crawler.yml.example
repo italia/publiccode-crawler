@@ -2,8 +2,8 @@ version: "3.1"
 
 services:
   crawler:
-    container_name: "${NAME}_crawler"
-    image: italia/developers-italia-backend:0.0.1
+    container_name: "${NAME}-crawler"
+    image: italia/${NAME}-crawler:${VERSION}
     ports:
       - 8081:8081
     networks:

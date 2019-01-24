@@ -2,16 +2,13 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.10
-
-    working_directory: /go/src/github.com/italia/developers-italia-backend
+      - image: circleci/golang:1.11
 
     steps:
       - checkout
 
-      # Install and retrieve all the dependencies with dep.
-      - run: go get -u github.com/golang/dep/cmd/dep
-      - run: dep ensure
+      - run: cd crawler
+      - run: go get
       # Install and run go linter.
       - run: go get -u github.com/alecthomas/gometalinter
       - run: gometalinter --install

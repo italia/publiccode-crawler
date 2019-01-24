@@ -1,95 +1,90 @@
 # developers-italia-backend
 
 [![CircleCI](https://circleci.com/gh/italia/developers-italia-backend/tree/master.svg?style=shield)](https://circleci.com/gh/italia/developers-italia-backend/tree/master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/italia/developers-italia-backend)](https://goreportcard.com/report/github.com/italia/developers-italia-backend)
+[![Go Report Card](https://goreportcard.com/badge/github.com/italia/developers-italia-backend)](https://goreportcard.com/report/github.com/italia/developers-italia-backend) [![Join the #website channel](https://img.shields.io/badge/Slack%20channel-%23website-blue.svg?logo=slack)](https://developersitalia.slack.com/messages/C9R26QMT6)
+[![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 
-Backend &amp; crawler for the OSS catalog of Developers Italia.
+## Backend & crawler for the OSS catalog of Developers Italia
 
-The crawler will find and retrieve all the publiccode.yml files from the Organizations registered on Github/Bitbucket/Gitlab listed in the whitelistes.
-If a user that is not an Organization wants to add his work to the catalog, he have to use the single repository command.
+The crawler finds and retrieves all the publiccode.yml files from the Organizations registered on Github/Bitbucket/Gitlab listed in the whitelistes, and then generates YAML files that are later used by the [Jekyll build chain](https://github.com/italia/developers.italia.it) to generate the static pages of [developers.italia.it](https://developers.italia.it/).
 
-**This document is a Work in progress!**
+### Components
 
-## Components
-
-- Elasticsearch
-- Kibana
-- Prometheus
-- Træfik
-
-## How to contribute
+- [Elasticsearch](https://www.elastic.co/products/elasticsearch) for storing the data
+- [Kibana](https://www.elastic.co/products/kibana) for internal visualization of data
+- [Prometheus](https://prometheus.io) for collecting metrics
+- [Træfik](https://traefik.io) as a reverse proxy
 
 ### Dependencies
 
-- [Go](https://golang.org/)
-- [dep](https://github.com/golang/dep)
 - [Docker](https://www.docker.com/)
 - [Docker-compose](https://docs.docker.com/compose/)
+- [Go](https://golang.org/) >= 1.11
 
-### Setup
+### Set-up
 
 #### Stack
 
-##### 1) rename docker-compose.yml.example to docker-compose.yml
+1. set up Træfik
 
-##### 2) set up Træfik
+    If you already have a Træfik container running on your host simply remove the `proxy` definition from
+    `docker-compose.yml` file and set up the `web` network to be external:
 
-If you already have a Træfik container running on your host simply remove the `proxy` definition from
-`docker-compose.yml` file and set up the `web` network to be external:
+    ```yaml
+    networks:
+      web:
+        external:
+          name: name_of_træfik_network
+    ```
 
-```yaml
-networks:
-  web:
-    external:
-      name: name_of_træfik_network
-```
+2. rename .env.example to .env and fill the variables with your values
 
-##### 3) rename .env.example to .env and fill the variables with your values
+    - default Elasticsearch user and password are `elastic:elastic`
+    - default Kibana user and password are `kibana:kibana`
+    - basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
-- default Elasticsearch user and password are `elastic`
-- default Kibana user and password are `kibana`
-- basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
+3. rename `elasticsearch/config/searchguard/sg_internal_users.yml.example` to `elasticsearch/config/searchguard/sg_internal_users.yml` and insert the correct passwords
 
-##### 4) rename `docker/elasticsearch/config/searchguard/sg_internal_users.yml.example` to `docker/elasticsearch/config/searchguard/sg_internal_users.yml` and insert the correct passwords
+    Hashed passwords can be generated with:
 
-Hashed passwords can be generated with:
+    ```bash
+    docker exec -t -i developers-italia-backend_elasticsearch elasticsearch/plugins/search-guard-6/tools/hash.sh -p <password>
+    ```
 
-```
-docker exec -t -i developers-italia-backend_elasticsearch elasticsearch/plugins/search-guard-6/tools/hash.sh -p <password>
-```
+4. rename config.toml.example to config.toml and fill the variables with your values
 
-##### 5) rename config.toml.example to config.toml and fill the variables with your values
+5. add mapping in `/etc/hosts` for exposed services
 
-##### 6) add mapping in `/etc/hosts` for exposed services
+    For example, if `PROJECT_BASE_URL` in `.env` is `developers.loc`, add (if your Docker daemon is listening on localhost):
 
-For example, if `PROJECT_BASE_URL` in `.env` is `developers.loc`, add (if your Docker daemon is listening on localhost):
+    ```
+    127.0.0.1 elasticsearch.developers.loc
+    127.0.0.1 kibana.developers.loc
+    127.0.0.1 prometheus.developers.loc
+    ```
 
-- 127.0.0.1 elasticsearch.developers.loc
-- 127.0.0.1 kibana.developers.loc
-- 127.0.0.1 prometheus.developers.loc
+    Or use a local DNS (like [dnsmasq](https://en.wikipedia.org/wiki/Dnsmasq)) to resolve all DNS request to `.loc` domains to localhost.
 
-Or use a local DNS (like [dnsmasq](https://en.wikipedia.org/wiki/Dnsmasq)) to resolve all DNS request to `.loc` domains
-to localhost.
-
-##### 7) start the Docker stack: `make up`
+6. start the Docker stack: `make up`
 
 #### Crawler
 
-- Fill your domains.yml file with configuration values (like specific host basic auth token)
+1. `cd crawler`
+2. Fill your domains.yml file with configuration values (like specific host basic auth token)
+3. Rename config.toml.example to config.toml and fill the variables with your values
 
-##### With docker-compose
+##### With docker-compose (for production)
 
-- build the crawler image: `make build`
-- de-comment the crawler container from docker-compose.yml file
-- start the Docker stack: `make up`
+* build the crawler image: `make build`
+* rename docker-compose-crawler.yml.example to docker-compose-crawler.yml. Setup the volumes mapping. Replace `network_created_by_docker_compose_prod` with the correct network name
+* run `make crawl` (and configure it in crontab)
 
-##### As golang binary
+##### As golang binary (for development)
 
-- download dependencies: `dep ensure`
-- build the crawler binary: `go build -o bin/crawler`
-- start the crawler: `bin/crawler crawl whitelistPA.yml whitelistGeneric.yml`
+* build the crawler binary: `go build -o bin/crawler`
+* start the crawler: `bin/crawler crawl whitelistPA.yml whitelistGeneric.yml`
 
-### Troubleshooting
+## Troubleshooting
 
 - From docker logs seems that Elasticsearch container needs more virtual memory and now it's `Stalling for Elasticsearch....`
 
@@ -100,48 +95,6 @@ to localhost.
   Probably you should increase the container memory:
   `docker-machine stop && VBoxManage modifyvm default --cpus 2 && VBoxManage modifyvm default --memory 2048 && docker-machine stop`
 
-## Run in production
+## Authors
 
-##### 1) rename .env.example to .env and fill the variables with your values
-
-- default Elasticsearch user and password are `elastic`
-- default Kibana user and password are `kibana`
-- basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
-
-##### 2) rename `docker/elasticsearch/config/searchguard/sg_internal_users.yml.example` to `docker/elasticsearch/config/searchguard/sg_internal_users.yml` and insert the correct passwords
-
-Hashed passwords can be generated with:
-
-```
-docker exec -t -i developers-italia-backend_elasticsearch elasticsearch/plugins/search-guard-6/tools/hash.sh -p <password>
-```
-
-##### 3) start the production Docker stack: `make prod-up`
-
-##### 4) rename docker-compose-crawler.yml.example to docker-compose-crawler.yml. Setup the volumes mapping. Replace
-`network_created_by_docker_compose_prod` with the correct network name
-
-##### 6) rename config.toml.example to config.toml and fill the variables with your values
-
-##### 5) build the crawler image: `make build`
-
-##### 6) run `make crawl` in a crontab process
-
-### Copyright
-
-```
-Copyright (c) the respective contributors, as shown by the AUTHORS file.
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU Affero General Public License as published
-by the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU Affero General Public License for more details.
-
-You should have received a copy of the GNU Affero General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
-```
+[Developers Italia](https://developers.italia.it) is a project by [AgID](https://www.agid.gov.it/) in collaboration with the [Italian Digital Team](https://teamdigitale.governo.it/), which maintains this repository.
