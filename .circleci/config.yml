@@ -9,13 +9,12 @@ jobs:
     <<: *job_defaults
     steps:
       - checkout
-      - run: cd crawler
 
       # Build
-      - run: make build
+      - run: cd crawler && make build
 
       # Test
-      - run: make test
+      - run: cd crawler && make test
 
       - persist_to_workspace:
           root: /tmp
