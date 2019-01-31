@@ -13,10 +13,6 @@ kibana_user:
 search:
     backendroles:
         - search
+        - sg_anonymous_backendrole
     users:
         - frontend
-
-sg_anonymous:
-  backendroles:
-    - sg_anonymous_backendrole
-    - search
