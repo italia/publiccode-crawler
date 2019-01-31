@@ -38,7 +38,7 @@ workflows:
   build-test-deploy:
     jobs:
       - build
-      - deploy-production:
+      - deploy:
           requires:
             - build
           filters:
