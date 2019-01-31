@@ -25,25 +25,12 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
 
 #### Stack
 
-1. set up Træfik
-
-    If you already have a Træfik container running on your host simply remove the `proxy` definition from
-    `docker-compose.yml` file and set up the `web` network to be external:
-
-    ```yaml
-    networks:
-      web:
-        external:
-          name: name_of_træfik_network
-    ```
-
-2. rename .env.example to .env and fill the variables with your values
+1. rename .env.example to .env and fill the variables with your values
 
     - default Elasticsearch user and password are `elastic:elastic`
     - default Kibana user and password are `kibana:kibana`
-    - basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
-3. rename `elasticsearch/config/searchguard/sg_internal_users.yml.example` to `elasticsearch/config/searchguard/sg_internal_users.yml` and insert the correct passwords
+2. rename `elasticsearch/config/searchguard/sg_internal_users.yml.example` to `elasticsearch/config/searchguard/sg_internal_users.yml` and insert the correct passwords
 
     Hashed passwords can be generated with:
 
@@ -51,40 +38,39 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
     docker exec -t -i developers-italia-backend_elasticsearch elasticsearch/plugins/search-guard-6/tools/hash.sh -p <password>
     ```
 
-4. rename config.toml.example to config.toml and fill the variables with your values
-
-5. add mapping in `/etc/hosts` for exposed services
-
-    For example, if `DOMAIN` in `.env` is `developers.loc`, add (if your Docker daemon is listening on localhost):
+3. configure the nginx proxy with the following directives:
 
     ```
-    127.0.0.1 elasticsearch.developers.loc
-    127.0.0.1 kibana.developers.loc
-    127.0.0.1 prometheus.developers.loc
+    location /elasticsearch {
+        rewrite /elasticsearch/(.*) /$1  break;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_hide_header Authorization;
+        proxy_set_header Authorization "Basic <frontend:<frontend_password> encoded base64>";
+        proxy_pass http://localhost:9200;
+        proxy_ssl_session_reuse off;
+        proxy_cache_bypass $http_upgrade;
+        proxy_redirect off;
+    }
     ```
+    
+    The basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
-    Or use a local DNS (like [dnsmasq](https://en.wikipedia.org/wiki/Dnsmasq)) to resolve all DNS request to `.loc` domains to localhost.
+4. you might need to type `sysctl -w vm.max_map_count=262144` and make this permanent in /etc/sysctl.conf in order to start elasticsearch
 
-6. start the Docker stack: `make up`
+5. start the Docker stack: `make up`
 
 #### Crawler
 
 1. `cd crawler`
-2. Fill your domains.yml file with configuration values (like specific host basic auth token)
-3. Rename config.toml.example to config.toml and fill the variables with your values
+2. Fill your domains.yml file with configuration values (like specific host basic auth tokens)
+3. Rename config.toml.example to config.toml and fill the variables
+4. build the crawler binary: `make`
+5. start the crawler: `bin/crawler crawl whitelist/*.yml`
+6. configure in crontab as desired
 
-##### With docker-compose (for production)
-
-* build the crawler image: `make build`
-* rename docker-compose-crawler.yml.example to docker-compose-crawler.yml. Setup the volumes mapping. Replace `network_created_by_docker_compose_prod` with the correct network name
-* run `make crawl` (and configure it in crontab)
-
-##### As golang binary (for development)
-
-* build the crawler binary: `go build -o bin/crawler`
-* start the crawler: `bin/crawler crawl whitelistPA.yml whitelistGeneric.yml`
-
-## Troubleshooting
+### Troubleshooting
 
 - From docker logs seems that Elasticsearch container needs more virtual memory and now it's `Stalling for Elasticsearch....`
 
@@ -95,6 +81,10 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
   Probably you should increase the container memory:
   `docker-machine stop && VBoxManage modifyvm default --cpus 2 && VBoxManage modifyvm default --memory 2048 && docker-machine stop`
 
+### Development
+
+In order to access Elasticsearch with write permissions from the outside, you can forward the 9200 port via SSH using `ssh -L9200:localhost:9200` and configure `ELASTIC_URL = "http://localhost:9200/"` in your local config.toml.
+
 ## Authors
 
-[Developers Italia](https://developers.italia.it) is a project by [AgID](https://www.agid.gov.it/) in collaboration with the [Italian Digital Team](https://teamdigitale.governo.it/), which maintains this repository.
+[Developers Italia](https://developers.italia.it) is a project by [AgID](https://www.agid.gov.it/) in collaboration with the [Italian Digital Team](https://teamdigitale.governo.it/), which developed the crawler and maintains this repository.

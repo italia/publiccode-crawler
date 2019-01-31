@@ -23,9 +23,9 @@ Available Commands:
 ```
 
 with command:
-`crawler crawl whitelistGeneric.yml whitelistPA.yml`
+`crawler crawl whitelist/*.yml`
 
-2.  if `./ipa/amministrazioni.txt` is older than two days, update to latest version. (if some error occurs, log the error and use the actual `amministrazioni.txt`)
+2.  if `DATADIR/indicepa.csv` is older than two days, update to latest version. (if some error occurs, log the error and use the current file)
 3.  connect to Elasticsearch node. If ko, log the error and stop the crawler. If ok set the mapping for publiccode and administrations.
 4.  Read and parse [domains.yml](references.md) and [whitelist.yml](references.md)
 5.  initialize a repositories channel that will host all the repository infos.

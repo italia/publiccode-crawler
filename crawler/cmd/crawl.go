@@ -5,6 +5,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/jekyll"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
+	"os"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -17,20 +18,24 @@ func init() {
 }
 
 var crawlCmd = &cobra.Command{
-	Use:   "crawl whitelist.yml [whitelistGeneric.yml whitelistPA.yml ...]",
-	Short: "Crawl publiccode.yml file from domains in whitelist file.",
-	Long:  `Start crawling publiccode.yml files according to the supplied whitelist file(s).`,
+	Use:   "crawl whitelist.yml whitelist/*.yml",
+	Short: "Crawl publiccode.yml files from given domains.",
+	Long:  `Crawl publiccode.yml files according to the supplied whitelist file(s).`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		// Make sure the output directory exists or spit an error
+		if stat, err := os.Stat(viper.GetString("CRAWLER_DATADIR")); err != nil || !stat.IsDir() {
+			log.Fatalf("The configured data directory (%v) does not exist: %v", viper.GetString("CRAWLER_DATADIR"), err)
+		}
+
 		// Update ipa to lastest data.
-		err := ipa.UpdateFile("./ipa/amministrazioni.txt", "http://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt")
+		err := ipa.UpdateFromIndicePA()
 		if err != nil {
 			log.Error(err)
 		}
-		// Index for actual process.
-		index := "publiccodes"
 
 		// Elastic connection.
+		log.Debug("Connecting to ElasticSearch...")
 		elasticClient, err := crawler.ElasticClientFactory(
 			viper.GetString("ELASTIC_URL"),
 			viper.GetString("ELASTIC_USER"),
@@ -38,11 +43,15 @@ var crawlCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		log.Debug("Successfully connected to ElasticSearch")
+
 		// Create ES index with mapping for PublicCode.
+		const index = "publiccodes"  // Index for actual process.
 		err = crawler.ElasticIndexMapping(index, elasticClient)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		// Create ES index with mapping "administration-codiceIPA".
 		err = crawler.ElasticAdministrationsMapping("administration", elasticClient)
 		if err != nil {
@@ -67,10 +76,13 @@ var crawlCmd = &cobra.Command{
 			whitelist = append(whitelist, readWhitelist...)
 		}
 
-		// Initiate a channel of repositories.
-		repositories := make(chan crawler.Repository, 1000)
-		// Prepare WaitGroup.
-		var wg sync.WaitGroup
+		// Count configured orgs
+		orgCount := 0
+		for _, pa := range whitelist {
+			orgCount += len(pa.Organizations)
+		}
+		log.Infof("%v organizations belonging to %v publishers are going to be scanned",
+			orgCount, len(whitelist))
 
 		// Register Prometheus metrics.
 		metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", index)
@@ -79,6 +91,12 @@ var crawlCmd = &cobra.Command{
 		metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", index)
 		// Uncomment when validating publiccode.yml
 		//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", index)
+		
+		// Initiate a channel of repositories.
+		repositories := make(chan crawler.Repository, 1000)
+
+		// Prepare WaitGroup.
+		var wg sync.WaitGroup
 
 		// Process every item in whitelist.
 		for _, pa := range whitelist {

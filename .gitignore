@@ -18,18 +18,14 @@ log/
 # Golang vendor folder
 vendor
 
-# Compiled binary
-crawler/bin/crawler
+# Compiled binaries
+crawler/bin/*
 
 # Elasticsearch data volume
 es_data
 
 # Local Search Guard sg_internal_users
-sg_internal_users.yml
-
-# Local docker-compose file
-docker-compose.yml
-docker-compose-crawler.yml
+elasticsearch/config/searchguard/sg_internal_users.yml
 
 # Env
 .env
@@ -38,7 +34,8 @@ docker-compose-crawler.yml
 crawler/config.toml
 
 # Downloaded files
-data
+crawler/cache
+crawler/data
 
 # Elasticsearch scripts
 elasticsearch/scripts/config.sh
@@ -49,6 +46,3 @@ elasticsearch/html/assets/utils/node_modules
 
 # Elasticsearch js tests
 elasticsearch/html/assets/js/config.js
-
-# Jekyll generated files
-jekyll/generated

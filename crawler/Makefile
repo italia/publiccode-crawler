@@ -1,23 +1,16 @@
 include ../.env
 
-.PHONY: run run-all run-version build lint test
+.PHONY: build lint test
 
 default: build
 
-run-all:
-	go run -race main.go all
-
-run-version:
-	go run -race main.go version
-
 build:
-	docker build -t italia/${NAME}-crawler:${VERSION} \
-	    --build-arg VERSION=${VERSION} \
-	    .
+	go build -ldflags "-X github.com/italia/developers-italia-backend/crawler/version.VERSION=$(shell git describe --abbrev=0 --tags)" -o bin/crawler
+	chmod +x bin/crawler
 
 lint:
 	gometalinter --install
 	gometalinter --exclude=vendor ./...
 
 test:
-	go test -race "${PROJECT}"/...
+	go test -race ./...

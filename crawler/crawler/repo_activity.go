@@ -8,13 +8,14 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	git "gopkg.in/src-d/go-git.v4"
 	"gopkg.in/src-d/go-git.v4/plumbing"
 	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	yaml "gopkg.in/yaml.v2"
 )
 
-// RangesData contains the data loaded from ranges.yml
+// RangesData contains the data loaded from vitality-ranges.yml
 type RangesData []Ranges
 
 // Ranges are the ranges for a specific parameter (userCommunity, codeActivity, releaseHistory, longevity).
@@ -43,7 +44,7 @@ func CalculateRepoActivity(domain Domain, hostname string, name string, days int
 
 	vendor, repo := splitFullName(name)
 
-	path := filepath.Join("./data", hostname, vendor, repo, "gitClone")
+	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), hostname, vendor, repo, "gitClone")
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -237,7 +238,7 @@ func extractOldestCommitDate(cIter object.CommitIter) (time.Time, error) {
 }
 
 func ranges(name string, value float64) float64 {
-	data, err := ioutil.ReadFile("ranges.yml")
+	data, err := ioutil.ReadFile("vitality-ranges.yml")
 	if err != nil {
 		log.Error(err)
 	}

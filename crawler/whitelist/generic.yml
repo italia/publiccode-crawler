@@ -1,4 +1,4 @@
-# whitelistGeneric.yml is a list of every organization repository not from iPA.
+# This is a list of every organization repository not from iPA.
 
 # - id: "Generic-Org"
 #   codice-iPA: ""

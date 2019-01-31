@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -12,7 +13,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// SaveToFile save the chosen <file_name> in ./data/<source>/<vendor>/<repo>/<crawler_timestamp>_<file_name>.
+// SaveToFile save the chosen <file_name> in DATADIR/repos/<source>/<vendor>/<repo>/<crawler_timestamp>_<file_name>.
 func SaveToFile(domain Domain, hostname string, name string, data []byte, index string) error {
 	if domain.Host == "" {
 		return errors.New("cannot save a file without domain host")
@@ -24,7 +25,7 @@ func SaveToFile(domain Domain, hostname string, name string, data []byte, index 
 	fileName := index + "_" + viper.GetString("CRAWLED_FILENAME")
 	vendor, repo := splitFullName(name)
 
-	path := filepath.Join("./data", hostname, vendor, repo)
+	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), hostname, vendor, repo)
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -51,9 +52,9 @@ func splitFullName(fullName string) (string, string) {
 
 // Save the bad publiccode.yaml url to a file used by the publiccode-issueopener script.
 func logBadYamlToFile(fileRawURL string) {
-	log.Errorf("Appending the bad file url to the list: %s", fileRawURL)
+	log.Errorf("Appending the bad file URL to the list: %s", fileRawURL)
 
-	filePath := "./data/bad_yaml_repos.lst"
+	filePath := path.Join(viper.GetString("CRAWLER_DATADIR"), "bad_publiccodes.lst")
 
 	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {

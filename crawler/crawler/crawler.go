@@ -110,7 +110,6 @@ func generateRandomInt(max int) (int, error) {
 
 // ProcessRepositories process the repositories channel and check the availability of the file.
 func ProcessRepositories(repositories chan Repository, index string, wg *sync.WaitGroup, elasticClient *elastic.Client) {
-	log.Info("Repositories are going to be processed...")
 	for repository := range repositories {
 		wg.Add(1)
 		go CheckAvailability(repository, index, wg, elasticClient)

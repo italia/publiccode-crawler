@@ -8,11 +8,11 @@
 
 cmd, crawler, httpclient, ipa, jekyll, metrics, vendor, version: golang packages and crawler source.
 
-./data: the tree for publiccode.yml files:
+CRAWLER_DATADIR: the tree for publiccode.yml files:
 
-- ./data/<host>/<org>/<repo>/publiccodes_publiccode.yml.
-- ./data/<host>/<org>/<repo>/publiccodes_metadata_publiccode.yml.
-- ./data/<host>/<org>/<repo>/gitClone/<git_clone_files>
+- CRAWLER_DATADIR/repos/<host>/<org>/<repo>/publiccodes_publiccode.yml
+- CRAWLER_DATADIR/repos/<host>/<org>/<repo>/publiccodes_metadata_publiccode.yml
+- CRAWLER_DATADIR/repos/<host>/<org>/<repo>/gitClone/<git_clone_files>
 
 ./docker: the tree for docker config files
 
@@ -20,7 +20,7 @@ cmd, crawler, httpclient, ipa, jekyll, metrics, vendor, version: golang packages
 
 vitality-ranges.yml: ranges for vitality index (Ref: vitality-ranges.md)
 
-whitelistGeneric.yml and whitelistPA.yml: whitelist for Public Administrations and generic organizations ([Reference](references.md))
+whitelist/generic.yml and whitelist/pa.yml: whitelists for Public Administrations and generic organizations ([Reference](references.md))
 
 **Configuration files**
 
@@ -28,4 +28,4 @@ whitelistGeneric.yml and whitelistPA.yml: whitelist for Public Administrations a
 - Crawler specific configurations: config.toml
 - Crawler domains basic auth: domains.yml
 - Crawler vitality-ranges: vitality-ranges.yml
-- Crawler whitelist: whitelistGeneric.yml and whitelistPA.yml
+- Crawler whitelist: whitelist/generic.yml and whitelist/pa.yml

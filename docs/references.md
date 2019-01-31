@@ -15,13 +15,13 @@ Contains all the basic auth token for the repositories APIs in the form `Basic <
     - "Basic <base64-auth-token>"
 ```
 
-### whitelist.yml
+### whitelist/*.yml
 
-Contains a list of every organization.
+Lists of organizatins to crawl from.
+
+ whitelist/pa.yml is a list of every organization repository with an iPA, while whitelist/generic.yml contains the others.
 
 ```
- whitelistPA.yml is a list of every organization repository with an iPA.
-
 - id: "Comune di Bagnacavallo" # generic name of the organization.
   codice-iPA: "c_a547" # codice-iPA
   organizations: # list of organization urls.

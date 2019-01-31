@@ -6,10 +6,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path"
 	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Amministrazione is an Administration from amministrazoni.txt
@@ -48,36 +50,44 @@ type Amministrazione struct {
 	LivAccessibili    string
 }
 
-// UpdateFile download the amministrazioni.txt file if it's older than 2 days.
-func UpdateFile(fileName, fileURL string) error {
-	info, err := os.Stat(fileName)
-	if err != nil {
-		log.Fatal(err)
-		return err
+// UpdateFromIndicePA download the amministrazioni.txt file if it's older than 2 days.
+func UpdateFromIndicePA() error {
+	file := path.Join(viper.GetString("CRAWLER_DATADIR"), "indicepa.csv")
+
+	needUpdate := true
+
+	// we don't need to update if file does not exist and it's not older than 2 days
+	info, err := os.Stat(file)
+	if !os.IsNotExist(err) {
+		if err != nil {
+			log.Fatal(err)
+			return err
+		}
+		if info.ModTime().After(time.Now().AddDate(0, 0, -2)) {
+			needUpdate = false
+		}
 	}
-	today := time.Now()
-	older := today.AddDate(0, 0, -2)
 
-	downloadTime := info.ModTime()
+	if needUpdate {
+		url := viper.GetString("INDICEPA_URL")
+		log.Infof("Updating our cached copy from IndicePA from %v...", url)
 
-	// If amministrazioni.txt is older that 2 days.
-	if downloadTime.Before(older) {
-		log.Info("download a new amministrazioni.txt ...")
-
-		err := downloadFile(fileName, fileURL)
+		err := downloadFile(file, url)
 		if err != nil {
 			log.Error(err)
 			return err
 		}
+
+		log.Info("Successfully updated from IndicePA")
 	}
 
-	return err
+	return nil
 }
 
 // GetAdministrationName return the administration name associated to the "codice iPA" asssociated.
+// TODO: load this mappings in memory instead of scanning the file every time
 func GetAdministrationName(codiceiPA string) string {
-	file := "./ipa/amministrazioni.txt"
-	dataFile, err := ioutil.ReadFile(file)
+	dataFile, err := ioutil.ReadFile(path.Join(viper.GetString("CRAWLER_DATADIR"), "indicepa.csv"))
 	if err != nil {
 		log.Error(err)
 		return ""
@@ -87,7 +97,7 @@ func GetAdministrationName(codiceiPA string) string {
 	// Scan the file, line by line.
 	scanner := bufio.NewScanner(strings.NewReader(input))
 	for scanner.Scan() {
-		amm := manageLine(scanner.Text())
+		amm := parseLine(scanner.Text())
 		if amm.CodAmm == codiceiPA {
 			return amm.DesAmm
 		}
@@ -99,8 +109,8 @@ func GetAdministrationName(codiceiPA string) string {
 	return ""
 }
 
-// manageLine populate an Amministrazione with the values read.
-func manageLine(line string) Amministrazione {
+// parseLine populate an Amministrazione with the values read.
+func parseLine(line string) Amministrazione {
 	data := strings.Split(line, "	")
 	amm := Amministrazione{
 		CodAmm:            data[0],
@@ -140,7 +150,6 @@ func manageLine(line string) Amministrazione {
 }
 
 func downloadFile(filepath string, url string) error {
-
 	// Create the file.
 	out, err := os.Create(filepath)
 	if err != nil {

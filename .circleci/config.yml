@@ -1,17 +1,48 @@
+anchor_1: &job_defaults
+  working_directory: /tmp/developers-italia-backend
+  docker:
+    - image: circleci/golang:1.11
+
 version: 2
 jobs:
   build:
-    docker:
-      - image: circleci/golang:1.11
-
+    <<: *job_defaults
     steps:
       - checkout
-
       - run: cd crawler
-      - run: go get
-      # Install and run go linter.
-      - run: go get -u github.com/alecthomas/gometalinter
-      - run: gometalinter --install
-      - run: gometalinter ./... --vendor --skip=publiccode.yml-parser-go --config=.gometalinter.json --deadline=3m
-      # Test go code.
-      - run: go test -race ./...
+
+      # Build
+      - run: make build
+
+      # Test
+      - run: make test
+
+      - persist_to_workspace:
+          root: /tmp
+          paths:
+            - developers-italia-backend
+
+  deploy:
+    <<: *job_defaults
+    steps:
+      - attach_workspace:
+          at: /tmp
+      
+      - run: mkdir -p ~/.ssh
+      - run: echo $SSH_KNOWN_HOSTS | base64 -d >> ~/.ssh/known_hosts
+      - run: which rsync || sudo apt-get install rsync
+      - run: rsync -avP --rsync-path="sudo -u www-data rsync" ./ circleci@developers.italia.it:/apps/developers-italia-backend/
+
+
+workflows:
+  version: 2
+  build-test-deploy:
+    jobs:
+      - build
+      - deploy-production:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master

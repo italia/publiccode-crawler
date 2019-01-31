@@ -4,7 +4,16 @@ CRAWLED_FILENAME = "publiccode.yml"
 # Publiccode unsupported countries to ignore.
 IGNORE_UNSUPPORTEDCOUNTRIES = [ "it" ]
 
-# This URL should be visible from within the network created by docker-compose.yml
-ELASTIC_URL = "http://developers-italia-backend_elasticsearch:9200"
+# This URL should be visible from the crawler
+ELASTIC_URL = "http://localhost:9200"
 ELASTIC_USER = "elastic"
 ELASTIC_PWD = ""
+
+# URL of the list of Italian public administration agencies
+INDICEPA_URL = "http://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt"
+
+# Directory for storing working files
+CRAWLER_DATADIR = "/data/crawler"
+
+# Path to the directory where we want to output our YAML files used by Jekyll for generating the catalog
+OUTPUT_DIR = "/data/crawler/output"

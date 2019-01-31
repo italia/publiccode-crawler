@@ -25,7 +25,7 @@ No organizations! Only single repositories!`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Update ipa to lastest data.
-		err := ipa.UpdateFile("./ipa/amministrazioni.txt", "http://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt")
+		err := ipa.UpdateFromIndicePA()
 		if err != nil {
 			log.Error(err)
 		}

@@ -1,4 +1,4 @@
-# whitelistPA.yml is a list of every organization repository with an iPA.
+# This is a list of every organization repository with an iPA.
 
 - id: "Comune di Bagnacavallo"
   codice-iPA: "c_a547"
