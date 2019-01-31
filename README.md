@@ -41,21 +41,22 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
 3. configure the nginx proxy with the following directives:
 
     ```
-    location /elasticsearch {
-        rewrite /elasticsearch/(.*) /$1  break;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_hide_header Authorization;
-        proxy_set_header Authorization "Basic <frontend:<frontend_password> encoded base64>";
-        proxy_pass http://localhost:9200;
-        proxy_ssl_session_reuse off;
-        proxy_cache_bypass $http_upgrade;
-        proxy_redirect off;
+    limit_req_zone $binary_remote_addr zone=elasticsearch_limit:10m rate=10r/s;
+
+    server {
+        ...
+        location / {
+            limit_req zone=elasticsearch_limit burst=20 nodelay;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_pass http://localhost:9200;
+            proxy_ssl_session_reuse off;
+            proxy_cache_bypass $http_upgrade;
+            proxy_redirect off;
+        }
     }
     ```
-    
-    The basic authentication token is generated with: `echo -n "user:password" | openssl base64 -base64`
 
 4. you might need to type `sysctl -w vm.max_map_count=262144` and make this permanent in /etc/sysctl.conf in order to start elasticsearch
 

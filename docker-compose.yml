@@ -21,6 +21,7 @@ services:
     volumes:
       - /data/elasticsearch:/elasticsearch/data
       - ./elasticsearch/config/elasticsearch.yml:/elasticsearch/config/elasticsearch.yml
+      - ./elasticsearch/config/searchguard/sg_config.yml:/elasticsearch/config/searchguard/sg_config.yml
       - ./elasticsearch/config/searchguard/sg_action_groups.yml:/elasticsearch/config/searchguard/sg_action_groups.yml
       - ./elasticsearch/config/searchguard/sg_internal_users.yml:/elasticsearch/config/searchguard/sg_internal_users.yml
       - ./elasticsearch/config/searchguard/sg_roles.yml:/elasticsearch/config/searchguard/sg_roles.yml

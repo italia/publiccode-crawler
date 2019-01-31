@@ -15,3 +15,8 @@ search:
         - search
     users:
         - frontend
+
+sg_anonymous:
+  backendroles:
+    - sg_anonymous_backendrole
+    - search
