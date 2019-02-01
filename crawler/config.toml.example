@@ -9,6 +9,11 @@ ELASTIC_URL = "http://localhost:9200"
 ELASTIC_USER = "elastic"
 ELASTIC_PWD = ""
 
+# The search front end needs a single alias to search on multiple indexes.
+# We default to "jekyll" because searchyll (which injects website contents)
+# doet not support custom aliases and uses its base index name.
+ELASTIC_ALIAS = "jekyll"
+
 # URL of the list of Italian public administration agencies
 INDICEPA_URL = "http://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt"
 

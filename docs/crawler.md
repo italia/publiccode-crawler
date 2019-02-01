@@ -32,5 +32,5 @@ with command:
 6.  Initialize a goroutine that will process the main organization url (`crawler.ProcessPA`), detect the right host (`crawler.KnownHost`) and, using the right APIs, generate the right URL to the _publiccode.yml_ raw file (`crawler.ProcessPADomain`) and save it to the repositories channel.
 7.  With another goroutine, process every repository in repositories channel (`crawler.ProcessRepositories`) checking the availability. If the file is available: validate (`crawler.validateRemoteFile`), save the publiccode.yml (`crawler.SaveToFile`) and the metadata returned from the APIs (`crawler.SaveToFile`) to a file, clone the repository (`crawler.CloneRepository`) locally, calculate the repo activity/vitalityIndex (`crawler.CalculateRepoActivity`) and save the data on ES (`crawler.SaveToES`).
 8.  Flush elastic commits.
-9.  Update elastic aliases with the alias `publiccode`
+9.  Update elastic aliases with the alias configured in config.toml
 10. Generate Jekyll website data for the the OSS catalog.

@@ -121,11 +121,11 @@ var crawlCmd = &cobra.Command{
 		}
 
 		// Update Elastic alias.
-		err = crawler.ElasticAliasUpdate("administration", "publiccode", elasticClient)
+		err = crawler.ElasticAliasUpdate("administration", viper.GetString("ELASTIC_ALIAS"), elasticClient)
 		if err != nil {
 			log.Errorf("Error updating Elastic Alias: %v", err)
 		}
-		err = crawler.ElasticAliasUpdate(index, "publiccode", elasticClient)
+		err = crawler.ElasticAliasUpdate(index, viper.GetString("ELASTIC_ALIAS"), elasticClient)
 		if err != nil {
 			log.Errorf("Error updating Elastic Alias: %v", err)
 		}

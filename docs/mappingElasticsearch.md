@@ -500,4 +500,4 @@ There are two main indices:
 
 **alias**
 
-The main alias is `publiccode`. It works as alias for software and amministrazioni.
+The main alias is configured in config.toml. It's used for software and administration, and may be used as well for other contents needed by the search frontend.
