@@ -27,22 +27,19 @@ services:
       - ./elasticsearch/config/searchguard/sg_roles.yml:/elasticsearch/config/searchguard/sg_roles.yml
       - ./elasticsearch/config/searchguard/sg_roles_mapping.yml:/elasticsearch/config/searchguard/sg_roles_mapping.yml
 
-  # kibana:
-  #   container_name: "${NAME}_kibana"
-  #   image: khezen/kibana:6.2.2
-  #   environment:
-  #     - "ELASTICSEARCH_PROTOCOL=http"
-  #     - "ELASTICSEARCH_HOST=elasticsearch"
-  #     - "ELASTICSEARCH_PORT=9200"
-  #     - "KIBANA_PWD=${KIBANA_PWD}"
-  #   labels:
-  #     - "traefik.enable=true"
-  #     - "traefik.backend=kibana"
-  #     - "traefik.port=5601"
-  #     - "traefik.frontend.rule=Host:kibana.${DOMAIN}"
-  #   restart: always
-  #   volumes:
-  #     - ./kibana/config/kibana.yml:/opt/kibana-6.2.2-linux-x86_64/config/kibana.yml
+  kibana:
+    container_name: "${NAME}_kibana"
+    image: khezen/kibana:6.2.2
+    environment:
+      - "ELASTICSEARCH_PROTOCOL=http"
+      - "ELASTICSEARCH_HOST=elasticsearch"
+      - "ELASTICSEARCH_PORT=9200"
+      - "KIBANA_PWD=${KIBANA_PWD}"
+    ports:
+      - "5601:5601"
+    restart: always
+    volumes:
+      - ./kibana/config/kibana.yml:/opt/kibana-6.2.2-linux-x86_64/config/kibana.yml
 
   # prometheus:
   #   container_name: "${NAME}_prometheus"

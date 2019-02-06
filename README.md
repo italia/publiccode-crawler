@@ -38,7 +38,9 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
     docker exec -t -i developers-italia-backend_elasticsearch elasticsearch/plugins/search-guard-6/tools/hash.sh -p <password>
     ```
 
-3. configure the nginx proxy with the following directives:
+3. insert the `kibana` password in `kibana/config/kibana.yml`
+
+4. configure the nginx proxy for the lasticsearch host with the following directives:
 
     ```
     limit_req_zone $binary_remote_addr zone=elasticsearch_limit:10m rate=10r/s;
@@ -58,9 +60,9 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
     }
     ```
 
-4. you might need to type `sysctl -w vm.max_map_count=262144` and make this permanent in /etc/sysctl.conf in order to start elasticsearch
+5. you might need to type `sysctl -w vm.max_map_count=262144` and make this permanent in /etc/sysctl.conf in order to start elasticsearch, as [documented here](https://hub.docker.com/r/khezen/elasticsearch/)
 
-5. start the Docker stack: `make up`
+6. start the Docker stack: `make up`
 
 #### Crawler
 
