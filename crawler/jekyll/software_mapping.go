@@ -30,7 +30,7 @@ type Software struct {
 	IntendedAudience     IntendedAudienceData    `json:"intendedAudience,omitempty"`
 	Description          map[string]crawler.Desc `json:"description,omitempty"`
 	OldVariant           []OldVariantData        `json:"oldVariant,omitempty"`
-	OldFeatureList       map[string][]string     `json:"oldFeatureList,omitempty"`
+	OldFeatures          map[string][]string     `json:"oldFeatures,omitempty"`
 	TagsRelate           []string                `json:"tagsRelate,omitempty"`
 
 	RelatedSoftwares []RelatedSoftware `json:"relatedSoftwares,omitempty"`

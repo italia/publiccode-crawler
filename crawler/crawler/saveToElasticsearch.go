@@ -12,7 +12,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	"github.com/dyatlov/go-oembed/oembed"
 	"github.com/olivere/elastic"
-	pcode "github.com/r3vit/publiccode.yml-parser-go"
+	pcode "github.com/italia/publiccode-parser-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -139,7 +139,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 			LongDescription:  pc.Description[lang].LongDescription,
 			Documentation:    pc.Description[lang].Documentation.String(),
 			APIDocumentation: pc.Description[lang].APIDocumentation.String(),
-			FeatureList:      pc.Description[lang].FeatureList,
+			Features:         pc.Description[lang].Features,
 			Screenshots:      concatenateLinks(rawBaseDir, pc.Description[lang].Screenshots),
 			Videos: func(videos []*url.URL) []string {
 				var v []string

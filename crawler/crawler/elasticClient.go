@@ -98,7 +98,7 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
                   "type": "text",
                   "index": false
                 },
-                "featureList": {
+                "features": {
                   "type": "keyword"
                 },
                 "freeTags": {

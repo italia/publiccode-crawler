@@ -49,7 +49,7 @@ There are two main indices:
                 "type": "text",
                 "index": false
               },
-              "featureList": {
+              "features": {
                 "type": "keyword"
               },
               "freeTags": {

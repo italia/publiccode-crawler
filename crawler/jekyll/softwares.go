@@ -99,7 +99,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 			},
 			Description:    i.Description,
 			OldVariant:     []OldVariantData{},
-			OldFeatureList: map[string][]string{},
+			OldFeatures:    map[string][]string{},
 			TagsRelate:     i.Tags,
 			Legal: LegalData{
 				License:            i.LegalLicense,
@@ -166,7 +166,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 		softwareExtracted.OldVariant = findOldVariants(isBasedOnSoftware, softwareExtracted)
 
 		// Diff features.
-		softwareExtracted.OldFeatureList = findDiffFeatures(softwareExtracted)
+		softwareExtracted.OldFeatures = findDiffFeatures(softwareExtracted)
 
 		// Append only supported countries.
 		softwares = append(softwares, softwareExtracted)
@@ -200,11 +200,11 @@ func findOldVariants(isBasedOnSoftware []crawler.PublicCodeES, softwareExtracted
 			basedOn.Legal.RepoOwner = v.LegalRepoOwner
 
 			if d, ok := v.Description["eng"]; ok {
-				basedOn.Eng.Features = d.FeatureList
+				basedOn.Eng.Features = d.Features
 				basedOn.Eng.URL = v.URL
 			}
 			if d, ok := v.Description["ita"]; ok {
-				basedOn.Ita.Features = d.FeatureList
+				basedOn.Ita.Features = d.Features
 				basedOn.Ita.URL = v.URL
 			}
 
@@ -221,13 +221,13 @@ func findDiffFeatures(softwareExtracted Software) map[string][]string {
 	for _, variant := range softwareExtracted.OldVariant {
 		// Diff for eng.
 		for _, oldFeature := range variant.Eng.Features {
-			if !contains(softwareExtracted.Description["eng"].FeatureList, oldFeature) {
+			if !contains(softwareExtracted.Description["eng"].Features, oldFeature) {
 				diffFeatures["eng"] = append(diffFeatures["eng"], oldFeature)
 			}
 		}
 		//Diff for ita.
 		for _, oldFeature := range variant.Ita.Features {
-			if !contains(softwareExtracted.Description["ita"].FeatureList, oldFeature) {
+			if !contains(softwareExtracted.Description["ita"].Features, oldFeature) {
 				diffFeatures["ita"] = append(diffFeatures["ita"], oldFeature)
 			}
 		}

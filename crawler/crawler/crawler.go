@@ -14,7 +14,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/httpclient"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	"github.com/olivere/elastic"
-	pcode "github.com/r3vit/publiccode.yml-parser-go"
+	pcode "github.com/italia/publiccode-parser-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

@@ -31,6 +31,10 @@ github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf/go.mod h1:RpwtwJQFrIE
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
 github.com/italia/developers-italia-backend v0.0.0-20181018193642-3fad33631e04 h1:jU4sz1EB8A1gJfnL6I/2C7wLdNiDamqUqG3li5+gU3k=
+github.com/italia/publiccode-parser-go v0.0.0-20181107161327-d94a3cc20568 h1:vn78+hjKwa7Rz0CtH6TeBO7evxp02bxE6ENzj9YWUrY=
+github.com/italia/publiccode-parser-go v0.0.0-20181107161327-d94a3cc20568/go.mod h1:7IA9hcAdvFs9RapWwhY1hBa0XN29NM11JBvhKkcV2xs=
+github.com/italia/publiccode-parser-go v0.0.0-20190206225521-e888de23e99c h1:EXSETvw3wDb81nKcdSQe4SAtftlEWLiPfMDjdq/ZjtI=
+github.com/italia/publiccode-parser-go v0.0.0-20190206225521-e888de23e99c/go.mod h1:P8kqCeo3s+4UNOY2x5ucAgcsoL4xqm9LjW7XghcQUFg=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
@@ -75,8 +79,6 @@ github.com/prometheus/procfs v0.0.0-20181204211112-1dc9a6cbc91a h1:9a8MnZMP0X2nL
 github.com/prometheus/procfs v0.0.0-20181204211112-1dc9a6cbc91a/go.mod h1:c3At6R/oaqEKCNdg8wHV1ftS6bRYblBhIjjI8uT2IGk=
 github.com/r3vit/go-spdx v0.0.0-20180531140640-34a46ab144b1 h1:MfNJpWm6kIotD9VVRTmJAf7PsWZYQvrsGJpPL1kRV/Y=
 github.com/r3vit/go-spdx v0.0.0-20180531140640-34a46ab144b1/go.mod h1:4UMsmwV0XVOC+SAL+YUHQEPHR2Mv9hvWufXiGO3vjtA=
-github.com/r3vit/publiccode.yml-parser-go v0.0.0-20180725074408-ca7ba0b438c1 h1:hDpcA5tlfJETpRZ5cQ7H47Dlof9eYNFZFbzkSOuEmKw=
-github.com/r3vit/publiccode.yml-parser-go v0.0.0-20180725074408-ca7ba0b438c1/go.mod h1:FtFOzKs9VvUhp+xuo3t35LZUJcZqBJn6zG+I3NqrhNA=
 github.com/sergi/go-diff v1.0.0 h1:Kpca3qRNrduNnOQeazBd0ysaKrUJiIuISHxogkT9RPQ=
 github.com/sergi/go-diff v1.0.0/go.mod h1:0CfEIISq7TuYL3j771MWULgwwjU+GofnZX9QAmXWZgo=
 github.com/sirupsen/logrus v1.3.0 h1:hI/7Q+DtNZ2kINb6qt/lS+IyXnHQe9e90POfeewL/ME=

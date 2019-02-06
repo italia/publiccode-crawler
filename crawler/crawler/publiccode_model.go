@@ -92,7 +92,7 @@ type Desc struct {
 	LongDescription  string   `json:"longDescription"`
 	Documentation    string   `json:"documentation"`
 	APIDocumentation string   `json:"apiDocumentation"`
-	FeatureList      []string `json:"featureList"`
+	Features         []string `json:"features"`
 	Screenshots      []string `json:"screenshots"`
 	Videos           []string `json:"videos"`
 	Awards           []string `json:"awards"`
@@ -137,7 +137,7 @@ type OldVariant struct {
 type OldDesc struct {
 	LocalisedName string   `json:"localisedName"`
 	GenericName   string   `json:"genericName"`
-	FeatureList   []string `json:"featureList"`
+	Features      []string `json:"features"`
 }
 
 //Audience describe who is the audience of this software.
