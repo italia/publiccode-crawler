@@ -79,7 +79,7 @@ There are two main indices:
       "it-riuso-codiceIPA-label": {
         "type": "text"
       },
-      "publiccode-yaml-version": {
+      "publiccodeYmlVersion": {
         "type": "text",
         "index": false
       },

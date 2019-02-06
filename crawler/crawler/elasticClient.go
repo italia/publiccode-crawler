@@ -142,7 +142,7 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
 					"type": "text",
 					"index": false
 				},
-        "publiccode-yaml-version": {
+        "publiccodeYmlVersion": {
           "type": "text",
           "index": false
         },
