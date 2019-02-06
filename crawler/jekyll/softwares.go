@@ -52,7 +52,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").     // search in index "publiccode"
+		Index(viper.GetString("ELASTIC_ALIAS")).     // search in index "publiccode"
 		Query(query).            // specify the query
 		Pretty(true).            // pretty print request and response JSON
 		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
