@@ -6,7 +6,7 @@ require (
 	github.com/dyatlov/go-oembed v0.0.0-20180429203341-4bc5ab7a42e9
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
-	github.com/italia/publiccode-parser-go v0.0.0-20190206225521-e888de23e99c
+	github.com/italia/publiccode-parser-go v0.0.0-20190207163107-bb35674f1ad2
 	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect

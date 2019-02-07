@@ -22,11 +22,8 @@ func CloneRepository(domain Domain, hostname, name, gitURL, gitBranch, index str
 		return errors.New("cannot clone a repository without git URL")
 	}
 
-	cloneFolder := "gitClone"
-
 	vendor, repo := splitFullName(name)
-
-	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), "repos", hostname, vendor, repo, cloneFolder)
+	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), "repos", hostname, vendor, repo, "gitClone")
 
 	// If folder already exists it will do a fetch instead of a clone.
 	if _, err := os.Stat(path); !os.IsNotExist(err) {

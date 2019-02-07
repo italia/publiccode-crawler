@@ -47,7 +47,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		Name:             pc.Name,
 		ApplicationSuite: pc.ApplicationSuite,
 		URL:              pc.URL.String(),
-		LandingURL:       pc.LandingURL.String(),
+		LandingURL:       urlToString(pc.LandingURL),
 
 		IsBasedOn:       pc.IsBasedOn,
 		SoftwareVersion: pc.SoftwareVersion,
@@ -63,7 +63,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 
 		UsedBy: pc.UsedBy,
 
-		Roadmap: pc.Roadmap.String(),
+		Roadmap: urlToString(pc.Roadmap),
 
 		DevelopmentStatus: pc.DevelopmentStatus,
 
@@ -137,8 +137,8 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 			GenericName:      pc.Description[lang].GenericName,
 			ShortDescription: pc.Description[lang].ShortDescription,
 			LongDescription:  pc.Description[lang].LongDescription,
-			Documentation:    pc.Description[lang].Documentation.String(),
-			APIDocumentation: pc.Description[lang].APIDocumentation.String(),
+			Documentation:    urlToString(pc.Description[lang].Documentation),
+			APIDocumentation: urlToString(pc.Description[lang].APIDocumentation),
 			Features:         pc.Description[lang].Features,
 			Screenshots:      concatenateLinks(rawBaseDir, pc.Description[lang].Screenshots),
 			Videos: func(videos []*url.URL) []string {
@@ -257,6 +257,13 @@ func getOembedInfo(t, link string) string { // nolint: unparam
 	}
 
 	return html
+}
+
+func urlToString (url *url.URL) string {
+	if url != nil {
+		return url.String()
+	}
+	return ""
 }
 
 // concatenateLink returns the host path joined with the file name.
