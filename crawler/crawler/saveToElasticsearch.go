@@ -266,16 +266,24 @@ func urlToString (url *url.URL) string {
 	return ""
 }
 
-// concatenateLink returns the host path joined with the file name.
-func concatenateLink(host, file string) string {
-	u, err := url.Parse(host)
+// concatenateLink concatenates the given path to a base URL, unless the path is an absolute URL
+func concatenateLink(base, p string) string {
+	uBase, err := url.Parse(base)
 	if err != nil {
 		return ""
 	}
 
-	u.Path = path.Join(u.Path, file)
+	uPath, err := url.Parse(p)
+	if err != nil {
+		return ""
+	}
 
-	return u.String()
+	if uPath.IsAbs() {
+		return p
+	}
+
+	uBase.Path = path.Join(uBase.Path, p)
+	return uBase.String()
 }
 
 // concatenateLinks returns a list of host paths joined with the file name.
