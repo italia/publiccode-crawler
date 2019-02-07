@@ -1,6 +1,7 @@
 package jekyll
 
 import (
+	"github.com/spf13/viper"
 	"context"
 	"os"
 	"reflect"
@@ -63,7 +64,7 @@ func FirstSoftwareRiuso(filename string, results int, unsupportedCountries []str
 
 	// Extract all the documents.
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").        // search in index "publiccode"
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).        // search in index "publiccode"
 		Query(query).               // specify the query
 		Sort("releaseDate", false). // sort by releaseDate, from newest to oldest.
 		Pretty(true).               // pretty print request and response JSON

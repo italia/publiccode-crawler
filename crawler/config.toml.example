@@ -14,6 +14,10 @@ ELASTIC_PWD = ""
 # doet not support custom aliases and uses its base index name.
 ELASTIC_ALIAS = "jekyll"
 
+# Index names
+ELASTIC_PUBLICCODE_INDEX = "publiccodes"
+ELASTIC_PUBLISHERS_INDEX = "administrations"
+
 # URL of the list of Italian public administration agencies
 INDICEPA_URL = "http://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt"
 

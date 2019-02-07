@@ -1,6 +1,7 @@
 package jekyll
 
 import (
+	"github.com/spf13/viper"
 	"context"
 	"io/ioutil"
 	"os"
@@ -63,7 +64,7 @@ func TagsYML(tagsDestFile, tagsSrcFile string, elasticClient *elastic.Client) er
 	query = query.Filter(elastic.NewTypeQuery("software"))
 
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").     // search in index "publiccode"
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
 		Pretty(true).            // pretty print request and response JSON
 		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.

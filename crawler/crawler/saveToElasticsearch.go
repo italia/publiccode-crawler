@@ -198,7 +198,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 
 		// Put administrations data in ES.
 		_, err = elasticClient.Index().
-			Index("administration").
+			Index(viper.GetString("ELASTIC_PUBLISHERS_INDEX")).
 			Type("administration").
 			Id(file.ItRiusoCodiceIPA).
 			BodyJson(administration{

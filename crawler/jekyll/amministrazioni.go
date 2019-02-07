@@ -1,6 +1,7 @@
 package jekyll
 
 import (
+	"github.com/spf13/viper"
 	"context"
 	"os"
 	"reflect"
@@ -60,7 +61,7 @@ func AmministrazioniYML(filename string, unsupportedCountries []string, elasticC
 	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").     // search in index "publiccode"
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
 		Pretty(true).            // pretty print request and response JSON
 		From(0).Size(10000).     // get first 10k elements. It can be changed.

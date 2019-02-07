@@ -255,7 +255,7 @@ func findSimilarSoftwares(tags []string, numberOfSimilarSoftware int, unsupporte
 	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").                   // search in index "publiccode"
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).                   // search in index "publiccode"
 		Query(query).                          // specify the query
 		From(0).Size(numberOfSimilarSoftware). // take documents from 0-numberOfSimilarSoftware
 		Pretty(true).                          // pretty print request and response JSON
@@ -289,7 +289,7 @@ func findIsBasedOnSoftwares(document crawler.PublicCodeES, unsupportedCountries 
 	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
 	// Extract all the documents. It should filter only the ones with isBaseOn=url.
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").     // search in index "publiccode"
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
 		Pretty(true).            // pretty print request and response JSON
 		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
@@ -348,7 +348,7 @@ func populatePopularTags(tags []string, number int, elasticClient *elastic.Clien
 	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", "it", "us", "de"))
 	// Extract all the documents. It should filter only the ones with isBaseOn=url.
 	searchResult, err := elasticClient.Search().
-		Index("publiccode").     // search in index "publiccode"
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
 		Pretty(true).            // pretty print request and response JSON
 		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.

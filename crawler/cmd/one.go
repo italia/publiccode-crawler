@@ -32,8 +32,6 @@ No organizations! Only single repositories!`,
 
 		// Read repository URL.
 		repo := args[0]
-		// Index for actual process.
-		index := "publiccodes"
 
 		// Elastic connection.
 		elasticClient, err := crawler.ElasticClientFactory(
@@ -43,6 +41,7 @@ No organizations! Only single repositories!`,
 		if err != nil {
 			log.Fatal(err)
 		}
+		index := viper.GetString("ELASTIC_PUBLICCODE_INDEX")
 		err = crawler.ElasticIndexMapping(index, elasticClient)
 		if err != nil {
 			log.Fatal(err)
