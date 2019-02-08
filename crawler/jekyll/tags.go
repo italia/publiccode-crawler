@@ -9,6 +9,7 @@ import (
 
 	"github.com/italia/developers-italia-backend/crawler/crawler"
 	"github.com/olivere/elastic"
+	"github.com/thoas/go-funk"
 	log "github.com/sirupsen/logrus"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -88,7 +89,7 @@ func TagsYML(tagsDestFile, tagsSrcFile string, elasticClient *elastic.Client) er
 		if !unsupported {
 			// Range over tags.
 			for tag, value := range tags {
-				if contains(i.Tags, tag) && !containsTags(result, tag) {
+				if funk.Contains(i.Tags, tag) && !containsTags(result, tag) {
 					result[tag] = value
 				}
 			}
@@ -126,7 +127,7 @@ func containsTags(m map[string]Tag, name string) bool {
 // checkUnsupportedCountries returns true if an unsupported country is in a list of countries.
 func checkUnsupportedCountries(listCountries, unsupportedCountries []string) bool {
 	for _, unsupportedCountry := range unsupportedCountries {
-		if contains(listCountries, unsupportedCountry) {
+		if funk.Contains(listCountries, unsupportedCountry) {
 			return true
 		}
 	}

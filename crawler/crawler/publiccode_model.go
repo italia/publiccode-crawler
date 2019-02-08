@@ -1,12 +1,18 @@
 package crawler
 
-// PublicCodeES describe the data in ElasticSearch that includes publiccode and meta informations.
-type PublicCodeES struct {
-	FileRawURL            string `json:"fileRawURL"`
-	ID                    string `json:"id"`
-	CrawlTime             string `json:"crawltime"`
-	ItRiusoCodiceIPALabel string `json:"it-riuso-codiceIPA-label"`
+// SoftwareES represents a software record in Elasticsearch
+type SoftwareES struct {
+	FileRawURL            string       `json:"fileRawURL"`
+	ID                    string       `json:"id"`
+	CrawlTime             string       `json:"crawltime"`
+	ItRiusoCodiceIPALabel string       `json:"it-riuso-codiceIPA-label"`
+	PublicCode            PublicCodeES `json:"publiccode"`
+	VitalityScore         float64      `json:"vitalityScore"`
+	VitalityDataChart     []int        `json:"vitalityDataChart"`
+}
 
+// PublicCodeES describe the data in ElasticSearch that includes publiccode.
+type PublicCodeES struct {
 	Name             string `json:"name"`
 	ApplicationSuite string `json:"applicationSuite,omitempty"`
 	URL              string `json:"url"`
@@ -31,12 +37,6 @@ type PublicCodeES struct {
 
 	DevelopmentStatus string `json:"development-status"`
 
-	// Vitalityscore
-	VitalityScore     float64 `json:"vitalityScore"`
-	VitalityDataChart []int   `json:"vitalityDataChart"`
-
-	RelatedSoftware []string `json:"related-software"` //TODO: update after crawling.
-
 	SoftwareType string `json:"software-type"`
 
 	IntendedAudienceOnlyFor              []string `json:"intended-audience-only-for"`
@@ -44,7 +44,6 @@ type PublicCodeES struct {
 	IntendedAudienceUnsupportedCountries []string `json:"intended-audience-unsupported-countries"`
 
 	Description map[string]Desc `json:"description"`
-	OldVariants []OldVariant    `json:"old-variant"`
 
 	LegalLicense            string `json:"legal-license"`
 	LegalMainCopyrightOwner string `json:"legal-main-copyright-owner"`

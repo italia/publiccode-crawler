@@ -23,11 +23,9 @@ type administration struct {
 }
 
 // SaveToES save the chosen data []byte in elasticsearch
+// data contains the raw publiccode.yml file
 func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float64, vitality []int, data []byte, index string, elasticClient *elastic.Client) error {
-	// Starting with elastic.v5, you must pass a context to execute each service.
-	ctx := context.Background()
-
-	// Generate publiccode data using the parser.
+	// Parse the publiccode.yml file
 	pc := pcode.PublicCode{}
 	err := pcode.Parse(data, &pc)
 	if err != nil {
@@ -37,13 +35,16 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 	// Extract raw base url.
 	rawBaseDir := strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
-	// Add a document to the index.
-	file := PublicCodeES{
+	// Convert the pcode.PublicCode struct into a SoftwareES struct
+	file := SoftwareES{
 		FileRawURL:            fileRawURL,
 		ID:                    hashedRepoURL,
 		CrawlTime:             time.Now().String(),
 		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(pc.It.Riuso.CodiceIPA),
-
+		VitalityScore:     activityIndex,
+		VitalityDataChart: vitality,
+	}
+	file.PublicCode = PublicCodeES{
 		Name:             pc.Name,
 		ApplicationSuite: pc.ApplicationSuite,
 		URL:              pc.URL.String(),
@@ -67,11 +68,6 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 
 		DevelopmentStatus: pc.DevelopmentStatus,
 
-		VitalityScore:     activityIndex,
-		VitalityDataChart: vitality,
-
-		RelatedSoftware: nil,
-
 		SoftwareType: pc.SoftwareType,
 
 		IntendedAudienceOnlyFor:              pc.IntendedAudience.OnlyFor,
@@ -79,7 +75,6 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		IntendedAudienceUnsupportedCountries: pc.IntendedAudience.UnsupportedCountries,
 
 		Description: map[string]Desc{},
-		OldVariants: []OldVariant{},
 
 		LegalLicense:            pc.Legal.License,
 		LegalMainCopyrightOwner: pc.Legal.MainCopyrightOwner,
@@ -117,14 +112,14 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		ItDesignKitContent: pc.It.DesignKit.Content,
 	}
 	for _, contractor := range pc.Maintenance.Contractors {
-		file.MaintenanceContractors = append(file.MaintenanceContractors, Contractor{
+		file.PublicCode.MaintenanceContractors = append(file.PublicCode.MaintenanceContractors, Contractor{
 			Name:    contractor.Name,
 			Website: contractor.Website.String(),
 			Until:   contractor.Until.Format("2006-01-02"),
 		})
 	}
 	for _, contact := range pc.Maintenance.Contacts {
-		file.MaintenanceContacts = append(file.MaintenanceContacts, Contact{
+		file.PublicCode.MaintenanceContacts = append(file.PublicCode.MaintenanceContacts, Contact{
 			Name:        contact.Name,
 			Email:       contact.Email,
 			Affiliation: contact.Affiliation,
@@ -132,7 +127,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		})
 	}
 	for lang := range pc.Description {
-		file.Description[lang] = Desc{
+		file.PublicCode.Description[lang] = Desc{
 			LocalisedName:    pc.Description[lang].LocalisedName,
 			GenericName:      pc.Description[lang].GenericName,
 			ShortDescription: pc.Description[lang].ShortDescription,
@@ -154,7 +149,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 
 	}
 	for _, dependency := range pc.DependsOn.Open {
-		file.DependsOnOpen = append(file.DependsOnOpen, Dependency{
+		file.PublicCode.DependsOnOpen = append(file.PublicCode.DependsOnOpen, Dependency{
 			Name:       dependency.Name,
 			VersionMin: dependency.VersionMin,
 			VersionMax: dependency.VersionMax,
@@ -163,7 +158,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		})
 	}
 	for _, dependency := range pc.DependsOn.Proprietary {
-		file.DependsOnProprietary = append(file.DependsOnProprietary, Dependency{
+		file.PublicCode.DependsOnProprietary = append(file.PublicCode.DependsOnProprietary, Dependency{
 			Name:       dependency.Name,
 			VersionMin: dependency.VersionMin,
 			VersionMax: dependency.VersionMax,
@@ -172,7 +167,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		})
 	}
 	for _, dependency := range pc.DependsOn.Hardware {
-		file.DependsOnHardware = append(file.DependsOnHardware, Dependency{
+		file.PublicCode.DependsOnHardware = append(file.PublicCode.DependsOnHardware, Dependency{
 			Name:       dependency.Name,
 			VersionMin: dependency.VersionMin,
 			VersionMax: dependency.VersionMax,
@@ -180,7 +175,9 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 			Version:    dependency.Version,
 		})
 	}
+
 	// Put publiccode data in ES.
+	ctx := context.Background()
 	_, err = elasticClient.Index().
 		Index(index).
 		Type("software").
@@ -194,16 +191,16 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 	metrics.GetCounter("repository_file_indexed", index).Inc()
 
 	// Add administration data.
-	if file.ItRiusoCodiceIPA != "" {
+	if file.PublicCode.ItRiusoCodiceIPA != "" {
 
 		// Put administrations data in ES.
 		_, err = elasticClient.Index().
 			Index(viper.GetString("ELASTIC_PUBLISHERS_INDEX")).
 			Type("administration").
-			Id(file.ItRiusoCodiceIPA).
+			Id(file.PublicCode.ItRiusoCodiceIPA).
 			BodyJson(administration{
 				Name:      file.ItRiusoCodiceIPALabel,
-				CodiceIPA: file.ItRiusoCodiceIPA,
+				CodiceIPA: file.PublicCode.ItRiusoCodiceIPA,
 			}).
 			Do(ctx)
 		if err != nil {

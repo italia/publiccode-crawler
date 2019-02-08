@@ -30,6 +30,8 @@ github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf h1:7+FW5aGwISbqUtkfmI
 github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf/go.mod h1:RpwtwJQFrIEPstU94h88MWPXP2ektJZ8cZ0YntAmXiE=
 github.com/hashicorp/hcl v1.0.0 h1:0Anlzjpi4vEasTeNFn2mLJgTSwt0+6sfsiTG8qcWGx4=
 github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T20WEQ=
+github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585 h1:kWQPgPrzV4M6ntaGzqU/tI9/OdntSFA9Y9ft/wlDpy0=
+github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585/go.mod h1:FOWDLyFiAsx5UmipjsBYguvps42mgph4nRPwuci95qM=
 github.com/italia/developers-italia-backend v0.0.0-20181018193642-3fad33631e04 h1:jU4sz1EB8A1gJfnL6I/2C7wLdNiDamqUqG3li5+gU3k=
 github.com/italia/publiccode-parser-go v0.0.0-20181107161327-d94a3cc20568 h1:vn78+hjKwa7Rz0CtH6TeBO7evxp02bxE6ENzj9YWUrY=
 github.com/italia/publiccode-parser-go v0.0.0-20181107161327-d94a3cc20568/go.mod h1:7IA9hcAdvFs9RapWwhY1hBa0XN29NM11JBvhKkcV2xs=
@@ -107,6 +109,8 @@ github.com/src-d/gcfg v1.4.0 h1:xXbNR5AlLSA315x2UO+fTSSAXCDf+Ar38/6oyGbDKQ4=
 github.com/src-d/gcfg v1.4.0/go.mod h1:p/UMsR43ujA89BJY9duynAwIpvqEujIH/jFlfL7jWoI=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
+github.com/thoas/go-funk v0.0.0-20181020164546-fbae87fb5b5c h1:3sFKuGerP3mGyXo7gDR1dGQ6GdIrI8s5KWmct0R5J6A=
+github.com/thoas/go-funk v0.0.0-20181020164546-fbae87fb5b5c/go.mod h1:mlR+dHGb+4YgXkf13rkQTuzrneeHANxOm6+ZnEV9HsA=
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 h1:nrZ3ySNYwJbSpD6ce9duiP+QkD3JuLCcWkdaehUS/3Y=
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80/go.mod h1:iFyPdL66DjUD96XmzVL3ZntbzcflLnznH0fr99w5VqE=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
