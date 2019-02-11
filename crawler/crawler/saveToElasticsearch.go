@@ -36,7 +36,7 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 	file := SoftwareES{
 		FileRawURL:            fileRawURL,
 		ID:                    hashedRepoURL,
-		CrawlTime:             time.Now().String(),
+		CrawlTime:             time.Now().Format(time.RFC3339),
 		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(parser.PublicCode.It.Riuso.CodiceIPA),
 		VitalityScore:     activityIndex,
 		VitalityDataChart: vitality,

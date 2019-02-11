@@ -65,7 +65,7 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
       "dynamic_templates": [
         {
           "description": {
-            "path_match": "description.*",
+            "path_match": "publiccode.description.*",
             "mapping": {
               "type": "object",
               "properties": {
@@ -131,387 +131,311 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
       ],
       "properties": {
         "fileRawURL": {
-          "type": "text",
-          "index": false
+          "type": "keyword",
+          "index": true
         },
 				"id": {
-					"type": "text",
-					"index": false
+					"type": "keyword",
+					"index": true
 				},
 				"crawltime": {
-					"type": "text",
+					"type": "date",
 					"index": false
 				},
         "publiccodeYmlVersion": {
-          "type": "text",
+          "type": "keyword",
           "index": false
         },
-        "name": {
-          "type": "text",
-          "analyzer": "autocomplete",
-          "search_analyzer": "autocomplete_search"
-        },
-        "applicationSuite": {
-          "type": "text",
-          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-        },
-        "url": {
-          "type": "text",
-          "index": false,
-          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-        },
-        "landingURL": {
-          "type": "text",
-          "index": false
-        },
-        "isBasedOn": {
-          "type": "text",
-          "index": false
-        },
-        "softwareVersion": {
-          "type": "keyword"
-        },
-        "releaseDate": {
-          "type": "date",
-          "format": "strict_date"
-        },
-        "logo": {
-          "type": "text",
-          "index": false
-        },
-        "monochromeLogo": {
-          "type": "text",
-          "index": false
-        },
-        "inputTypes": {
-          "type": "keyword"
-        },
-        "outputTypes": {
-          "type": "keyword"
-        },
-        "platforms": {
-          "type": "keyword"
-        },
-        "tags": {
-          "type": "keyword"
-        },
-        "usedBy": {
-          "type": "text",
-          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-        },
-        "roadmap": {
-          "type": "text",
-          "index": false
-        },
-        "developmentStatus": {
-          "type": "keyword"
-        },
-        "softwareType": {
-          "type": "keyword"
-        },
-        "intendedAudience-onlyFor": {
-          "type": "keyword"
-        },
-        "intendedAudience-countries": {
-          "type": "keyword"
-        },
-        "intendedAudience-unsupportedCountries": {
-          "type": "keyword"
-        },
-        "legal-license": {
-          "type": "text",
-          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-        },
-        "legal-mainCopyrightOwner": {
-          "type": "keyword"
-        },
-        "legal-repoOwner": {
-          "type": "text"
-        },
-        "legal-authorsFile": {
-          "type": "text",
-          "index": false
-        },
-        "maintenance-type": {
-          "type": "keyword"
-        },
-        "maintenance-contractors": {
-          "type": "nested",
+
+        "publiccode": {
           "properties": {
             "name": {
-              "type": "text"
+              "type": "text",
+              "analyzer": "autocomplete",
+              "search_analyzer": "autocomplete_search"
             },
-            "until": {
+            "applicationSuite": {
+              "type": "text",
+              "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+            },
+            "url": {
+              "type": "keyword",
+              "index": true,
+              "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+            },
+            "landingURL": {
+              "type": "keyword",
+              "index": false
+            },
+            "isBasedOn": {
+              "type": "keyword",
+              "index": true
+            },
+            "softwareVersion": {
+              "type": "keyword"
+            },
+            "releaseDate": {
               "type": "date",
               "format": "strict_date"
             },
-            "website": {
-              "type": "text",
+            "logo": {
+              "type": "keyword",
               "index": false
+            },
+            "monochromeLogo": {
+              "type": "keyword",
+              "index": false
+            },
+            "inputTypes": {
+              "type": "keyword"
+            },
+            "outputTypes": {
+              "type": "keyword"
+            },
+            "platforms": {
+              "type": "keyword"
+            },
+            "tags": {
+              "type": "keyword"
+            },
+            "usedBy": {
+              "type": "text",
+              "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+            },
+            "roadmap": {
+              "type": "keyword",
+              "index": false
+            },
+            "developmentStatus": {
+              "type": "keyword"
+            },
+            "softwareType": {
+              "type": "keyword"
+            },
+            "intendedAudience": {
+              "properties": {
+                "onlyFor": {
+                  "type": "keyword"
+                },
+                "countries": {
+                  "type": "keyword"
+                },
+                "unsupportedCountries": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "legal": {
+              "properties": {
+                "license": {
+                  "type": "keyword",
+                  "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+                },
+                "mainCopyrightOwner": {
+                  "type": "keyword"
+                },
+                "repoOwner": {
+                  "type": "keyword"
+                },
+                "authorsFile": {
+                  "type": "keyword",
+                  "index": false
+                }
+              }
+            },
+            "maintainance": {
+              "properties": {
+                "type": {
+                  "type": "keyword"
+                },
+                "contractors": {
+                  "type": "nested",
+                  "properties": {
+                    "name": {
+                      "type": "text"
+                    },
+                    "until": {
+                      "type": "date",
+                      "format": "strict_date"
+                    },
+                    "website": {
+                      "type": "text",
+                      "index": false
+                    }
+                  }
+                },
+                "contacts": {
+                  "type": "nested",
+                  "properties": {
+                    "name": {
+                      "type": "text"
+                    },
+                    "email": {
+                      "type": "text"
+                    },
+                    "phone": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "affiliation": {
+                      "type": "text"
+                    }
+                  }
+                }
+              }
+            },
+            "localisation": {
+              "properties": {
+                "localisationReady": {
+                  "type": "boolean"
+                },
+                "availableLanguages": {
+                  "type": "keyword"
+                }
+              }
+            },
+            "dependsOn": {
+              "properties": {
+                "open": {
+                  "type": "nested",
+                  "properties": {
+                    "name": {
+                      "type": "text"
+                    },
+                    "version-min": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "version-max": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "version": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "optional": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "proprietary": {
+                  "type": "nested",
+                  "properties": {
+                    "name": {
+                      "type": "text"
+                    },
+                    "version-min": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "version-max": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "version": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "optional": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "hardware": {
+                  "type": "nested",
+                  "properties": {
+                    "name": {
+                      "type": "text"
+                    },
+                    "version-min": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "version-max": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "version": {
+                      "type": "text",
+                      "index": false
+                    },
+                    "optional": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            },
+            "it": {
+              "properties": {
+                "conforme": {
+                  "properties": {
+                    "accessibile": {
+                      "type": "boolean"
+                    },
+                    "interoperabile": {
+                      "type": "boolean"
+                    },
+                    "sicuro": {
+                      "type": "boolean"
+                    },
+                    "privacy": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "spid": {
+                  "type": "boolean"
+                },
+                "cie": {
+                  "type": "boolean"
+                },
+                "anpr": {
+                  "type": "boolean"
+                },
+                "pagopa": {
+                  "type": "boolean"
+                },
+                "riuso": {
+                  "properties": {
+                    "codiceIPA": {
+                      "type": "keyword"
+                    }
+                  }
+                },
+                "ecosistemi": {
+                  "type": "keyword"
+                },
+                "designKit": {
+                  "properties": {
+                    "seo": {
+                      "type": "boolean"
+                    },
+                    "ui": {
+                      "type": "boolean"
+                    },
+                    "web": {
+                      "type": "boolean"
+                    },
+                    "content": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
             }
           }
         },
-        "maintenance-contacts": {
-          "type": "nested",
-          "properties": {
-            "name": {
-              "type": "text"
-            },
-            "email": {
-              "type": "text"
-            },
-            "phone": {
-              "type": "text",
-              "index": false
-            },
-            "affiliation": {
-              "type": "text"
-            }
-          }
-        },
-        "localisation-localisationReady": {
-          "type": "boolean"
-        },
-        "localisation-availableLanguages": {
-          "type": "keyword"
-        },
-        "dependsOn-open": {
-          "type": "nested",
-          "properties": {
-            "name": {
-              "type": "text"
-            },
-            "version-min": {
-              "type": "text",
-              "index": false
-            },
-            "version-max": {
-              "type": "text",
-              "index": false
-            },
-            "version": {
-              "type": "text",
-              "index": false
-            },
-            "optional": {
-              "type": "boolean"
-            }
-          }
-        },
-        "dependsOn-proprietary": {
-          "type": "nested",
-          "properties": {
-            "name": {
-              "type": "text"
-            },
-            "version-min": {
-              "type": "text",
-              "index": false
-            },
-            "version-max": {
-              "type": "text",
-              "index": false
-            },
-            "version": {
-              "type": "text",
-              "index": false
-            },
-            "optional": {
-              "type": "boolean"
-            }
-          }
-        },
-        "dependsOn-hardware": {
-          "type": "nested",
-          "properties": {
-            "name": {
-              "type": "text"
-            },
-            "version-min": {
-              "type": "text",
-              "index": false
-            },
-            "version-max": {
-              "type": "text",
-              "index": false
-            },
-            "version": {
-              "type": "text",
-              "index": false
-            },
-            "optional": {
-              "type": "boolean"
-            }
-          }
-        },
-        "it-conforme-accessibile": {
-          "type": "boolean"
-        },
-        "it-conforme-interoperabile": {
-          "type": "boolean"
-        },
-        "it-conforme-sicuro": {
-          "type": "boolean"
-        },
-        "it-conforme-privacy": {
-          "type": "boolean"
-        },
-        "it-spid": {
-          "type": "boolean"
-        },
-        "it-cie": {
-          "type": "boolean"
-        },
-        "it-anpr": {
-          "type": "boolean"
-        },
-        "it-pagopa": {
-          "type": "boolean"
-        },
-        "it-riuso-codiceIPA": {
-          "type": "keyword"
-        },
-        "it-riuso-codiceIPA-label": {
-          "type": "text",
-          "analyzer": "autocomplete",
-          "search_analyzer": "autocomplete_search"
-        },
-        "it-ecosistemi": {
-          "type": "keyword"
-        },
-        "it-designKit-seo": {
-          "type": "boolean"
-        },
-        "it-designKit-ui": {
-          "type": "boolean"
-        },
-        "it-designKit-web": {
-          "type": "boolean"
-        },
-        "it-designKit-content": {
-          "type": "boolean"
-        },
+
         "suggest-name": {
           "type": "completion"
         },
-        "vitality-score": {
+        "vitalityScore": {
           "type": "integer"
         },
-        "vitality-dataChart": {
+        "vitalityDataChart": {
           "type": "integer"
-        },
-        "related-software": {
-          "properties": {
-            "name": {
-              "type": "text",
-              "index": false
-            },
-            "image": {
-              "type": "text",
-              "index": false
-            },
-            "eng": {
-              "properties": {
-                "localised-name": {
-                  "type": "text",
-                  "index": false
-                },
-                "url": {
-                  "type": "text",
-                  "index": false
-                }
-              }
-            },
-            "ita": {
-              "properties": {
-                "localised-name": {
-                  "type": "text",
-                  "index": false
-                },
-                "url": {
-                  "type": "text",
-                  "index": false
-                }
-              }
-            }
-          }
-        },
-        "tags-related": {
-          "type": "keyword"
-        },
-        "popular-tags": {
-          "type": "keyword"
-        },
-        "share-tags": {
-          "type": "keyword"
-        },
-        "old-variant": {
-          "properties": {
-            "name": {
-              "type": "text",
-              "index": false
-            },
-            "eng": {
-              "properties": {
-                "localised-name": {
-                  "type": "text",
-                  "index": false
-                },
-                "url": {
-                  "type": "text",
-                  "index": false
-                },
-                "feature-list": {
-                  "type": "keyword",
-                  "index": false
-                },
-                "vitality-score": {
-                  "type": "integer",
-                  "index": false
-                },
-                "legal-repo-owner": {
-                  "type": "text",
-                  "index": false
-                }
-              }
-            },
-            "ita": {
-              "properties": {
-                "localised-name": {
-                  "type": "text",
-                  "index": false
-                },
-                "url": {
-                  "type": "text",
-                  "index": false
-                },
-                "feature-list": {
-                  "type": "keyword",
-                  "index": false
-                },
-                "vitality-score": {
-                  "type": "integer",
-                  "index": false
-                },
-                "legal-repo-owner": {
-                  "type": "text",
-                  "index": false
-                }
-              }
-            }
-          }
-        },
-        "old-feature-list": {
-          "properties": {
-            "ita": {
-              "type": "keyword",
-              "index": false
-            },
-            "eng": {
-              "type": "keyword",
-              "index": false
-            }
-          }
         }
       }
     }
