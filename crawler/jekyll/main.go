@@ -1,7 +1,6 @@
 package jekyll
 
 import (
-	"fmt"
 	"os"
 	"path"
 
@@ -18,13 +17,9 @@ func GenerateJekyllYML(elasticClient *elastic.Client) error {
 		log.Fatalf("The configured output directory (%v) does not exist: %v", outputDir, err)
 	}
 
-	// unsupportedCountries list.
-	unsupportedCountries := viper.GetStringSlice("IGNORE_UNSUPPORTEDCOUNTRIES")
-	fmt.Println(unsupportedCountries)
-
 	// Create and populate amministrazioni.yml
 	amministrazioniFilePath := path.Join(outputDir, "amministrazioni.yml")
-	err := AmministrazioniYML(amministrazioniFilePath, unsupportedCountries, elasticClient)
+	err := AmministrazioniYML(amministrazioniFilePath, elasticClient)
 	if err != nil {
 		log.Error(err)
 	}
@@ -32,7 +27,7 @@ func GenerateJekyllYML(elasticClient *elastic.Client) error {
 	// Create and populate software-riuso.yml
 	softwareRiusoFilePath := path.Join(outputDir, "software-riuso.yml")
 	numberOfSoftwareRiuso := 4
-	err = FirstSoftwareRiuso(softwareRiusoFilePath, numberOfSoftwareRiuso, unsupportedCountries, elasticClient)
+	err = FirstSoftwareRiuso(softwareRiusoFilePath, numberOfSoftwareRiuso, elasticClient)
 	if err != nil {
 		log.Error(err)
 	}
@@ -40,7 +35,7 @@ func GenerateJekyllYML(elasticClient *elastic.Client) error {
 	// Create and populate software-open-source.yml
 	softwareOSFilePath := path.Join(outputDir, "software-open-source.yml")
 	numberOfSoftwareOS := 4
-	err = FirstSoftwareOpenSource(softwareOSFilePath, numberOfSoftwareOS, unsupportedCountries, elasticClient)
+	err = FirstSoftwareOpenSource(softwareOSFilePath, numberOfSoftwareOS, elasticClient)
 	if err != nil {
 		log.Error(err)
 	}
@@ -49,7 +44,7 @@ func GenerateJekyllYML(elasticClient *elastic.Client) error {
 	softwaresFilePath := path.Join(outputDir, "softwares.yml")
 	numberOfSimilarSoftware := 4
 	numberOfPopularTags := 5
-	err = AllSoftwareYML(softwaresFilePath, numberOfSimilarSoftware, numberOfPopularTags, unsupportedCountries, elasticClient)
+	err = AllSoftwareYML(softwaresFilePath, numberOfSimilarSoftware, numberOfPopularTags, elasticClient)
 	if err != nil {
 		log.Errorf("Error exporting jekyll file of all the software : %v", err)
 	}

@@ -9,6 +9,7 @@ import (
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"github.com/italia/developers-italia-backend/crawler/crawler"
 )
 
 // shortSoftware is the subset of a software document that we want to output
@@ -28,23 +29,23 @@ type shortSoftware struct {
 }
 
 // FirstSoftwareRiuso generates a YAML file with simplified info about software, ordered by releaseDate.
-func FirstSoftwareRiuso(filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
-	query := elastic.NewBoolQuery()
+func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Client) error {
+	query := crawler.NewBoolQuery("software")
 	query = query.Must(elastic.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
 
-	return exportSoftwareList(query, filename, results, unsupportedCountries, elasticClient)
+	return exportSoftwareList(query, filename, results, elasticClient)
 }
 
 // FirstSoftwareOpenSource generates a YAML file with simplified info about software, ordered by releaseDate.
-func FirstSoftwareOpenSource(filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
-	query := elastic.NewBoolQuery()
+func FirstSoftwareOpenSource(filename string, results int, elasticClient *elastic.Client) error {
+	query := crawler.NewBoolQuery("software")
 	query = query.MustNot(elastic.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
 
-	return exportSoftwareList(query, filename, results, unsupportedCountries, elasticClient)
+	return exportSoftwareList(query, filename, results, elasticClient)
 }
 
 // exportSoftwareList generates a yml file with simplified info about software, ordered by releaseDate.
-func exportSoftwareList(query *elastic.BoolQuery, filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
+func exportSoftwareList(query *elastic.BoolQuery, filename string, results int, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
@@ -69,14 +70,6 @@ func exportSoftwareList(query *elastic.BoolQuery, filename string, results int, 
 		return err
 	}
 	defer f.Close() // nolint: errcheck
-
-	// UnsupportedCountries.
-	uc := make([]interface{}, len(unsupportedCountries))
-	for i, v := range unsupportedCountries {
-		uc[i] = v
-	}
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
-	query = query.Filter(elastic.NewTypeQuery("software"))
 
 	// Extract all the documents.
 	searchResult, err := elasticClient.Search().

@@ -8,6 +8,7 @@ import (
 
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // ElasticClientFactory returns an elastic Client.
@@ -566,4 +567,20 @@ func (r *ElasticRetrier) Retry(ctx context.Context, retry int, req *http.Request
 	// Let the backoff strategy decide how long to wait and whether to stop.
 	wait, stop := r.backoff.Next(retry)
 	return wait, stop, nil
+}
+
+// NewBoolQuery initializes a boolean query for Elasticsearch.
+func NewBoolQuery(queryType string) *elastic.BoolQuery {
+	query := elastic.NewBoolQuery()
+	query = query.Filter(elastic.NewTypeQuery(queryType))
+	if queryType == "software" {
+    unsupportedCountries := viper.GetStringSlice("IGNORE_UNSUPPORTEDCOUNTRIES")
+		uc := make([]interface{}, len(unsupportedCountries))
+		for i, v := range unsupportedCountries {
+			uc[i] = v
+		}
+		query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
+	}
+
+	return query
 }

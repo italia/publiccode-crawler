@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/thoas/go-funk"
+	"github.com/italia/developers-italia-backend/crawler/crawler"
 )
 
 // TagsYML generate the software-tags.yml that will contain all the tags in ES.
@@ -40,19 +41,8 @@ func TagsYML(tagsDestFile string, elasticClient *elastic.Client) error {
 	}
 	defer f.Close() // nolint: errcheck
 
-	/*
-		// UnsupportedCountries.
-		uc := make([]interface{}, len(unsupportedCountries))
-		for i, v := range unsupportedCountries {
-			uc[i] = v
-		}
-	*/
-
 	// Extract all the softwares.
-	query := elastic.NewBoolQuery()
-	query = query.Filter(elastic.NewTypeQuery("software"))
-	//query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
-
+	query := crawler.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
 		Query(query).                                       // specify the query

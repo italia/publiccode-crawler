@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"github.com/icza/dyno"
 
+	"github.com/italia/developers-italia-backend/crawler/crawler"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
@@ -14,7 +15,7 @@ import (
 )
 
 // AmministrazioniYML generate a yml file with all the amministrazioni in es.
-func AmministrazioniYML(filename string, unsupportedCountries []string, elasticClient *elastic.Client) error {
+func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
@@ -40,15 +41,7 @@ func AmministrazioniYML(filename string, unsupportedCountries []string, elasticC
 	}
 	defer f.Close() // nolint: errcheck
 
-	// UnsupportedCountries.
-	uc := make([]interface{}, len(unsupportedCountries))
-	for i, v := range unsupportedCountries {
-		uc[i] = v
-	}
-
-	query := elastic.NewBoolQuery()
-	query = query.Filter(elastic.NewTypeQuery("software"))
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
+	query := crawler.NewBoolQuery("software")
 	query = query.Must(elastic.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
 
 	searchResult, err := elasticClient.Search().

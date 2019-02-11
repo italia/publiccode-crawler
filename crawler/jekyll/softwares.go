@@ -13,6 +13,7 @@ import (
 	"github.com/icza/dyno"
 	"github.com/thoas/go-funk"
 	log "github.com/sirupsen/logrus"
+	"github.com/italia/developers-italia-backend/crawler/crawler"
 )
 
 // software is used for parsing some fields of the software objects stored
@@ -40,7 +41,7 @@ type software struct {
 }
 
 // AllSoftwareYML generate the softwares.yml file
-func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTags int, unsupportedCountries []string, elasticClient *elastic.Client) error {
+func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTags int, elasticClient *elastic.Client) error {
 	log.Infof("Generating %s", filename)
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
@@ -65,17 +66,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 	}
 	defer f.Close() // nolint: errcheck
 
-
-	// UnsupportedCountries
-	uc := make([]interface{}, len(unsupportedCountries))
-	for i, v := range unsupportedCountries {
-		uc[i] = v
-	}
 	// Extract all the softwares.
-	query := elastic.NewBoolQuery()
-	query = query.Filter(elastic.NewTypeQuery("software"))
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
-
+	query := crawler.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
@@ -104,9 +96,9 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 		}
 
 		// Populate the output object with additional information
-		dyno.Set(full[0], sw.findVariants(unsupportedCountries, elasticClient), "oldVariant")
+		dyno.Set(full[0], sw.findVariants(elasticClient), "oldVariant")
 		dyno.Set(full[0], sw.variantsFeatures(), "oldFeatures")
-		dyno.Set(full[0], sw.findRelated(numberOfSimilarSoftware, unsupportedCountries, elasticClient), "relatedSoftwares")
+		dyno.Set(full[0], sw.findRelated(numberOfSimilarSoftware, elasticClient), "relatedSoftwares")
 		dyno.Set(full[0], sw.getPopularTags(numberOfPopularTags, elasticClient), "popularTags")
 
 		// Convert it to YAML
@@ -125,16 +117,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 }
 
 // findVariants returns a list of variants of the given software.
-func (sw *software) findVariants(unsupportedCountries []string, elasticClient *elastic.Client) []software {
-	// UnsupportedCountries.
-	uc := make([]interface{}, len(unsupportedCountries))
-	for i, v := range unsupportedCountries {
-		uc[i] = v
-	}
-
-	query := elastic.NewBoolQuery()
-	query = query.Filter(elastic.NewTypeQuery("software"))
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
+func (sw *software) findVariants(elasticClient *elastic.Client) []software {
+	query := crawler.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
@@ -182,20 +166,11 @@ func (sw *software) variantsFeatures() map[string][]string {
 }
 
 // findRelated returns a list of similar software based on tags.
-func (sw *software) findRelated(numberOfSimilarSoftware int, unsupportedCountries []string, elasticClient *elastic.Client) []software {
-	// UnsupportedCountries.
-	uc := make([]interface{}, len(unsupportedCountries))
-	for i, v := range unsupportedCountries {
-		uc[i] = v
-	}
-
-	// Generate query.
-	query := elastic.NewBoolQuery()
-	query = query.Filter(elastic.NewTypeQuery("software"))
+func (sw *software) findRelated(numberOfSimilarSoftware int, elasticClient *elastic.Client) []software {
+	query := crawler.NewBoolQuery("software")
 	for _, tag := range sw.PublicCode.Tags {
 		query = query.Should(elastic.NewTermQuery("tags", tag))
 	}
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
 	query = query.MustNot(elastic.NewTermsQuery("id", sw.ID))
 
 	searchResult, err := elasticClient.Search().
@@ -221,10 +196,8 @@ func (sw *software) getPopularTags(number int, elasticClient *elastic.Client) []
 		return sw.PublicCode.Tags
 	}
 
-	query := elastic.NewBoolQuery()
-	query = query.Filter(elastic.NewTypeQuery("software"))
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", "it", "us", "de"))
 	// Extract all the documents. It should filter only the ones with isBaseOn=url.
+	query := crawler.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
