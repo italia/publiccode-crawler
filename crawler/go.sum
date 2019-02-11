@@ -51,6 +51,10 @@ github.com/italia/publiccode-parser-go v0.0.0-20190211175119-d70c6ce06a47 h1:wN/
 github.com/italia/publiccode-parser-go v0.0.0-20190211175119-d70c6ce06a47/go.mod h1:u6MAHxWmyvVRhZZDPOtEVHaXD5Rnm6K3IjwlQKcjWjM=
 github.com/italia/publiccode-parser-go v0.0.0-20190211180420-c58f59926ee9 h1:vKkFHp90vKnan3OkPwmmV365dmVxvBAJU/j4zNiFrKo=
 github.com/italia/publiccode-parser-go v0.0.0-20190211180420-c58f59926ee9/go.mod h1:u6MAHxWmyvVRhZZDPOtEVHaXD5Rnm6K3IjwlQKcjWjM=
+github.com/italia/publiccode-parser-go v0.0.0-20190211200555-25e5a4737bf9 h1:L3RhTx97KTqe1lreOXI0oIQhDmpz5YnW/f1PpcahFcM=
+github.com/italia/publiccode-parser-go v0.0.0-20190211200555-25e5a4737bf9/go.mod h1:u6MAHxWmyvVRhZZDPOtEVHaXD5Rnm6K3IjwlQKcjWjM=
+github.com/italia/publiccode-parser-go v0.0.0-20190211210212-681bbad861e9 h1:sZfKnHdpdZWJY/rMiGah1KbIGGRhNxfIdDZcv6WOOY0=
+github.com/italia/publiccode-parser-go v0.0.0-20190211210212-681bbad861e9/go.mod h1:u6MAHxWmyvVRhZZDPOtEVHaXD5Rnm6K3IjwlQKcjWjM=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
