@@ -196,6 +196,7 @@ func (sw *software) findRelated(numberOfSimilarSoftware int, unsupportedCountrie
 		query = query.Should(elastic.NewTermQuery("tags", tag))
 	}
 	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
+	query = query.MustNot(elastic.NewTermsQuery("id", sw.ID))
 
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).                   // search in index "publiccode"
