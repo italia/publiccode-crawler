@@ -24,7 +24,7 @@
   ],
   "intended-audience-only-for": ["cities", "health-services", "it-ag-agricolo"],
   "intended-audience-countries": ["it", "de"],
-  "intended-audience-unsupported-countries": ["fr"],
+  "intendedAudience.unsupportedCountries": ["fr"],
   "description": {
     "eng": {
       "localised-name": "",

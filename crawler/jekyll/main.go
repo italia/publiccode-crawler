@@ -56,8 +56,7 @@ func GenerateJekyllYML(elasticClient *elastic.Client) error {
 
 	// Create and populate software_tags.yml
 	softwaresTagsDestFilePath := path.Join(outputDir, "software_tags.yml")
-	softwaresTagsSrcFilePath := "software_tags_base.yml"
-	err = TagsYML(softwaresTagsDestFilePath, softwaresTagsSrcFilePath, elasticClient)
+	err = TagsYML(softwaresTagsDestFilePath, elasticClient)
 	if err != nil {
 		log.Errorf("Error exporting jekyll file of software tags: %v", err)
 	}

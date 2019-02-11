@@ -16,8 +16,10 @@ import (
 )
 
 // software is used for parsing some fields of the software objects stored
-// in Elasticsearch that are needed for computing additional information.
+// in Elasticsearch that are needed for computing additional information
+// and for exporting variants and related software.
 type software struct {
+	ID				 string `json:"id"`
 	PublicCode struct {
 		URL              string `json:"url"`
 		Name             string `json:"name"`
@@ -72,7 +74,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 	// Extract all the softwares.
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intended-audience-unsupported-countries", uc...))
+	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
 
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
@@ -132,7 +134,7 @@ func (sw *software) findVariants(unsupportedCountries []string, elasticClient *e
 
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
-	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
+	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
@@ -193,7 +195,7 @@ func (sw *software) findRelated(numberOfSimilarSoftware int, unsupportedCountrie
 	for _, tag := range sw.PublicCode.Tags {
 		query = query.Should(elastic.NewTermQuery("tags", tag))
 	}
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intended-audience-unsupported-countries", uc...))
+	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
 
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).                   // search in index "publiccode"
@@ -220,7 +222,7 @@ func (sw *software) getPopularTags(number int, elasticClient *elastic.Client) []
 
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intended-audience-unsupported-countries", "it", "us", "de"))
+	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", "it", "us", "de"))
 	// Extract all the documents. It should filter only the ones with isBaseOn=url.
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"

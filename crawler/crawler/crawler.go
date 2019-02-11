@@ -14,7 +14,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/httpclient"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	"github.com/olivere/elastic"
-	pcode "github.com/italia/publiccode-parser-go"
+	publiccode "github.com/italia/publiccode-parser-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -201,18 +201,17 @@ func CheckAvailability(repository Repository, index string, wg *sync.WaitGroup, 
 }
 
 func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
-	// Generate publiccode data using the parser.
-	pc := new(pcode.PublicCode)
-	pcode.BaseDir = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
+	parser := publiccode.NewParser() 
+	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
-	err := pcode.Parse(data, pc)
+	err := parser.Parse(data)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
 		return err
 	}
 
-	if pa.CodiceIPA != "" && pa.CodiceIPA != pc.It.Riuso.CodiceIPA {
-		return errors.New("codiceIPA for: " + fileRawURL + " is " + pc.It.Riuso.CodiceIPA + ", which differs from the one assigned to the org in the whitelist: " + pa.CodiceIPA)
+	if pa.CodiceIPA != "" && parser.PublicCode.It.Riuso.CodiceIPA != "" && pa.CodiceIPA != parser.PublicCode.It.Riuso.CodiceIPA {
+		return errors.New("codiceIPA for: " + fileRawURL + " is " + parser.PublicCode.It.Riuso.CodiceIPA + ", which differs from the one assigned to the org in the whitelist: " + pa.CodiceIPA)
 	}
 
 	return err

@@ -1,28 +1,21 @@
 package jekyll
 
 import (
-	"github.com/spf13/viper"
 	"context"
-	"io/ioutil"
+	"encoding/json"
 	"os"
-	"reflect"
 
-	"github.com/italia/developers-italia-backend/crawler/crawler"
+	"github.com/ghodss/yaml"
+	"github.com/icza/dyno"
 	"github.com/olivere/elastic"
-	"github.com/thoas/go-funk"
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/spf13/viper"
+	"github.com/thoas/go-funk"
 )
 
-// Tag represent a single tag translated in two languages: english (en) and italian (it).
-type Tag struct {
-	En string `yaml:"en"`
-	It string `yaml:"it"`
-}
-
 // TagsYML generate the software-tags.yml that will contain all the tags in ES.
-func TagsYML(tagsDestFile, tagsSrcFile string, elasticClient *elastic.Client) error {
-	log.Infof("Generating %s from %s and ES", tagsDestFile, tagsSrcFile)
+func TagsYML(tagsDestFile string, elasticClient *elastic.Client) error {
+	log.Infof("Generating %s", tagsDestFile)
 
 	// Create file if not exists.
 	if _, err := os.Stat(tagsDestFile); os.IsExist(err) {
@@ -47,62 +40,58 @@ func TagsYML(tagsDestFile, tagsSrcFile string, elasticClient *elastic.Client) er
 	}
 	defer f.Close() // nolint: errcheck
 
-	// Tags data.
-	var tags map[string]Tag
-	// Read tags data.
-	data, err := ioutil.ReadFile(tagsSrcFile)
-	if err != nil {
-		return err
-	}
-
-	err = yaml.Unmarshal(data, &tags)
-	if err != nil {
-		return err
-	}
+	/*
+		// UnsupportedCountries.
+		uc := make([]interface{}, len(unsupportedCountries))
+		for i, v := range unsupportedCountries {
+			uc[i] = v
+		}
+	*/
 
 	// Extract all the softwares.
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
+	//query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
 
 	searchResult, err := elasticClient.Search().
-		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
-		Query(query).            // specify the query
-		Pretty(true).            // pretty print request and response JSON
-		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
-		Do(context.Background()) // execute
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
+		Query(query).                                       // specify the query
+		Pretty(true).                                       // pretty print request and response JSON
+		From(0).Size(10000).                                // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background())                            // execute
 	if err != nil {
 		log.Error(err)
 	}
 
 	// Result tag list.
-	result := make(map[string]Tag)
+	var tags []string
 
-	// Foreach search result check if codiceIPA is not empty.
-	var pctype crawler.PublicCodeES
-	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
-		i := item.(crawler.PublicCodeES)
+	for _, hit := range searchResult.Hits.Hits {
+		var v interface{}
+		if err := json.Unmarshal(*hit.Source, &v); err != nil {
+			log.Error(err)
+		}
+		
+		// TODO: we should just ask Elasticsearch for the unique values
+		// instead of computing them ourselves.
 
-		// TODO: add unsupported countries.
-		unsupportedCountries := []string{"it"}
-		// Append only supported countries.
-		unsupported := checkUnsupportedCountries(i.IntendedAudienceUnsupportedCountries, unsupportedCountries)
-		if !unsupported {
-			// Range over tags.
-			for tag, value := range tags {
-				if funk.Contains(i.Tags, tag) && !containsTags(result, tag) {
-					result[tag] = value
-				}
+		// Range over tags.
+		if swTags, err := dyno.GetSlice(v, "publiccode", "tags"); err == nil {
+			for _, tag := range swTags {
+				tags = append(tags, tag.(string))
 			}
 		}
 	}
 
+	tags = funk.Uniq(tags).([]string)
+
 	// Debug note if file will be empty.
-	if len(result) == 0 {
+	if len(tags) == 0 {
 		log.Warnf("%s is empty.", tagsDestFile)
 	}
 
 	// Marshal yml.
-	d, err := yaml.Marshal(&result)
+	d, err := yaml.Marshal(&tags)
 	if err != nil {
 		return err
 	}
@@ -112,24 +101,4 @@ func TagsYML(tagsDestFile, tagsSrcFile string, elasticClient *elastic.Client) er
 	}
 
 	return err
-}
-
-// containsTags returns true if the map key contains the given string.
-func containsTags(m map[string]Tag, name string) bool {
-	for k := range m {
-		if k == name {
-			return true
-		}
-	}
-	return false
-}
-
-// checkUnsupportedCountries returns true if an unsupported country is in a list of countries.
-func checkUnsupportedCountries(listCountries, unsupportedCountries []string) bool {
-	for _, unsupportedCountry := range unsupportedCountries {
-		if funk.Contains(listCountries, unsupportedCountry) {
-			return true
-		}
-	}
-	return false
 }

@@ -7,7 +7,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585
-	github.com/italia/publiccode-parser-go v0.0.0-20190207163107-bb35674f1ad2
+	github.com/italia/publiccode-parser-go v0.0.0-20190211180420-c58f59926ee9
 	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect

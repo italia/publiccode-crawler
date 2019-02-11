@@ -16,17 +16,21 @@ type shortSoftware struct {
 	ID         string `json:"id"`
 	CrawlTime  string `json:"crawltime"`
 	PublicCode struct {
-		Name      string `json:"name"`
-		Logo      string `json:"logo"`
-		URL       string `json:"url"`
-		CodiceIPA string `json:"it-riuso-codice-ipa"`
+		Name string `json:"name"`
+		Logo string `json:"logo"`
+		URL  string `json:"url"`
+		It   struct {
+			Riuso struct {
+				CodiceIPA string `json:"codiceIPA"`
+			} `json:"riuso"`
+		} `json:"it"`
 	} `json:"publiccode"`
 }
 
 // FirstSoftwareRiuso generates a YAML file with simplified info about software, ordered by releaseDate.
 func FirstSoftwareRiuso(filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	query := elastic.NewBoolQuery()
-	query = query.Must(elastic.NewExistsQuery("publiccode.it-riuso-codice-ipa"))
+	query = query.Must(elastic.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
 
 	return exportSoftwareList(query, filename, results, unsupportedCountries, elasticClient)
 }
@@ -34,7 +38,7 @@ func FirstSoftwareRiuso(filename string, results int, unsupportedCountries []str
 // FirstSoftwareOpenSource generates a YAML file with simplified info about software, ordered by releaseDate.
 func FirstSoftwareOpenSource(filename string, results int, unsupportedCountries []string, elasticClient *elastic.Client) error {
 	query := elastic.NewBoolQuery()
-	query = query.MustNot(elastic.NewExistsQuery("publiccode.it-riuso-codice-ipa"))
+	query = query.MustNot(elastic.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
 
 	return exportSoftwareList(query, filename, results, unsupportedCountries, elasticClient)
 }
@@ -71,7 +75,7 @@ func exportSoftwareList(query *elastic.BoolQuery, filename string, results int, 
 	for i, v := range unsupportedCountries {
 		uc[i] = v
 	}
-	query = query.MustNot(elastic.NewTermsQuery("publiccode.intended-audience-unsupported-countries", uc...))
+	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
 	query = query.Filter(elastic.NewTypeQuery("software"))
 
 	// Extract all the documents.

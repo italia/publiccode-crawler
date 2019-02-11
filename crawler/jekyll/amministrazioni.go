@@ -4,21 +4,14 @@ import (
 	"github.com/spf13/viper"
 	"context"
 	"os"
-	"reflect"
+	"encoding/json"
+	"github.com/icza/dyno"
 
-	"github.com/italia/developers-italia-backend/crawler/crawler"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/ghodss/yaml"
 )
-
-// Administration is a simple description of an Administration.
-type Administration struct {
-	Name      string `json:"name"`
-	URL       string `json:"url"`
-	CodiceIPA string `json:"ipa"`
-}
 
 // AmministrazioniYML generate a yml file with all the amministrazioni in es.
 func AmministrazioniYML(filename string, unsupportedCountries []string, elasticClient *elastic.Client) error {
@@ -47,9 +40,6 @@ func AmministrazioniYML(filename string, unsupportedCountries []string, elasticC
 	}
 	defer f.Close() // nolint: errcheck
 
-	// Administrations data.
-	var administrations []Administration
-
 	// UnsupportedCountries.
 	uc := make([]interface{}, len(unsupportedCountries))
 	for i, v := range unsupportedCountries {
@@ -58,7 +48,8 @@ func AmministrazioniYML(filename string, unsupportedCountries []string, elasticC
 
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery("software"))
-	query = query.MustNot(elastic.NewTermsQuery("intended-audience-unsupported-countries", uc...))
+	query = query.MustNot(elastic.NewTermsQuery("publiccode.intendedAudience.unsupportedCountries", uc...))
+	query = query.Must(elastic.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
 
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
@@ -70,34 +61,45 @@ func AmministrazioniYML(filename string, unsupportedCountries []string, elasticC
 		log.Error(err)
 	}
 
-	// Foreach search result check if codiceIPA is not empty.
-	var pctype crawler.PublicCodeES
-	for _, item := range searchResult.Each(reflect.TypeOf(pctype)) {
-		i := item.(crawler.PublicCodeES)
+	// Administrations data.
+	type administrationType struct{
+		CodiceIPA string `json:"ipa"`
+		Name      string `json:"name"`
+	}
+	var administrations []administrationType
 
-		if i.ItRiusoCodiceIPA != "" {
-			administrations = append(administrations, Administration{
-				Name:      ipa.GetAdministrationName(i.ItRiusoCodiceIPA),
-				URL:       i.LandingURL,
-				CodiceIPA: i.ItRiusoCodiceIPA,
-			})
+	seen := make(map[string]struct{})
+	for _, hit := range searchResult.Hits.Hits {
+		var v interface{}
+		if err := json.Unmarshal(*hit.Source, &v); err != nil {
+			log.Error(err)
 		}
 
+		// TODO: we should just ask Elasticsearch for the unique values
+		// instead of computing them ourselves.
+
+		codiceIPA, _ := dyno.GetString(v, "publiccode", "it", "riuso", "codiceIPA")
+		if _, ok := seen[codiceIPA]; !ok {
+			seen[codiceIPA] = struct{}{}
+			administrations = append(administrations, administrationType{
+				codiceIPA,
+				ipa.GetAdministrationName(codiceIPA),
+			})
+		}
 	}
+
 	// Debug note if file will be empty.
 	if len(administrations) == 0 {
 		log.Warnf("%s is empty.", filename)
 	}
-
-	// Remove duplicates.
-	administrations = removeDuplicates(administrations)
 
 	// Marshal yml.
 	d, err := yaml.Marshal(&administrations)
 	if err != nil {
 		return err
 	}
-	//Append data to file.
+
+	// Append data to file.
 	if _, err = f.WriteString(string(d)); err != nil {
 		return err
 	}
@@ -105,21 +107,3 @@ func AmministrazioniYML(filename string, unsupportedCountries []string, elasticC
 	return err
 }
 
-func removeDuplicates(elements []Administration) []Administration {
-	// Use map to record duplicates as we find them.
-	encountered := map[string]bool{}
-	result := []Administration{}
-
-	for v := range elements {
-		if encountered[elements[v].CodiceIPA] {
-			// Do not add duplicate.
-		} else {
-			// Record this element as an encountered element.
-			encountered[elements[v].CodiceIPA] = true
-			// Append to result slice.
-			result = append(result, elements[v])
-		}
-	}
-	// Return the new slice.
-	return result
-}
