@@ -32,6 +32,7 @@ elasticsearch/config/searchguard/sg_internal_users.yml
 
 # Configurations
 crawler/config.toml
+crawler/whitelist/*.yml
 
 # Downloaded files
 crawler/cache
