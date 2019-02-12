@@ -1,14 +1,12 @@
 package crawler
 
 import (
-	"bytes"
 	"context"
 	"strings"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
-	"github.com/dyatlov/go-oembed/oembed"
 	pcode "github.com/italia/publiccode-parser-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -81,51 +79,6 @@ func (c *Crawler) SaveToES(fileRawURL, hashedRepoURL string, activityIndex float
 	}
 
 	return nil
-}
-
-// getOembedInfo retrive the oembed info from a link.
-// Reference: https://oembed.com/providers.json
-func getOembedInfo(t, link string) string { // nolint: unparam
-	html := ""
-	// Fail fast on empty links.
-	if link == "" {
-		return html
-	}
-
-	// Load oembed library and providers.js.
-	oe := oembed.NewOembed()
-	dataFile, err := Asset("data/oembed_providers.json")
-	if err != nil {
-		log.Errorf("Error retrieving assets in getOembedInfo.")
-		return html
-	}
-	providers := dataFile
-	err = oe.ParseProviders(bytes.NewReader(providers))
-	if err != nil {
-		log.Errorf("Error parsing providers in getOembedInfo.")
-		return html
-	}
-
-	item := oe.FindItem(link)
-	if item != nil {
-		// Extract infos.
-		info, err := item.FetchOembed(oembed.Options{URL: link})
-		if err != nil {
-			log.Errorf("Error fetching oembed in getOembedInfo.")
-			return html
-		}
-
-		if info.Status >= 300 {
-			log.Errorf("Error retrieving info in getOembedInfo.")
-			return html
-		}
-
-		log.Debugf("Successfully extracted oembed data.")
-		html = info.HTML
-		return html
-	}
-
-	return html
 }
 
 
