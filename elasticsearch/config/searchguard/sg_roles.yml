@@ -18,9 +18,8 @@ kibana_user:
 
 search:
   indices:
-    'publiccode':
+    # jekyll is the alias that includes all the indices we need to query
+    'jekyll':
       '*':
         - SEARCH
-    'jekyll-*':
-      '*':
-        - SEARCH
+
