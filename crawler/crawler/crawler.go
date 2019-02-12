@@ -167,7 +167,7 @@ func (c *Crawler) crawl() error {
 	}
 
 	// Update Elastic alias.
-	err = elastic.AliasUpdate("administration", viper.GetString("ELASTIC_ALIAS"), c.es)
+	err = elastic.AliasUpdate(viper.GetString("ELASTIC_PUBLISHERS_INDEX"), viper.GetString("ELASTIC_ALIAS"), c.es)
 	if err != nil {
 		return fmt.Errorf("Error updating Elastic Alias: %v", err)
 	}
