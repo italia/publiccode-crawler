@@ -6,10 +6,10 @@ import (
 	"os"
 
 	"github.com/ghodss/yaml"
-	"github.com/olivere/elastic"
+	"github.com/italia/developers-italia-backend/crawler/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/italia/developers-italia-backend/crawler/crawler"
+	es "github.com/olivere/elastic"
 )
 
 // shortSoftware is the subset of a software document that we want to output
@@ -29,23 +29,23 @@ type shortSoftware struct {
 }
 
 // FirstSoftwareRiuso generates a YAML file with simplified info about software, ordered by releaseDate.
-func FirstSoftwareRiuso(filename string, results int, elasticClient *elastic.Client) error {
-	query := crawler.NewBoolQuery("software")
-	query = query.Must(elastic.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
+func FirstSoftwareRiuso(filename string, results int, elasticClient *es.Client) error {
+	query := elastic.NewBoolQuery("software")
+	query = query.Must(es.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
 
 	return exportSoftwareList(query, filename, results, elasticClient)
 }
 
 // FirstSoftwareOpenSource generates a YAML file with simplified info about software, ordered by releaseDate.
-func FirstSoftwareOpenSource(filename string, results int, elasticClient *elastic.Client) error {
-	query := crawler.NewBoolQuery("software")
-	query = query.MustNot(elastic.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
+func FirstSoftwareOpenSource(filename string, results int, elasticClient *es.Client) error {
+	query := elastic.NewBoolQuery("software")
+	query = query.MustNot(es.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
 
 	return exportSoftwareList(query, filename, results, elasticClient)
 }
 
 // exportSoftwareList generates a yml file with simplified info about software, ordered by releaseDate.
-func exportSoftwareList(query *elastic.BoolQuery, filename string, results int, elasticClient *elastic.Client) error {
+func exportSoftwareList(query *es.BoolQuery, filename string, results int, elasticClient *es.Client) error {
 	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.

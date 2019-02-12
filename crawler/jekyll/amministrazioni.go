@@ -7,15 +7,15 @@ import (
 	"encoding/json"
 	"github.com/icza/dyno"
 
-	"github.com/italia/developers-italia-backend/crawler/crawler"
+	"github.com/italia/developers-italia-backend/crawler/elastic"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
-	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/ghodss/yaml"
+	es "github.com/olivere/elastic"
 )
 
 // AmministrazioniYML generate a yml file with all the amministrazioni in es.
-func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
+func AmministrazioniYML(filename string, elasticClient *es.Client) error {
 	log.Infof("Generating %s", filename)
 
 	// Create file if not exists.
@@ -41,8 +41,8 @@ func AmministrazioniYML(filename string, elasticClient *elastic.Client) error {
 	}
 	defer f.Close() // nolint: errcheck
 
-	query := crawler.NewBoolQuery("software")
-	query = query.Must(elastic.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
+	query := elastic.NewBoolQuery("software")
+	query = query.Must(es.NewExistsQuery("publiccode.it.riuso.codiceIPA"))
 
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"

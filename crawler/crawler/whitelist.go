@@ -1,12 +1,11 @@
 package crawler
 
 import (
-	"gopkg.in/yaml.v2"
-
 	"fmt"
 	"io/ioutil"
 
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 // Whitelist contain a list of Public Administrations.

@@ -2,15 +2,13 @@ package crawler
 
 import (
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"strings"
 	"sync"
 
-	"gopkg.in/yaml.v2"
-
-	"fmt"
-	"io/ioutil"
-
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 // Domain is a single code hosting service.
@@ -86,8 +84,8 @@ func (domain Domain) generateAPIURL(u string) (string, error) {
 
 // KnownHost detect the the right Domain API from the given URL and returns it.
 // If no API is recognized will return an empty domain and an error.
-func KnownHost(link, host string, domains []Domain) (Domain, error) {
-	for _, domain := range domains {
+func (c *Crawler) KnownHost(link, host string) (Domain, error) {
+	for _, domain := range c.domains {
 		if host == domain.Host {
 			// Host is found in the host list.
 			return domain, nil

@@ -9,11 +9,11 @@ import (
 	"sort"
 
 	"github.com/ghodss/yaml"
-	"github.com/olivere/elastic"
 	"github.com/icza/dyno"
 	"github.com/thoas/go-funk"
 	log "github.com/sirupsen/logrus"
-	"github.com/italia/developers-italia-backend/crawler/crawler"
+	"github.com/italia/developers-italia-backend/crawler/elastic"
+	es "github.com/olivere/elastic"
 )
 
 // software is used for parsing some fields of the software objects stored
@@ -41,7 +41,7 @@ type software struct {
 }
 
 // AllSoftwareYML generate the softwares.yml file
-func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTags int, elasticClient *elastic.Client) error {
+func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTags int, elasticClient *es.Client) error {
 	log.Infof("Generating %s", filename)
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
@@ -67,7 +67,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 	defer f.Close() // nolint: errcheck
 
 	// Extract all the softwares.
-	query := crawler.NewBoolQuery("software")
+	query := elastic.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
@@ -117,8 +117,8 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 }
 
 // findVariants returns a list of variants of the given software.
-func (sw *software) findVariants(elasticClient *elastic.Client) []software {
-	query := crawler.NewBoolQuery("software")
+func (sw *software) findVariants(elasticClient *es.Client) []software {
+	query := elastic.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query
@@ -166,12 +166,12 @@ func (sw *software) variantsFeatures() map[string][]string {
 }
 
 // findRelated returns a list of similar software based on tags.
-func (sw *software) findRelated(numberOfSimilarSoftware int, elasticClient *elastic.Client) []software {
-	query := crawler.NewBoolQuery("software")
+func (sw *software) findRelated(numberOfSimilarSoftware int, elasticClient *es.Client) []software {
+	query := elastic.NewBoolQuery("software")
 	for _, tag := range sw.PublicCode.Tags {
-		query = query.Should(elastic.NewTermQuery("tags", tag))
+		query = query.Should(es.NewTermQuery("tags", tag))
 	}
-	query = query.MustNot(elastic.NewTermsQuery("id", sw.ID))
+	query = query.MustNot(es.NewTermsQuery("id", sw.ID))
 
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).                   // search in index "publiccode"
@@ -191,13 +191,13 @@ func (sw *software) findRelated(numberOfSimilarSoftware int, elasticClient *elas
 	return sws
 }
 
-func (sw *software) getPopularTags(number int, elasticClient *elastic.Client) []string {
+func (sw *software) getPopularTags(number int, elasticClient *es.Client) []string {
 	if len(sw.PublicCode.Tags) < number {
 		return sw.PublicCode.Tags
 	}
 
 	// Extract all the documents. It should filter only the ones with isBaseOn=url.
-	query := crawler.NewBoolQuery("software")
+	query := elastic.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
 		Query(query).            // specify the query

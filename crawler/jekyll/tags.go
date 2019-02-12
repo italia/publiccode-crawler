@@ -7,15 +7,15 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/icza/dyno"
-	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/thoas/go-funk"
-	"github.com/italia/developers-italia-backend/crawler/crawler"
+	"github.com/italia/developers-italia-backend/crawler/elastic"
+	es "github.com/olivere/elastic"
 )
 
 // TagsYML generate the software-tags.yml that will contain all the tags in ES.
-func TagsYML(tagsDestFile string, elasticClient *elastic.Client) error {
+func TagsYML(tagsDestFile string, elasticClient *es.Client) error {
 	log.Infof("Generating %s", tagsDestFile)
 
 	// Create file if not exists.
@@ -42,7 +42,7 @@ func TagsYML(tagsDestFile string, elasticClient *elastic.Client) error {
 	defer f.Close() // nolint: errcheck
 
 	// Extract all the softwares.
-	query := crawler.NewBoolQuery("software")
+	query := elastic.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
 		Query(query).                                       // specify the query

@@ -5,8 +5,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const domainsFile = "domains.yml"
-
 var rootCmd = &cobra.Command{
 	Use:   "crawler",
 	Short: "A crawler for publiccode.yml files.",

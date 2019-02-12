@@ -350,7 +350,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 			return err
 		}
 		contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
-		log.Debug(contents)
+
 		// Get List of files.
 		resp, err = httpclient.GetURL(contents, headers)
 		if err != nil {
@@ -370,7 +370,6 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 		foundIt := false
 		// Search a file with a valid name and a downloadURL.
 		for _, f := range files {
-			log.Debug(f.Name)
 			if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
 				// Add repository to channel.
 				repositories <- Repository{

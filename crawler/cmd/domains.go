@@ -20,7 +20,7 @@ var domainsCmd = &cobra.Command{
 	Long:  `List all the Domains from domains.yml`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Read and parse the whitelist.
-		domains, err := crawler.ReadAndParseDomains(domainsFile)
+		domains, err := crawler.ReadAndParseDomains("domains.yml")
 		if err != nil {
 			log.Fatal(err)
 		}

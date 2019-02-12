@@ -33,6 +33,7 @@ github.com/hashicorp/hcl v1.0.0/go.mod h1:E5yfLk+7swimpb2L/Alb/PJmXilQ/rhwaUYs4T
 github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585 h1:kWQPgPrzV4M6ntaGzqU/tI9/OdntSFA9Y9ft/wlDpy0=
 github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585/go.mod h1:FOWDLyFiAsx5UmipjsBYguvps42mgph4nRPwuci95qM=
 github.com/italia/developers-italia-backend v0.0.0-20181018193642-3fad33631e04 h1:jU4sz1EB8A1gJfnL6I/2C7wLdNiDamqUqG3li5+gU3k=
+github.com/italia/developers-italia-backend v0.0.0-20190211224523-4c806be98a08 h1:2sOdv/ivyrDpB7uBoXWdGx43i3J2wZV7SEjXDituRDw=
 github.com/italia/publiccode-parser-go v0.0.0-20181107161327-d94a3cc20568 h1:vn78+hjKwa7Rz0CtH6TeBO7evxp02bxE6ENzj9YWUrY=
 github.com/italia/publiccode-parser-go v0.0.0-20181107161327-d94a3cc20568/go.mod h1:7IA9hcAdvFs9RapWwhY1hBa0XN29NM11JBvhKkcV2xs=
 github.com/italia/publiccode-parser-go v0.0.0-20190206225521-e888de23e99c h1:EXSETvw3wDb81nKcdSQe4SAtftlEWLiPfMDjdq/ZjtI=

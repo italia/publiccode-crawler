@@ -9,7 +9,6 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	"github.com/dyatlov/go-oembed/oembed"
-	"github.com/olivere/elastic"
 	pcode "github.com/italia/publiccode-parser-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -23,13 +22,13 @@ type administration struct {
 
 // SaveToES save the chosen data []byte in elasticsearch
 // data contains the raw publiccode.yml file
-func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float64, vitality []int, data []byte, index string, elasticClient *elastic.Client) error {
+func (c *Crawler) SaveToES(fileRawURL, hashedRepoURL string, activityIndex float64, vitality []int, data []byte) error {
 	// Parse the publiccode.yml file
 	parser := pcode.NewParser()
 	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
 	err := parser.Parse(data)
 	if err != nil {
-		log.Errorf("Error parsing publiccode.yml for %s: %v", name, err)
+		log.Errorf("Error parsing publiccode.yml: %v", err)
 	}
 
 	// Create a SoftwareES object and populate it
@@ -52,8 +51,8 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 
 	// Put publiccode data in ES.
 	ctx := context.Background()
-	_, err = elasticClient.Index().
-		Index(index).
+	_, err = c.es.Index().
+		Index(c.index).
 		Type("software").
 		Id(hashedRepoURL).
 		BodyJson(file).
@@ -62,12 +61,12 @@ func SaveToES(fileRawURL, hashedRepoURL string, name string, activityIndex float
 		return err
 	}
 
-	metrics.GetCounter("repository_file_indexed", index).Inc()
+	metrics.GetCounter("repository_file_indexed", c.index).Inc()
 
 	// Add administration data.
 	if parser.PublicCode.It.Riuso.CodiceIPA != "" {
 		// Put administrations data in ES.
-		_, err = elasticClient.Index().
+		_, err = c.es.Index().
 			Index(viper.GetString("ELASTIC_PUBLISHERS_INDEX")).
 			Type("administration").
 			Id(parser.PublicCode.It.Riuso.CodiceIPA).

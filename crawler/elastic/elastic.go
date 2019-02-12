@@ -1,4 +1,4 @@
-package crawler
+package elastic
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-// ElasticClientFactory returns an elastic Client.
-func ElasticClientFactory(URL, user, password string) (*elastic.Client, error) {
+// ClientFactory returns an elastic Client.
+func ClientFactory(URL, user, password string) (*elastic.Client, error) {
 	client, err := elastic.NewClient(
 		elastic.SetURL(URL),
 		elastic.SetRetrier(NewESRetrier()),
@@ -31,8 +31,8 @@ func ElasticClientFactory(URL, user, password string) (*elastic.Client, error) {
 	return client, nil
 }
 
-// ElasticIndexMapping adds (if not exists) the mapping for the crawler data in ES.
-func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
+// IndexMapping adds (if not exists) the mapping for the crawler data in ES.
+func IndexMapping(index string, elasticClient *elastic.Client) error {
 	const (
 		// Elasticsearch mapping for publiccode. Check elasticsearch/mappings/.
 		mapping = `{
@@ -460,8 +460,8 @@ func ElasticIndexMapping(index string, elasticClient *elastic.Client) error {
 	return err
 }
 
-// ElasticAdministrationsMapping adds (if not exists) the mapping for the whitelist administrations in ES.
-func ElasticAdministrationsMapping(index string, elasticClient *elastic.Client) error {
+// AdministrationsMapping adds (if not exists) the mapping for the whitelist administrations in ES.
+func AdministrationsMapping(index string, elasticClient *elastic.Client) error {
 	const (
 		// Elasticsearch mapping for administrations.
 		mapping = `{
@@ -524,18 +524,18 @@ func ElasticAdministrationsMapping(index string, elasticClient *elastic.Client) 
 	return err
 }
 
-// ElasticFlush wrap the ElasticSearch flush command.
-func ElasticFlush(index string, elasticClient *elastic.Client) error {
+// Flush wrap the ElasticSearch flush command.
+func Flush(index string, elasticClient *elastic.Client) error {
 	// Flush to make sure the documents got written.
 	_, err := elasticClient.Flush().Index(index).Do(context.Background())
 	return err
 }
 
-// ElasticAliasUpdate update the Alias to the index.
-func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) error {
-	log.Errorf("Alias ElasticAliasUpdate index-alias: %v - %v", index, alias)
+// AliasUpdate update the Alias to the index.
+func AliasUpdate(index, alias string, elasticClient *elastic.Client) error {
 	// Range over all the indices for alias service.
 	aliasService := elasticClient.Alias()
+
 	// Add an alias to the new index.
 	log.Debugf("Add alias from %s to %s", index, alias)
 	_, err := aliasService.Add(index, alias).Do(context.Background())
@@ -543,20 +543,20 @@ func ElasticAliasUpdate(index, alias string, elasticClient *elastic.Client) erro
 	return err
 }
 
-// ElasticRetrier implements the elastic interface that user can implement to intercept failed requests.
-type ElasticRetrier struct {
+// Retrier implements the elastic interface that user can implement to intercept failed requests.
+type Retrier struct {
 	backoff elastic.Backoff
 }
 
-// NewESRetrier returns a new ElasticRetrier with Exponential Backoff waiting.
-func NewESRetrier() *ElasticRetrier {
-	return &ElasticRetrier{
+// NewESRetrier returns a new Retrier with Exponential Backoff waiting.
+func NewESRetrier() *Retrier {
+	return &Retrier{
 		backoff: elastic.NewExponentialBackoff(10*time.Millisecond, 8*time.Second),
 	}
 }
 
-// Retry is used in ElasticRetrier and returns the time to wait and if the retries should stop.
-func (r *ElasticRetrier) Retry(ctx context.Context, retry int, req *http.Request, resp *http.Response, err error) (time.Duration, bool, error) {
+// Retry is used in Retrier and returns the time to wait and if the retries should stop.
+func (r *Retrier) Retry(ctx context.Context, retry int, req *http.Request, resp *http.Response, err error) (time.Duration, bool, error) {
 	log.Warn("Elasticsearch connection problem. Retry.")
 
 	// Stop after 8 retries: ~2m.
@@ -574,7 +574,7 @@ func NewBoolQuery(queryType string) *elastic.BoolQuery {
 	query := elastic.NewBoolQuery()
 	query = query.Filter(elastic.NewTypeQuery(queryType))
 	if queryType == "software" {
-    unsupportedCountries := viper.GetStringSlice("IGNORE_UNSUPPORTEDCOUNTRIES")
+		unsupportedCountries := viper.GetStringSlice("IGNORE_UNSUPPORTEDCOUNTRIES")
 		uc := make([]interface{}, len(unsupportedCountries))
 		for i, v := range unsupportedCountries {
 			uc[i] = v
