@@ -347,7 +347,7 @@ There are two main indices:
             "type": "text",
             "index": false
           },
-          "eng": {
+          "en": {
             "properties": {
               "localised-name": {
                 "type": "text",
@@ -359,7 +359,7 @@ There are two main indices:
               }
             }
           },
-          "ita": {
+          "it": {
             "properties": {
               "localised-name": {
                 "type": "text",
@@ -388,7 +388,7 @@ There are two main indices:
             "type": "text",
             "index": false
           },
-          "eng": {
+          "en": {
             "properties": {
               "localised-name": {
                 "type": "text",
@@ -412,7 +412,7 @@ There are two main indices:
               }
             }
           },
-          "ita": {
+          "it": {
             "properties": {
               "localised-name": {
                 "type": "text",
@@ -440,11 +440,11 @@ There are two main indices:
       },
       "old-feature-list": {
         "properties": {
-          "ita": {
+          "it": {
             "type": "keyword",
             "index": false
           },
-          "eng": {
+          "en": {
             "type": "keyword",
             "index": false
           }
