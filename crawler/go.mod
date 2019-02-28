@@ -1,13 +1,14 @@
 module github.com/italia/developers-italia-backend/crawler
 
 require (
+	github.com/Jeffail/gabs v1.2.0 // indirect
 	github.com/alecthomas/gometalinter v3.0.0+incompatible // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/dyatlov/go-oembed v0.0.0-20180429203341-4bc5ab7a42e9
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585
-	github.com/italia/publiccode-parser-go v0.0.0-20190211210212-681bbad861e9
+	github.com/italia/publiccode-parser-go v0.0.0-20190228115450-b3e7c1946c52
 	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect

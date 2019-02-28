@@ -1,5 +1,7 @@
 github.com/Jeffail/gabs v1.1.1 h1:V0uzR08Hj22EX8+8QMhyI9sX2hwRu+/RJhJUmnwda/E=
 github.com/Jeffail/gabs v1.1.1/go.mod h1:6xMvQMK4k33lb7GUUpaAPh6nKMmemQeg5d4gn7/bOXc=
+github.com/Jeffail/gabs v1.2.0 h1:uFhoIVTtsX7hV2RxNgWad8gMU+8OJdzFbOathJdhD3o=
+github.com/Jeffail/gabs v1.2.0/go.mod h1:6xMvQMK4k33lb7GUUpaAPh6nKMmemQeg5d4gn7/bOXc=
 github.com/alcortesm/tgz v0.0.0-20161220082320-9c5fe88206d7/go.mod h1:6zEj6s6u/ghQa61ZWa/C2Aw3RkjiTBOix7dkqa1VLIs=
 github.com/alecthomas/gometalinter v3.0.0+incompatible h1:+A0g3WZuqrIRQtFITjs53Dxu7S8yj99GY3u53Szo5p0=
 github.com/alecthomas/gometalinter v3.0.0+incompatible/go.mod h1:qfIpQGGz3d+NmgyPBqv+LSh50emm1pt72EtcX2vKYQk=
@@ -56,6 +58,8 @@ github.com/italia/publiccode-parser-go v0.0.0-20190211200555-25e5a4737bf9 h1:L3R
 github.com/italia/publiccode-parser-go v0.0.0-20190211200555-25e5a4737bf9/go.mod h1:u6MAHxWmyvVRhZZDPOtEVHaXD5Rnm6K3IjwlQKcjWjM=
 github.com/italia/publiccode-parser-go v0.0.0-20190211210212-681bbad861e9 h1:sZfKnHdpdZWJY/rMiGah1KbIGGRhNxfIdDZcv6WOOY0=
 github.com/italia/publiccode-parser-go v0.0.0-20190211210212-681bbad861e9/go.mod h1:u6MAHxWmyvVRhZZDPOtEVHaXD5Rnm6K3IjwlQKcjWjM=
+github.com/italia/publiccode-parser-go v0.0.0-20190228115450-b3e7c1946c52 h1:Qx9wflKor75GDiM6/MVwjmHqErWSnPK+VcuS/GAubOE=
+github.com/italia/publiccode-parser-go v0.0.0-20190228115450-b3e7c1946c52/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=

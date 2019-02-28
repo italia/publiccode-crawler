@@ -149,9 +149,9 @@ func (sw *software) findVariants(elasticClient *es.Client) []software {
 
 // variantsFeatures returns features of variants that are not included in this one
 func (sw *software) variantsFeatures() map[string][]string {
-	diff := map[string][]string{}  // "ita" => [ feature, feature ... ]
+	diff := map[string][]string{}  // "it" => [ feature, feature ... ]
 
-	for _, lang := range []string{"eng", "ita"} {
+	for _, lang := range []string{"en", "it"} {
 		for _, variant := range sw.variants {
 			for _, oldFeature := range variant.PublicCode.Description[lang].Features {
 				if !funk.Contains(sw.PublicCode.Description[lang].Features, oldFeature) {
