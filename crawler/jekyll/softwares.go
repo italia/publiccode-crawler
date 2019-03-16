@@ -30,7 +30,7 @@ type software struct {
 			GenericName   string   `json:"genericName"`
 			Features         []string `json:"features"`
 		} `json:"description"`
-		Tags []string `json:"tags"`
+		Categories []string `json:"categories"`
 		Legal         struct {
 			RepoOwner string `json:"repoOwner,omitempty"`
 		} `json:"legal,omitempty"`
@@ -41,7 +41,7 @@ type software struct {
 }
 
 // AllSoftwareYML generate the softwares.yml file
-func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTags int, elasticClient *es.Client) error {
+func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularCategories int, elasticClient *es.Client) error {
 	log.Infof("Generating %s", filename)
 	// Create file if not exists.
 	if _, err := os.Stat(filename); os.IsExist(err) {
@@ -99,7 +99,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularTag
 		dyno.Set(full[0], sw.findVariants(elasticClient), "oldVariant")
 		dyno.Set(full[0], sw.variantsFeatures(), "oldFeatures")
 		dyno.Set(full[0], sw.findRelated(numberOfSimilarSoftware, elasticClient), "relatedSoftwares")
-		dyno.Set(full[0], sw.getPopularTags(numberOfPopularTags, elasticClient), "popularTags")
+		dyno.Set(full[0], sw.getPopularCategories(numberOfPopularCategories, elasticClient), "popularCategories")
 
 		// Convert it to YAML
 		yaml, err := yaml.Marshal(&full)
@@ -165,11 +165,11 @@ func (sw *software) variantsFeatures() map[string][]string {
 	return diff
 }
 
-// findRelated returns a list of similar software based on tags.
+// findRelated returns a list of similar software based on categories.
 func (sw *software) findRelated(numberOfSimilarSoftware int, elasticClient *es.Client) []software {
 	query := elastic.NewBoolQuery("software")
-	for _, tag := range sw.PublicCode.Tags {
-		query = query.Should(es.NewTermQuery("tags", tag))
+	for _, tag := range sw.PublicCode.Categories {
+		query = query.Should(es.NewTermQuery("categories", tag))
 	}
 	query = query.MustNot(es.NewTermsQuery("id", sw.ID))
 
@@ -191,9 +191,9 @@ func (sw *software) findRelated(numberOfSimilarSoftware int, elasticClient *es.C
 	return sws
 }
 
-func (sw *software) getPopularTags(number int, elasticClient *es.Client) []string {
-	if len(sw.PublicCode.Tags) < number {
-		return sw.PublicCode.Tags
+func (sw *software) getPopularCategories(number int, elasticClient *es.Client) []string {
+	if len(sw.PublicCode.Categories) < number {
+		return sw.PublicCode.Categories
 	}
 
 	// Extract all the documents. It should filter only the ones with isBaseOn=url.
@@ -213,7 +213,7 @@ func (sw *software) getPopularTags(number int, elasticClient *es.Client) []strin
 	// Range over the publiccodes in ES.
 	for _, item := range searchResult.Each(reflect.TypeOf(*sw)) {
 		i := item.(software)
-		for _, v := range i.PublicCode.Tags {
+		for _, v := range i.PublicCode.Categories {
 			results[v]++
 		}
 	}
@@ -231,14 +231,14 @@ func (sw *software) getPopularTags(number int, elasticClient *es.Client) []strin
 		return ss[i].Value > ss[j].Value
 	})
 
-	// Populate the popularTags slice with most popular tags.
-	var popularTags []string
+	// Populate the popularCategories slice with most popular categories.
+	var popularCategories []string
 	for n, kv := range ss {
 		if n < number {
 			break
 		}
-		popularTags = append(popularTags, kv.Key)
+		popularCategories = append(popularCategories, kv.Key)
 	}
 
-	return popularTags
+	return popularCategories
 }

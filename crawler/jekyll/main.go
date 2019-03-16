@@ -43,17 +43,17 @@ func GenerateJekyllYML(elasticClient *elastic.Client) error {
 	// Create and populate softwares.yml
 	softwaresFilePath := path.Join(outputDir, "softwares.yml")
 	numberOfSimilarSoftware := 4
-	numberOfPopularTags := 5
-	err = AllSoftwareYML(softwaresFilePath, numberOfSimilarSoftware, numberOfPopularTags, elasticClient)
+	numberOfPopularCategories := 5
+	err = AllSoftwareYML(softwaresFilePath, numberOfSimilarSoftware, numberOfPopularCategories, elasticClient)
 	if err != nil {
 		log.Errorf("Error exporting jekyll file of all the software : %v", err)
 	}
 
-	// Create and populate software_tags.yml
-	softwaresTagsDestFilePath := path.Join(outputDir, "software_tags.yml")
-	err = TagsYML(softwaresTagsDestFilePath, elasticClient)
+	// Create and populate software_categories.yml
+	softwaresCategoriesDestFilePath := path.Join(outputDir, "software_categories.yml")
+	err = CategoriesYML(softwaresCategoriesDestFilePath, elasticClient)
 	if err != nil {
-		log.Errorf("Error exporting jekyll file of software tags: %v", err)
+		log.Errorf("Error exporting jekyll file of software categories: %v", err)
 	}
 
 	return err

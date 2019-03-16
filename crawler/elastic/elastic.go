@@ -102,9 +102,6 @@ func IndexMapping(index string, elasticClient *elastic.Client) error {
                 "features": {
                   "type": "keyword"
                 },
-                "freeTags": {
-                  "type": "keyword"
-                },
                 "screenshots": {
                   "type": "keyword",
                   "index": false
@@ -196,7 +193,7 @@ func IndexMapping(index string, elasticClient *elastic.Client) error {
             "platforms": {
               "type": "keyword"
             },
-            "tags": {
+            "categories": {
               "type": "keyword"
             },
             "usedBy": {
@@ -215,7 +212,7 @@ func IndexMapping(index string, elasticClient *elastic.Client) error {
             },
             "intendedAudience": {
               "properties": {
-                "onlyFor": {
+                "scope": {
                   "type": "keyword"
                 },
                 "countries": {
@@ -370,57 +367,46 @@ func IndexMapping(index string, elasticClient *elastic.Client) error {
             },
             "it": {
               "properties": {
+                "countryExtensionVersion": {
+                  "type": "keyword",
+                  "index": false
+                },
                 "conforme": {
                   "properties": {
-                    "accessibile": {
+                    "lineeGuidaDesign": {
                       "type": "boolean"
                     },
-                    "interoperabile": {
+                    "modelloInteroperabilita": {
                       "type": "boolean"
                     },
-                    "sicuro": {
+                    "misureMinimeSicurezza": {
                       "type": "boolean"
                     },
-                    "privacy": {
+                    "gdpr": {
                       "type": "boolean"
                     }
                   }
                 },
-                "spid": {
-                  "type": "boolean"
-                },
-                "cie": {
-                  "type": "boolean"
-                },
-                "anpr": {
-                  "type": "boolean"
-                },
-                "pagopa": {
-                  "type": "boolean"
-                },
+                "piattaforme": {
+                  "properties": {
+                    "spid": {
+                      "type": "boolean"
+                    },
+                    "cie": {
+                      "type": "boolean"
+                    },
+                    "anpr": {
+                      "type": "boolean"
+                    },
+                    "pagopa": {
+                      "type": "boolean"
+                    },
+                  }
+                }
                 "riuso": {
                   "properties": {
                     "codiceIPA": {
                       "type": "keyword"
-                    }
-                  }
-                },
-                "ecosistemi": {
-                  "type": "keyword"
-                },
-                "designKit": {
-                  "properties": {
-                    "seo": {
-                      "type": "boolean"
-                    },
-                    "ui": {
-                      "type": "boolean"
-                    },
-                    "web": {
-                      "type": "boolean"
-                    },
-                    "content": {
-                      "type": "boolean"
                     }
                   }
                 }

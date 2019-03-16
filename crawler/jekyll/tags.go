@@ -14,19 +14,19 @@ import (
 	es "github.com/olivere/elastic"
 )
 
-// TagsYML generate the software-tags.yml that will contain all the tags in ES.
-func TagsYML(tagsDestFile string, elasticClient *es.Client) error {
-	log.Infof("Generating %s", tagsDestFile)
+// CategoriesYML generate a YAML file containing all the categories in ES.
+func CategoriesYML(categoriesDestFile string, elasticClient *es.Client) error {
+	log.Infof("Generating %s", categoriesDestFile)
 
 	// Create file if not exists.
-	if _, err := os.Stat(tagsDestFile); os.IsExist(err) {
-		err := os.Remove(tagsDestFile)
+	if _, err := os.Stat(categoriesDestFile); os.IsExist(err) {
+		err := os.Remove(categoriesDestFile)
 		if err != nil {
 			return err
 		}
 	}
 
-	file, err := os.Create(tagsDestFile)
+	file, err := os.Create(categoriesDestFile)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func TagsYML(tagsDestFile string, elasticClient *es.Client) error {
 		return err
 	}
 	// Open file.
-	f, err := os.OpenFile(tagsDestFile, os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile(categoriesDestFile, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func TagsYML(tagsDestFile string, elasticClient *es.Client) error {
 	}
 
 	// Result tag list.
-	var tags []string
+	var categories []string
 
 	for _, hit := range searchResult.Hits.Hits {
 		var v interface{}
@@ -65,23 +65,23 @@ func TagsYML(tagsDestFile string, elasticClient *es.Client) error {
 		// TODO: we should just ask Elasticsearch for the unique values
 		// instead of computing them ourselves.
 
-		// Range over tags.
-		if swTags, err := dyno.GetSlice(v, "publiccode", "tags"); err == nil {
+		// Range over categories.
+		if swTags, err := dyno.GetSlice(v, "publiccode", "categories"); err == nil {
 			for _, tag := range swTags {
-				tags = append(tags, tag.(string))
+				categories = append(categories, tag.(string))
 			}
 		}
 	}
 
-	tags = funk.Uniq(tags).([]string)
+	categories = funk.Uniq(categories).([]string)
 
 	// Debug note if file will be empty.
-	if len(tags) == 0 {
-		log.Warnf("%s is empty.", tagsDestFile)
+	if len(categories) == 0 {
+		log.Warnf("%s is empty.", categoriesDestFile)
 	}
 
 	// Marshal yml.
-	d, err := yaml.Marshal(&tags)
+	d, err := yaml.Marshal(&categories)
 	if err != nil {
 		return err
 	}
