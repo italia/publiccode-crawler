@@ -66,6 +66,8 @@ github.com/italia/publiccode-parser-go v0.0.0-20190319155556-e1aa3d909e50 h1:2sk
 github.com/italia/publiccode-parser-go v0.0.0-20190319155556-e1aa3d909e50/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
 github.com/italia/publiccode-parser-go v0.0.0-20190323154020-c54217e03d37 h1:Kt6i3tMkLmhid98DPvtyqc0HQ9zQQOykLowG9+GwDYs=
 github.com/italia/publiccode-parser-go v0.0.0-20190323154020-c54217e03d37/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
+github.com/italia/publiccode-parser-go v0.0.0-20190323165852-3453b0fe4316 h1:e+mTC2crwNKnOCQnVImA0TX9OdMfSy3lLHxS81qn8OY=
+github.com/italia/publiccode-parser-go v0.0.0-20190323165852-3453b0fe4316/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
