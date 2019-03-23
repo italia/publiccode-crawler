@@ -49,11 +49,16 @@ func GenerateJekyllYML(elasticClient *elastic.Client) error {
 		log.Errorf("Error exporting jekyll file of all the software : %v", err)
 	}
 
-	// Create and populate software_categories.yml
-	softwaresCategoriesDestFilePath := path.Join(outputDir, "software_categories.yml")
-	err = CategoriesYML(softwaresCategoriesDestFilePath, elasticClient)
+	// Export the list of distinct categories mentioned in the catalog
+	err = CategoriesYML(path.Join(outputDir, "software_categories.yml"), elasticClient)
 	if err != nil {
 		log.Errorf("Error exporting jekyll file of software categories: %v", err)
+	}
+
+	// Export the list of distinct scopes mentioned in the catalog
+	err = ScopesYML(path.Join(outputDir, "software_scopes.yml"), elasticClient)
+	if err != nil {
+		log.Errorf("Error exporting jekyll file of software scopes: %v", err)
 	}
 
 	return err

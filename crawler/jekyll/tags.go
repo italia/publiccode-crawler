@@ -7,14 +7,14 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/icza/dyno"
+	"github.com/italia/developers-italia-backend/crawler/elastic"
+	es "github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/thoas/go-funk"
-	"github.com/italia/developers-italia-backend/crawler/elastic"
-	es "github.com/olivere/elastic"
 )
 
-// CategoriesYML generate a YAML file containing all the categories in ES.
+// CategoriesYML generates a YAML file containing all the categories in ES.
 func CategoriesYML(categoriesDestFile string, elasticClient *es.Client) error {
 	log.Infof("Generating %s", categoriesDestFile)
 
@@ -37,7 +37,7 @@ func CategoriesYML(categoriesDestFile string, elasticClient *es.Client) error {
 		if err := json.Unmarshal(*hit.Source, &v); err != nil {
 			log.Error(err)
 		}
-		
+
 		// TODO: we should just ask Elasticsearch for the unique values
 		// instead of computing them ourselves.
 
@@ -57,6 +57,36 @@ func CategoriesYML(categoriesDestFile string, elasticClient *es.Client) error {
 	}
 
 	return writeYAMLList(&categories, categoriesDestFile)
+}
+
+// ScopesYML exports a YAML file containing the list of the distinct scopes mentioned in the catalog.
+func ScopesYML(destFile string, elasticClient *es.Client) error {
+	log.Infof("Generating %s", destFile)
+
+	// Extract all the softwares.
+	query := elastic.NewBoolQuery("software")
+	agg := es.NewTermsAggregation().Field("publiccode.intendedAudience.scope").Size(10000).OrderByTermAsc()
+	searchResult, err := elasticClient.Search().
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
+		Query(query).                                       // specify the query
+		Aggregation("publiccode.intendedAudience.scope", agg).
+		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background()) // execute
+	if err != nil {
+		log.Error(err)
+	}
+
+	aggRes, ok := searchResult.Aggregations.Terms("publiccode.intendedAudience.scope")
+	if !ok {
+		log.Error("did not find publiccode.intendedAudience.scope in Elasticsearch response")
+	}
+
+	var scopes []string
+	for _, bucket := range aggRes.Buckets {
+		scopes = append(scopes, bucket.Key.(string))
+	}
+
+	return writeYAMLList(&scopes, destFile)
 }
 
 func writeYAMLList(list *[]string, destFile string) error {
