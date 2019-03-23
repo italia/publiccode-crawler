@@ -18,35 +18,11 @@ import (
 func CategoriesYML(categoriesDestFile string, elasticClient *es.Client) error {
 	log.Infof("Generating %s", categoriesDestFile)
 
-	// Create file if not exists.
-	if _, err := os.Stat(categoriesDestFile); os.IsExist(err) {
-		err := os.Remove(categoriesDestFile)
-		if err != nil {
-			return err
-		}
-	}
-
-	file, err := os.Create(categoriesDestFile)
-	if err != nil {
-		return err
-	}
-	err = file.Close()
-	if err != nil {
-		return err
-	}
-	// Open file.
-	f, err := os.OpenFile(categoriesDestFile, os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		return err
-	}
-	defer f.Close() // nolint: errcheck
-
 	// Extract all the softwares.
 	query := elastic.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
 		Query(query).                                       // specify the query
-		Pretty(true).                                       // pretty print request and response JSON
 		From(0).Size(10000).                                // get first 10k elements. The limit can be changed in ES.
 		Do(context.Background())                            // execute
 	if err != nil {
@@ -77,11 +53,39 @@ func CategoriesYML(categoriesDestFile string, elasticClient *es.Client) error {
 
 	// Debug note if file will be empty.
 	if len(categories) == 0 {
-		log.Warnf("%s is empty.", categoriesDestFile)
+		log.Warn("No categories found")
 	}
 
+	return writeYAMLList(&categories, categoriesDestFile)
+}
+
+func writeYAMLList(list *[]string, destFile string) error {
+	// Create file if not exists.
+	if _, err := os.Stat(destFile); os.IsExist(err) {
+		err := os.Remove(destFile)
+		if err != nil {
+			return err
+		}
+	}
+
+	file, err := os.Create(destFile)
+	if err != nil {
+		return err
+	}
+	err = file.Close()
+	if err != nil {
+		return err
+	}
+
+	// Open file.
+	f, err := os.OpenFile(destFile, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+	defer f.Close() // nolint: errcheck
+
 	// Marshal yml.
-	d, err := yaml.Marshal(&categories)
+	d, err := yaml.Marshal(list)
 	if err != nil {
 		return err
 	}
