@@ -400,9 +400,9 @@ func IndexMapping(index string, elasticClient *elastic.Client) error {
                     },
                     "pagopa": {
                       "type": "boolean"
-                    },
+                    }
                   }
-                }
+                },
                 "riuso": {
                   "properties": {
                     "codiceIPA": {
