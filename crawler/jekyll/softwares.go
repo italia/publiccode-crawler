@@ -29,6 +29,7 @@ type software struct {
 			LocalisedName string   `json:"localisedName"`
 			GenericName   string   `json:"genericName"`
 			Features         []string `json:"features"`
+			Screenshots      []string   `json:"screenshots,omitempty"`
 		} `json:"description"`
 		Categories []string `json:"categories"`
 		Legal         struct {
