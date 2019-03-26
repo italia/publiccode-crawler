@@ -13,7 +13,6 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
 - [Elasticsearch](https://www.elastic.co/products/elasticsearch) for storing the data
 - [Kibana](https://www.elastic.co/products/kibana) for internal visualization of data
 - [Prometheus](https://prometheus.io) for collecting metrics
-- [Træfik](https://traefik.io) as a reverse proxy
 
 ### Dependencies
 
@@ -88,6 +87,10 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
 
 In order to access Elasticsearch with write permissions from the outside, you can forward the 9200 port via SSH using `ssh -L9200:localhost:9200` and configure `ELASTIC_URL = "http://localhost:9200/"` in your local config.toml.
 
+## See also
+
+* [publiccode-parser-go](https://github.com/italia/publiccode-parser-go): the Go package for parsing publiccode.yml files
+
 ## Authors
 
-[Developers Italia](https://developers.italia.it) is a project by [AgID](https://www.agid.gov.it/) in collaboration with the [Italian Digital Team](https://teamdigitale.governo.it/), which developed the crawler and maintains this repository.
+[Developers Italia](https://developers.italia.it) is a project by [AgID](https://www.agid.gov.it/) and the [Italian Digital Team](https://teamdigitale.governo.it/), which developed the crawler and maintains this repository.
