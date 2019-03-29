@@ -8,7 +8,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585
-	github.com/italia/publiccode-parser-go v0.0.0-20190326125928-376e59455c81
+	github.com/italia/publiccode-parser-go v0.0.0-20190329223451-3f44cd3b3378
 	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
@@ -18,7 +18,7 @@ require (
 	github.com/sirupsen/logrus v1.3.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.3.1
-	github.com/thoas/go-funk v0.0.0-20181020164546-fbae87fb5b5c
+	github.com/thoas/go-funk v0.0.0-20190328084834-b6996520715f
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/src-d/go-git.v4 v4.8.1

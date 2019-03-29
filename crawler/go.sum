@@ -70,6 +70,8 @@ github.com/italia/publiccode-parser-go v0.0.0-20190323165852-3453b0fe4316 h1:e+m
 github.com/italia/publiccode-parser-go v0.0.0-20190323165852-3453b0fe4316/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
 github.com/italia/publiccode-parser-go v0.0.0-20190326125928-376e59455c81 h1:u62v9uGHePbao/clwvayhOEsgMqLDl871NF0NjQnBt0=
 github.com/italia/publiccode-parser-go v0.0.0-20190326125928-376e59455c81/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
+github.com/italia/publiccode-parser-go v0.0.0-20190329223451-3f44cd3b3378 h1:iEQIHXAylL96+KCkK2s8+M5O7+FVScLVuFuUDvI9gZ0=
+github.com/italia/publiccode-parser-go v0.0.0-20190329223451-3f44cd3b3378/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
@@ -136,6 +138,8 @@ github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/thoas/go-funk v0.0.0-20181020164546-fbae87fb5b5c h1:3sFKuGerP3mGyXo7gDR1dGQ6GdIrI8s5KWmct0R5J6A=
 github.com/thoas/go-funk v0.0.0-20181020164546-fbae87fb5b5c/go.mod h1:mlR+dHGb+4YgXkf13rkQTuzrneeHANxOm6+ZnEV9HsA=
+github.com/thoas/go-funk v0.0.0-20190328084834-b6996520715f h1:hucXnlEXfHvrY7vI9hP1bJX/olUUt5a6u3QvxXrtANw=
+github.com/thoas/go-funk v0.0.0-20190328084834-b6996520715f/go.mod h1:mlR+dHGb+4YgXkf13rkQTuzrneeHANxOm6+ZnEV9HsA=
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 h1:nrZ3ySNYwJbSpD6ce9duiP+QkD3JuLCcWkdaehUS/3Y=
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80/go.mod h1:iFyPdL66DjUD96XmzVL3ZntbzcflLnznH0fr99w5VqE=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
