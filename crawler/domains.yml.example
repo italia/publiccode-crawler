@@ -1,0 +1,11 @@
+- host: "gitlab.com"
+  #basic-auth:
+  #  - ""
+
+- host: "bitbucket.org"
+  #basic-auth:
+  #  - ""
+
+- host: "github.com"
+  #basic-auth:
+  #  - ""

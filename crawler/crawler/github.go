@@ -1,8 +1,10 @@
 package crawler
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"path"
@@ -216,6 +218,14 @@ type GithubFiles []struct {
 	} `json:"_links"`
 }
 
+func githubBasicAuth(domain Domain) string {
+	if len(domain.BasicAuth) > 0 {
+		auth := domain.BasicAuth[rand.Intn(len(domain.BasicAuth))]
+		return "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
+	}
+	return ""
+}
+
 // RegisterGithubAPI register the crawler function for Github API.
 // It get the list of repositories on "link" url.
 // If a next page is available return its url.
@@ -224,13 +234,7 @@ func RegisterGithubAPI() OrganizationHandler {
 	return func(domain Domain, link string, repositories chan Repository, pa PA, wg *sync.WaitGroup) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
-		if domain.BasicAuth != nil {
-			n, err := generateRandomInt(len(domain.BasicAuth))
-			if err != nil {
-				return link, err
-			}
-			headers["Authorization"] = domain.BasicAuth[n]
-		}
+		headers["Authorization"] = githubBasicAuth(domain)
 
 		// Parse url.
 		u, err := url.Parse(link)
@@ -306,13 +310,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 	return func(domain Domain, link string, repositories chan Repository) error {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
-		if domain.BasicAuth != nil {
-			n, err := generateRandomInt(len(domain.BasicAuth))
-			if err != nil {
-				return err
-			}
-			headers["Authorization"] = domain.BasicAuth[n]
-		}
+		headers["Authorization"] = githubBasicAuth(domain)
 
 		// Parse url.
 		u, err := url.Parse(link)
