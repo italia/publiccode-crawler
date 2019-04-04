@@ -29,7 +29,7 @@ var crawlCmd = &cobra.Command{
 		}
 
 		// Crawl
-		err := c.CrawlOrgs(publishers)
+		err := c.CrawlPublishers(publishers)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -130,8 +130,8 @@ func (c *Crawler) CrawlRepo(repoURL string) error {
 	return c.crawl()
 }
 
-// CrawlOrgs processes a list of publishers.
-func (c *Crawler) CrawlOrgs(publishers []PA) error {
+// CrawlPublishers processes a list of publishers.
+func (c *Crawler) CrawlPublishers(publishers []PA) error {
 	// Count configured orgs
 	orgCount := 0
 	for _, pa := range publishers {
@@ -143,7 +143,7 @@ func (c *Crawler) CrawlOrgs(publishers []PA) error {
 	// Process every item in publishers.
 	for _, pa := range publishers {
 		c.wg.Add(1)
-		go c.ProcessPA(pa)
+		go c.CrawlPublisher(pa)
 	}
 
 	return c.crawl()
@@ -184,34 +184,32 @@ func (c *Crawler) ExportForJekyll() error {
 	return jekyll.GenerateJekyllYML(c.es)
 }
 
-// ProcessPA delegates the work to single PA crawlers.
-func (c *Crawler) ProcessPA(pa PA) {
-	log.Infof("Start ProcessPA on '%s'", pa.ID)
+// CrawlPublisher delegates the work to single PA crawlers.
+func (c *Crawler) CrawlPublisher(pa PA) {
+	log.Infof("Processing publisher: %s", pa.ID)
 
-	// range over organizations..
-	for _, org := range pa.Organizations {
-		// Parse as url.URL.
-		u, err := url.Parse(org)
+	for _, orgUrl := range pa.Organizations {
+		// parse URL
+		u, err := url.Parse(orgUrl)
 		if err != nil {
 			log.Errorf("invalid host: %v", err)
 		}
 
-		// Check if host is in list of "famous" hosts.
-		domain, err := c.KnownHost(org, u.Hostname())
+		// Check if host is in list of known code hosting domains
+		domain, err := c.KnownHost(orgUrl, u.Hostname())
 		if err != nil {
 			log.Error(err)
 		}
 
-		// Process the PA domain
-		c.ProcessPADomain(org, domain, pa)
+		// Process the organization
+		c.CrawlOrg(orgUrl, domain, pa)
 	}
 
 	c.wg.Done()
-	log.Infof("End ProcessPA on '%s'", pa.ID)
 }
 
-// ProcessPADomain starts from the org page and process all the next.
-func (c *Crawler) ProcessPADomain(orgURL string, domain Domain, pa PA) {
+// CrawlOrg fetches all the repositories belonging to an org and crawls them.
+func (c *Crawler) CrawlOrg(orgURL string, domain Domain, pa PA) {
 	// generateAPIURL
 	orgURL, err := domain.generateAPIURL(orgURL)
 	if err != nil {
@@ -219,7 +217,6 @@ func (c *Crawler) ProcessPADomain(orgURL string, domain Domain, pa PA) {
 	}
 	// Process the pages until the end is reached.
 	for {
-		log.Debugf("processAndGetNextURL handler: %s", orgURL)
 		nextURL, err := domain.processAndGetNextURL(orgURL, &c.wg, c.repositories, pa)
 		if err != nil {
 			log.Errorf("error reading %s repository list: %v. NextUrl: %v", orgURL, err, nextURL)
@@ -228,7 +225,6 @@ func (c *Crawler) ProcessPADomain(orgURL string, domain Domain, pa PA) {
 
 		// If end is reached or fails, nextUrl is empty.
 		if nextURL == "" {
-			log.Infof("Url: %s - is the last one.", orgURL)
 			return
 		}
 		// Update url to nextURL.
