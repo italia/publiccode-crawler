@@ -316,6 +316,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 
 func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 	parser := publiccode.NewParser() 
+	parser.Strict = false
 	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
 	err := parser.Parse(data)

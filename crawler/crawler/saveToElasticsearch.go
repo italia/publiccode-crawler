@@ -23,6 +23,7 @@ type administration struct {
 func (c *Crawler) SaveToES(fileRawURL, hashedRepoURL string, activityIndex float64, vitality []int, data []byte) error {
 	// Parse the publiccode.yml file
 	parser := pcode.NewParser()
+	parser.Strict = false
 	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
 	err := parser.Parse(data)
 	if err != nil {
