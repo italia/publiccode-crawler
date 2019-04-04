@@ -2,10 +2,12 @@
 
 - id: "Comune di Bagnacavallo"
   codice-iPA: "c_a547"
-  organizations:
+  orgs:
     - "https://github.com/gith002"
+  repos:
+    - "https://github.com/gith002/foobar"
 
 - id: "Comune di Romagnano Sesia"
   codice-iPA: "c_h502"
-  organizations:
+  orgs:
     - "https://github.com/gith003"

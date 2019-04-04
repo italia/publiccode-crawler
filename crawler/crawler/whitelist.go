@@ -15,7 +15,8 @@ type Whitelist []PA
 type PA struct {
 	ID            string   `yaml:"id"`
 	CodiceIPA     string   `yaml:"codice-iPA"`
-	Organizations []string `yaml:"organizations"`
+	Organizations []string `yaml:"orgs"`
+	Repositories  []string `yaml:"repos"`
 }
 
 // ReadAndParseWhitelist read the whitelist and return the parsed content in a slice of PA.

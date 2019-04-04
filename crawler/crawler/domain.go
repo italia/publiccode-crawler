@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -84,25 +85,30 @@ func (domain Domain) generateAPIURL(u string) (string, error) {
 
 // KnownHost detect the the right Domain API from the given URL and returns it.
 // If no API is recognized will return an empty domain and an error.
-func (c *Crawler) KnownHost(link, host string) (Domain, error) {
+func (c *Crawler) KnownHost(link string) (*Domain, error) {
+	u, err := url.Parse(link)
+	if err != nil {
+		return nil, fmt.Errorf("Invalid URL: %v", err)
+	}
+
 	for _, domain := range c.domains {
-		if host == domain.Host {
+		if u.Hostname() == domain.Host {
 			// Host is found in the host list.
-			return domain, nil
+			return &domain, nil
 		}
 	}
 
 	// host unknown, needs to be inferred.
 	if IsGithub(link) {
-		log.Infof("%s - API inferred:%s", link, "github")
-		return Domain{Host: "github"}, nil
+		log.Infof("%s - API inferred: %s", link, "github")
+		return &Domain{Host: "github"}, nil
 	} else if IsBitbucket(link) {
-		log.Infof("%s - API inferred:%s", link, "bitbucket")
-		return Domain{Host: "bitbucket"}, nil
+		log.Infof("%s - API inferred: %s", link, "bitbucket")
+		return &Domain{Host: "bitbucket"}, nil
 	} else if IsGitlab(link) {
-		log.Infof("%s - API inferred:%s", link, "gitlab")
-		return Domain{Host: "gitlab"}, nil
+		log.Infof("%s - API inferred: %s", link, "gitlab")
+		return &Domain{Host: "gitlab"}, nil
 	}
 
-	return Domain{}, errors.New("this host is not registered: " + host)
+	return &Domain{}, errors.New("unable to detect code hosting platform: " + u.Hostname())
 }

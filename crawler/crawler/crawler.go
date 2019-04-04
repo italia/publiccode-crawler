@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"math/big"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 
@@ -109,14 +108,8 @@ func NewCrawler() *Crawler {
 func (c *Crawler) CrawlRepo(repoURL string) error {
 	log.Infof("Processing repository: %s", repoURL)
 
-	// Parse as url.URL.
-	u, err := url.Parse(repoURL)
-	if err != nil {
-		return fmt.Errorf("Invalid URL: %v", err)
-	}
-
 	// Check if current host is in known in domains.yml hosts.
-	domain, err := c.KnownHost(repoURL, u.Hostname())
+	domain, err := c.KnownHost(repoURL)
 	if err != nil {
 		return err
 	}
@@ -188,28 +181,32 @@ func (c *Crawler) ExportForJekyll() error {
 func (c *Crawler) CrawlPublisher(pa PA) {
 	log.Infof("Processing publisher: %s", pa.ID)
 
-	for _, orgUrl := range pa.Organizations {
-		// parse URL
-		u, err := url.Parse(orgUrl)
-		if err != nil {
-			log.Errorf("invalid host: %v", err)
-		}
-
+	for _, orgURL := range pa.Organizations {
 		// Check if host is in list of known code hosting domains
-		domain, err := c.KnownHost(orgUrl, u.Hostname())
+		domain, err := c.KnownHost(orgURL)
 		if err != nil {
 			log.Error(err)
 		}
 
 		// Process the organization
-		c.CrawlOrg(orgUrl, domain, pa)
+		c.CrawlOrg(orgURL, domain, pa)
+	}
+
+	for _, repoURL := range pa.Repositories {
+		// Check if host is in list of known code hosting domains
+		domain, err := c.KnownHost(repoURL)
+		if err != nil {
+			log.Error(err)
+		}
+
+		domain.processSingleRepo(repoURL, c.repositories)
 	}
 
 	c.wg.Done()
 }
 
 // CrawlOrg fetches all the repositories belonging to an org and crawls them.
-func (c *Crawler) CrawlOrg(orgURL string, domain Domain, pa PA) {
+func (c *Crawler) CrawlOrg(orgURL string, domain *Domain, pa PA) {
 	// generateAPIURL
 	orgURL, err := domain.generateAPIURL(orgURL)
 	if err != nil {
