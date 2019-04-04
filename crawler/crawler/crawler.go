@@ -122,7 +122,7 @@ func (c *Crawler) CrawlRepo(repoURL string) error {
 	}
 
 	// Process repository.
-	err = c.ProcessSingleRepository(repoURL, domain)
+	err = domain.processSingleRepo(repoURL, c.repositories)
 	if err != nil {
 		return err
 	}
@@ -239,11 +239,6 @@ func (c *Crawler) WaitingLoop() {
 	// Close repositories channel.
 	log.Debugf("closing repositories chan: len=%d", len(c.repositories))
 	close(c.repositories)
-}
-
-// ProcessSingleRepository process a single repository given his url and domain.
-func (c *Crawler) ProcessSingleRepository(url string, domain Domain) error {
-	return domain.processSingleRepo(url, c.repositories)
 }
 
 // generateRandomInt returns an integer between 0 and max parameter.
