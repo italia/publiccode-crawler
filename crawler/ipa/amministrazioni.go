@@ -2,6 +2,7 @@ package ipa
 
 import (
 	"bufio"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -50,9 +51,13 @@ type Amministrazione struct {
 	LivAccessibili    string
 }
 
+func localIPAFile() string {
+	return path.Join(viper.GetString("CRAWLER_DATADIR"), "indicepa.csv")
+}
+
 // UpdateFromIndicePA download the amministrazioni.txt file if it's older than 2 days.
 func UpdateFromIndicePA() error {
-	file := path.Join(viper.GetString("CRAWLER_DATADIR"), "indicepa.csv")
+	file := localIPAFile()
 
 	needUpdate := true
 
@@ -87,7 +92,7 @@ func UpdateFromIndicePA() error {
 // GetAdministrationName return the administration name associated to the "codice iPA" asssociated.
 // TODO: load this mappings in memory instead of scanning the file every time
 func GetAdministrationName(codiceiPA string) string {
-	dataFile, err := ioutil.ReadFile(path.Join(viper.GetString("CRAWLER_DATADIR"), "indicepa.csv"))
+	dataFile, err := ioutil.ReadFile(localIPAFile())
 	if err != nil {
 		log.Error(err)
 		return ""
@@ -112,6 +117,10 @@ func GetAdministrationName(codiceiPA string) string {
 // parseLine populate an Amministrazione with the values read.
 func parseLine(line string) Amministrazione {
 	data := strings.Split(line, "	")
+	if len(data) < 31 {
+		os.Remove(localIPAFile())
+		panic(fmt.Sprintf("Line is shorter than expected [%s] - Removing the local CSV file as it might be corrupt; run this crawler again in order to download it again.", line))
+	}
 	amm := Amministrazione{
 		CodAmm:            data[0],
 		DesAmm:            data[1],
