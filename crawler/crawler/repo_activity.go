@@ -34,17 +34,17 @@ type Range struct {
 // CalculateRepoActivity return the repository activity index and the vitality slice calculated on the git clone.
 // It follows the document https://lg-acquisizione-e-riuso-software-per-la-pa.readthedocs.io/
 // In reference to section: 2.5.2. Fase 2.2: Valutazione soluzioni riusabili per la PA
-func CalculateRepoActivity(domain Domain, hostname string, name string, days int) (float64, map[int]float64, error) {
-	if domain.Host == "" {
+func (repository *Repository) CalculateRepoActivity(days int) (float64, map[int]float64, error) {
+	if repository.Domain.Host == "" {
 		return 0, nil, errors.New("cannot calculate repository activity without domain host")
 	}
-	if name == "" {
+	if repository.Name == "" {
 		return 0, nil, errors.New("cannot  calculate repository activity without name")
 	}
 
-	vendor, repo := splitFullName(name)
+	vendor, repo := splitFullName(repository.Name)
 
-	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), "repos", hostname, vendor, repo, "gitClone")
+	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), "repos", repository.Hostname, vendor, repo, "gitClone")
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {

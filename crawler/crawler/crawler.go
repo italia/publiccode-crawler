@@ -237,7 +237,6 @@ func (c *Crawler) WaitingLoop() {
 	c.wg.Wait()
 
 	// Close repositories channel.
-	log.Debugf("closing repositories chan: len=%d", len(c.repositories))
 	close(c.repositories)
 }
 
@@ -252,29 +251,21 @@ func generateRandomInt(max int) (int, error) {
 func (c *Crawler) ProcessRepositories() {
 	for repository := range c.repositories {
 		c.wg.Add(1)
-		go c.CheckAvailability(repository)
+		go c.ProcessRepo(repository)
 	}
 	c.wg.Wait()
 }
 
-// CheckAvailability looks for the FileRawURL and, if found, save it.
-func (c *Crawler) CheckAvailability(repository Repository) {
-	name := repository.Name
-	hostname := repository.Hostname
-	fileRawURL := repository.FileRawURL
-	gitURL := repository.GitCloneURL
-	gitBranch := repository.GitBranch
-	domain := repository.Domain
-	headers := repository.Headers
-	metadata := repository.Metadata
-	pa := repository.Pa
+// ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
+func (c *Crawler) ProcessRepo(repository Repository) {	
+	// Defer waiting group close.
+	defer c.wg.Done()
 
 	// Hash based on unique git repo URL.
 	hash := sha1.New()
-	_, err := hash.Write([]byte(gitURL))
+	_, err := hash.Write([]byte(repository.GitCloneURL))
 	if err != nil {
 		log.Errorf("Error generating the repository hash: %+v", err)
-		c.wg.Done()
 		return
 	}
 	hashedRepoURL := fmt.Sprintf("%x", hash.Sum(nil))
@@ -282,63 +273,48 @@ func (c *Crawler) CheckAvailability(repository Repository) {
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", c.index).Inc()
 
-	resp, err := httpclient.GetURL(fileRawURL, headers)
-	log.Debugf("repository checkAvailability: %s", name)
+	resp, err := httpclient.GetURL(repository.FileRawURL, repository.Headers)
 
-	// If it's available and no error returned.
-	if resp.Status.Code == http.StatusOK && err == nil {
-		c.mu.Lock()
-		// Validate file. If invalid, terminate the check.
-		err = validateRemoteFile(resp.Body, fileRawURL, pa)
-		c.mu.Unlock()
-
-		if err != nil {
-			log.Errorf("%s is an invalid publiccode.", fileRawURL)
-			log.Errorf("Errors: %+v", err)
-			logBadYamlToFile(fileRawURL)
-			c.wg.Done()
-			return
-		}
-
-		// Save Metadata.
-		err = SaveToFile(domain, hostname, name, metadata, c.index+"_metadata")
-		if err != nil {
-			log.Errorf("error saving to file: %v", err)
-		}
-
-		// Save to file.
-		err = SaveToFile(domain, hostname, name, resp.Body, c.index)
-		if err != nil {
-			log.Errorf("error saving to file: %v", err)
-		}
-
-		// Clone repository.
-		err = CloneRepository(domain, hostname, name, gitURL, gitBranch, c.index)
-		if err != nil {
-			log.Errorf("error cloning repository %s: %v", gitURL, err)
-		}
-
-		// Calculate Repository activity index and vitality.
-		days := 60 // to add in configs.
-		activityIndex, vitality, err := CalculateRepoActivity(domain, hostname, name, days)
-		if err != nil {
-			log.Errorf("error calculating repository Activity to file: %v", err)
-		}
-		log.Infof("Activity Index for %s: %f", name, activityIndex)
-		var vitalitySlice []int
-		for i := 0; i < len(vitality); i++ {
-			vitalitySlice = append(vitalitySlice, int(vitality[i]))
-		}
-
-		// Save to ES.
-		err = c.SaveToES(fileRawURL, hashedRepoURL, activityIndex, vitalitySlice, resp.Body)
-		if err != nil {
-			log.Errorf("error saving to ElastcSearch: %v", err)
-		}
+	if resp.Status.Code != http.StatusOK || err != nil {
+		// Failed to retrieve publiccode.yml
+		return
 	}
 
-	// Defer waiting group close.
-	c.wg.Done()
+	log.Infof("[%s] publiccode.yml found", repository.Name)
+
+	// Validate the publiccode.yml
+	c.mu.Lock()
+	err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa)
+	c.mu.Unlock()
+
+	if err != nil {
+		log.Errorf("[%s] invalid publiccode.yml: %+v", repository.Name, err)
+		logBadYamlToFile(repository.FileRawURL)
+		return
+	}
+
+	// Clone repository.
+	err = CloneRepository(repository.Domain, repository.Hostname, repository.Name, repository.GitCloneURL, repository.GitBranch, c.index)
+	if err != nil {
+		log.Errorf("[%s] error while cloning: %v", repository.Name, err)
+	}
+
+	// Calculate Repository activity index and vitality.
+	activityIndex, vitality, err := repository.CalculateRepoActivity(60)
+	if err != nil {
+		log.Errorf("[%s] error calculating activity index: %v", err)
+	}
+	log.Infof("[%s] activity index: %f", repository.Name, activityIndex)
+	var vitalitySlice []int
+	for i := 0; i < len(vitality); i++ {
+		vitalitySlice = append(vitalitySlice, int(vitality[i]))
+	}
+
+	// Save to ES.
+	err = c.SaveToES(repository.FileRawURL, hashedRepoURL, activityIndex, vitalitySlice, resp.Body)
+	if err != nil {
+		log.Errorf("[%s] error saving to ElastcSearch: %v", repository.Name, err)
+	}
 }
 
 func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
