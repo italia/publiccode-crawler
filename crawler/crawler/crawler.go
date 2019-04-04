@@ -302,7 +302,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	// Calculate Repository activity index and vitality.
 	activityIndex, vitality, err := repository.CalculateRepoActivity(60)
 	if err != nil {
-		log.Errorf("[%s] error calculating activity index: %v", err)
+		log.Errorf("[%s] error calculating activity index: %v", repository.Name, err)
 	}
 	log.Infof("[%s] activity index: %f", repository.Name, activityIndex)
 	var vitalitySlice []int
