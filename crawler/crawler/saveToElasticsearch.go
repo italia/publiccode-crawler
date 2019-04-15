@@ -1,8 +1,10 @@
 package crawler
 
 import (
-	"context"
 	"strings"
+	"fmt"
+	"crypto/sha1"
+	"context"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler/ipa"
@@ -18,30 +20,31 @@ type administration struct {
 	CodiceIPA string `json:"it-riuso-codiceIPA"`
 }
 
-// SaveToES save the chosen data []byte in elasticsearch
+// saveToES save the chosen data []byte in elasticsearch
 // data contains the raw publiccode.yml file
-func (c *Crawler) SaveToES(fileRawURL, hashedRepoURL string, activityIndex float64, vitality []int, data []byte) error {
+func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []int, data []byte) error {
 	// Parse the publiccode.yml file
 	parser := pcode.NewParser()
 	parser.Strict = false
-	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
+	parser.RemoteBaseURL = strings.TrimRight(repo.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
 	err := parser.Parse(data)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml: %v", err)
 	}
 
-	// Create a SoftwareES object and populate it
-	file := SoftwareES{
-		FileRawURL:            fileRawURL,
-		ID:                    hashedRepoURL,
+	// Create a softwareES object and populate it
+	file := softwareES{
+		FileRawURL:            repo.FileRawURL,
+		ID:                    repo.generateID(),
 		CrawlTime:             time.Now().Format(time.RFC3339),
+		Slug:				   repo.generateSlug(),
 		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(parser.PublicCode.It.Riuso.CodiceIPA),
 		VitalityScore:     activityIndex,
 		VitalityDataChart: vitality,
 		OEmbedHTML: parser.OEmbed,
 	}
 
-	// Convert parser.PublicCode to YAML and parse it again into the SoftwareES record
+	// Convert parser.PublicCode to YAML and parse it again into the softwareES record
 	yml, err := parser.ToYAML()
 	if err != nil {
 		return err
@@ -53,7 +56,7 @@ func (c *Crawler) SaveToES(fileRawURL, hashedRepoURL string, activityIndex float
 	_, err = c.es.Index().
 		Index(c.index).
 		Type("software").
-		Id(hashedRepoURL).
+		Id(file.ID).
 		BodyJson(file).
 		Do(ctx)
 	if err != nil {
@@ -82,5 +85,27 @@ func (c *Crawler) SaveToES(fileRawURL, hashedRepoURL string, activityIndex float
 	return nil
 }
 
+// generateID generates a hash based on unique git repo URL.
+func (repo *Repository) generateID() string {
+	hash := sha1.New()
+	_, err := hash.Write([]byte(repo.GitCloneURL))
+	if err != nil {
+		log.Errorf("Error generating the repository hash: %+v", err)
+		return ""
+	}
+	return fmt.Sprintf("%x", hash.Sum(nil))
+}
+
+// generateSlug generates a readable unique string based on repository name.
+func (repo *Repository) generateSlug() string {
+	vendorAndName := strings.Replace(repo.Name, "/", "-", -1)
+
+	if repo.Pa.CodiceIPA == "" {
+		ID := repo.generateID()
+		return fmt.Sprintf("%s-%s", vendorAndName, ID[0:6])
+	}
+
+	return fmt.Sprintf("%s-%s", repo.Pa.CodiceIPA, vendorAndName)
+}
 
 

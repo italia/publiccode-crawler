@@ -307,7 +307,7 @@ func RegisterGithubAPI() OrganizationHandler {
 // Return nil if the repository was successfully added to repositories channel.
 // Otherwise return the generated error.
 func RegisterSingleGithubAPI() SingleRepoHandler {
-	return func(domain Domain, link string, repositories chan Repository) error {
+	return func(domain Domain, link string, repositories chan Repository, pa PA) error {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
 		headers["Authorization"] = githubBasicAuth(domain)
@@ -377,6 +377,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 					GitCloneURL: v.CloneURL,
 					GitBranch:   v.DefaultBranch,
 					Domain:      domain,
+					Pa:          pa,
 					Headers:     headers,
 					Metadata:    metadata,
 				}

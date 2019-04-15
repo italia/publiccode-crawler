@@ -257,7 +257,7 @@ func RegisterGitlabAPI() OrganizationHandler {
 
 // RegisterSingleGitlabAPI register the crawler function for single Bitbucket API.
 func RegisterSingleGitlabAPI() SingleRepoHandler {
-	return func(domain Domain, link string, repositories chan Repository) error {
+	return func(domain Domain, link string, repositories chan Repository, pa PA) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -321,6 +321,7 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 				GitBranch:   result.DefaultBranch,
 				Hostname:    u.Hostname(),
 				Domain:      domain,
+				Pa:          pa,
 				Headers:     headers,
 				Metadata:    metadata,
 			}

@@ -67,12 +67,12 @@ func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, reposi
 	return crawler(domain, url, repositories, pa, wg)
 }
 
-func (domain Domain) processSingleRepo(url string, repositories chan Repository) error {
+func (domain Domain) processSingleRepo(url string, repositories chan Repository, pa PA) error {
 	crawler, err := GetSingleClientAPICrawler(domain.API())
 	if err != nil {
 		return err
 	}
-	return crawler(domain, url, repositories)
+	return crawler(domain, url, repositories, pa)
 }
 
 func (domain Domain) generateAPIURL(u string) (string, error) {

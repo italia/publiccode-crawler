@@ -262,7 +262,7 @@ func RegisterBitbucketAPI() OrganizationHandler {
 
 // RegisterSingleBitbucketAPI register the crawler function for single Bitbucket repository.
 func RegisterSingleBitbucketAPI() SingleRepoHandler {
-	return func(domain Domain, link string, repositories chan Repository) error {
+	return func(domain Domain, link string, repositories chan Repository, pa PA) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -324,6 +324,7 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 				FileRawURL: "https://" + fullURL,
 				GitBranch:  result.Mainbranch.Name,
 				Domain:     domain,
+				Pa:         pa,
 				Headers:    headers,
 				Metadata:   metadata,
 			}

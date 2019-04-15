@@ -3,7 +3,6 @@ package crawler
 import (
 	"os"
 	"crypto/rand"
-	"crypto/sha1"
 	"errors"
 	"fmt"
 	"math/big"
@@ -115,7 +114,7 @@ func (c *Crawler) CrawlRepo(repoURL string) error {
 	}
 
 	// Process repository.
-	err = domain.processSingleRepo(repoURL, c.repositories)
+	err = domain.processSingleRepo(repoURL, c.repositories, PA{})
 	if err != nil {
 		return err
 	}
@@ -199,7 +198,7 @@ func (c *Crawler) CrawlPublisher(pa PA) {
 			log.Error(err)
 		}
 
-		domain.processSingleRepo(repoURL, c.repositories)
+		domain.processSingleRepo(repoURL, c.repositories, pa)
 	}
 
 	c.wg.Done()
@@ -258,15 +257,6 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	// Defer waiting group close.
 	defer c.wg.Done()
 
-	// Hash based on unique git repo URL.
-	hash := sha1.New()
-	_, err := hash.Write([]byte(repository.GitCloneURL))
-	if err != nil {
-		log.Errorf("Error generating the repository hash: %+v", err)
-		return
-	}
-	hashedRepoURL := fmt.Sprintf("%x", hash.Sum(nil))
-
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", c.index).Inc()
 
@@ -308,7 +298,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 
 	// Save to ES.
-	err = c.SaveToES(repository.FileRawURL, hashedRepoURL, activityIndex, vitalitySlice, resp.Body)
+	err = c.saveToES(repository, activityIndex, vitalitySlice, resp.Body)
 	if err != nil {
 		log.Errorf("[%s] error saving to ElastcSearch: %v", repository.Name, err)
 	}
