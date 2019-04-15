@@ -74,6 +74,8 @@ github.com/italia/publiccode-parser-go v0.0.0-20190329223451-3f44cd3b3378 h1:iEQ
 github.com/italia/publiccode-parser-go v0.0.0-20190329223451-3f44cd3b3378/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
 github.com/italia/publiccode-parser-go v0.0.0-20190329223719-f774c6637234 h1:UXQxRf9Ho80SaYhl0+/9BdPBmV+4YJgmRCFn7vkilQg=
 github.com/italia/publiccode-parser-go v0.0.0-20190329223719-f774c6637234/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
+github.com/italia/publiccode-parser-go v0.0.0-20190415080057-105c27555da5 h1:tTgF2U8m2+iClvMxqcbrcetfTaMRprdWlkN1OtxjouM=
+github.com/italia/publiccode-parser-go v0.0.0-20190415080057-105c27555da5/go.mod h1:OoiHTIcVrQlgywqzjwAniJWC4a9kQ6JJIA3kEEa7nnw=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
@@ -142,6 +144,8 @@ github.com/thoas/go-funk v0.0.0-20181020164546-fbae87fb5b5c h1:3sFKuGerP3mGyXo7g
 github.com/thoas/go-funk v0.0.0-20181020164546-fbae87fb5b5c/go.mod h1:mlR+dHGb+4YgXkf13rkQTuzrneeHANxOm6+ZnEV9HsA=
 github.com/thoas/go-funk v0.0.0-20190328084834-b6996520715f h1:hucXnlEXfHvrY7vI9hP1bJX/olUUt5a6u3QvxXrtANw=
 github.com/thoas/go-funk v0.0.0-20190328084834-b6996520715f/go.mod h1:mlR+dHGb+4YgXkf13rkQTuzrneeHANxOm6+ZnEV9HsA=
+github.com/thoas/go-funk v0.4.0 h1:KBaa5NL7NMtsFlQaD8nQMbDt1wuM+OOaNQyYNYQFhVo=
+github.com/thoas/go-funk v0.4.0/go.mod h1:mlR+dHGb+4YgXkf13rkQTuzrneeHANxOm6+ZnEV9HsA=
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 h1:nrZ3ySNYwJbSpD6ce9duiP+QkD3JuLCcWkdaehUS/3Y=
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80/go.mod h1:iFyPdL66DjUD96XmzVL3ZntbzcflLnznH0fr99w5VqE=
 github.com/ugorji/go/codec v0.0.0-20181204163529-d75b2dcb6bc8/go.mod h1:VFNgLljTbGfSG7qAOspJ7OScBnGdDN/yBr0sguwnwf0=
