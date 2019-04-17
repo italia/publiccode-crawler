@@ -31,426 +31,403 @@ func ClientFactory(URL, user, password string) (*elastic.Client, error) {
 	return client, nil
 }
 
-// IndexMapping adds (if not exists) the mapping for the crawler data in ES.
-func IndexMapping(index string, elasticClient *elastic.Client) error {
-	const (
-		// Elasticsearch mapping for publiccode. Check elasticsearch/mappings/.
-		mapping = `{
-  "settings": {
-    "analysis": {
-      "analyzer": {
-        "autocomplete": {
-          "tokenizer": "autocomplete",
-          "filter": [
-            "lowercase"
-          ]
-        },
-        "autocomplete_search": {
-          "tokenizer": "lowercase"
-        }
+// PubliccodeMapping is the Elasticsearch mapping for the publiccode index.
+// AdministrationsMapping is the Elasticsearch mapping for the administrations index.
+const (
+	PubliccodeMapping = `{
+"settings": {
+  "analysis": {
+    "analyzer": {
+      "autocomplete": {
+        "tokenizer": "autocomplete",
+        "filter": [
+          "lowercase"
+        ]
       },
-      "tokenizer": {
-        "autocomplete": {
-          "type": "edge_ngram",
-          "min_gram": 3,
-          "max_gram": 30,
-          "token_chars": [
-            "letter"
-          ]
-        }
+      "autocomplete_search": {
+        "tokenizer": "lowercase"
       }
-    }
-  },
-  "mappings": {
-    "software": {
-      "dynamic_templates": [
-        {
-          "description": {
-            "path_match": "publiccode.description.*",
-            "mapping": {
-              "type": "object",
-              "properties": {
-                "localisedName": {
-                  "type": "text",
-                  "analyzer": "autocomplete",
-                  "search_analyzer": "autocomplete_search"
-                },
-                "genericName": {
-                  "type": "text",
-                  "fields": {
-                    "keyword": { "type": "keyword", "ignore_above": 256 }
-                  }
-                },
-                "shortDescription": {
-                  "type": "text",
-                  "analyzer": "autocomplete",
-                  "search_analyzer": "autocomplete_search"
-                },
-                "longDescription": {
-                  "type": "text",
-                  "analyzer": "autocomplete",
-                  "search_analyzer": "autocomplete_search"
-                },
-                "documentation": {
-                  "type": "text",
-                  "index": false
-                },
-                "apiDocumentation": {
-                  "type": "text",
-                  "index": false
-                },
-                "features": {
-                  "type": "keyword"
-                },
-                "screenshots": {
-                  "type": "keyword",
-                  "index": false
-                },
-                "videos": {
-                  "type": "keyword",
-                  "index": false
-                },
-                "awards": {
-                  "type": "keyword"
-                }
-              }
-            }
-          }
-        },
-        {
-          "dynamic-suggestions": {
-            "match": "suggest-*",
-            "mapping": {
-              "type": "completion",
-              "preserve_separators": false
-            }
-          }
-        }
-      ],
-      "properties": {
-        "fileRawURL": {
-          "type": "keyword",
-          "index": true
-        },
-				"id": {
-					"type": "keyword",
-					"index": true
-				},
-				"crawltime": {
-					"type": "date",
-					"index": false
-				},
-        "publiccodeYmlVersion": {
-          "type": "keyword",
-          "index": false
-        },
-
-        "publiccode": {
-          "properties": {
-            "name": {
-              "type": "text",
-              "analyzer": "autocomplete",
-              "search_analyzer": "autocomplete_search"
-            },
-            "applicationSuite": {
-              "type": "text",
-              "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-            },
-            "url": {
-              "type": "keyword",
-              "index": true,
-              "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-            },
-            "landingURL": {
-              "type": "keyword",
-              "index": false
-            },
-            "isBasedOn": {
-              "type": "keyword",
-              "index": true
-            },
-            "softwareVersion": {
-              "type": "keyword"
-            },
-            "releaseDate": {
-              "type": "date",
-              "format": "strict_date"
-            },
-            "logo": {
-              "type": "keyword",
-              "index": false
-            },
-            "monochromeLogo": {
-              "type": "keyword",
-              "index": false
-            },
-            "inputTypes": {
-              "type": "keyword"
-            },
-            "outputTypes": {
-              "type": "keyword"
-            },
-            "platforms": {
-              "type": "keyword"
-            },
-            "categories": {
-              "type": "keyword"
-            },
-            "usedBy": {
-              "type": "text",
-              "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-            },
-            "roadmap": {
-              "type": "keyword",
-              "index": false
-            },
-            "developmentStatus": {
-              "type": "keyword"
-            },
-            "softwareType": {
-              "type": "keyword"
-            },
-            "intendedAudience": {
-              "properties": {
-                "scope": {
-                  "type": "keyword"
-                },
-                "countries": {
-                  "type": "keyword"
-                },
-                "unsupportedCountries": {
-                  "type": "keyword"
-                }
-              }
-            },
-            "legal": {
-              "properties": {
-                "license": {
-                  "type": "keyword",
-                  "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-                },
-                "mainCopyrightOwner": {
-                  "type": "keyword"
-                },
-                "repoOwner": {
-                  "type": "keyword"
-                },
-                "authorsFile": {
-                  "type": "keyword",
-                  "index": false
-                }
-              }
-            },
-            "maintainance": {
-              "properties": {
-                "type": {
-                  "type": "keyword"
-                },
-                "contractors": {
-                  "type": "nested",
-                  "properties": {
-                    "name": {
-                      "type": "text"
-                    },
-                    "until": {
-                      "type": "date",
-                      "format": "strict_date"
-                    },
-                    "website": {
-                      "type": "text",
-                      "index": false
-                    }
-                  }
-                },
-                "contacts": {
-                  "type": "nested",
-                  "properties": {
-                    "name": {
-                      "type": "text"
-                    },
-                    "email": {
-                      "type": "text"
-                    },
-                    "phone": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "affiliation": {
-                      "type": "text"
-                    }
-                  }
-                }
-              }
-            },
-            "localisation": {
-              "properties": {
-                "localisationReady": {
-                  "type": "boolean"
-                },
-                "availableLanguages": {
-                  "type": "keyword"
-                }
-              }
-            },
-            "dependsOn": {
-              "properties": {
-                "open": {
-                  "type": "nested",
-                  "properties": {
-                    "name": {
-                      "type": "text"
-                    },
-                    "version-min": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "version-max": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "version": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "optional": {
-                      "type": "boolean"
-                    }
-                  }
-                },
-                "proprietary": {
-                  "type": "nested",
-                  "properties": {
-                    "name": {
-                      "type": "text"
-                    },
-                    "version-min": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "version-max": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "version": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "optional": {
-                      "type": "boolean"
-                    }
-                  }
-                },
-                "hardware": {
-                  "type": "nested",
-                  "properties": {
-                    "name": {
-                      "type": "text"
-                    },
-                    "version-min": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "version-max": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "version": {
-                      "type": "text",
-                      "index": false
-                    },
-                    "optional": {
-                      "type": "boolean"
-                    }
-                  }
-                }
-              }
-            },
-            "it": {
-              "properties": {
-                "countryExtensionVersion": {
-                  "type": "keyword",
-                  "index": false
-                },
-                "conforme": {
-                  "properties": {
-                    "lineeGuidaDesign": {
-                      "type": "boolean"
-                    },
-                    "modelloInteroperabilita": {
-                      "type": "boolean"
-                    },
-                    "misureMinimeSicurezza": {
-                      "type": "boolean"
-                    },
-                    "gdpr": {
-                      "type": "boolean"
-                    }
-                  }
-                },
-                "piattaforme": {
-                  "properties": {
-                    "spid": {
-                      "type": "boolean"
-                    },
-                    "cie": {
-                      "type": "boolean"
-                    },
-                    "anpr": {
-                      "type": "boolean"
-                    },
-                    "pagopa": {
-                      "type": "boolean"
-                    }
-                  }
-                },
-                "riuso": {
-                  "properties": {
-                    "codiceIPA": {
-                      "type": "keyword"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-
-        "suggest-name": {
-          "type": "completion"
-        },
-        "vitalityScore": {
-          "type": "integer"
-        },
-        "vitalityDataChart": {
-          "type": "integer"
-        }
+    },
+    "tokenizer": {
+      "autocomplete": {
+        "type": "edge_ngram",
+        "min_gram": 3,
+        "max_gram": 30,
+        "token_chars": [
+          "letter"
+        ]
       }
     }
   }
-}`
-	)
+},
+"mappings": {
+  "software": {
+    "dynamic_templates": [
+      {
+        "description": {
+          "path_match": "publiccode.description.*",
+          "mapping": {
+            "type": "object",
+            "properties": {
+              "localisedName": {
+                "type": "text",
+                "analyzer": "autocomplete",
+                "search_analyzer": "autocomplete_search"
+              },
+              "genericName": {
+                "type": "text",
+                "fields": {
+                  "keyword": { "type": "keyword", "ignore_above": 256 }
+                }
+              },
+              "shortDescription": {
+                "type": "text",
+                "analyzer": "autocomplete",
+                "search_analyzer": "autocomplete_search"
+              },
+              "longDescription": {
+                "type": "text",
+                "analyzer": "autocomplete",
+                "search_analyzer": "autocomplete_search"
+              },
+              "documentation": {
+                "type": "text",
+                "index": false
+              },
+              "apiDocumentation": {
+                "type": "text",
+                "index": false
+              },
+              "features": {
+                "type": "keyword"
+              },
+              "screenshots": {
+                "type": "keyword",
+                "index": false
+              },
+              "videos": {
+                "type": "keyword",
+                "index": false
+              },
+              "awards": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      },
+      {
+        "dynamic-suggestions": {
+          "match": "suggest-*",
+          "mapping": {
+            "type": "completion",
+            "preserve_separators": false
+          }
+        }
+      }
+    ],
+    "properties": {
+      "fileRawURL": {
+        "type": "keyword",
+        "index": true
+      },
+      "id": {
+        "type": "keyword",
+        "index": true
+      },
+      "crawltime": {
+        "type": "date",
+        "index": false
+      },
+      "publiccodeYmlVersion": {
+        "type": "keyword",
+        "index": false
+      },
 
-	// Generating index with mapping.
-	// Use the IndexExists service to check if a specified index exists.
-	exists, err := elasticClient.IndexExists(index).Do(context.Background())
-	if err != nil {
-		return errors.New("cannot check if ES index exists for '" + index + "' exists: " + err.Error())
-	}
-	if !exists {
-		_, err := elasticClient.CreateIndex(index).Body(mapping).Do(context.Background())
-		if err != nil {
-			return errors.New("cannot create ES index for '" + index + "': " + err.Error())
-		}
-	}
+      "publiccode": {
+        "properties": {
+          "name": {
+            "type": "text",
+            "analyzer": "autocomplete",
+            "search_analyzer": "autocomplete_search"
+          },
+          "applicationSuite": {
+            "type": "text",
+            "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+          },
+          "url": {
+            "type": "keyword",
+            "index": true,
+            "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+          },
+          "landingURL": {
+            "type": "keyword",
+            "index": false
+          },
+          "isBasedOn": {
+            "type": "keyword",
+            "index": true
+          },
+          "softwareVersion": {
+            "type": "keyword"
+          },
+          "releaseDate": {
+            "type": "date",
+            "format": "strict_date"
+          },
+          "logo": {
+            "type": "keyword",
+            "index": false
+          },
+          "monochromeLogo": {
+            "type": "keyword",
+            "index": false
+          },
+          "inputTypes": {
+            "type": "keyword"
+          },
+          "outputTypes": {
+            "type": "keyword"
+          },
+          "platforms": {
+            "type": "keyword"
+          },
+          "categories": {
+            "type": "keyword"
+          },
+          "usedBy": {
+            "type": "text",
+            "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+          },
+          "roadmap": {
+            "type": "keyword",
+            "index": false
+          },
+          "developmentStatus": {
+            "type": "keyword"
+          },
+          "softwareType": {
+            "type": "keyword"
+          },
+          "intendedAudience": {
+            "properties": {
+              "scope": {
+                "type": "keyword"
+              },
+              "countries": {
+                "type": "keyword"
+              },
+              "unsupportedCountries": {
+                "type": "keyword"
+              }
+            }
+          },
+          "legal": {
+            "properties": {
+              "license": {
+                "type": "keyword",
+                "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+              },
+              "mainCopyrightOwner": {
+                "type": "keyword"
+              },
+              "repoOwner": {
+                "type": "keyword"
+              },
+              "authorsFile": {
+                "type": "keyword",
+                "index": false
+              }
+            }
+          },
+          "maintainance": {
+            "properties": {
+              "type": {
+                "type": "keyword"
+              },
+              "contractors": {
+                "type": "nested",
+                "properties": {
+                  "name": {
+                    "type": "text"
+                  },
+                  "until": {
+                    "type": "date",
+                    "format": "strict_date"
+                  },
+                  "website": {
+                    "type": "text",
+                    "index": false
+                  }
+                }
+              },
+              "contacts": {
+                "type": "nested",
+                "properties": {
+                  "name": {
+                    "type": "text"
+                  },
+                  "email": {
+                    "type": "text"
+                  },
+                  "phone": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "affiliation": {
+                    "type": "text"
+                  }
+                }
+              }
+            }
+          },
+          "localisation": {
+            "properties": {
+              "localisationReady": {
+                "type": "boolean"
+              },
+              "availableLanguages": {
+                "type": "keyword"
+              }
+            }
+          },
+          "dependsOn": {
+            "properties": {
+              "open": {
+                "type": "nested",
+                "properties": {
+                  "name": {
+                    "type": "text"
+                  },
+                  "version-min": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "version-max": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "version": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "optional": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "proprietary": {
+                "type": "nested",
+                "properties": {
+                  "name": {
+                    "type": "text"
+                  },
+                  "version-min": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "version-max": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "version": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "optional": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "hardware": {
+                "type": "nested",
+                "properties": {
+                  "name": {
+                    "type": "text"
+                  },
+                  "version-min": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "version-max": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "version": {
+                    "type": "text",
+                    "index": false
+                  },
+                  "optional": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "it": {
+            "properties": {
+              "countryExtensionVersion": {
+                "type": "keyword",
+                "index": false
+              },
+              "conforme": {
+                "properties": {
+                  "lineeGuidaDesign": {
+                    "type": "boolean"
+                  },
+                  "modelloInteroperabilita": {
+                    "type": "boolean"
+                  },
+                  "misureMinimeSicurezza": {
+                    "type": "boolean"
+                  },
+                  "gdpr": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "piattaforme": {
+                "properties": {
+                  "spid": {
+                    "type": "boolean"
+                  },
+                  "cie": {
+                    "type": "boolean"
+                  },
+                  "anpr": {
+                    "type": "boolean"
+                  },
+                  "pagopa": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "riuso": {
+                "properties": {
+                  "codiceIPA": {
+                    "type": "keyword"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
 
-	return err
+      "suggest-name": {
+        "type": "completion"
+      },
+      "vitalityScore": {
+        "type": "integer"
+      },
+      "vitalityDataChart": {
+        "type": "integer"
+      }
+    }
+  }
 }
-
-// AdministrationsMapping adds (if not exists) the mapping for the whitelist administrations in ES.
-func AdministrationsMapping(index string, elasticClient *elastic.Client) error {
-	const (
-		// Elasticsearch mapping for administrations.
-		mapping = `{
+}`
+	AdministrationsMapping = `{
   "settings": {
     "analysis": {
       "analyzer": {
@@ -491,17 +468,18 @@ func AdministrationsMapping(index string, elasticClient *elastic.Client) error {
     }
   }
 }`
-	)
+)
 
+// CreateIndexMapping adds (if not exists) the mapping for the crawler data in ES.
+func CreateIndexMapping(index string, mapping string, elasticClient *elastic.Client) error {
 	// Generating index with mapping.
 	// Use the IndexExists service to check if a specified index exists.
 	exists, err := elasticClient.IndexExists(index).Do(context.Background())
 	if err != nil {
 		return errors.New("cannot check if ES index exists for '" + index + "' exists: " + err.Error())
 	}
-	// Generate new index.
 	if !exists {
-		_, err = elasticClient.CreateIndex(index).Body(mapping).Do(context.Background())
+		_, err := elasticClient.CreateIndex(index).Body(mapping).Do(context.Background())
 		if err != nil {
 			return errors.New("cannot create ES index for '" + index + "': " + err.Error())
 		}

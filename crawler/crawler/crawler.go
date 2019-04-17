@@ -79,13 +79,13 @@ func NewCrawler() *Crawler {
 
 	// Initialize ES index mapping
 	c.index = viper.GetString("ELASTIC_PUBLICCODE_INDEX")
-	err = elastic.IndexMapping(c.index, c.es)
+	err = elastic.CreateIndexMapping(c.index, elastic.PubliccodeMapping, c.es)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Create ES index with mapping "administration-codiceIPA".
-	err = elastic.AdministrationsMapping(viper.GetString("ELASTIC_PUBLISHERS_INDEX"), c.es)
+	err = elastic.CreateIndexMapping(viper.GetString("ELASTIC_PUBLISHERS_INDEX"), elastic.AdministrationsMapping, c.es)
 	if err != nil {
 		log.Fatal(err)
 	}
