@@ -23,6 +23,19 @@ type administration struct {
 // saveToES save the chosen data []byte in elasticsearch
 // data contains the raw publiccode.yml file
 func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []int, data []byte) error {
+	// softwareES represents a software record in Elasticsearch
+	type softwareES struct {
+		FileRawURL            string            `json:"fileRawURL"`
+		ID                    string            `json:"id"`
+		CrawlTime             string            `json:"crawltime"`
+		ItRiusoCodiceIPALabel string            `json:"it-riuso-codiceIPA-label"`
+		Slug                  string            `json:"slug"`
+		PublicCode            interface{}       `json:"publiccode"`
+		VitalityScore         float64           `json:"vitalityScore"`
+		VitalityDataChart     []int             `json:"vitalityDataChart"`
+		OEmbedHTML            map[string]string `json:"oEmbedHTML"`
+	}
+	
 	// Parse the publiccode.yml file
 	parser := pcode.NewParser()
 	parser.Strict = false
