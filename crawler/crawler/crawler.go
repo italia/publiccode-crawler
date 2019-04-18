@@ -61,12 +61,6 @@ func NewCrawler() *Crawler {
 		log.Fatal(err)
 	}
 
-	// Update ipa to lastest data.
-	err = ipa.UpdateFromIndicePA()
-	if err != nil {
-		log.Error(err)
-	}
-
 	log.Debug("Connecting to ElasticSearch...")
 	c.es, err = elastic.ClientFactory(
 		viper.GetString("ELASTIC_URL"),
@@ -76,6 +70,12 @@ func NewCrawler() *Crawler {
 		log.Fatal(err)
 	}
 	log.Debug("Successfully connected to ElasticSearch")
+
+	// Update ipa to lastest data.
+	err = ipa.UpdateFromIndicePAIfNeeded(c.es)
+	if err != nil {
+		log.Error(err)
+	}
 
 	// Initialize ES index mapping
 	c.index = viper.GetString("ELASTIC_PUBLICCODE_INDEX")

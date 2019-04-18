@@ -2,6 +2,8 @@ package ipa
 
 import (
 	"bufio"
+	"context"
+	"encoding/csv"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -11,6 +13,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/italia/developers-italia-backend/crawler/elastic"
+	es "github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -55,36 +59,179 @@ func localIPAFile() string {
 	return path.Join(viper.GetString("CRAWLER_DATADIR"), "indicepa.csv")
 }
 
-// UpdateFromIndicePA download the amministrazioni.txt file if it's older than 2 days.
-func UpdateFromIndicePA() error {
+// UpdateFromIndicePAIfNeeded downloads the amministrazioni.txt file if it's older than 20 days
+// and loads it into Elasticsearch.
+func UpdateFromIndicePAIfNeeded(elasticClient *es.Client) error {
 	file := localIPAFile()
 
 	needUpdate := true
 
-	// we don't need to update if file does not exist and it's not older than 2 days
+	// we don't need to update if file does not exist and it's not older than 20 days
 	info, err := os.Stat(file)
 	if !os.IsNotExist(err) {
 		if err != nil {
 			log.Fatal(err)
 			return err
 		}
-		if info.ModTime().After(time.Now().AddDate(0, 0, -2)) {
+		if info.ModTime().After(time.Now().AddDate(0, 0, -20)) {
 			needUpdate = false
 		}
 	}
 
 	if needUpdate {
-		url := viper.GetString("INDICEPA_URL")
-		log.Infof("Updating our cached copy from IndicePA from %v...", url)
+		return UpdateFromIndicePA(elasticClient)
+	}
 
-		err := downloadFile(file, url)
-		if err != nil {
-			log.Error(err)
-			return err
+	return nil
+}
+
+// UpdateFromIndicePA downloads the amministrazioni.txt file and loads it into Elasticsearch.
+func UpdateFromIndicePA(elasticClient *es.Client) error {
+	file := localIPAFile()
+
+	url := viper.GetString("INDICEPA_URL")
+	log.Infof("Updating our cached copy from IndicePA from %v...", url)
+
+	err := downloadFile(file, url)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	log.Info("Successfully updated from IndicePA")
+
+	return saveIPAToElasticsearch(elasticClient)
+}
+
+func saveIPAToElasticsearch(elasticClient *es.Client) error {
+	type officeES struct {
+		Code        string `json:"code"`
+		Description string `json:"description"`
+		PEC         string `json:"pec"`
+	}
+	type amministrazioneES struct {
+		IPA         string     `json:"ipa"`
+		Description string     `json:"description"`
+		PEC         string     `json:"pec"`
+		Offices     []officeES `json:"office"`
+	}
+
+	// Open file for parsing
+	f, err := os.Open(localIPAFile())
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// Read the CSV file
+	reader := csv.NewReader(f)
+	reader.Comma = '\t'
+	reader.ReuseRecord = true
+	reader.LazyQuotes = true
+	lines, err := reader.ReadAll()
+	if err != nil {
+		return err
+	}
+
+	// Parse lines
+	amms := make(map[string]amministrazioneES)
+	for _, line := range lines {
+		ipaCode := strings.ToLower(line[0])
+		amm := amministrazioneES{
+			IPA:         ipaCode,
+			Description: line[1],
+		}
+		if line[17] == "pec" {
+			amm.PEC = line[16]
+		} else if line[19] == "pec" {
+			amm.PEC = line[18]
+		} else if line[21] == "pec" {
+			amm.PEC = line[20]
+		} else if line[23] == "pec" {
+			amm.PEC = line[22]
+		} else if line[25] == "pec" {
+			amm.PEC = line[24]
+		}
+		amms[amm.IPA] = amm
+	}
+
+	// Download the list of offices
+	resp, err := http.Get(viper.GetString("INDICEPA_AOO_URL"))
+	if err != nil {
+		return err
+	}
+
+	// Read the offices CSV file
+	reader = csv.NewReader(resp.Body)
+	reader.Comma = '\t'
+	reader.ReuseRecord = true
+	reader.LazyQuotes = true
+	lines, err = reader.ReadAll()
+	if err != nil {
+		return err
+	}
+	for _, line := range lines {
+		ipaCode := strings.ToLower(line[0])
+		amm, ok := amms[ipaCode]
+		if !ok {
+			log.Debugf("skipping non-existing IPA code: %s", line[0])
+			continue
 		}
 
-		log.Info("Successfully updated from IndicePA")
+		off := officeES{
+			Code:        line[1],
+			Description: line[2],
+		}
+		if line[16] == "pec" {
+			off.PEC = line[15]
+		} else if line[18] == "pec" {
+			off.PEC = line[17]
+		} else if line[20] == "pec" {
+			off.PEC = line[19]
+		}
+
+		amm.Offices = append(amm.Offices, off)
+		amms[ipaCode] = amm
+
+		if len(amm.Offices) == 0 {
+			log.Debugf("%s has no offices", ipaCode)
+		}
 	}
+
+	if len(amms) == 0 {
+		return fmt.Errorf("0 entities read from IndicePA; aborting")
+	}
+
+	// Delete existing index
+	// TODO: use an alias for atomic updates!
+	ctx := context.Background()
+	_, err = elasticClient.DeleteIndex(viper.GetString("ELASTIC_INDICEPA_INDEX")).Do(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Create mapping if it does not exist
+	err = elastic.CreateIndexMapping(viper.GetString("ELASTIC_INDICEPA_INDEX"), elastic.IPAMapping, elasticClient)
+	if err != nil {
+		return err
+	}
+
+	// Perform a bulk request to Elasticsearch
+	bulkRequest := elasticClient.Bulk()
+	for _, amm := range amms {
+		req := es.NewBulkIndexRequest().
+			Index(viper.GetString("ELASTIC_INDICEPA_INDEX")).
+			Type("pa").
+			Id(amm.IPA).
+			Doc(amm)
+		bulkRequest.Add(req)
+	}
+	bulkResponse, err := bulkRequest.Do(ctx)
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("%d records indexed", len(bulkResponse.Indexed()))
 
 	return nil
 }

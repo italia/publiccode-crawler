@@ -468,6 +468,68 @@ const (
     }
   }
 }`
+	IPAMapping = `{
+    "settings": {
+      "index": {
+        "analysis": {
+          "filter": {},
+          "analyzer": {
+            "autocomplete": {
+              "tokenizer": "autocomplete",
+              "filter": "lowercase"
+            },
+            "autocomplete_search": {
+              "tokenizer": "lowercase"
+            }
+          },
+          "tokenizer": {
+            "autocomplete": {
+              "type": "edge_ngram",
+              "min_gram": 2,
+              "max_gram": 20,
+              "token_chars": [
+                "letter"
+              ]
+            }
+          }
+        }
+      }
+    },
+    "mappings": {
+      "pa": {
+        "dynamic": "strict",
+        "properties": {
+          "ipa": {
+            "type": "text",
+            "analyzer": "autocomplete",
+            "search_analyzer": "autocomplete_search"
+          },
+          "description": {
+            "type": "text",
+            "analyzer": "autocomplete",
+            "search_analyzer": "autocomplete_search"
+          },
+          "pec": {
+            "type": "keyword"
+          },
+          "office": {
+            "type": "nested",
+            "properties": {
+              "code": {
+                "type": "keyword"
+              },
+              "description": {
+                "type": "text"
+              },
+              "pec": {
+                "type": "keyword"
+              }
+            }
+          }
+        }
+      }
+    }
+  }`
 )
 
 // CreateIndexMapping adds (if not exists) the mapping for the crawler data in ES.
