@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -429,7 +428,6 @@ func GenerateGithubAPIURL() GeneratorAPIURL {
 		u.Path = strings.Trim(u.Path, "/")
 		u.Host = "api." + u.Host
 		out = append(out, u.String())
-		fmt.Printf("URL: %s\n", u.String())
 
 		u2, err := url.Parse(in)
 		if err != nil {
@@ -439,7 +437,6 @@ func GenerateGithubAPIURL() GeneratorAPIURL {
 		u2.Path = strings.Trim(u2.Path, "/")
 		u2.Host = "api." + u2.Host
 		out = append(out, u2.String())
-		fmt.Printf("URL: %s\n", u2.String())
 
 		return
 	}
