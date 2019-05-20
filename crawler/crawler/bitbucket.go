@@ -340,15 +340,16 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 // IN: https://bitbucket.org/Soft
 // OUT:https://api.bitbucket.org/2.0/repositories/Soft?pagelen=100
 func GenerateBitbucketAPIURL() GeneratorAPIURL {
-	return func(in string) (string, error) {
+	return func(in string) (out []string, err error) {
 		u, err := url.Parse(in)
 		if err != nil {
-			return in, err
+			return []string{in}, err
 		}
 		u.Path = path.Join("/2.0/repositories", u.Path)
 		u.Host = "api." + u.Host
 
-		return u.String(), nil
+		out = append(out, u.String())
+		return
 	}
 }
 

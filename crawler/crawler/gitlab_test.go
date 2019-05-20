@@ -51,8 +51,8 @@ func TestGenerateGitlabAPIURL(t *testing.T) {
 
 	for _, l := range links {
 		genURL := GenerateGitlabAPIURL()
-		if out, err := genURL(l.in); out != l.out {
-			t.Logf("Expected %s == %s: %v ", out, l.out, err)
+		if out, err := genURL(l.in); out[0] != l.out {
+			t.Logf("Expected %s == %s: %v ", out[0], l.out, err)
 			t.Fail()
 		}
 	}

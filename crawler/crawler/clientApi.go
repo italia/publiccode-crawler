@@ -20,7 +20,7 @@ type OrganizationHandler func(domain Domain, url string, repositories chan Repos
 type SingleRepoHandler func(domain Domain, url string, repositories chan Repository, pa PA) error
 
 // GeneratorAPIURL returns the url in the api correct ecosystem.
-type GeneratorAPIURL func(url string) (string, error)
+type GeneratorAPIURL func(url string) ([]string, error)
 
 var clientAPIs map[string]ClientAPI
 

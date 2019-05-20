@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -417,18 +418,30 @@ func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defa
 
 // GenerateGithubAPIURL returns the api url of given Gitlab organization link.
 // IN: https://github.com/italia
-// OUT:https://api.github.com/orgs/italia/repos
+// OUT:https://api.github.com/orgs/italia/repos,https://api.github.com/users/italia/repos
 func GenerateGithubAPIURL() GeneratorAPIURL {
-	return func(in string) (string, error) {
+	return func(in string) (out []string, err error) {
 		u, err := url.Parse(in)
 		if err != nil {
-			return in, err
+			return []string{in}, err
 		}
 		u.Path = path.Join("orgs", u.Path, "repos")
 		u.Path = strings.Trim(u.Path, "/")
 		u.Host = "api." + u.Host
+		out = append(out, u.String())
+		fmt.Printf("URL: %s\n", u.String())
 
-		return u.String(), nil
+		u2, err := url.Parse(in)
+		if err != nil {
+			return []string{in}, err
+		}
+		u2.Path = path.Join("users", u2.Path, "repos")
+		u2.Path = strings.Trim(u2.Path, "/")
+		u2.Host = "api." + u2.Host
+		out = append(out, u2.String())
+		fmt.Printf("URL: %s\n", u2.String())
+
+		return
 	}
 }
 

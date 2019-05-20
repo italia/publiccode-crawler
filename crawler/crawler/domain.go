@@ -75,10 +75,10 @@ func (domain Domain) processSingleRepo(url string, repositories chan Repository,
 	return crawler(domain, url, repositories, pa)
 }
 
-func (domain Domain) generateAPIURL(u string) (string, error) {
+func (domain Domain) generateAPIURLs(u string) ([]string, error) {
 	crawler, err := GetAPIURL(domain.API())
 	if err != nil {
-		return u, err
+		return []string{u}, err
 	}
 	return crawler(u)
 }

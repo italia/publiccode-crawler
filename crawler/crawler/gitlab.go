@@ -416,14 +416,15 @@ func addGitlabSharedProjectsToRepositories(projects []GitlabSharedProject, domai
 // IN: https://gitlab.org/blockninja
 // OUT:https://gitlab.com/api/v4/groups/blockninja
 func GenerateGitlabAPIURL() GeneratorAPIURL {
-	return func(in string) (string, error) {
+	return func(in string) (out []string, err error) {
 		u, err := url.Parse(in)
 		if err != nil {
-			return in, err
+			return []string{in}, err
 		}
 		u.Path = path.Join("api/v4/groups", u.Path)
 
-		return u.String(), nil
+		out = append(out, u.String())
+		return
 	}
 }
 

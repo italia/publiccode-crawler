@@ -1,35 +1,35 @@
 package crawler
 
 import (
-	"os"
 	"crypto/rand"
 	"errors"
 	"fmt"
 	"math/big"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 
+	"github.com/italia/developers-italia-backend/crawler/elastic"
 	"github.com/italia/developers-italia-backend/crawler/httpclient"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
-	"github.com/italia/developers-italia-backend/crawler/elastic"
 	"github.com/italia/developers-italia-backend/crawler/jekyll"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
-	es "github.com/olivere/elastic"
 	publiccode "github.com/italia/publiccode-parser-go"
+	es "github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 // Crawler is a helper class representing a crawler.
-type Crawler struct{
+type Crawler struct {
 	// Sync mutex guard.
-	mu sync.Mutex
-	es *es.Client
-	index string
-	domains []Domain
+	mu           sync.Mutex
+	es           *es.Client
+	index        string
+	domains      []Domain
 	repositories chan Repository
-	wg sync.WaitGroup
+	wg           sync.WaitGroup
 }
 
 // Repository is a single code repository. FileRawURL contains the direct url to the raw file.
@@ -131,7 +131,7 @@ func (c *Crawler) CrawlPublishers(publishers []PA) error {
 	}
 	log.Infof("%v organizations belonging to %v publishers are going to be scanned",
 		orgCount, len(publishers))
-	
+
 	// Process every item in publishers.
 	for _, pa := range publishers {
 		c.wg.Add(1)
@@ -147,7 +147,7 @@ func (c *Crawler) crawl() error {
 
 	// WaitingLoop check and close the repositories channel
 	go c.WaitingLoop()
-	
+
 	// Process the repositories in order to retrieve the file.
 	// ProcessRepositories is blocking (wait until c.repositories is closed by WaitingLoop).
 	c.ProcessRepositories()
@@ -206,25 +206,28 @@ func (c *Crawler) CrawlPublisher(pa PA) {
 
 // CrawlOrg fetches all the repositories belonging to an org and crawls them.
 func (c *Crawler) CrawlOrg(orgURL string, domain *Domain, pa PA) {
-	// generateAPIURL
-	orgURL, err := domain.generateAPIURL(orgURL)
+	orgURLs, err := domain.generateAPIURLs(orgURL)
 	if err != nil {
-		log.Errorf("generateAPIURL error: %v", err)
+		log.Errorf("generateAPIURLs error: %v", err)
 	}
-	// Process the pages until the end is reached.
-	for {
-		nextURL, err := domain.processAndGetNextURL(orgURL, &c.wg, c.repositories, pa)
-		if err != nil {
-			log.Errorf("error reading %s repository list: %v. NextUrl: %v", orgURL, err, nextURL)
-			nextURL = ""
-		}
 
-		// If end is reached or fails, nextUrl is empty.
-		if nextURL == "" {
-			return
+ORG:
+	for _, orgURL := range orgURLs {
+		// Process the pages until the end is reached.
+		for {
+			nextURL, err := domain.processAndGetNextURL(orgURL, &c.wg, c.repositories, pa)
+			if err != nil {
+				log.Errorf("error reading %s repository list: %v; nextURL: %v", orgURL, err, nextURL)
+				continue ORG
+			}
+
+			// If end is reached or fails, nextURL is empty.
+			if nextURL == "" {
+				return
+			}
+			// Update url to nextURL.
+			orgURL = nextURL
 		}
-		// Update url to nextURL.
-		orgURL = nextURL
 	}
 }
 
@@ -253,7 +256,7 @@ func (c *Crawler) ProcessRepositories() {
 }
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
-func (c *Crawler) ProcessRepo(repository Repository) {	
+func (c *Crawler) ProcessRepo(repository Repository) {
 	// Defer waiting group close.
 	defer c.wg.Done()
 
@@ -305,7 +308,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 }
 
 func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
-	parser := publiccode.NewParser() 
+	parser := publiccode.NewParser()
 	parser.Strict = false
 	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
