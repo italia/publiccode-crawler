@@ -5,6 +5,7 @@ require (
 	github.com/alecthomas/gometalinter v3.0.0+incompatible // indirect
 	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
 	github.com/dyatlov/go-oembed v0.0.0-20180429203341-4bc5ab7a42e9
+	github.com/fortytw2/leaktest v1.3.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585
