@@ -1,38 +1,40 @@
 package jekyll
 
 import (
-	"encoding/json"
-	"github.com/spf13/viper"
 	"context"
+	"encoding/json"
 	"os"
 	"reflect"
 	"sort"
 
+	"github.com/spf13/viper"
+
 	"github.com/ghodss/yaml"
 	"github.com/icza/dyno"
-	"github.com/thoas/go-funk"
-	log "github.com/sirupsen/logrus"
 	"github.com/italia/developers-italia-backend/crawler/elastic"
 	es "github.com/olivere/elastic"
+	log "github.com/sirupsen/logrus"
+	"github.com/thoas/go-funk"
 )
 
 // software is used for parsing some fields of the software objects stored
 // in Elasticsearch that are needed for computing additional information
 // and for exporting variants and related software.
 type software struct {
-	ID				 string `json:"id"`
+	ID         string `json:"id"`
+	Slug       string `json:"slug"`
 	PublicCode struct {
-		URL              string `json:"url"`
-		Name             string `json:"name"`
-		IsBasedOn       []string `json:"isBasedOn"`
+		URL         string   `json:"url"`
+		Name        string   `json:"name"`
+		IsBasedOn   []string `json:"isBasedOn"`
 		Description map[string]struct {
 			LocalisedName string   `json:"localisedName"`
 			GenericName   string   `json:"genericName"`
-			Features         []string `json:"features"`
-			Screenshots      []string   `json:"screenshots,omitempty"`
+			Features      []string `json:"features"`
+			Screenshots   []string `json:"screenshots,omitempty"`
 		} `json:"description"`
 		Categories []string `json:"categories"`
-		Legal         struct {
+		Legal      struct {
 			RepoOwner string `json:"repoOwner,omitempty"`
 		} `json:"legal,omitempty"`
 	} `json:"publiccode"`
@@ -70,11 +72,11 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularCat
 	// Extract all the softwares.
 	query := elastic.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
-		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
-		Query(query).            // specify the query
-		Pretty(true).            // pretty print request and response JSON
-		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
-		Do(context.Background()) // execute
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
+		Query(query).                                       // specify the query
+		Pretty(true).                                       // pretty print request and response JSON
+		From(0).Size(10000).                                // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background())                            // execute
 	if err != nil {
 		log.Error(err)
 	}
@@ -113,7 +115,7 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularCat
 			return err
 		}
 	}
-	
+
 	return err
 }
 
@@ -121,11 +123,11 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularCat
 func (sw *software) findVariants(elasticClient *es.Client) []software {
 	query := elastic.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
-		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
-		Query(query).            // specify the query
-		Pretty(true).            // pretty print request and response JSON
-		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
-		Do(context.Background()) // execute
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
+		Query(query).                                       // specify the query
+		Pretty(true).                                       // pretty print request and response JSON
+		From(0).Size(10000).                                // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background())                            // execute
 	if err != nil {
 		log.Error(err)
 	}
@@ -133,7 +135,7 @@ func (sw *software) findVariants(elasticClient *es.Client) []software {
 	var sws []software
 	for _, item := range searchResult.Each(reflect.TypeOf(*sw)) {
 		i := item.(software)
-		
+
 		// TODO: this filtering logic should be moved to the ES query
 
 		// skip identity
@@ -150,7 +152,7 @@ func (sw *software) findVariants(elasticClient *es.Client) []software {
 
 // variantsFeatures returns features of variants that are not included in this one
 func (sw *software) variantsFeatures() map[string][]string {
-	diff := map[string][]string{}  // "it" => [ feature, feature ... ]
+	diff := map[string][]string{} // "it" => [ feature, feature ... ]
 
 	for _, lang := range []string{"en", "it"} {
 		for _, variant := range sw.variants {
@@ -175,11 +177,11 @@ func (sw *software) findRelated(numberOfSimilarSoftware int, elasticClient *es.C
 	query = query.MustNot(es.NewTermsQuery("id", sw.ID))
 
 	searchResult, err := elasticClient.Search().
-		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).                   // search in index "publiccode"
-		Query(query).                          // specify the query
-		From(0).Size(numberOfSimilarSoftware). // take documents from 0-numberOfSimilarSoftware
-		Pretty(true).                          // pretty print request and response JSON
-		Do(context.Background())               // execute
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
+		Query(query).                                       // specify the query
+		From(0).Size(numberOfSimilarSoftware).              // take documents from 0-numberOfSimilarSoftware
+		Pretty(true).                                       // pretty print request and response JSON
+		Do(context.Background())                            // execute
 	if err != nil {
 		log.Error(err)
 	}
@@ -200,11 +202,11 @@ func (sw *software) getPopularCategories(number int, elasticClient *es.Client) [
 	// Extract all the documents. It should filter only the ones with isBaseOn=url.
 	query := elastic.NewBoolQuery("software")
 	searchResult, err := elasticClient.Search().
-		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")).     // search in index "publiccode"
-		Query(query).            // specify the query
-		Pretty(true).            // pretty print request and response JSON
-		From(0).Size(10000).     // get first 10k elements. The limit can be changed in ES.
-		Do(context.Background()) // execute
+		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
+		Query(query).                                       // specify the query
+		Pretty(true).                                       // pretty print request and response JSON
+		From(0).Size(10000).                                // get first 10k elements. The limit can be changed in ES.
+		Do(context.Background())                            // execute
 	if err != nil {
 		log.Error(err)
 	}
