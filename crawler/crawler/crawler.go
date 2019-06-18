@@ -318,7 +318,7 @@ func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 		return err
 	}
 
-	if pa.CodiceIPA != "" && parser.PublicCode.It.Riuso.CodiceIPA != "" && pa.CodiceIPA != parser.PublicCode.It.Riuso.CodiceIPA {
+	if pa.CodiceIPA != "" && parser.PublicCode.It.Riuso.CodiceIPA != "" && !strings.EqualFold(pa.CodiceIPA, parser.PublicCode.It.Riuso.CodiceIPA) {
 		return errors.New("codiceIPA for: " + fileRawURL + " is " + parser.PublicCode.It.Riuso.CodiceIPA + ", which differs from the one assigned to the org in the whitelist: " + pa.CodiceIPA)
 	}
 
