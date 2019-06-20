@@ -9,7 +9,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585
-	github.com/italia/publiccode-parser-go v0.0.0-20190613104053-489c78827ed1
+	github.com/italia/publiccode-parser-go v0.0.0-20190620152436-bd050a507c36
 	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
@@ -21,11 +21,11 @@ require (
 	github.com/spf13/viper v1.3.1
 	github.com/thoas/go-funk v0.4.0
 	github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80
-	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8 // indirect
-	golang.org/x/net v0.0.0-20190611141213-3f473d35a33a // indirect
-	golang.org/x/sys v0.0.0-20190613101156-ab3f67ed278a // indirect
+	golang.org/x/crypto v0.0.0-20190618222545-ea8f1a30c443 // indirect
+	golang.org/x/net v0.0.0-20190619014844-b5b0513f8c1b // indirect
+	golang.org/x/sys v0.0.0-20190620070143-6f217b454f45 // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/tools v0.0.0-20190612232758-d4e310b4a8a5 // indirect
+	golang.org/x/tools v0.0.0-20190619215442-4adf7a708c2d // indirect
 	gopkg.in/alecthomas/kingpin.v3-unstable v3.0.0-20180810215634-df19058c872c // indirect
 	gopkg.in/src-d/go-git.v4 v4.8.1
 	gopkg.in/yaml.v2 v2.2.2
