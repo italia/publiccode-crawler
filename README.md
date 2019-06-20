@@ -72,6 +72,11 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
 5. start the crawler: `bin/crawler crawl whitelist/*.yml`
 6. configure in crontab as desired
 
+### Tools
+
+* `bin/crawler updateipa` downloads IPA data and writes it into Elasticsearch
+* `bin/crawler download-whitelist` downloads orgs and repos from the [onboarding portal](https://github.com/italia/developers-italia-onboarding) and writes them to a whitelist file
+
 ### Troubleshooting
 
 - From docker logs seems that Elasticsearch container needs more virtual memory and now it's `Stalling for Elasticsearch....`
@@ -90,6 +95,7 @@ In order to access Elasticsearch with write permissions from the outside, you ca
 ## See also
 
 * [publiccode-parser-go](https://github.com/italia/publiccode-parser-go): the Go package for parsing publiccode.yml files
+* [developers-italia-onboarding](https://github.com/italia/developers-italia-onboarding): the onboarding portal
 
 ## Authors
 
