@@ -13,7 +13,7 @@ type Whitelist []PA
 
 // PA is a Public Administration.
 type PA struct {
-	ID            string   `yaml:"id"`
+	Name          string   `yaml:"name"`
 	CodiceIPA     string   `yaml:"codice-iPA"`
 	Organizations []string `yaml:"orgs"`
 	Repositories  []string `yaml:"repos"`

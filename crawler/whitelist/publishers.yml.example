@@ -1,13 +1,13 @@
 # This is a list of organizations to crawl.
 
-- id: "Comune di Bagnacavallo"
+- name: "Comune di Bagnacavallo"
   codice-iPA: "c_a547"
   orgs:
     - "https://github.com/gith002"
   repos:
     - "https://github.com/gith002/foobar"
 
-- id: "Comune di Romagnano Sesia"
+- name: "Comune di Romagnano Sesia"
   codice-iPA: "c_h502"
   orgs:
     - "https://github.com/gith003"

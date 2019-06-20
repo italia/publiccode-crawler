@@ -32,15 +32,15 @@ var listCmd = &cobra.Command{
 		// Process every item in whitelist.
 		for _, pa := range whitelist {
 			// And add to data table.
-			data = append(data, []string{pa.ID, pa.CodiceIPA, ""})
+			data = append(data, []string{pa.Name, pa.CodiceIPA, ""})
 			for _, org := range pa.Organizations {
-				data = append(data, []string{pa.ID, pa.CodiceIPA, org})
+				data = append(data, []string{pa.Name, pa.CodiceIPA, org})
 			}
 		}
 
 		// Write data and render as table in os.Stdout.
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"ID", "Codice iPA", "Repository"})
+		table.SetHeader([]string{"Name", "Codice iPA", "Repository"})
 		table.SetFooter([]string{"Total Public Administrations: " + strconv.Itoa(len(whitelist)), "", ""})
 		table.SetAutoMergeCells(true)
 		table.SetRowLine(true)

@@ -178,7 +178,7 @@ func (c *Crawler) ExportForJekyll() error {
 
 // CrawlPublisher delegates the work to single PA crawlers.
 func (c *Crawler) CrawlPublisher(pa PA) {
-	log.Infof("Processing publisher: %s", pa.ID)
+	log.Infof("Processing publisher: %s", pa.Name)
 
 	for _, orgURL := range pa.Organizations {
 		// Check if host is in list of known code hosting domains
