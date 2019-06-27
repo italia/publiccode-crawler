@@ -13,4 +13,7 @@
 - name: "Libreoffice"
   repos:
     - "https://github.com/tdf/libreoffice-metadata"
- 
+   
+- name: "FastReport"
+  repos:
+    - "https://github.com/FastReports/FastReport"
