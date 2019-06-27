@@ -112,6 +112,7 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 	type amministrazioneES struct {
 		IPA         string     `json:"ipa"`
 		Description string     `json:"description"`
+		Type        string     `json:"type"`
 		PEC         string     `json:"pec"`
 		Offices     []officeES `json:"office"`
 	}
@@ -140,6 +141,7 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 		amm := amministrazioneES{
 			IPA:         ipaCode,
 			Description: line[1],
+			Type:        line[12],
 		}
 		if line[17] == "pec" {
 			amm.PEC = line[16]
