@@ -157,13 +157,13 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 		amms[amm.IPA] = amm
 	}
 
-	// Download the list of offices
+	// Download the list of AOO offices
 	resp, err := http.Get(viper.GetString("INDICEPA_AOO_URL"))
 	if err != nil {
 		return err
 	}
 
-	// Read the offices CSV file
+	// Read the AOO offices CSV file
 	reader = csv.NewReader(resp.Body)
 	reader.Comma = '\t'
 	reader.ReuseRecord = true
@@ -176,7 +176,7 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 		ipaCode := strings.ToLower(line[0])
 		amm, ok := amms[ipaCode]
 		if !ok {
-			log.Debugf("skipping non-existing IPA code: %s", line[0])
+			log.Debugf("skipping non-existing IPA code found in AOO: %s", line[0])
 			continue
 		}
 
@@ -190,6 +190,49 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 			off.PEC = line[17]
 		} else if line[20] == "pec" {
 			off.PEC = line[19]
+		}
+
+		amm.Offices = append(amm.Offices, off)
+		amms[ipaCode] = amm
+
+		if len(amm.Offices) == 0 {
+			log.Debugf("%s has no offices", ipaCode)
+		}
+	}
+
+	// Download the list of OU offices
+	resp, err = http.Get(viper.GetString("INDICEPA_OU_URL"))
+	if err != nil {
+		return err
+	}
+
+	// Read the OU offices CSV file
+	reader = csv.NewReader(resp.Body)
+	reader.Comma = '\t'
+	reader.ReuseRecord = true
+	reader.LazyQuotes = true
+	lines, err = reader.ReadAll()
+	if err != nil {
+		return err
+	}
+	for _, line := range lines {
+		ipaCode := strings.ToLower(line[13])
+		amm, ok := amms[ipaCode]
+		if !ok {
+			log.Debugf("skipping non-existing IPA code found in OU: %s", line[0])
+			continue
+		}
+
+		off := officeES{
+			Code:        line[0],
+			Description: line[2],
+		}
+		if line[18] == "pec" {
+			off.PEC = line[17]
+		} else if line[20] == "pec" {
+			off.PEC = line[19]
+		} else if line[22] == "pec" {
+			off.PEC = line[21]
 		}
 
 		amm.Offices = append(amm.Offices, off)
