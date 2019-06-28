@@ -39,7 +39,7 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
 
 3. insert the `kibana` password in `kibana/config/kibana.yml`
 
-4. configure the nginx proxy for the lasticsearch host with the following directives:
+4. configure the nginx proxy for the elasticsearch host with the following directives:
 
     ```
     limit_req_zone $binary_remote_addr zone=elasticsearch_limit:10m rate=10r/s;
