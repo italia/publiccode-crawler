@@ -509,6 +509,9 @@ const (
             "analyzer": "autocomplete",
             "search_analyzer": "autocomplete_search"
           },
+          "type": {
+            "type": "keyword"
+          },
           "pec": {
             "type": "keyword"
           },
