@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler/httpclient"
@@ -191,7 +190,7 @@ type GitlabSharedProject struct {
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
 func RegisterGitlabAPI() OrganizationHandler {
-	return func(domain Domain, link string, repositories chan Repository, pa PA, wg *sync.WaitGroup) (string, error) {
+	return func(domain Domain, link string, repositories chan Repository, pa PA) (string, error) {
 		log.Debugf("RegisterGitlabAPI: %s ", link)
 
 		// Set BasicAuth header.

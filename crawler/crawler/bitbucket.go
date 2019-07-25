@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"path"
-	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler/httpclient"
@@ -182,7 +181,7 @@ type Links struct {
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
 func RegisterBitbucketAPI() OrganizationHandler {
-	return func(domain Domain, link string, repositories chan Repository, pa PA, wg *sync.WaitGroup) (string, error) {
+	return func(domain Domain, link string, repositories chan Repository, pa PA) (string, error) {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
