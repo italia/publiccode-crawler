@@ -9,7 +9,6 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler/httpclient"
@@ -231,7 +230,7 @@ func githubBasicAuth(domain Domain) string {
 // If a next page is available return its url.
 // Otherwise returns an empty ("") string.
 func RegisterGithubAPI() OrganizationHandler {
-	return func(domain Domain, link string, repositories chan Repository, pa PA, wg *sync.WaitGroup) (string, error) {
+	return func(domain Domain, link string, repositories chan Repository, pa PA) (string, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		headers["Authorization"] = githubBasicAuth(domain)
