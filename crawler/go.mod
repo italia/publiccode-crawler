@@ -15,7 +15,6 @@ require (
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/olivere/elastic v6.2.15+incompatible
 	github.com/prometheus/client_golang v0.9.2
-	github.com/r3vit/go-spdx v0.0.0-20180531140640-34a46ab144b1 // indirect
 	github.com/sirupsen/logrus v1.3.0
 	github.com/spf13/cobra v0.0.3
 	github.com/spf13/viper v1.3.1
