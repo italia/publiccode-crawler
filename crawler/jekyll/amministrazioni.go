@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"strings"
 
 	"github.com/icza/dyno"
 	"github.com/spf13/viper"
@@ -73,6 +74,7 @@ func AmministrazioniYML(filename string, elasticClient *es.Client) error {
 		// instead of computing them ourselves.
 
 		codiceIPA, _ := dyno.GetString(v, "publiccode", "it", "riuso", "codiceIPA")
+		codiceIPA = strings.ToLower(codiceIPA) // prevent mixed case duplicates
 		if _, ok := seen[codiceIPA]; !ok {
 			seen[codiceIPA] = struct{}{}
 			administrations = append(administrations, administrationType{
