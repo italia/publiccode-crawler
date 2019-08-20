@@ -22,7 +22,7 @@ search:
     'jekyll':
       '*':
         - SEARCH
-    'indicepa':
+    'indicepa*':
       '*':
         - SEARCH
 
