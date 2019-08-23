@@ -14,6 +14,9 @@ proposing. Please note: you can copy&paste here the content of the
 <!-- All the following points MUST be checked before this PR will be considered
 -->
 - [ ] I read and understood the indications shown [here]().
+- [ ] My contribution represents a software opensource for which my repos provide the source code.
+- [ ] The software I am contributing has a clear open source licese and does not violate IPs or copyrights.
+- [ ] My rapos include a `publiccode.yml` file that I checked [here](https://publiccode-editor.developers.italia.it).
 
 
 <!-- If this PR is connected to an issue, please insert the issue number here
@@ -23,5 +26,5 @@ proposing. Please note: you can copy&paste here the content of the
 ## Ask for review
 <!-- Please uncomment one or more of the reviewers below -->
 <!-- - [ ] @libremente -->
-<!-- - [ ] @andreabiancini -->
+<!-- - [ ] @biancini -->
 <!-- - [ ] @alranel --> 
