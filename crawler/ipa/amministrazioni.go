@@ -295,7 +295,7 @@ func GetAdministrationName(codiceiPA string) string {
 	scanner := bufio.NewScanner(strings.NewReader(input))
 	for scanner.Scan() {
 		amm := parseLine(scanner.Text())
-		if amm.CodAmm == codiceiPA {
+		if strings.EqualFold(amm.CodAmm, codiceiPA) {
 			return amm.DesAmm
 		}
 	}
