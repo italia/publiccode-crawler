@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -174,11 +175,11 @@ func UpdateFromIndicePA(elasticClient *es.Client) error {
 
 	// Perform a bulk request to Elasticsearch
 	bulkRequest := elasticClient.Bulk()
-	for _, amm := range records {
+	for n, amm := range records {
 		req := es.NewBulkIndexRequest().
 			Index(viper.GetString("ELASTIC_INDICEPA_INDEX")).
 			Type("pa").
-			Id(amm.PEC).
+			Id(strconv.Itoa(n)).
 			Doc(amm)
 		bulkRequest.Add(req)
 	}
