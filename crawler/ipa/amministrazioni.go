@@ -178,7 +178,7 @@ func UpdateFromIndicePA(elasticClient *es.Client) error {
 		req := es.NewBulkIndexRequest().
 			Index(viper.GetString("ELASTIC_INDICEPA_INDEX")).
 			Type("pa").
-			Id(amm.IPA).
+			Id(amm.PEC).
 			Doc(amm)
 		bulkRequest.Add(req)
 	}
