@@ -267,7 +267,7 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 		req := es.NewBulkIndexRequest().
 			Index(viper.GetString("ELASTIC_INDICEPA_INDEX")).
 			Type("pa").
-			Id(amm.PEC).
+			Id(amm.IPA).
 			Doc(amm)
 		bulkRequest.Add(req)
 	}
