@@ -1,7 +1,7 @@
 anchor_1: &job_defaults
   working_directory: /tmp/developers-italia-backend
   docker:
-    - image: circleci/golang:1.11
+    - image: circleci/golang:1.13
 
 version: 2
 jobs:
