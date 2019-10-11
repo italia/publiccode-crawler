@@ -10,7 +10,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf // indirect
 	github.com/icza/dyno v0.0.0-20180601094105-0c96289f9585
-	github.com/italia/publiccode-parser-go v0.0.0-20191003101010-b11ec67f97e4
+	github.com/italia/publiccode-parser-go v0.0.0-20191010210128-7f178b8a5093
 	github.com/mailru/easyjson v0.0.0-20180823135443-60711f1a8329 // indirect
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/nicksnyder/go-i18n v1.10.0 // indirect
@@ -34,3 +34,5 @@ require (
 	gopkg.in/src-d/go-git.v4 v4.8.1
 	gopkg.in/yaml.v2 v2.2.4
 )
+
+go 1.13
