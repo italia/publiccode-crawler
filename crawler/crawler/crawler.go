@@ -24,12 +24,12 @@ import (
 // Crawler is a helper class representing a crawler.
 type Crawler struct {
 	// Sync mutex guard.
-	mu           sync.Mutex
-	es           *es.Client
-	index        string
-	domains      []Domain
-	repositories chan Repository
-	wg           sync.WaitGroup
+	es             *es.Client
+	index          string
+	domains        []Domain
+	repositories   chan Repository
+	publishersWg   sync.WaitGroup
+	repositoriesWg sync.WaitGroup
 }
 
 // Repository is a single code repository. FileRawURL contains the direct url to the raw file.
@@ -118,7 +118,7 @@ func (c *Crawler) CrawlRepo(repoURL string) error {
 	if err != nil {
 		return err
 	}
-
+	close(c.repositories)
 	return c.crawl()
 }
 
@@ -134,9 +134,15 @@ func (c *Crawler) CrawlPublishers(publishers []PA) error {
 
 	// Process every item in publishers.
 	for _, pa := range publishers {
-		c.wg.Add(1)
+		c.publishersWg.Add(1)
 		go c.CrawlPublisher(pa)
 	}
+
+	// Close the repositories channel when all the publisher goroutines are done
+	go func() {
+		c.publishersWg.Wait()
+		close(c.repositories)
+	}()
 
 	return c.crawl()
 }
@@ -145,11 +151,9 @@ func (c *Crawler) crawl() error {
 	// Start the metrics server.
 	go metrics.StartPrometheusMetricsServer()
 
-	// WaitingLoop check and close the repositories channel
-	go c.WaitingLoop()
+	defer c.publishersWg.Wait()
 
-	// Process the repositories in order to retrieve the file.
-	// ProcessRepositories is blocking (wait until c.repositories is closed by WaitingLoop).
+	// Process the repositories in order to retrieve the files.
 	c.ProcessRepositories()
 
 	// ElasticFlush to flush all the operations on ES.
@@ -179,6 +183,7 @@ func (c *Crawler) ExportForJekyll() error {
 // CrawlPublisher delegates the work to single PA crawlers.
 func (c *Crawler) CrawlPublisher(pa PA) {
 	log.Infof("Processing publisher: %s", pa.Name)
+	defer c.publishersWg.Done()
 
 	for _, orgURL := range pa.Organizations {
 		// Check if host is in list of known code hosting domains
@@ -200,8 +205,6 @@ func (c *Crawler) CrawlPublisher(pa PA) {
 
 		domain.processSingleRepo(repoURL, c.repositories, pa)
 	}
-
-	c.wg.Done()
 }
 
 // CrawlOrg fetches all the repositories belonging to an org and crawls them.
@@ -215,7 +218,7 @@ ORG:
 	for _, orgURL := range orgURLs {
 		// Process the pages until the end is reached.
 		for {
-			nextURL, err := domain.processAndGetNextURL(orgURL, &c.wg, c.repositories, pa)
+			nextURL, err := domain.processAndGetNextURL(orgURL, c.repositories, pa)
 			if err != nil {
 				log.Errorf("error reading %s repository list: %v; nextURL: %v", orgURL, err, nextURL)
 				continue ORG
@@ -231,14 +234,6 @@ ORG:
 	}
 }
 
-// WaitingLoop waits until all the goroutines counter is zero and close the repositories channel.
-func (c *Crawler) WaitingLoop() {
-	c.wg.Wait()
-
-	// Close repositories channel.
-	close(c.repositories)
-}
-
 // generateRandomInt returns an integer between 0 and max parameter.
 // "Max" must be less than math.MaxInt32
 func generateRandomInt(max int) (int, error) {
@@ -249,16 +244,16 @@ func generateRandomInt(max int) (int, error) {
 // ProcessRepositories process the repositories channel and check the availability of the file.
 func (c *Crawler) ProcessRepositories() {
 	for repository := range c.repositories {
-		c.wg.Add(1)
+		c.repositoriesWg.Add(1)
 		go c.ProcessRepo(repository)
 	}
-	c.wg.Wait()
+	c.repositoriesWg.Wait()
 }
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
 func (c *Crawler) ProcessRepo(repository Repository) {
 	// Defer waiting group close.
-	defer c.wg.Done()
+	defer c.repositoriesWg.Done()
 
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", c.index).Inc()
@@ -270,13 +265,10 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		return
 	}
 
-	log.Infof("[%s] publiccode.yml found", repository.Name)
+	log.Infof("[%s] publiccode.yml found at %s", repository.Name, repository.FileRawURL)
 
 	// Validate the publiccode.yml
-	c.mu.Lock()
 	err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa)
-	c.mu.Unlock()
-
 	if err != nil {
 		log.Errorf("[%s] invalid publiccode.yml: %+v", repository.Name, err)
 		logBadYamlToFile(repository.FileRawURL)

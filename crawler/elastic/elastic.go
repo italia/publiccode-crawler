@@ -509,25 +509,19 @@ const (
             "analyzer": "autocomplete",
             "search_analyzer": "autocomplete_search"
           },
+          "pec": {
+            "type": "text",
+            "analyzer": "autocomplete",
+            "search_analyzer": "autocomplete_search"
+          },
           "type": {
             "type": "keyword"
           },
-          "pec": {
+          "cf": {
             "type": "keyword"
           },
-          "office": {
-            "type": "nested",
-            "properties": {
-              "code": {
-                "type": "keyword"
-              },
-              "description": {
-                "type": "text"
-              },
-              "pec": {
-                "type": "keyword"
-              }
-            }
+          "website": {
+            "type": "keyword"
           }
         }
       }

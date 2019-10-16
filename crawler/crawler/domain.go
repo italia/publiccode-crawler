@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/url"
 	"strings"
-	"sync"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
@@ -59,12 +58,12 @@ func parseDomainsFile(data []byte) ([]Domain, error) {
 	return domains, err
 }
 
-func (domain Domain) processAndGetNextURL(url string, wg *sync.WaitGroup, repositories chan Repository, pa PA) (string, error) {
+func (domain Domain) processAndGetNextURL(url string, repositories chan Repository, pa PA) (string, error) {
 	crawler, err := GetClientAPICrawler(domain.API())
 	if err != nil {
 		return "", err
 	}
-	return crawler(domain, url, repositories, pa, wg)
+	return crawler(domain, url, repositories, pa)
 }
 
 func (domain Domain) processSingleRepo(url string, repositories chan Repository, pa PA) error {
