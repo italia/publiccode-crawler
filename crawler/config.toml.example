@@ -21,8 +21,7 @@ ELASTIC_INDICEPA_INDEX   = "indicepa"
 
 # URL of the list of Italian public administration agencies
 INDICEPA_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt"
-INDICEPA_AOO_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=aoo.txt"
-INDICEPA_OU_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=ou.txt"
+INDICEPA_PEC_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=pec.txt"
 
 # Directory for storing working files
 CRAWLER_DATADIR = "/data/crawler"

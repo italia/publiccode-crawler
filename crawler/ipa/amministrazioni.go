@@ -3,6 +3,7 @@ package ipa
 import (
 	"bufio"
 	"context"
+	"crypto/tls"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -87,49 +89,27 @@ func UpdateFromIndicePAIfNeeded(elasticClient *es.Client) error {
 
 // UpdateFromIndicePA downloads the amministrazioni.txt file and loads it into Elasticsearch.
 func UpdateFromIndicePA(elasticClient *es.Client) error {
-	file := localIPAFile()
-
+	// Download the main iPA file to disk (TODO: remove this)
 	url := viper.GetString("INDICEPA_URL")
 	log.Infof("Updating our cached copy from IndicePA from %v...", url)
-
+	file := localIPAFile()
 	err := downloadFile(file, url)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
 
-	log.Info("Successfully updated from IndicePA")
-
-	return saveIPAToElasticsearch(elasticClient)
-}
-
-func saveIPAToElasticsearch(elasticClient *es.Client) error {
-	type officeES struct {
-		Code        string `json:"code"`
-		Description string `json:"description"`
-		PEC         string `json:"pec"`
-	}
 	type amministrazioneES struct {
-		IPA         string     `json:"ipa"`
-		Description string     `json:"description"`
-		Type        string     `json:"type"`
-		PEC         string     `json:"pec"`
-		Offices     []officeES `json:"office"`
+		IPA         string `json:"ipa"`
+		Description string `json:"description"`
+		Type        string `json:"type"`
+		PEC         string `json:"pec"`
+		FiscalCode  string `json:"cf"`
+		Website     string `json:"website"`
 	}
 
 	// Open file for parsing
-	f, err := os.Open(localIPAFile())
-	if err != nil {
-		return err
-	}
-	defer f.Close()
-
-	// Read the CSV file
-	reader := csv.NewReader(f)
-	reader.Comma = '\t'
-	reader.ReuseRecord = true
-	reader.LazyQuotes = true
-	lines, err := reader.ReadAll()
+	lines, err := readCSV(file)
 	if err != nil {
 		return err
 	}
@@ -138,40 +118,24 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 	amms := make(map[string]amministrazioneES)
 	for _, line := range lines {
 		ipaCode := strings.ToLower(line[0])
-		amm := amministrazioneES{
+		amms[ipaCode] = amministrazioneES{
 			IPA:         ipaCode,
 			Description: line[1],
 			Type:        line[12],
+			FiscalCode:  line[14],
+			Website:     line[8],
 		}
-		if line[17] == "pec" {
-			amm.PEC = line[16]
-		} else if line[19] == "pec" {
-			amm.PEC = line[18]
-		} else if line[21] == "pec" {
-			amm.PEC = line[20]
-		} else if line[23] == "pec" {
-			amm.PEC = line[22]
-		} else if line[25] == "pec" {
-			amm.PEC = line[24]
-		}
-		amms[amm.IPA] = amm
 	}
 
-	// Download the list of AOO offices
-	resp, err := http.Get(viper.GetString("INDICEPA_AOO_URL"))
+	// Read the PEC CSV file
+	lines, err = readCSVFromURL(viper.GetString("INDICEPA_PEC_URL"))
 	if err != nil {
 		return err
 	}
 
-	// Read the AOO offices CSV file
-	reader = csv.NewReader(resp.Body)
-	reader.Comma = '\t'
-	reader.ReuseRecord = true
-	reader.LazyQuotes = true
-	lines, err = reader.ReadAll()
-	if err != nil {
-		return err
-	}
+	// Loop through the PEC addresses, retrieve the template record for each entity
+	// and add the PEC address to each one.
+	var records []amministrazioneES
 	for _, line := range lines {
 		ipaCode := strings.ToLower(line[0])
 		amm, ok := amms[ipaCode]
@@ -180,78 +144,26 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 			continue
 		}
 
-		off := officeES{
-			Code:        line[1],
-			Description: line[2],
-		}
-		if line[16] == "pec" {
-			off.PEC = line[15]
-		} else if line[18] == "pec" {
-			off.PEC = line[17]
-		} else if line[20] == "pec" {
-			off.PEC = line[19]
-		}
-
-		amm.Offices = append(amm.Offices, off)
-		amms[ipaCode] = amm
-
-		if len(amm.Offices) == 0 {
-			log.Debugf("%s has no offices", ipaCode)
-		}
-	}
-
-	// Download the list of OU offices
-	resp, err = http.Get(viper.GetString("INDICEPA_OU_URL"))
-	if err != nil {
-		return err
-	}
-
-	// Read the OU offices CSV file
-	reader = csv.NewReader(resp.Body)
-	reader.Comma = '\t'
-	reader.ReuseRecord = true
-	reader.LazyQuotes = true
-	lines, err = reader.ReadAll()
-	if err != nil {
-		return err
-	}
-	for _, line := range lines {
-		ipaCode := strings.ToLower(line[13])
-		amm, ok := amms[ipaCode]
-		if !ok {
-			log.Debugf("skipping non-existing IPA code found in OU: %s", line[0])
+		if line[8] == "pec" {
+			amm.PEC = line[7]
+		} else {
 			continue
 		}
 
-		off := officeES{
-			Code:        line[0],
-			Description: line[2],
-		}
-		if line[18] == "pec" {
-			off.PEC = line[17]
-		} else if line[20] == "pec" {
-			off.PEC = line[19]
-		} else if line[22] == "pec" {
-			off.PEC = line[21]
-		}
-
-		amm.Offices = append(amm.Offices, off)
-		amms[ipaCode] = amm
-
-		if len(amm.Offices) == 0 {
-			log.Debugf("%s has no offices", ipaCode)
-		}
+		records = append(records, amm)
 	}
 
-	if len(amms) == 0 {
-		return fmt.Errorf("0 entities read from IndicePA; aborting")
+	if len(records) == 0 {
+		return fmt.Errorf("0 PEC addresses read from IndicePA; aborting")
 	}
 
-	// Delete existing index
+	log.Debugf("inserting %d records into Elasticsearch", len(records))
+
+	// Delete existing index if exists
 	// TODO: use an alias for atomic updates!
 	ctx := context.Background()
 	_, err = elasticClient.DeleteIndex(viper.GetString("ELASTIC_INDICEPA_INDEX")).Do(ctx)
-	if err != nil {
+	if err != nil && !es.IsNotFound(err) {
 		return err
 	}
 
@@ -263,11 +175,11 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 
 	// Perform a bulk request to Elasticsearch
 	bulkRequest := elasticClient.Bulk()
-	for _, amm := range amms {
+	for n, amm := range records {
 		req := es.NewBulkIndexRequest().
 			Index(viper.GetString("ELASTIC_INDICEPA_INDEX")).
 			Type("pa").
-			Id(amm.IPA).
+			Id(strconv.Itoa(n)).
 			Doc(amm)
 		bulkRequest.Add(req)
 	}
@@ -276,7 +188,7 @@ func saveIPAToElasticsearch(elasticClient *es.Client) error {
 		return err
 	}
 
-	log.Debugf("%d records indexed", len(bulkResponse.Indexed()))
+	log.Infof("%d records indexed from IndicePA", len(bulkResponse.Indexed()))
 
 	return nil
 }
@@ -304,6 +216,39 @@ func GetAdministrationName(codiceiPA string) string {
 	}
 
 	return ""
+}
+
+func readCSV(file string) ([][]string, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	// Read the CSV file
+	reader := csv.NewReader(f)
+	reader.Comma = '\t'
+	reader.ReuseRecord = true
+	reader.LazyQuotes = true
+	return reader.ReadAll()
+}
+
+func readCSVFromURL(url string) ([][]string, error) {
+	// disable HTTP/2 because IndicePA does not support it
+	tr := &http.Transport{
+		TLSNextProto: make(map[string]func(authority string, c *tls.Conn) http.RoundTripper),
+	}
+	client := &http.Client{Transport: tr}
+	resp, err := client.Get(url)
+	if err != nil {
+		return nil, err
+	}
+
+	reader := csv.NewReader(resp.Body)
+	reader.Comma = '\t'
+	reader.ReuseRecord = true
+	reader.LazyQuotes = true
+	return reader.ReadAll()
 }
 
 // parseLine populate an Amministrazione with the values read.
