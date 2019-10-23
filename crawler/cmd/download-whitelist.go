@@ -1,14 +1,15 @@
 package cmd
 
 import (
-	"os"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
-	"net/http"
-	"github.com/spf13/cobra"
 	"log"
+	"net/http"
+	"os"
+
 	"github.com/italia/developers-italia-backend/crawler/crawler"
+	"github.com/spf13/cobra"
 	"github.com/thoas/go-funk"
+	"gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -27,7 +28,7 @@ var downloadWhitelistCmd = &cobra.Command{
 	Use:   "download-whitelist REPOLIST_URL DEST_FILE",
 	Short: "Download the list of repos and orgs from the onboarding portal.",
 	Long:  `Download the list of repos and orgs from the onboarding portal and convert it into a yml whitelist file.`,
-	Args: cobra.ExactArgs(2),
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		// Read the current destinatin whitelist, if any
 		var publishers crawler.Whitelist
@@ -49,7 +50,7 @@ var downloadWhitelistCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-	
+
 		// Parse the repo-list file
 		var repolist repolistType
 		err = yaml.Unmarshal(bodyBytes, &repolist)
@@ -58,20 +59,20 @@ var downloadWhitelistCmd = &cobra.Command{
 		}
 
 		// Merge the repo-list file into the whitelist
-		REPOLIST:
+	REPOLIST:
 		for _, i := range repolist.Registrati {
-			for _, publisher := range publishers {
+			for idx, publisher := range publishers {
 				if publisher.CodiceIPA == i.IPA {
 					// If this IPA code is already known, append this URL to the existing item
-					publisher.Organizations = funk.UniqString(append(publisher.Organizations, i.URL))
+					publishers[idx].Organizations = funk.UniqString(append(publisher.Organizations, i.URL))
 					continue REPOLIST
 				}
 			}
 
 			// If this IPA code is not known, append a new publisher item
 			publishers = append(publishers, crawler.PA{
-				Name: i.IPA,
-				CodiceIPA: i.IPA,
+				Name:          i.IPA,
+				CodiceIPA:     i.IPA,
 				Organizations: []string{i.URL},
 			})
 		}
