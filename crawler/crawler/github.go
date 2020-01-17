@@ -275,7 +275,7 @@ func RegisterGithubAPI() OrganizationHandler {
 				continue
 			}
 			if resp.Status.Code != http.StatusOK {
-				log.Infof("Request returned an invalid status code: %s", resp.Status.Code)
+				log.Infof("Request returned an invalid status code: %d", resp.Status.Code)
 			}
 			// Fill response as list of values (repositories data).
 			var files GithubFiles
