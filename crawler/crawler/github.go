@@ -271,10 +271,11 @@ func RegisterGithubAPI() OrganizationHandler {
 			// Get List of files.
 			resp, err := httpclient.GetURL(contents, headers)
 			if err != nil {
-				return link, err
+				log.Errorf("Request returned an error: %v", err)
+				continue
 			}
 			if resp.Status.Code != http.StatusOK {
-				log.Infof("Request returned an invalid status code: %s", string(resp.Body))
+				log.Infof("Request returned an invalid status code: %s", resp.Status.Code)
 			}
 			// Fill response as list of values (repositories data).
 			var files GithubFiles
