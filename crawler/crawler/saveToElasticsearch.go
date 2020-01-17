@@ -112,6 +112,7 @@ func (repo *Repository) generateID() string {
 // generateSlug generates a readable unique string based on repository name.
 func (repo *Repository) generateSlug() string {
 	vendorAndName := strings.Replace(repo.Name, "/", "-", -1)
+	vendorAndName = strings.ReplaceAll(vendorAndName, ".", "_")
 
 	if repo.Pa.CodiceIPA == "" {
 		ID := repo.generateID()
