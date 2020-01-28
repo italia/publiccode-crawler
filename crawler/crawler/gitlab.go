@@ -222,19 +222,28 @@ func RegisterGitlabAPI() OrganizationHandler {
 		}
 
 		// Fill response as list of values (repositories data).
-		var results GitlabGroups
+		var results []GitlabGroups
 		err = json.Unmarshal(resp.Body, &results)
 		if err != nil {
 			return link, err
 		}
 
-		// Add repositories to the channel that will perform the check on every project.
-		err = addGitlabProjectsToRepositories(results.Projects, domain, pa, headers, repositories)
-		if err != nil {
-			return link, err
+		for _, results := range results {
+			// Add repositories to the channel that will perform the check on every project.
+			err = addGitlabProjectsToRepositories(results.Projects, domain, pa, headers, repositories)
+			if err != nil {
+				return link, err
+			}
+			// Add repositories to the channel that will perform the check on every sharedd project.
+			err = addGitlabSharedProjectsToRepositories(results.SharedProjects, domain, pa, headers, repositories)
+			if err != nil {
+				return link, err
+			}
+
 		}
-		// Add repositories to the channel that will perform the check on every sharedd project.
-		err = addGitlabSharedProjectsToRepositories(results.SharedProjects, domain, pa, headers, repositories)
+		// Add repositories to the channel that will resulted from querying all projects api
+		// https://docs.gitlab.com/ee/api/projects.html
+		err = addGitlabAllPublicProjectsToRepositories(link, domain, pa, headers, repositories)
 		if err != nil {
 			return link, err
 		}
@@ -341,6 +350,60 @@ func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 	u.Path = path.Join(u.Path, "raw", defaultBranch, viper.GetString("CRAWLED_FILENAME"))
 
 	return u.String(), err
+}
+
+// addGitlabAllPublicProjectsToRepositories add repositories to the channel that will resulted from querying all projects api
+// https://docs.gitlab.com/ee/api/projects.html
+func addGitlabAllPublicProjectsToRepositories(link string, domain Domain, pa PA, headers map[string]string, repositories chan Repository) error {
+	var projects []GitlabProject
+	plink := strings.Replace(link, "groups", "projects", 1)
+	log.Infof("Requesting all projects api: %v", plink)
+
+	url, err := url.Parse(plink)
+	if err != nil {
+		return err
+	}
+	// Get List of files.
+	resp, err := httpclient.GetURL(url.String(), headers)
+	if err != nil {
+		return err
+	}
+	if resp.Status.Code != http.StatusOK {
+		log.Infof("Request returned an invalid status code: %s", string(resp.Body))
+		return err
+	}
+	// Fill response as list of values (repositories data).
+	err = json.Unmarshal(resp.Body, &projects)
+
+	for _, v := range projects {
+		// Join file raw URL string.
+		rawURL, err := generateGitlabRawURL(v.WebURL, v.DefaultBranch)
+		if err != nil {
+			return err
+		}
+
+		// Marshal all the repository metadata.
+		metadata, err := json.Marshal(v)
+		if err != nil {
+			log.Errorf("gitlab metadata: %v", err)
+			return err
+		}
+
+		if v.DefaultBranch != "" {
+			repositories <- Repository{
+				Name:        v.PathWithNamespace,
+				Hostname:    domain.Host,
+				FileRawURL:  rawURL,
+				GitCloneURL: v.HTTPURLToRepo,
+				GitBranch:   v.DefaultBranch,
+				Domain:      domain,
+				Pa:          pa,
+				Headers:     headers,
+				Metadata:    metadata,
+			}
+		}
+	}
+	return nil
 }
 
 // addGitlabProjectsToRepositories adds the projects from api response to repository channel.
