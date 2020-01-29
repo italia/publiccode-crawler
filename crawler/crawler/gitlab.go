@@ -299,7 +299,7 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 		}
 
 		// Join file raw URL string.
-		_, err = generateGitlabRawURL(result.WebURL, result.DefaultBranch)
+		fileRawURL, err := generateGitlabRawURL(result.WebURL, result.DefaultBranch)
 		if err != nil {
 			return err
 		}
@@ -315,7 +315,7 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 		if result.DefaultBranch != "" {
 			repositories <- Repository{
 				Name:        result.PathWithNamespace,
-				FileRawURL:  u.String(),
+				FileRawURL:  fileRawURL,
 				GitCloneURL: result.HTTPURLToRepo,
 				GitBranch:   result.DefaultBranch,
 				Hostname:    u.Hostname(),
