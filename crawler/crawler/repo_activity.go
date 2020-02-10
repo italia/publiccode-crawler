@@ -64,6 +64,7 @@ func (repository *Repository) CalculateRepoActivity(days int) (float64, map[int]
 	r, err := git.PlainOpen(path)
 	if err != nil {
 		log.Error(err)
+		return 0, nil, err
 	}
 
 	// Extract all the commits.

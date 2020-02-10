@@ -7,6 +7,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	log "github.com/sirupsen/logrus"
@@ -61,7 +62,8 @@ func logBadYamlToFile(fileRawURL string) {
 		log.Errorf(err.Error())
 	}
 
-	_, err = f.WriteString(fileRawURL + "\r\n")
+	_, err = f.WriteString(time.Now().Format("2006-01-02T15:04:05") + " - " + fileRawURL + "\r\n")
+
 	if err != nil {
 		log.Errorf(err.Error())
 	}
