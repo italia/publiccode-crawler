@@ -68,9 +68,10 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
 1. `cd crawler`
 2. Fill your domains.yml file with configuration values (like specific host basic auth tokens)
 3. Rename config.toml.example to config.toml and fill the variables
-4. build the crawler binary: `make`
-5. start the crawler: `bin/crawler crawl whitelist/*.yml`
-6. configure in crontab as desired
+4. It also supports ENV variables in sostitution to config file, remember: "higher priority is given for the environment variables that the ones in configuration file"
+5. build the crawler binary: `make`
+6. start the crawler: `bin/crawler crawl whitelist/*.yml`
+7. configure in crontab as desired
 
 ### Tools
 
