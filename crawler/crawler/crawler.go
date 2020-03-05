@@ -113,8 +113,15 @@ func (c *Crawler) CrawlRepo(repoURL string) error {
 		return err
 	}
 
+	// since this routine is called from one command
+	// that is not aware about whitelists
+	// this hack will skip IPA code match with those lists
+	pa := &PA{
+		UnknownIPA: true,
+	}
+
 	// Process repository.
-	err = domain.processSingleRepo(repoURL, c.repositories, PA{})
+	err = domain.processSingleRepo(repoURL, c.repositories, *pa)
 	if err != nil {
 		return err
 	}
@@ -268,6 +275,10 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	log.Infof("[%s] publiccode.yml found at %s", repository.Name, repository.FileRawURL)
 
 	// Validate the publiccode.yml
+	if repository.Pa.UnknownIPA {
+		log.Warn("When UnknownIPA is set to true IPA match with whitelists will be skipped")
+		return
+	}
 	err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa)
 	if err != nil {
 		log.Errorf("[%s] invalid publiccode.yml: %+v", repository.Name, err)
@@ -300,6 +311,14 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 }
 
 func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
+	parser, err := getRemoteFile(data, fileRawURL, pa)
+	if err != nil {
+		return err
+	}
+	return validateFile(pa, parser, fileRawURL)
+}
+
+func getRemoteFile(data []byte, fileRawURL string, pa PA) (publiccode.Parser, error) {
 	parser := publiccode.NewParser()
 	parser.Strict = false
 	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
@@ -307,12 +326,27 @@ func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
 	err := parser.Parse(data)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
-		return err
+		return *parser, err
 	}
+	return *parser, nil
+}
 
-	if pa.CodiceIPA != "" && parser.PublicCode.It.Riuso.CodiceIPA != "" && !strings.EqualFold(pa.CodiceIPA, parser.PublicCode.It.Riuso.CodiceIPA) {
+// validateFile will check if codiceIPA match
+// with relative entry in whitelist.
+// Using `one` command this check will be skipped.
+func validateFile(pa PA, parser publiccode.Parser, fileRawURL string) error {
+	log.Infof("paIPA %v with %d, pcIPA %v with %d",
+		strings.TrimSpace(pa.CodiceIPA),
+		len(strings.TrimSpace(pa.CodiceIPA)),
+		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
+		len(strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA)))
+
+	if !strings.EqualFold(
+		strings.TrimSpace(pa.CodiceIPA),
+		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
+	) {
 		return errors.New("codiceIPA for: " + fileRawURL + " is " + parser.PublicCode.It.Riuso.CodiceIPA + ", which differs from the one assigned to the org in the whitelist: " + pa.CodiceIPA)
 	}
 
-	return err
+	return nil
 }
