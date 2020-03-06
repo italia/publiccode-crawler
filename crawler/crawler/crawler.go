@@ -113,7 +113,7 @@ func (c *Crawler) CrawlRepo(repoURL string) error {
 		return err
 	}
 
-	// since this routine is called from one command
+	// since this routine is called by command: `<command_name> one ...`
 	// that is not aware about whitelists
 	// this hack will skip IPA code match with those lists
 	pa := &PA{
