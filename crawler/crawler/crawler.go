@@ -335,12 +335,6 @@ func getRemoteFile(data []byte, fileRawURL string, pa PA) (publiccode.Parser, er
 // with relative entry in whitelist.
 // Using `one` command this check will be skipped.
 func validateFile(pa PA, parser publiccode.Parser, fileRawURL string) error {
-	log.Infof("paIPA %v with %d, pcIPA %v with %d",
-		strings.TrimSpace(pa.CodiceIPA),
-		len(strings.TrimSpace(pa.CodiceIPA)),
-		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
-		len(strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA)))
-
 	if !strings.EqualFold(
 		strings.TrimSpace(pa.CodiceIPA),
 		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
