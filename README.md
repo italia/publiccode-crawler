@@ -64,6 +64,9 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
 6. start the Docker stack: `make up`
 
 #### Crawler
+Crawler will check if a match exists between IPA code in whitelists and in its related `publiccode.yml`. This validation process is skipped using `one` command since in that mode the repository given could not exist in crawler's whitelists.
+
+### Compile
 
 1. `cd crawler`
 2. Fill your domains.yml file with configuration values (like specific host basic auth tokens)
