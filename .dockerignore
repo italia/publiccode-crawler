@@ -1,7 +1,7 @@
-# Ignore in docker context.
 data
-docker
 elasticsearch
+elasticsearch-searchguard
+kibana
+prometheus
 vendor
-.git
 .cache

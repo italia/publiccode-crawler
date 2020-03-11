@@ -24,6 +24,10 @@ crawler/bin/*
 # Elasticsearch data volume
 es_data
 
+# Elasticsearch keystore and certificates
+**/.keystore
+**/.p12
+
 # Local Search Guard sg_internal_users
 elasticsearch/config/searchguard/sg_internal_users.yml
 
@@ -47,3 +51,6 @@ elasticsearch/html/assets/utils/node_modules
 
 # Elasticsearch js tests
 elasticsearch/html/assets/js/config.js
+
+# Bash history
+**/.bash_history
