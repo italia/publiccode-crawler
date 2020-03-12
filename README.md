@@ -1,45 +1,80 @@
-# developers-italia-backend
-
+# Backend and crawler for the OSS catalog of Developers Italia
 [![CircleCI](https://circleci.com/gh/italia/developers-italia-backend/tree/master.svg?style=shield)](https://circleci.com/gh/italia/developers-italia-backend/tree/master)
 [![Go Report Card](https://goreportcard.com/badge/github.com/italia/developers-italia-backend)](https://goreportcard.com/report/github.com/italia/developers-italia-backend) [![Join the #website channel](https://img.shields.io/badge/Slack%20channel-%23website-blue.svg?logo=slack)](https://developersitalia.slack.com/messages/C9R26QMT6)
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 
-## Backend & crawler for the OSS catalog of Developers Italia
+## Overview: how the crawler works
 
-The crawler finds and retrieves all the publiccode.yml files from the Organizations registered on Github/Bitbucket/Gitlab listed in the whitelistes, and then generates YAML files that are later used by the [Jekyll build chain](https://github.com/italia/developers.italia.it) to generate the static pages of [developers.italia.it](https://developers.italia.it/).
+The crawler finds and retrieves the *publiccode.yml* files from the organizations registered on *Github/Bitbucket/Gitlab*, listed in the whitelist.
+It then creates YAML files used by the [Jekyll build chain](https://github.com/italia/developers.italia.it) to generate the static pages of [developers.italia.it](https://developers.italia.it/).
 
-### Components
+## Dependencies and other related software
 
-- [Elasticsearch](https://www.elastic.co/products/elasticsearch) for storing the data
-- [Kibana](https://www.elastic.co/products/kibana) for internal visualization of data
-- [Prometheus](https://prometheus.io) for collecting metrics
+These are the dependencies and some useful tools used in conjunction with the crawler.
 
-### Dependencies
+* [Elasticsearch 6.8.7](https://www.elastic.co/products/elasticsearch) for storing the data. Elasticsearch should be active and ready to accept connections before the crawler gets started
 
-- [Docker](https://www.docker.com/)
-- [Docker-compose](https://docs.docker.com/compose/)
-- [Go](https://golang.org/) >= 1.11
+* [Kibana 6.8.7](https://www.elastic.co/products/kibana) for internal data visualization (optional)
 
-### Set-up
+* [Prometheus 6.8.7](https://prometheus.io) for collecting metrics (optional, currently supported but not used in production)
 
-#### Stack
+## Tools
 
-1. rename .env.example to .env and fill the variables with your values
+This is the list of tools used in the repository:
 
-    - default Elasticsearch user and password are `elastic:elastic`
-    - default Kibana user and password are `kibana:kibana`
+* [Docker](https://www.docker.com/)
 
-2. rename `elasticsearch/config/searchguard/sg_internal_users.yml.example` to `elasticsearch/config/searchguard/sg_internal_users.yml` and insert the correct passwords
+* [Docker-compose](https://docs.docker.com/compose/)
 
-    Hashed passwords can be generated with:
+* [Go](https://golang.org/) >= 1.11
 
-    ```bash
-    docker exec -t -i developers-italia-backend_elasticsearch elasticsearch/plugins/search-guard-6/tools/hash.sh -p <password>
+## Setup and deployment processes
+
+The crawler can either run directly on the target machine, or it can be deployed in form of Docker container, possibly using an orchestrator, such as Kubernetes.
+
+Up to now, the crawler and its dependencies have run in form of Docker containers on a virtual machine. Elasticsearch and Kibana have been deployed using a fork of the main project, called [search guard](https://search-guard.com/). This is still deployed in production and what we'll call in the readme *"legacy deployment process"*.
+
+With the idea of making the legacy installation more scalable and reliable, a refactoring of the code has been recently made. The readme refers to this approach as the *new deployment process*. This includes using the official version of Elasticsearch and Kibana, and deploying the Docker containers on top of Kubernetes, using helm-charts. While the crawler has it's [own helm-chart](https://github.com/teamdigitale/devita-infra-kubernetes), Elasticsearch and Kibana are deployed using their [official helm-charts](https://github.com/elastic/helm-charts).
+The new deployment process uses a [docker-compose.yml](docker-compose.yml) file to only bring up a local development and test environment.
+
+The paragraph starts describing how to build and run the crawler, directly on a target machine.
+The procedure described is the same automated in the Dockerfile. The -legacy and new- Docker deployment procedures are then described below.
+
+### Manually configure and build the crawler
+
+* `cd crawler`
+
+* Fill the *domains.yml* file with configuration values (i.e. host basic auth tokens)
+
+* Rename the *config.toml.example* file to *config.toml* and fill the variables
+
+> **NOTE**: The application also supports environment variables in substitution to config.toml file. Remember: "environment variables get higher priority than the ones in configuration file"
+
+* Build the crawler binary: `make`
+
+* Start the crawler: `bin/crawler crawl whitelist/*.yml`
+
+* Configure the crontab as desired
+
+### Run the crawler
+
+* `bin/crawler updateipa` downloads IPA data and writes them into Elasticsearch
+
+* `bin/crawler download-whitelist` downloads organizations and repositories from the [onboarding portal repository](https://github.com/italia/developers-italia-onboarding) and saves them to a whitelist file
+
+### Docker: the legacy deployment process
+
+The paragraph describes how to setup and deploy the crawler, following the *legacy deployment process*.
+
+* Rename *elasticsearch-searchguard/config/searchguard/sg_internal_users.yml.example* to *elasticsearch/-searchguard/config/searchguard/sg_internal_users.yml* and insert the correct passwords. Hashed passwords can be generated with:
+
+    ```shell
+    docker exec -t -i developers-italia-backend_elasticsearch elasticsearch-searchguard/plugins/search-guard-6/tools/hash.sh -p <password>
     ```
 
-3. insert the `kibana` password in `kibana/config/kibana.yml`
+* Insert the *kibana* password in [kibana-searchguard/config/kibana.yml](kibana-searchguard/config/kibana.yml)
 
-4. configure the nginx proxy for the elasticsearch host with the following directives:
+* Configure the Nginx proxy for the elasticsearch host with the following directives:
 
     ```
     limit_req_zone $binary_remote_addr zone=elasticsearch_limit:10m rate=10r/s;
@@ -59,46 +94,64 @@ The crawler finds and retrieves all the publiccode.yml files from the Organizati
     }
     ```
 
-5. you might need to type `sysctl -w vm.max_map_count=262144` and make this permanent in /etc/sysctl.conf in order to start elasticsearch, as [documented here](https://hub.docker.com/r/khezen/elasticsearch/)
+* You might need to type `sysctl -w vm.max_map_count=262144` and make this permanent in /etc/sysctl.conf in order to start elasticsearch, as [documented here](https://hub.docker.com/r/khezen/elasticsearch/)
 
-6. start the Docker stack: `make up`
+* Start Docker: `make up`
 
-#### Crawler
-Crawler will check if a match exists between IPA code in whitelists and in its related `publiccode.yml`. This validation process is skipped using `one` command since in that mode the repository given could not exist in crawler's whitelists.
+### Docker: the new deployment process
 
-### Compile
+The repository has a *Dockerfile*, used to also build the production image, and a *docker-compose.yml* file to facilitate the local deployment.
 
-1. `cd crawler`
-2. Fill your domains.yml file with configuration values (like specific host basic auth tokens)
-3. Rename config.toml.example to config.toml and fill the variables
-4. It also supports ENV variables in sostitution to config file, remember: "higher priority is given for the environment variables that the ones in configuration file"
-5. build the crawler binary: `make`
-6. start the crawler: `bin/crawler crawl whitelist/*.yml`
-7. configure in crontab as desired
+The containers declared in the *docker-compose.yml* file leverage some environment variables that should be declared in a *.env* file. A [.env.example](.env.example) file has some exemplar values. Before proceeding with the build, copy the [.env.example](.env.example) into *.env* and modify the environment variables as needed.
 
-### Tools
+To build the crawler container, download its dependencies and start them all, run:
 
-* `bin/crawler updateipa` downloads IPA data and writes it into Elasticsearch
-* `bin/crawler download-whitelist` downloads orgs and repos from the [onboarding portal](https://github.com/italia/developers-italia-onboarding) and writes them to a whitelist file
+```shell
+docker-compose up [-d] [--build]
+```
 
-### Troubleshooting
+where:
 
-- From docker logs seems that Elasticsearch container needs more virtual memory and now it's `Stalling for Elasticsearch....`
+* *-d* execute the containers in background
 
-  Increase container virtual memory: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode
+* *--build* forces the containers build
 
-- When trying to `make build` the crawler image, a fatal memory error occurs: "fatal error: out of memory"
+To destroy the containers, use:
 
-  Probably you should increase the container memory:
-  `docker-machine stop && VBoxManage modifyvm default --cpus 2 && VBoxManage modifyvm default --memory 2048 && docker-machine stop`
+```shell
+docker-compose down
+```
 
-### Development
+#### Xpack
 
-In order to access Elasticsearch with write permissions from the outside, you can forward the 9200 port via SSH using `ssh -L9200:localhost:9200` and configure `ELASTIC_URL = "http://localhost:9200/"` in your local config.toml.
+By default, the system -specifically Elasticsearch- doesn't make use of xpack, so passwords and certificates. To do so, the Elasticsearch container mounts [this configuration file](elasticsearch/elasticsearch.yml). This will make things work out of the box, but it's not appropriate for production environments.
+
+An alternative configuration file that enables xpack is available [here](elasticsearch/elasticsearch-xpack.yml). In order to use it, you should
+
+* Generate appropriate certificates for elasticsearch, save them in the *elasticsearch folder*, and make sure that their name matches the one contained in the [elasticsearch-xpack configuration file](elasticsearch/elasticsearch-xpack.yml).
+
+* Optionally change the [elasticsearch-xpack.yml configuration file](elasticsearch/elasticsearch-xpack.yml) as desired
+
+* Rename the [elasticsearch-xpack.yml configuration file](elasticsearch/elasticsearch-xpack.yml) to *elasticsearch.yml*
+
+* Change the environment variables in your *.env* file to make sure that crawler, elasticsearch, and kibana configurations have matching passwords
+
+At this point you can bring up the environment with *docker-compose*.
+
+## Troubleshooting Q/A
+
+* From docker logs seems that Elasticsearch container needs more virtual memory and now it's *Stalling for Elasticsearch...*
+
+    Increase container virtual memory: https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode
+
+* When trying to `make build` the crawler image, a fatal memory error occurs: "fatal error: out of memory"
+
+    Probably you should increase the container memory: `docker-machine stop && VBoxManage modifyvm default --cpus 2 && VBoxManage modifyvm default --memory 2048 && docker-machine stop`
 
 ## See also
 
 * [publiccode-parser-go](https://github.com/italia/publiccode-parser-go): the Go package for parsing publiccode.yml files
+
 * [developers-italia-onboarding](https://github.com/italia/developers-italia-onboarding): the onboarding portal
 
 ## Authors
