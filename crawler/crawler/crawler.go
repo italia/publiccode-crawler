@@ -277,13 +277,13 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	// Validate the publiccode.yml
 	if repository.Pa.UnknownIPA {
 		log.Warn("When UnknownIPA is set to true IPA match with whitelists will be skipped")
-		return
-	}
-	err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa)
-	if err != nil {
-		log.Errorf("[%s] invalid publiccode.yml: %+v", repository.Name, err)
-		logBadYamlToFile(repository.FileRawURL)
-		return
+	} else {
+		err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa)
+		if err != nil {
+			log.Errorf("[%s] invalid publiccode.yml: %+v", repository.Name, err)
+			logBadYamlToFile(repository.FileRawURL)
+			return
+		}
 	}
 
 	// Clone repository.
