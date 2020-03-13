@@ -1,3 +1,5 @@
+include .env
+
 .PHONY: up stop crawl
 
 up:

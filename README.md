@@ -66,6 +66,8 @@ The procedure described is the same automated in the Dockerfile. The -legacy and
 
 The paragraph describes how to setup and deploy the crawler, following the *legacy deployment process*.
 
+* Rename [.env-search-guard.example](.env-search-guard.example) to *.env* and adapt its variables as needed
+
 * Rename *elasticsearch-searchguard/config/searchguard/sg_internal_users.yml.example* to *elasticsearch/-searchguard/config/searchguard/sg_internal_users.yml* and insert the correct passwords. Hashed passwords can be generated with:
 
     ```shell
