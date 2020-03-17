@@ -5,7 +5,7 @@ services:
   # Crawler
   devita_crawler:
     container_name: devita_crawler
-    image: italia/publiccode-tools-crawler
+    image: italia/developers-italia-backend
     build:
       context: ./
       dockerfile: Dockerfile
