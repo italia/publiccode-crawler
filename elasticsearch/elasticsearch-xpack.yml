@@ -1,0 +1,23 @@
+cluster.name: developersitalia
+node.name: es1
+network.bind_host: 0.0.0.0
+discovery.type: single-node
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.verification_mode: certificate
+xpack.security.transport.ssl.keystore.path: elastic-certificates.p12
+xpack.security.transport.ssl.truststore.path: elastic-certificates.p12
+xpack.security.authc.accept_default_password: false
+xpack.security.authc:
+  anonymous:
+    username: anonymous_user 
+    roles: readonly
+    authz_exception: true 
+xpack.monitoring.enabled: false
+xpack.watcher.enabled: false
+xpack.ml.enabled: false
+http.cors.enabled : true
+http.cors.allow-origin : "*"
+http.cors.allow-methods : OPTIONS, HEAD, GET, POST, PUT, DELETE
+http.cors.allow-headers : X-Requested-With,X-Auth-Token,Content-Type, Content-Length
+logger.level: debug

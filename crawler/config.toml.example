@@ -6,8 +6,8 @@ IGNORE_UNSUPPORTEDCOUNTRIES = [ "it" ]
 
 # This URL should be visible from the crawler
 ELASTIC_URL = "http://localhost:9200"
-ELASTIC_USER = "elastic"
-ELASTIC_PWD = ""
+#ELASTIC_USER = "elastic"
+#ELASTIC_PWD = "changeme"
 
 # The search front end needs a single alias to search on multiple indexes.
 # We default to "jekyll" because searchyll (which injects website contents)
@@ -17,14 +17,16 @@ ELASTIC_ALIAS = "jekyll"
 # Index names
 ELASTIC_PUBLICCODE_INDEX = "publiccodes"
 ELASTIC_PUBLISHERS_INDEX = "administrations"
-ELASTIC_INDICEPA_INDEX   = "indicepa"
+ELASTIC_INDICEPA_INDEX   = "indicepa_pec"
 
 # URL of the list of Italian public administration agencies
 INDICEPA_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt"
+INDICEPA_AOO_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=aoo.txt"
+INDICEPA_OU_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=ou.txt"
 INDICEPA_PEC_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=pec.txt"
 
 # Directory for storing working files
-CRAWLER_DATADIR = "/data/crawler"
+CRAWLER_DATADIR = "/var/crawler/data"
 
 # Path to the directory where we want to output our YAML files used by Jekyll for generating the catalog
-OUTPUT_DIR = "/data/crawler/output"
+OUTPUT_DIR = "/var/crawler/data/output"
