@@ -1,0 +1,28 @@
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  commitId: '$(Build.SourceVersion)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:  
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: Docker@2
+      displayName: Build image and push it to DockerHub
+      inputs:
+        containerRegistry: 'teamdigitalesa'
+        repository: 'italia/developers-italia-backend'
+        command: 'buildAndPush'
+        Dockerfile: '**/Dockerfile'
+        tags: |
+          $(commitId)
+          latest
