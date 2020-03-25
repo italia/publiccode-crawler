@@ -30,7 +30,7 @@ jobs:
       - run: mkdir -p ~/.ssh
       - run: echo $SSH_KNOWN_HOSTS | base64 -d >> ~/.ssh/known_hosts
       - run: which rsync || sudo apt-get install rsync
-      - run: rsync -avP --rsync-path="sudo -u www-data rsync" ./ circleci@developers.italia.it:/apps/developers-italia-backend/
+      - run: rsync -avP --rsync-path="sudo -u www-data rsync" ./ circleci@pre.developers.italia.it:/apps/developers-italia-backend/
 
 
 workflows:
