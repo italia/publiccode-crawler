@@ -1,0 +1,42 @@
+# This is a list of organizations to crawl.
+
+- name: "Presidenza del Consiglio dei Ministri"
+  codice-iPA: "pcm"
+  orgs:
+    - "https://github.com/teamdigitale"
+  repos:
+    - "https://github.com/italia/agavecms"
+    - "https://github.com/italia/dati-ckan-docker"
+
+- name: "Agenzia per l'Italia Digitale"
+  codice-iPA: "agid"
+  orgs:
+    - "https://github.com/AgID"
+
+- name: "Ministero per i Beni e le Attività Culturali"
+  codice-iPA: "m_bac"
+  repos:
+    - "https://github.com/italia/18app"
+  orgs:
+    - "https://github.com/IstitutoCentraleCatalogoUnicoBiblio"
+
+- name: "Università della Calabria"
+  codice-iPA: "unical"
+  orgs:
+    - "https://github.com/UniversitaDellaCalabria"
+
+- name: "Ministero degli Interni"
+  codice-iPA: "m_it"
+  orgs:
+    - "https://github.com/vvfosprojects"
+
+- name: "Agenzia Regionale per la Protezione dell'Ambiente del Piemonte"
+  codice-iPA: "arlpa_to"
+  orgs:
+    - "https://github.com/Arpapiemonte"
+
+- name: "Liceo Scientifico - Giorgio Dal Piaz"
+  codice-iPA: "istsc_blps020006"
+  repos:
+    - "https://github.com/italia/design-scuole-wordpress-theme"
+
