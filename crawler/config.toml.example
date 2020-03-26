@@ -29,4 +29,4 @@ INDICEPA_PEC_URL = "https://www.indicepa.gov.it/public-services/opendata-read-se
 CRAWLER_DATADIR = "/var/crawler/data"
 
 # Path to the directory where we want to output our YAML files used by Jekyll for generating the catalog
-OUTPUT_DIR = "/var/crawler/data/output"
+OUTPUT_DIR = "/var/crawler/output"
