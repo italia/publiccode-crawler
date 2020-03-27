@@ -6,8 +6,9 @@ ENV HOME /go/developers-italia-backend/crawler
 
 ENV DEFAULT_TIMEOUT 300
 
-ENV DATA /var/crawler/data
-ENV OUTPUT ${DATA}/output
+ENV BASE /var/crawler
+ENV DATA ${BASE}/data
+ENV OUTPUT ${BASE}/output
 
 # Set the work directory
 WORKDIR ${HOME}
@@ -41,8 +42,9 @@ RUN chown -R ${USER}.${USER} ${HOME}
 
 # Create the crawler output directory structure and set user ownership
 # Must match what's written in config.toml.example
+RUN mkdir -p ${DATA}
 RUN mkdir -p ${OUTPUT}
-RUN chown -R ${USER}.${USER} ${DATA}
+RUN chown -R ${USER}.${USER} ${BASE}
 
 # Set running user
 USER ${USER}
