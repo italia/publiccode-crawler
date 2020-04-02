@@ -2,6 +2,10 @@
 # Developers Italia. If you want your software to be listed in the Developers italia
 # catalog, please add its repository to this file by opening a pull request.
 
+- name: "Faunalia"
+  repos:
+    - "https://gitlab.com/faunalia/QPROTO"
+
 - name: "GlobaLeaks"
   repos:
     - "https://github.com/globaleaks/GlobaLeaks"
