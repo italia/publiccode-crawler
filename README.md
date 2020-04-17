@@ -60,6 +60,8 @@ The procedure described is the same automated in the Dockerfile. The -legacy and
 
 * `bin/crawler updateipa` downloads IPA data and writes them into Elasticsearch
 
+* `bin/crawler delete [URL]` delete software from Elasticsearch using its code hosting URL specified in `publiccode.url` 
+
 * `bin/crawler download-whitelist` downloads organizations and repositories from the [onboarding portal repository](https://github.com/italia/developers-italia-onboarding) and saves them to a whitelist file
 
 ### Docker: the legacy deployment process

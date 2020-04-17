@@ -1,18 +1,20 @@
 package crawler
 
 import (
-	"strings"
-	"fmt"
-	"crypto/sha1"
 	"context"
+	"crypto/sha1"
+	"errors"
+	"fmt"
+	"strings"
 	"time"
 
+	"github.com/ghodss/yaml"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	pcode "github.com/italia/publiccode-parser-go"
+	"github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"github.com/ghodss/yaml"
 )
 
 type administration struct {
@@ -35,7 +37,7 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 		VitalityDataChart     []int             `json:"vitalityDataChart"`
 		OEmbedHTML            map[string]string `json:"oEmbedHTML"`
 	}
-	
+
 	// Parse the publiccode.yml file
 	parser := pcode.NewParser()
 	parser.Strict = false
@@ -50,11 +52,11 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 		FileRawURL:            repo.FileRawURL,
 		ID:                    repo.generateID(),
 		CrawlTime:             time.Now().Format(time.RFC3339),
-		Slug:				   repo.generateSlug(),
+		Slug:                  repo.generateSlug(),
 		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(parser.PublicCode.It.Riuso.CodiceIPA),
-		VitalityScore:     activityIndex,
-		VitalityDataChart: vitality,
-		OEmbedHTML: parser.OEmbed,
+		VitalityScore:         activityIndex,
+		VitalityDataChart:     vitality,
+		OEmbedHTML:            parser.OEmbed,
 	}
 
 	// Convert parser.PublicCode to YAML and parse it again into the softwareES record
@@ -122,4 +124,31 @@ func (repo *Repository) generateSlug() string {
 	return fmt.Sprintf("%s-%s", repo.Pa.CodiceIPA, vendorAndName)
 }
 
+// DeleteByQueryFromES delete record from elasticsearch
+// that will match search sting for publiccode.url field
+func (c *Crawler) DeleteByQueryFromES(search string) error {
+	// Search with a term query
+	termQuery := elastic.NewTermQuery("publiccode.url", search)
 
+	// Put publiccode data in ES.
+	ctx := context.Background()
+	searchResult, err := c.es.DeleteByQuery().
+		Index(c.index).
+		Type("software").
+		Query(termQuery). // specify the query
+		Do(ctx)           // execute
+	if err != nil {
+		return err
+	}
+
+	if searchResult == nil {
+		return errors.New("Generic error on DeleteByQueryFromES()")
+	}
+
+	if searchResult.Deleted == 0 {
+		return errors.New("No records deleted for searched query")
+	}
+
+	log.Infof("Deleted %d record from ES", searchResult.Deleted)
+	return nil
+}
