@@ -52,11 +52,13 @@ The procedure described is the same automated in the Dockerfile. The -legacy and
 
 * Build the crawler binary: `make`
 
-* Start the crawler: `bin/crawler crawl whitelist/*.yml`
-
 * Configure the crontab as desired
 
 ### Run the crawler
+* Crawl mode (all item in whitelists): `bin/crawler crawl whitelist/*.yml`
+
+* One mode (single repository url): `bin/crawler one [repo url] whitelist/*.yml`
+  - In this mode will be evaluated one single repository at the time. IPA code will be matched with ones in whitelist, if organization is present, otherwise will be set to null and `slug` will have a random code in the end (instead of ipa code), furthermore, ipa code validation, a simple check within whitelists (which ensure that code belongs to selected PA), will be skipped.
 
 * `bin/crawler updateipa` downloads IPA data and writes them into Elasticsearch
 

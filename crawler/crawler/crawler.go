@@ -104,7 +104,7 @@ func NewCrawler() *Crawler {
 }
 
 // CrawlRepo crawls a single repository.
-func (c *Crawler) CrawlRepo(repoURL string) error {
+func (c *Crawler) CrawlRepo(repoURL string, pa PA) error {
 	log.Infof("Processing repository: %s", repoURL)
 
 	// Check if current host is in known in domains.yml hosts.
@@ -113,15 +113,8 @@ func (c *Crawler) CrawlRepo(repoURL string) error {
 		return err
 	}
 
-	// since this routine is called by command: `<command_name> one ...`
-	// that is not aware about whitelists
-	// this hack will skip IPA code match with those lists
-	pa := &PA{
-		UnknownIPA: true,
-	}
-
 	// Process repository.
-	err = domain.processSingleRepo(repoURL, c.repositories, *pa)
+	err = domain.processSingleRepo(repoURL, c.repositories, pa)
 	if err != nil {
 		return err
 	}
