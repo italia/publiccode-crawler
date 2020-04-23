@@ -58,7 +58,7 @@ The procedure described is the same automated in the Dockerfile. The -legacy and
 * Crawl mode (all item in whitelists): `bin/crawler crawl whitelist/*.yml`
 
 * One mode (single repository url): `bin/crawler one [repo url] whitelist/*.yml`
-  - In this mode will be evaluated one single repository at the time. IPA code will be matched with ones in whitelist, if organization is present, otherwise will be set to null and `slug` will have a random code in the end (instead of ipa code), furthermore, ipa code validation, a simple check within whitelists (which ensure that code belongs to selected PA), will be skipped.
+  - In this mode one single repository at the time will be evaluated. If the organization is present, its IPA code will be matched with the ones in whitelist otherwise it will be set to null and the `slug` will have a random code in the end (instead of the IPA code). Furthermore, the IPA code validation, which is a simple check within whitelists (to ensure that code belongs to the selected PA), will be skipped.
 
 * `bin/crawler updateipa` downloads IPA data and writes them into Elasticsearch
 
