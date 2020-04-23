@@ -29,10 +29,16 @@ var crawlCmd = &cobra.Command{
 		}
 
 		// Crawl
+		// before crawling publishers we should check they are
+		// not present in blacklist
 		err := c.CrawlPublishers(publishers)
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		// I should call delete for items in blacklist
+		// to ensure they are not present in ES and then in
+		// jekyll datafile
 
 		// Generate the data files for Jekyll.
 		err = c.ExportForJekyll()

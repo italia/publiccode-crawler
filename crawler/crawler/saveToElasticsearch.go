@@ -125,7 +125,7 @@ func (repo *Repository) generateSlug() string {
 }
 
 // DeleteByQueryFromES delete record from elasticsearch
-// that will match search sting for publiccode.url field
+// that will match search string for publiccode.url field
 func (c *Crawler) DeleteByQueryFromES(search string) error {
 	// Search with a term query
 	termQuery := elastic.NewTermQuery("publiccode.url", search)

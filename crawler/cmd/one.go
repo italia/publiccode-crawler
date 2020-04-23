@@ -20,6 +20,9 @@ var oneCmd = &cobra.Command{
 		No organizations! Only single repositories!`,
 	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		// check if repo url is not present in blacklist
+		// if so report error and exit.
+
 		c := crawler.NewCrawler()
 
 		repoURL, whitelists := args[0], args[1:]
