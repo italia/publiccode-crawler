@@ -149,6 +149,6 @@ func (c *Crawler) DeleteByQueryFromES(search string) error {
 		return errors.New("No records deleted for searched query")
 	}
 
-	log.Infof("Deleted %d record from ES", searchResult.Deleted)
+	log.Infof("Deleted %d record from ES linked to %s", searchResult.Deleted, search)
 	return nil
 }
