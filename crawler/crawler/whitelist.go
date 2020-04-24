@@ -8,6 +8,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var fileReaderInject = ioutil.ReadFile
+
 // Whitelist contain a list of Public Administrations.
 type Whitelist []PA
 
@@ -23,10 +25,11 @@ type PA struct {
 // ReadAndParseWhitelist read the whitelist and return the parsed content in a slice of PA.
 func ReadAndParseWhitelist(whitelistFile string) ([]PA, error) {
 	// Open and read whitelist file.
-	data, err := ioutil.ReadFile(whitelistFile)
+	data, err := fileReaderInject(whitelistFile)
 	if err != nil {
 		return nil, fmt.Errorf("error in reading %s file: %v", whitelistFile, err)
 	}
+
 	// Parse whitelist file.
 	whitelist, err := parseWhitelistFile(data)
 	if err != nil {
