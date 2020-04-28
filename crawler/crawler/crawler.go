@@ -271,7 +271,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	if repository.Pa.UnknownIPA {
 		log.Warn("When UnknownIPA is set to true IPA match with whitelists will be skipped")
 	} else {
-		err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa)
+		err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa, repository.Domain)
 		if err != nil {
 			log.Errorf("[%s] invalid publiccode.yml: %+v", repository.Name, err)
 			logBadYamlToFile(repository.FileRawURL)
@@ -303,19 +303,20 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 }
 
-func validateRemoteFile(data []byte, fileRawURL string, pa PA) error {
-	parser, err := getRemoteFile(data, fileRawURL, pa)
+func validateRemoteFile(data []byte, fileRawURL string, pa PA, domain Domain) error {
+	parser, err := getRemoteFile(data, fileRawURL, pa, domain)
 	if err != nil {
 		return err
 	}
 	return validateFile(pa, parser, fileRawURL)
 }
 
-func getRemoteFile(data []byte, fileRawURL string, pa PA) (publiccode.Parser, error) {
+func getRemoteFile(data []byte, fileRawURL string, pa PA, domain Domain) (publiccode.Parser, error) {
 	parser := publiccode.NewParser()
 	parser.Strict = false
 	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
 
+	// err := parser.ParseInDomain(data, domain.Host, domain.BasicAuth)
 	err := parser.Parse(data)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
