@@ -102,6 +102,9 @@ func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 		}
 
 		defer resp.Body.Close()
+		log.Errorf("Unknown http status code: %s - Resource: %s", resp.Status, URL)
+		// increment attempts
+		expBackoffAttempts++
 	}
 
 	// Generic invalid status code.
