@@ -35,6 +35,7 @@ func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 	}
 
 	for expBackoffAttempts < maxBackOffAttempts {
+		log.Debugf("attempt %d for %s", expBackoffAttempts, URL)
 
 		req, err := http.NewRequest("GET", URL, nil)
 		if err != nil {
@@ -100,6 +101,7 @@ func GetURL(URL string, headers map[string]string) (HTTPResponse, error) {
 			}
 		}
 
+		defer resp.Body.Close()
 	}
 
 	// Generic invalid status code.

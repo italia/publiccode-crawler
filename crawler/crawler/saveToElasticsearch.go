@@ -42,7 +42,7 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 	parser := pcode.NewParser()
 	parser.Strict = false
 	parser.RemoteBaseURL = strings.TrimRight(repo.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
-	err := parser.Parse(data)
+	err := parser.ParseInDomain(data, repo.Domain.Host, repo.Domain.BasicAuth)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml: %v", err)
 	}
