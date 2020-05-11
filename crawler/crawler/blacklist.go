@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -20,6 +21,23 @@ type Repo struct {
 	URL         string `yaml:"url"`
 	Reason      string `yaml:"reason"`
 	Description string `yaml:"description"`
+}
+
+// GetAllBlackListedRepos return all blacklisted repositories
+func GetAllBlackListedRepos() map[string]string {
+	files := viper.GetString("BLACKLIST_FOLDER")
+	pattern := viper.GetString("BLACKLIST_PATTERN")
+
+	readBlacklist, err := scanBlacklists(files, pattern)
+	if err != nil {
+		log.Fatal(err)
+		return nil
+	}
+	var repoListed = make(map[string]string)
+	for _, repo := range readBlacklist {
+		repoListed[appendGitExt(repo.URL)] = repo.URL
+	}
+	return repoListed
 }
 
 // IsRepoInBlackList checks whether a repo is in blacklist
@@ -40,6 +58,14 @@ func IsRepoInBlackList(repoURL string) bool {
 		}
 	}
 	return false
+}
+
+func appendGitExt(repo string) string {
+	re := regexp.MustCompile(`\.git$`)
+	if re.MatchString(repo) {
+		return repo
+	}
+	return repo + ".git"
 }
 
 // ReadAndParseBlacklist read the blacklist and return the parsed content in a slice of PA.
