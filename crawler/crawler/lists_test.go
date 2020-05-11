@@ -67,4 +67,9 @@ repos:
 
 	assert.Len(t, result, 2)
 	assert.Nil(t, err)
+
+	// disabled at the moment, need to figure out how to mock filepath.*
+	// assert.True(t, IsRepoInBlackList("https://github.com/italia/repo1"))
+	// assert.True(t, IsRepoInBlackList("https://github.com/italia/repo2"))
+	// assert.False(t, IsRepoInBlackList("https://github.com/italia/repo3"))
 }

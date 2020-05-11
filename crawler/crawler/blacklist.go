@@ -2,8 +2,11 @@ package crawler
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
 
@@ -17,6 +20,26 @@ type Repo struct {
 	URL         string `yaml:"url"`
 	Reason      string `yaml:"reason"`
 	Description string `yaml:"description"`
+}
+
+// IsRepoInBlackList checks whether a repo is in blacklist
+func IsRepoInBlackList(repoURL string) bool {
+	files := viper.GetString("BLACKLIST_FOLDER")
+	pattern := viper.GetString("BLACKLIST_PATTERN")
+
+	readBlacklist, err := scanBlacklists(files, pattern)
+	if err != nil {
+		log.Fatal(err)
+		return false
+	}
+	for _, repo := range readBlacklist {
+		if repo.URL == repoURL {
+			log.Warnf("PA found in blacklist with reason: "+
+				"%s and description: %s, skipping...", repo.Reason, repo.Description)
+			return true
+		}
+	}
+	return false
 }
 
 // ReadAndParseBlacklist read the blacklist and return the parsed content in a slice of PA.
@@ -37,6 +60,19 @@ func ReadAndParseBlacklist(blacklistFile string) ([]Repo, error) {
 	return blacklist.Repos, err
 }
 
+func scanBlacklists(dir string, pattern string) ([]Repo, error) {
+	files, err := WalkMatch(dir, pattern)
+	if err != nil {
+		return nil, err
+	}
+	var repos []Repo
+	for _, file := range files {
+		blacklistSlice, _ := ReadAndParseBlacklist(file)
+		repos = append(repos, blacklistSlice...)
+	}
+	return repos, nil
+}
+
 // parseBlacklistFile parses the blacklist file to build a slice of Repo.
 func parseBlacklistFile(data []byte) (Blacklist, error) {
 	var blacklist Blacklist
@@ -48,4 +84,27 @@ func parseBlacklistFile(data []byte) (Blacklist, error) {
 	}
 
 	return blacklist, err
+}
+
+// WalkMatch util func
+func WalkMatch(root, pattern string) ([]string, error) {
+	var matches []string
+	err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+		if matched, err := filepath.Match(pattern, filepath.Base(path)); err != nil {
+			return err
+		} else if matched {
+			matches = append(matches, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return matches, nil
 }
