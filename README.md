@@ -56,10 +56,11 @@ The procedure described is the same automated in the Dockerfile. The -legacy and
 
 ### Run the crawler
 * Crawl mode (all item in whitelists): `bin/crawler crawl whitelist/*.yml`
+  - Crawl supports blacklists (see below for details), crawler will try to match each repository URL in its list with the ones listed in blacklists and if it so it will print a warn log and skip all operation on it. Furthermore it will immediately remove the blacklisted repository from ES if it is present.
 
 * One mode (single repository url): `bin/crawler one [repo url] whitelist/*.yml`
   - In this mode one single repository at the time will be evaluated. If the organization is present, its IPA code will be matched with the ones in whitelist otherwise it will be set to null and the `slug` will have a random code in the end (instead of the IPA code). Furthermore, the IPA code validation, which is a simple check within whitelists (to ensure that code belongs to the selected PA), will be skipped.
-  One supports blacklists (see below for details), whether `[repo url]` is present in one of indicated blacklist, crawler will exit immediately.
+  - One supports blacklists (see below for details), whether `[repo url]` is present in one of indicated blacklist, crawler will exit immediately. Basically ignore all repository defined in list preventing the unauthorized loading in catalog. 
 
 * `bin/crawler updateipa` downloads IPA data and writes them into Elasticsearch
 
@@ -71,7 +72,9 @@ The procedure described is the same automated in the Dockerfile. The -legacy and
 Blacklists are needed to exclude individual repository that are not in line with our [guidelines](https://docs.italia.it/italia/developers-italia/policy-inserimento-catalogo-docs/it/stabile/approvazione-del-software-a-catalogo.html).
 
 ##### Configuration
-*config.toml*  has a reference for blacklist configuration which can point to a given location and to all files that match given pattern. Blacklist is currently supported by `one` command, it basically ignore all repository defined in list preventing the unauthorized loading in catalog. `crawl` mode will be soon relased.
+*config.toml*  has a reference for blacklist configuration which can point to a given location and to all files that match given pattern. Blacklist is currently supported by commands:
+- `one`
+- `crawl`
 
 ### Docker: the legacy deployment process
 

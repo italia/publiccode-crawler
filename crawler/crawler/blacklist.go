@@ -27,6 +27,10 @@ type Repo struct {
 func GetAllBlackListedRepos() map[string]string {
 	files := viper.GetString("BLACKLIST_FOLDER")
 	pattern := viper.GetString("BLACKLIST_PATTERN")
+	if files == "" || pattern == "" {
+		log.Warn("BLACKLIST_* var are not defined in config.toml, please define both")
+		return nil
+	}
 
 	readBlacklist, err := scanBlacklists(files, pattern)
 	if err != nil {
@@ -44,6 +48,10 @@ func GetAllBlackListedRepos() map[string]string {
 func IsRepoInBlackList(repoURL string) bool {
 	files := viper.GetString("BLACKLIST_FOLDER")
 	pattern := viper.GetString("BLACKLIST_PATTERN")
+	if files == "" || pattern == "" {
+		log.Warn("BLACKLIST_* var are not defined in config.toml, please define both")
+		return false
+	}
 
 	readBlacklist, err := scanBlacklists(files, pattern)
 	if err != nil {

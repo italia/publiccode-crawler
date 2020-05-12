@@ -6,6 +6,7 @@ import (
 
 	publiccode "github.com/italia/publiccode-parser-go"
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -56,5 +57,33 @@ func TestIPAMatch(t *testing.T) {
 		if err == nil {
 			t.Errorf("error comparing IPA codes %v", err)
 		}
+	}
+}
+
+func createFakeRepo(name, gitCloneURL string) (r Repository) {
+	r.Name = name
+	r.GitCloneURL = gitCloneURL
+	return
+}
+
+func TestRemovingRepoAsBlacklisted(t *testing.T) {
+	var c Crawler
+	// Faking repositories
+	c.repositories = make(chan Repository, 3)
+	c.repositories <- createFakeRepo("repo1", "https://github.com/italia/repo1.git")
+	c.repositories <- createFakeRepo("repo2", "https://github.com/italia/repo2.git")
+	c.repositories <- createFakeRepo("repo3", "https://github.com/italia/repo3.git")
+	close(c.repositories)
+
+	// Faking blacklist entries
+	var repoListed = make(map[string]string)
+	repoListed["https://github.com/italia/repo1.git"] = "https://github.com/italia/repo1"
+	repoListed["https://github.com/italia/repo3.git"] = "https://github.com/italia/repo3"
+
+	toBeRemoved := c.removeBlackListedFromRepositories(repoListed)
+
+	assert.Len(t, toBeRemoved, 2)
+	for _, entry := range toBeRemoved {
+		assert.NotEmpty(t, repoListed[appendGitExt(entry)])
 	}
 }
