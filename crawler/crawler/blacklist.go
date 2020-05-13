@@ -28,7 +28,7 @@ func GetAllBlackListedRepos() map[string]string {
 	files := viper.GetString("BLACKLIST_FOLDER")
 	pattern := viper.GetString("BLACKLIST_PATTERN")
 	if files == "" || pattern == "" {
-		log.Warn("BLACKLIST_* var are not defined in config.toml, please define both")
+		log.Warn("BLACKLIST_* vars are not defined in config.toml, please define both")
 		return nil
 	}
 

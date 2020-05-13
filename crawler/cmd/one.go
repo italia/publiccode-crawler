@@ -64,7 +64,7 @@ func getPAfromWhiteList(repoURL string, args []string) (pa crawler.PA) {
 		}
 		// looking into organizations
 		for _, paWlRepo := range paWl.Organizations {
-			log.Tracef("matching %s.* with %s", repoURL, paWlRepo)
+			log.Tracef("matching %s.* with %s", paWlRepo, repoURL)
 			if matched, _ := regexp.MatchString(paWlRepo+".*", repoURL); matched {
 				log.Debugf("PA found in whitelist %+v", paWl)
 				return paWl

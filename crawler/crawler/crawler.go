@@ -154,6 +154,10 @@ func (c *Crawler) CrawlPublishers(publishers []PA) ([]string, error) {
 	return toBeRemoved, c.crawl()
 }
 
+// removeBlackListedFromRepositories this function is in charge
+// to discard repositories in blacklists.
+// It returns a slice of them, ready to be removed
+// from elasticsearch.
 func (c *Crawler) removeBlackListedFromRepositories(listedRepos map[string]string) (toBeRemoved []string) {
 	temp := make(chan Repository, 1000)
 	for repo := range c.repositories {
