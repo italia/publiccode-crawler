@@ -20,6 +20,12 @@ var oneCmd = &cobra.Command{
 		No organizations! Only single repositories!`,
 	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
+		// check if repo url is not present in blacklist
+		// if so report error and exit.
+		if crawler.IsRepoInBlackList(args[0]) {
+			return
+		}
+
 		c := crawler.NewCrawler()
 
 		repoURL, whitelists := args[0], args[1:]
@@ -50,7 +56,7 @@ func getPAfromWhiteList(repoURL string, args []string) (pa crawler.PA) {
 	for _, paWl := range publishers {
 		// looking into repositories
 		for _, paWlRepo := range paWl.Repositories {
-			log.Debugf("matching %s with %s", paWlRepo, repoURL)
+			log.Tracef("matching %s with %s", paWlRepo, repoURL)
 			if paWlRepo == repoURL {
 				log.Debugf("PA found in whitelist %+v", paWl)
 				return paWl
@@ -58,7 +64,7 @@ func getPAfromWhiteList(repoURL string, args []string) (pa crawler.PA) {
 		}
 		// looking into organizations
 		for _, paWlRepo := range paWl.Organizations {
-			log.Debugf("matching %s.* with %s", repoURL, paWlRepo)
+			log.Tracef("matching %s.* with %s", paWlRepo, repoURL)
 			if matched, _ := regexp.MatchString(paWlRepo+".*", repoURL); matched {
 				log.Debugf("PA found in whitelist %+v", paWl)
 				return paWl

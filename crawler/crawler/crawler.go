@@ -123,7 +123,7 @@ func (c *Crawler) CrawlRepo(repoURL string, pa PA) error {
 }
 
 // CrawlPublishers processes a list of publishers.
-func (c *Crawler) CrawlPublishers(publishers []PA) error {
+func (c *Crawler) CrawlPublishers(publishers []PA) ([]string, error) {
 	// Count configured orgs
 	orgCount := 0
 	for _, pa := range publishers {
@@ -144,7 +144,36 @@ func (c *Crawler) CrawlPublishers(publishers []PA) error {
 		close(c.repositories)
 	}()
 
-	return c.crawl()
+	// here we got all repos to be scanned
+	// it's time to check blacklist and wheter one of them
+	// is listed.
+	// we should return the ones listed to crawl command
+	// and call deleteFromES if present
+	toBeRemoved := c.removeBlackListedFromRepositories(GetAllBlackListedRepos())
+
+	return toBeRemoved, c.crawl()
+}
+
+// removeBlackListedFromRepositories this function is in charge
+// to discard repositories in blacklists.
+// It returns a slice of them, ready to be removed
+// from elasticsearch.
+func (c *Crawler) removeBlackListedFromRepositories(listedRepos map[string]string) (toBeRemoved []string) {
+	temp := make(chan Repository, 1000)
+	for repo := range c.repositories {
+		if val, ok := listedRepos[repo.GitCloneURL]; ok {
+			// add repository that should be processed but
+			// they are marked as blacklisted
+			// and then ready to be removed from ES if they exist
+			toBeRemoved = append(toBeRemoved, val)
+			log.Warnf("marked as blacklisted %s", val)
+		} else {
+			temp <- repo
+		}
+	}
+	close(temp)
+	c.repositories = temp
+	return
 }
 
 func (c *Crawler) crawl() error {

@@ -30,3 +30,7 @@ CRAWLER_DATADIR = "/var/crawler/data"
 
 # Path to the directory where we want to output our YAML files used by Jekyll for generating the catalog
 OUTPUT_DIR = "/var/crawler/output"
+
+# Blacklist folder
+BLACKLIST_FOLDER = "blacklist/"
+BLACKLIST_PATTERN = "*.yml"

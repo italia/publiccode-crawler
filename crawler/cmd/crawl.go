@@ -28,10 +28,20 @@ var crawlCmd = &cobra.Command{
 			publishers = append(publishers, readWhitelist...)
 		}
 
-		// Crawl
-		err := c.CrawlPublishers(publishers)
+		toBeRemoved, err := c.CrawlPublishers(publishers)
 		if err != nil {
 			log.Fatal(err)
+		}
+
+		// I should call delete for items in blacklist
+		// to ensure they are not present in ES and then in
+		// jekyll datafile
+		for _, repo := range toBeRemoved {
+			log.Warnf("blacklisted, going to remove from ES %s", repo)
+			err = c.DeleteByQueryFromES(repo)
+			if err != nil {
+				log.Errorf("Error while deleting data from ES: %v", err)
+			}
 		}
 
 		// Generate the data files for Jekyll.
