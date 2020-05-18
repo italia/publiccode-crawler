@@ -34,7 +34,7 @@ func GetAllBlackListedRepos() map[string]string {
 
 	readBlacklist, err := scanBlacklists(files, pattern)
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("path not exists or you don't have permission: %s", err)
 		return nil
 	}
 	var repoListed = make(map[string]string)
@@ -55,7 +55,7 @@ func IsRepoInBlackList(repoURL string) bool {
 
 	readBlacklist, err := scanBlacklists(files, pattern)
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("path not exists or you don't have permission: %s", err)
 		return false
 	}
 	for _, repo := range readBlacklist {
