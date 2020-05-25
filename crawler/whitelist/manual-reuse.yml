@@ -7,6 +7,7 @@
   repos:
     - "https://github.com/italia/agavecms"
     - "https://github.com/italia/dati-ckan-docker"
+    - "https://github.com/immuni-app/immuni"
 
 - name: "Agenzia per l'Italia Digitale"
   codice-iPA: "agid"
