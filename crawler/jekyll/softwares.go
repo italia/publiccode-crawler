@@ -33,6 +33,11 @@ type software struct {
 			Features      []string `json:"features"`
 			Screenshots   []string `json:"screenshots,omitempty"`
 		} `json:"description"`
+		It struct {
+			Riuso struct {
+				CodiceIPA string `json:"codiceIPA,omitempty"`
+			} `json:"riuso"`
+		} `json:"it"`
 		Categories []string `json:"categories"`
 		Legal      struct {
 			RepoOwner string `json:"repoOwner,omitempty"`
