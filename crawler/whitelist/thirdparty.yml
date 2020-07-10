@@ -17,19 +17,19 @@
 - name: "Idra"
   repos:
     - "https://github.com/OPSILab/Idra"
-    
+
 - name: "Libreoffice powered by CIB"
   repos:
     - "https://github.com/cibsoftware/LibreOfficePoweredByCIB-metadata"
-    
+
 - name: "Seedoo Community"
   repos:
     - "https://github.com/seedoo/seedoo-core"
-    
+
 - name: "OpenWISP 2 Controller"
   repos:
     - "https://github.com/openwisp/openwisp-controller"
-    
+
 - name: "Jaffree"
   repos:
     - "https://github.com/kokorin/Jaffree"
@@ -37,17 +37,17 @@
 - name: "FastReport"
   repos:
     - "https://github.com/FastReports/FastReport"
-    
+
 - name: "WikiToLearn"
   repos:
     - "https://github.com/WikiToLearn/WikiToLearn"
-    
+
 - name: "Opencontent"
   repos:
     - "https://gitlab.com/opencontent/stanzadelcittadino"
     - "https://gitlab.com/opencontent/opensegnalazioni"
     - "https://gitlab.com/opencontent/openagenda-translate"
-    
+
 - name: "Link.it"
   repos:
     - "https://github.com/link-it/govpay"
@@ -60,3 +60,7 @@
 - name: "Faunalia"
   repos:
     - "https://github.com/ghtmtt/DataPlotly"
+
+- name: "vtenext"
+  repos:
+    - "https://github.com/VTECRM/vtenext"
