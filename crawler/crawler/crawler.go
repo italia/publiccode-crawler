@@ -344,8 +344,7 @@ func getRemoteFile(data []byte, fileRawURL string, pa PA, domain Domain) (public
 	parser := publiccode.NewParser()
 	parser.Strict = false
 	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
-
-	err := parser.ParseInDomain(data, domain.Host, domain.BasicAuth)
+	err := parser.ParseInDomain(data, domain.Host, domain.UseTokenFor, domain.BasicAuth)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
 		return *parser, err

@@ -7,5 +7,9 @@
   #  - ""
 
 - host: "github.com"
+  use-token-for:
+    - "github.com"
+    - "api.github.com"
+    - "raw.githubusercontent.com"
   #basic-auth:
   #  - ""
