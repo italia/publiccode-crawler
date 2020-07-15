@@ -6,7 +6,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
-	github.com/italia/publiccode-parser-go v1.1.0
+	github.com/italia/publiccode-parser-go v1.1.1
 	github.com/mailru/easyjson v0.7.1 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.3.2 // indirect
