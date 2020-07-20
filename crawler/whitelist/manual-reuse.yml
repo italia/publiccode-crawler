@@ -1,5 +1,7 @@
 # This is a list of organizations to crawl.
 
+---
+
 - name: "Presidenza del Consiglio dei Ministri"
   codice-iPA: "pcm"
   orgs:
@@ -40,4 +42,3 @@
   codice-iPA: "istsc_blps020006"
   repos:
     - "https://github.com/italia/design-scuole-wordpress-theme"
-
