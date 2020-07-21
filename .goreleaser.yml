@@ -18,7 +18,7 @@ builds:
   env:
   - CGO_ENABLED=0
   hooks:
-    post: cp crawler/config.toml {{ dir .Path }}
+    post: cp crawler/config.toml.example {{ dir .Path }}/config.toml
 archives:
 - replacements:
     darwin: Darwin
@@ -47,7 +47,7 @@ dockers:
     skip_push: false
     dockerfile: Dockerfile.goreleaser
     extra_files:
-      - crawler/config.toml
+      - crawler/config.toml.example
     image_templates:
       - "italia/developers-italia-backend:latest"
       - "italia/developers-italia-backend:{{ .Tag }}"
