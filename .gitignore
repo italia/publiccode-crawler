@@ -37,6 +37,8 @@ elasticsearch/config/searchguard/sg_internal_users.yml
 # Configurations
 crawler/config.toml
 crawler/domains.yml
+# GoReleaser workaround
+config.toml
 
 # Downloaded files
 crawler/cache
