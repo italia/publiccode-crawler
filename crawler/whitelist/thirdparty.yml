@@ -67,3 +67,10 @@
 - name: "PEC Parser"
   repos:
     - "https://github.com/biagioT/java-pec-parser"
+
+- name: "random"
+  repos:
+    - "abc"
+
+ - name: "foo"
+   repos: "bar"
