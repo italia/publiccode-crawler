@@ -41,18 +41,3 @@ changelog:
     exclude:
     - '^docs:'
     - '^test:'
-dockers:
-  -
-    goos: linux
-    goarch: amd64
-    binaries:
-      - crawler
-    builds:
-      - crawler
-    skip_push: false
-    dockerfile: Dockerfile.goreleaser
-    extra_files:
-      - config.toml
-    image_templates:
-      - "italia/developers-italia-backend:latest"
-      - "italia/developers-italia-backend:{{ .Tag }}"
