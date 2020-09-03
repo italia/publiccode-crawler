@@ -315,11 +315,12 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 
 	// Calculate Repository activity index and vitality.
-	activityIndex, vitality, err := repository.CalculateRepoActivity(60)
+  activityDays := viper.GetInt("ACTIVITY_DAYS")
+	activityIndex, vitality, err := repository.CalculateRepoActivity(activityDays)
 	if err != nil {
 		log.Errorf("[%s] error calculating activity index: %v", repository.Name, err)
 	}
-	log.Infof("[%s] activity index: %f", repository.Name, activityIndex)
+	log.Infof("[%s] activity index in the last %d days: %f", repository.Name, activityDays, activityIndex)
 	var vitalitySlice []int
 	for i := 0; i < len(vitality); i++ {
 		vitalitySlice = append(vitalitySlice, int(vitality[i]))
