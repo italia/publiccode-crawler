@@ -315,7 +315,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 
 	// Calculate Repository activity index and vitality.
-  activityDays := viper.GetInt("ACTIVITY_DAYS")
+	activityDays := viper.GetInt("ACTIVITY_DAYS")
 	activityIndex, vitality, err := repository.CalculateRepoActivity(activityDays)
 	if err != nil {
 		log.Errorf("[%s] error calculating activity index: %v", repository.Name, err)
