@@ -314,11 +314,10 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		log.Errorf("[%s] error while cloning: %v", repository.Name, err)
 	}
 
-	// Calculate Repository activity index and vitality.
+	// Calculate Repository activity index and vitality. Defaults to 60 days.
+	var activityDays int = 60
 	if viper.IsSet("ACTIVITY_DAYS") {
-		activityDays := viper.GetInt("ACTIVITY_DAYS")
-	} else {
-		activityDays := 60
+		activityDays = viper.GetInt("ACTIVITY_DAYS")
 	}
 	activityIndex, vitality, err := repository.CalculateRepoActivity(activityDays)
 	if err != nil {
