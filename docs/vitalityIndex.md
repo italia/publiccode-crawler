@@ -53,8 +53,8 @@ you can see more about this.
 ### Final calculation
 
 Since all the above indicators are calculated on a daily basis the final
-vitaliy index is simply a sum of the average of the 4 categories with some
+vitality index is simply a sum of the average of the 4 categories with some
 final corrections in case it overflows 100%.  
 See
-[this](https://github.com/italia/developers-italia-backend/blob/663c661ca3b0d6e1578f24c7be97fd35e28abe87/crawler/crawler/repo_activity.go#L100-L117)
+[these](https://github.com/italia/developers-italia-backend/blob/663c661ca3b0d6e1578f24c7be97fd35e28abe87/crawler/crawler/repo_activity.go#L100-L117)
 lines for more details about it.
