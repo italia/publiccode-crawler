@@ -1,7 +1,3 @@
 data
-elasticsearch
-elasticsearch-searchguard
-kibana
-prometheus
 vendor
 .cache
