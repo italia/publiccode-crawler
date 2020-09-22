@@ -37,6 +37,8 @@ github.com/alranel/go-vcsurl v0.0.0-20190629140424-48c90269973e/go.mod h1:tp+e31
 github.com/alranel/go-vcsurl v0.0.0-20190819164520-88a614c7acb4/go.mod h1:tp+e312yiwgu8H4/Ly26J8MevK9lz7BucU4PPlEv0ag=
 github.com/alranel/go-vcsurl v0.0.0-20190918163743-e14328dc728a h1:rC0zhGHCi9ejH0KDdQDN/mXlSauNJKzmjxhpKLIQya0=
 github.com/alranel/go-vcsurl v0.0.0-20190918163743-e14328dc728a/go.mod h1:tp+e312yiwgu8H4/Ly26J8MevK9lz7BucU4PPlEv0ag=
+github.com/alranel/go-vcsurl v0.0.0-20200922084853-6436e6ad1149 h1:qBoq+LXLgOA+WTOq2pjoMDSvkKVZ4kkLdpwj4jfNzRs=
+github.com/alranel/go-vcsurl v0.0.0-20200922084853-6436e6ad1149/go.mod h1:tp+e312yiwgu8H4/Ly26J8MevK9lz7BucU4PPlEv0ag=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239 h1:kFOfPq6dUM1hTo4JG6LR5AXSUEsOjtdm0kw0FtQtMJA=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
@@ -246,6 +248,8 @@ github.com/italia/publiccode-parser-go v1.1.0 h1:3Ejo5IXjSWi5WvC34tvmcg6zY8dqjOb
 github.com/italia/publiccode-parser-go v1.1.0/go.mod h1:cSfzmMsPUbAmbcXFNTuGYLhHk4Jgi3jhLjOYuMlnfOg=
 github.com/italia/publiccode-parser-go v1.1.1 h1:Piu9/PbPej3MSog0uORFIJIpk2YOzL2NTGoe0Vasdzc=
 github.com/italia/publiccode-parser-go v1.1.1/go.mod h1:cSfzmMsPUbAmbcXFNTuGYLhHk4Jgi3jhLjOYuMlnfOg=
+github.com/italia/publiccode-parser-go v1.1.4 h1:BcuBpkD0vH3N7MSDUZkr/rcHWD9/TYnD0eoY/tRKjXo=
+github.com/italia/publiccode-parser-go v1.1.4/go.mod h1:n2+IE6ExDzga8epoH8U1gOrVVYgH8dfKj1+tHTucEqI=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
@@ -579,6 +583,8 @@ golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae h1:Ih9Yo4hSPImZOpfGuA4bR/ORK
 golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200720211630-cb9d2d5c5666 h1:gVCS+QOncANNPlmlO1AhlU3oxs4V9z+gTtPwIk3p2N8=
 golang.org/x/sys v0.0.0-20200720211630-cb9d2d5c5666/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20200922070232-aee5d888a860 h1:YEu4SMq7D0cmT7CBbXfcH0NZeuChAXwsHe/9XueUO6o=
+golang.org/x/sys v0.0.0-20200922070232-aee5d888a860/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
