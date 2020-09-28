@@ -1,15 +1,11 @@
-- host: "gitlab.com"
-  #basic-auth:
-  #  - ""
-
 - host: "bitbucket.org"
-  #basic-auth:
-  #  - ""
+  basic-auth:
+    - ""
 
 - host: "github.com"
   use-token-for:
     - "github.com"
     - "api.github.com"
     - "raw.githubusercontent.com"
-  #basic-auth:
-  #  - ""
+  basic-auth:
+    - "YOUR_GITHUB_USER:YOUR_GITHUB_TOKEN"

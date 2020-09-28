@@ -40,28 +40,27 @@ in form of Docker container with
 ### Docker
 
 The repository has a `Dockerfile`, used to build the production image,
-and a `docker-compose.yml` file to facilitate the local deployment.
+and a `docker-compose.yml` file to setup the development environment.
 
-Before proceeding with the build, copy [`.env.example`](.env.example)
-into `.env` and edit the environment variables as needed.
+1. Copy the [`.env.example`](.env.example) file into `.env` and modify the
+   environment variables as it suits you.
+   [`.env.example`](.env.example) holds the detailed description of each variable.
 
-To build the crawler container run:
+   ```shell
+   cp .env.example .env
+   ```
 
-```shell
-docker-compose up [-d] [--build]
-```
+2. Save your auth tokens to `domains.yml`
 
-where:
+   ```shell
+   cp crawler/domains.yml.example crawler/domains.yml
+   editor crawler/domains.yml
+   ```
 
-* *-d* execute the containers in background
+3. Start the environment:
 
-* *--build* forces the containers build
-
-To destroy the container, use:
-
-```shell
-docker-compose down
-```
+   ```shell
+   docker-compose up
 
 ## Run the crawler
 
