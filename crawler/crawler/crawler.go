@@ -177,13 +177,24 @@ func (c *Crawler) removeBlackListedFromRepositories(listedRepos map[string]strin
 }
 
 func (c *Crawler) crawl() error {
+	reposChan := make(chan Repository)
+
 	// Start the metrics server.
 	go metrics.StartPrometheusMetricsServer()
 
 	defer c.publishersWg.Wait()
 
 	// Process the repositories in order to retrieve the files.
-	c.ProcessRepositories()
+	for i := 0 ; i < 5 ; i++ {
+		c.repositoriesWg.Add(1)
+		go c.ProcessRepositories(reposChan)
+	}
+
+	for repo := range c.repositories {
+		reposChan  <- repo
+	}
+	close(reposChan)
+	c.repositoriesWg.Wait();
 
 	// ElasticFlush to flush all the operations on ES.
 	err := elastic.Flush(c.index, c.es)
@@ -271,19 +282,16 @@ func generateRandomInt(max int) (int, error) {
 }
 
 // ProcessRepositories process the repositories channel and check the availability of the file.
-func (c *Crawler) ProcessRepositories() {
-	for repository := range c.repositories {
-		c.repositoriesWg.Add(1)
-		go c.ProcessRepo(repository)
+func (c *Crawler) ProcessRepositories(repos chan Repository) {
+	defer c.repositoriesWg.Done()
+
+	for repository := range repos {
+		c.ProcessRepo(repository)
 	}
-	c.repositoriesWg.Wait()
 }
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
 func (c *Crawler) ProcessRepo(repository Repository) {
-	// Defer waiting group close.
-	defer c.repositoriesWg.Done()
-
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", c.index).Inc()
 
