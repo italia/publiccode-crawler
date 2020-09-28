@@ -24,6 +24,7 @@ COPY crawler/jekyll jekyll
 COPY crawler/metrics metrics
 COPY crawler/version version
 COPY crawler/whitelist whitelist
+COPY crawler/blacklist blacklist
 COPY crawler/config.toml.example config.toml
 COPY crawler/domains.yml.example domains.yml
 COPY crawler/go.mod .
