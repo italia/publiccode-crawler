@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"net/http"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -184,17 +185,20 @@ func (c *Crawler) crawl() error {
 
 	defer c.publishersWg.Wait()
 
+	// Get cpus number
+	numCPUs := runtime.NumCPU()
+
 	// Process the repositories in order to retrieve the files.
-	for i := 0 ; i < 5 ; i++ {
+	for i := 0; i < numCPUs; i++ {
 		c.repositoriesWg.Add(1)
 		go c.ProcessRepositories(reposChan)
 	}
 
 	for repo := range c.repositories {
-		reposChan  <- repo
+		reposChan <- repo
 	}
 	close(reposChan)
-	c.repositoriesWg.Wait();
+	c.repositoriesWg.Wait()
 
 	// ElasticFlush to flush all the operations on ES.
 	err := elastic.Flush(c.index, c.es)
