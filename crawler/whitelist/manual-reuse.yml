@@ -11,22 +11,12 @@
     - "https://github.com/italia/dati-ckan-docker"
     - "https://github.com/immuni-app/immuni"
 
-- name: "Agenzia per l'Italia Digitale"
-  codice-iPA: "agid"
-  orgs:
-    - "https://github.com/AgID"
-
 - name: "Ministero per i Beni e le Attività Culturali"
   codice-iPA: "m_bac"
   repos:
     - "https://github.com/italia/18app"
   orgs:
     - "https://github.com/IstitutoCentraleCatalogoUnicoBiblio"
-
-- name: "Università della Calabria"
-  codice-iPA: "unical"
-  orgs:
-    - "https://github.com/UniversitaDellaCalabria"
 
 - name: "Ministero degli Interni"
   codice-iPA: "m_it"
