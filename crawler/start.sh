@@ -10,5 +10,5 @@ echo "${0##*/}: Waiting ${time} seconds before running the crawler..."
 sleep ${time}
 
 bin/crawler updateipa
-bin/crawler download-whitelist https://onboarding.developers.italia.it/repo-list whitelist/onboarding-reuse.yml
+bin/crawler download-whitelist https://onboarding.developers.italia.it/repo-list whitelist/00-onboarding-reuse.yml
 bin/crawler crawl whitelist/*.yml

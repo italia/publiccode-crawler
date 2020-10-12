@@ -16,6 +16,7 @@ var crawlCmd = &cobra.Command{
 	Long:  `Crawl publiccode.yml files according to the supplied whitelist file(s).`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		orgs := make(map[string]bool)
 		c := crawler.NewCrawler()
 
 		// Read the supplied whitelists.
@@ -25,7 +26,19 @@ var crawlCmd = &cobra.Command{
 			if err != nil {
 				log.Fatal(err)
 			}
-			publishers = append(publishers, readWhitelist...)
+
+		Publisher:
+			for _, publisher := range readWhitelist {
+				for _, org := range publisher.Organizations {
+					if orgs[org] {
+						log.Warnf("Skipping publisher '%s': organization '%s' already present", publisher.Name, org)
+						continue Publisher
+					} else {
+						orgs[org] = true
+					}
+				}
+				publishers = append(publishers, publisher)
+			}
 		}
 
 		toBeRemoved, err := c.CrawlPublishers(publishers)
