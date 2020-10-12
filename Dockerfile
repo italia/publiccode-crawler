@@ -18,7 +18,6 @@ COPY .git .git
 COPY crawler/cmd cmd
 COPY crawler/crawler crawler
 COPY crawler/elastic elastic
-COPY crawler/httpclient httpclient
 COPY crawler/ipa ipa
 COPY crawler/jekyll jekyll
 COPY crawler/metrics metrics
