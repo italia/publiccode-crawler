@@ -12,10 +12,10 @@ import (
 	"sync"
 
 	"github.com/italia/developers-italia-backend/crawler/elastic"
-	"github.com/italia/developers-italia-backend/crawler/httpclient"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/jekyll"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
+	httpclient "github.com/italia/httpclient-lib-go"
 	publiccode "github.com/italia/publiccode-parser-go"
 	es "github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
