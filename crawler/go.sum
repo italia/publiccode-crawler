@@ -39,6 +39,8 @@ github.com/alranel/go-vcsurl v0.0.0-20190918163743-e14328dc728a h1:rC0zhGHCi9ejH
 github.com/alranel/go-vcsurl v0.0.0-20190918163743-e14328dc728a/go.mod h1:tp+e312yiwgu8H4/Ly26J8MevK9lz7BucU4PPlEv0ag=
 github.com/alranel/go-vcsurl v0.0.0-20200922084853-6436e6ad1149 h1:qBoq+LXLgOA+WTOq2pjoMDSvkKVZ4kkLdpwj4jfNzRs=
 github.com/alranel/go-vcsurl v0.0.0-20200922084853-6436e6ad1149/go.mod h1:tp+e312yiwgu8H4/Ly26J8MevK9lz7BucU4PPlEv0ag=
+github.com/alranel/go-vcsurl v0.0.0-20201009104729-56346a70f40a h1:NiIou8dzFGaIVFfhuBdRiPUqgMpcys1RDADgjB7qrps=
+github.com/alranel/go-vcsurl v0.0.0-20201009104729-56346a70f40a/go.mod h1:tp+e312yiwgu8H4/Ly26J8MevK9lz7BucU4PPlEv0ag=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239 h1:kFOfPq6dUM1hTo4JG6LR5AXSUEsOjtdm0kw0FtQtMJA=
 github.com/anmitsu/go-shlex v0.0.0-20161002113705-648efa622239/go.mod h1:2FmKhYUyUczH0OGQWaF5ceTx0UBShxjsH6f8oGKYe2c=
 github.com/armon/circbuf v0.0.0-20150827004946-bbbad097214e/go.mod h1:3U/XgcO3hCbHZ8TKRvWD2dDTCfh9M9ya+I9JpbB7O8o=
@@ -188,6 +190,8 @@ github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANyt
 github.com/italia/developers-italia-backend v0.0.0-20181018193642-3fad33631e04 h1:jU4sz1EB8A1gJfnL6I/2C7wLdNiDamqUqG3li5+gU3k=
 github.com/italia/developers-italia-backend v0.0.0-20190211224523-4c806be98a08 h1:2sOdv/ivyrDpB7uBoXWdGx43i3J2wZV7SEjXDituRDw=
 github.com/italia/developers-italia-backend/crawler v0.0.0-20200425112233-2942d1274b6d/go.mod h1:gttnNoCNhU4AxsEITGU43ousbjfIk3PfmnMkNzcc1U8=
+github.com/italia/httpclient-lib-go v0.0.0-20201009133728-9044482688d7 h1:jxY6N3KOTkhCrRN/Yj6+5nwBA0OR9O11918AV7PwEG8=
+github.com/italia/httpclient-lib-go v0.0.0-20201009133728-9044482688d7/go.mod h1:tO13wT41NVbqsP9MFBMulFqeC6zFdwuLNXi29lx/FiM=
 github.com/italia/publiccode-parser-go v0.0.0-20181107161327-d94a3cc20568 h1:vn78+hjKwa7Rz0CtH6TeBO7evxp02bxE6ENzj9YWUrY=
 github.com/italia/publiccode-parser-go v0.0.0-20181107161327-d94a3cc20568/go.mod h1:7IA9hcAdvFs9RapWwhY1hBa0XN29NM11JBvhKkcV2xs=
 github.com/italia/publiccode-parser-go v0.0.0-20190206225521-e888de23e99c h1:EXSETvw3wDb81nKcdSQe4SAtftlEWLiPfMDjdq/ZjtI=
@@ -250,6 +254,8 @@ github.com/italia/publiccode-parser-go v1.1.1 h1:Piu9/PbPej3MSog0uORFIJIpk2YOzL2
 github.com/italia/publiccode-parser-go v1.1.1/go.mod h1:cSfzmMsPUbAmbcXFNTuGYLhHk4Jgi3jhLjOYuMlnfOg=
 github.com/italia/publiccode-parser-go v1.1.4 h1:BcuBpkD0vH3N7MSDUZkr/rcHWD9/TYnD0eoY/tRKjXo=
 github.com/italia/publiccode-parser-go v1.1.4/go.mod h1:n2+IE6ExDzga8epoH8U1gOrVVYgH8dfKj1+tHTucEqI=
+github.com/italia/publiccode-parser-go v1.2.1 h1:tUP8kiWjDWWg5rEp5LFdlvKabiqW1CQEcXGKBODazZk=
+github.com/italia/publiccode-parser-go v1.2.1/go.mod h1:pNW/763oyn3mBPPx5mKFqRmfAcxeewITyHL13nDmv3k=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
@@ -396,6 +402,8 @@ github.com/sirupsen/logrus v1.4.2 h1:SPIRibHv4MatM3XXNO2BJeFLZwZ2LvZgfQ5+UNI2im4
 github.com/sirupsen/logrus v1.4.2/go.mod h1:tLMulIdttU9McNUspp0xgXVQah82FyeX6MwdIuYE2rE=
 github.com/sirupsen/logrus v1.6.0 h1:UBcNElsrwanuuMsnGSlYmtmgbb23qDR5dG+6X6Oo89I=
 github.com/sirupsen/logrus v1.6.0/go.mod h1:7uNnSEd1DgxDLC74fIahvMZmmYsHGZGEOFrfsX/uA88=
+github.com/sirupsen/logrus v1.7.0 h1:ShrD1U9pZB12TX0cVy0DtePoCH97K8EtX+mg7ZARUtM=
+github.com/sirupsen/logrus v1.7.0/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d h1:zE9ykElWQ6/NYmHa3jpm/yHnI4xSofP+UP6SpjHcSeM=
 github.com/smartystreets/assertions v0.0.0-20180927180507-b2de0cb4f26d/go.mod h1:OnSkiWE9lh6wB0YB77sQom3nweQdgAjqCqsofrRNTgc=
 github.com/smartystreets/goconvey v1.6.4 h1:fv0U8FUIMPNf1L9lnHLvLhgicrIVChEkdzIKYqbNC9s=
@@ -576,6 +584,7 @@ golang.org/x/sys v0.0.0-20190726091711-fc99dfbffb4e/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20191002091554-b397fe3ad8ed h1:5TJcLJn2a55mJjzYk0yOoqN8X1OdvBDUnaZaKKyQtkY=
 golang.org/x/sys v0.0.0-20191002091554-b397fe3ad8ed/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191005200804-aed5e4c7ecf9/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20191026070338-33540a1f6037/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200106162015-b016eb3dc98e/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200615200032-f1bc736245b1/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
@@ -585,6 +594,8 @@ golang.org/x/sys v0.0.0-20200720211630-cb9d2d5c5666 h1:gVCS+QOncANNPlmlO1AhlU3ox
 golang.org/x/sys v0.0.0-20200720211630-cb9d2d5c5666/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20200922070232-aee5d888a860 h1:YEu4SMq7D0cmT7CBbXfcH0NZeuChAXwsHe/9XueUO6o=
 golang.org/x/sys v0.0.0-20200922070232-aee5d888a860/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634 h1:bNEHhJCnrwMKNMmOx3yAynp5vs5/gRy+XWFtZFu7NBM=
+golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
