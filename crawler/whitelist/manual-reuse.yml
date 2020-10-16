@@ -6,11 +6,11 @@
   codice-iPA: "pcm"
   orgs:
     - "https://github.com/teamdigitale"
+    - "https://github.com/pagopa"
   repos:
     - "https://github.com/italia/agavecms"
     - "https://github.com/italia/dati-ckan-docker"
     - "https://github.com/immuni-app/immuni"
-    - "https://github.com/pagopa/io-app"
 
 - name: "Ministero per i Beni e le Attività Culturali"
   codice-iPA: "m_bac"
