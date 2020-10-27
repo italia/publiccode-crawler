@@ -6,6 +6,7 @@
   codice-iPA: "pcm"
   orgs:
     - "https://github.com/teamdigitale"
+    - "https://github.com/pagopa"
   repos:
     - "https://github.com/italia/agavecms"
     - "https://github.com/italia/dati-ckan-docker"
