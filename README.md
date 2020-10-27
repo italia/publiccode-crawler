@@ -1,6 +1,7 @@
 # Crawler for the OSS catalog of Developers Italia
 
 [![CircleCI](https://circleci.com/gh/italia/developers-italia-backend/tree/master.svg?style=shield)](https://circleci.com/gh/italia/developers-italia-backend/tree/master)
+![Azure DevOps builds](https://img.shields.io/azure-devops/build/itdtd/f32f3f44-a381-4a48-989c-63298e422b1d/4?label=Azure%20Pipelines&logo=azure-devops)
 [![Go Report Card](https://goreportcard.com/badge/github.com/italia/developers-italia-backend)](https://goreportcard.com/report/github.com/italia/developers-italia-backend)
 [![Join the #website channel](https://img.shields.io/badge/Slack%20channel-%23website-blue.svg?logo=slack)](https://developersitalia.slack.com/messages/C9R26QMT6)
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
