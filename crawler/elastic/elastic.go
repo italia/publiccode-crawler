@@ -502,7 +502,10 @@ const (
           "ipa": {
             "type": "text",
             "analyzer": "autocomplete",
-            "search_analyzer": "autocomplete_search"
+            "search_analyzer": "autocomplete_search",
+            "fields": {
+              "keyword": { "type": "keyword", "ignore_above": 256 }
+            }
           },
           "description": {
             "type": "text",
@@ -512,7 +515,10 @@ const (
           "pec": {
             "type": "text",
             "analyzer": "autocomplete",
-            "search_analyzer": "autocomplete_search"
+            "search_analyzer": "autocomplete_search",
+            "fields": {
+              "keyword": { "type": "keyword", "ignore_above": 256 }
+            }
           },
           "type": {
             "type": "keyword"
