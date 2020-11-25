@@ -491,6 +491,13 @@ const (
                 "letter"
               ]
             }
+          },
+          "normalizer": {
+            "lowercase_normalizer": {
+              "type": "custom",
+              "char_filter": [],
+              "filter": ["lowercase"]
+            }
           }
         }
       }
@@ -504,7 +511,11 @@ const (
             "analyzer": "autocomplete",
             "search_analyzer": "autocomplete_search",
             "fields": {
-              "keyword": { "type": "keyword", "ignore_above": 256 }
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256,
+                "normalizer": "lowercase_normalizer"
+              }
             }
           },
           "description": {
@@ -517,7 +528,11 @@ const (
             "analyzer": "autocomplete",
             "search_analyzer": "autocomplete_search",
             "fields": {
-              "keyword": { "type": "keyword", "ignore_above": 256 }
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256,
+                "normalizer": "lowercase_normalizer"
+              }
             }
           },
           "type": {
