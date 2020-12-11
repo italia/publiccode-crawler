@@ -494,6 +494,13 @@ const (
                 "letter"
               ]
             }
+          },
+          "normalizer": {
+            "lowercase_normalizer": {
+              "type": "custom",
+              "char_filter": [],
+              "filter": ["lowercase"]
+            }
           }
         }
       }
@@ -505,7 +512,14 @@ const (
           "ipa": {
             "type": "text",
             "analyzer": "autocomplete",
-            "search_analyzer": "autocomplete_search"
+            "search_analyzer": "autocomplete_search",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256,
+                "normalizer": "lowercase_normalizer"
+              }
+            }
           },
           "description": {
             "type": "text",
@@ -515,7 +529,14 @@ const (
           "pec": {
             "type": "text",
             "analyzer": "autocomplete",
-            "search_analyzer": "autocomplete_search"
+            "search_analyzer": "autocomplete_search",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256,
+                "normalizer": "lowercase_normalizer"
+              }
+            }
           },
           "type": {
             "type": "keyword"

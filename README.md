@@ -71,6 +71,22 @@ and a `docker-compose.yml` file to setup the development environment.
     Furthermore it will immediately remove the blacklisted repository from ES if
     it is present.
 
+    It also generates:
+    * `amministrazioni.yml` containing all the Public Administrations their
+      name, website URL and iPA code.
+
+    * `softwares.yml` containing all the software that the crawler scraped,
+      validated and saved into ElasticSearch.
+
+      The structure is similar to publiccode data structure with some additional
+      fields like vitality and vitality score.
+
+    * `software-riuso.yml` containing all the software in `softwares.yml`
+       having an iPA code.
+
+    * `software-open-source.yml` containing all the software in `softwares.yml`
+      with no iPA code.
+
 * One mode (single repository url): `bin/crawler one [repo url] whitelist/*.yml`
   * In this mode one single repository at the time will be evaluated. If the
     organization is present, its IPA code will be matched with the ones in
@@ -91,6 +107,24 @@ and a `docker-compose.yml` file to setup the development environment.
 * `bin/crawler download-whitelist` downloads organizations and repositories from
   the [onboarding portal repository](https://github.com/italia/developers-italia-onboarding)
   and saves them to a whitelist file
+
+### Crawler whitelists
+
+The whitelist directory contains the of organizations to crawl from.
+
+`whitelist/manual-reuse.yml` is a list of Public Administrations repositories
+that for various reasons were not onboarded with
+[developers-italia-onboarding](https://github.com/italia/developers-italia-onboarding),
+while `whitelist/thirdparty.yml` contains the non-PAs repos.
+
+Here's an example of how the files might look like:
+
+```yaml
+- id: "Comune di Bagnacavallo" # generic name of the organization.
+  codice-iPA: "c_a547" # codice-iPA
+  organizations: # list of organization urls.
+    - "https://github.com/gith002"
+```
 
 ### Crawler blacklists
 
