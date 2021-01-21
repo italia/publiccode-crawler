@@ -44,6 +44,10 @@
 - name: "WikiToLearn"
   repos:
     - "https://github.com/WikiToLearn/WikiToLearn"
+    
+- name: "KDE"
+  repos:
+    - "https://invent.kde.org/education/gcompris"
 
 - name: "Opencontent"
   repos:
