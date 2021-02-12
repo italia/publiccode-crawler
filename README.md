@@ -6,23 +6,27 @@
 [![Join the #website channel](https://img.shields.io/badge/Slack%20channel-%23website-blue.svg?logo=slack)](https://developersitalia.slack.com/messages/C9R26QMT6)
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 
-## How it works
+## Description
 
-The crawler finds and retrieves the **`publiccode.yml`** files from the
-organizations in the whitelist.
+Developers Italia provides [a catalog of Free and Open Source](https://developers.italia.it/en/search)
+software aimed to Public Administrations.
 
-It then creates YAML files used by the
-[Jekyll build chain](https://github.com/italia/developers.italia.it)
-to generate the static pages of [developers.italia.it](https://developers.italia.it/).
+This **crawler** finds and retrieves the `publiccode.yml` files from the
+organizations publishing the software that have registered through the
+[onboarding procedure](https://github.com/italia/developers-italia-onboarding).
 
-[Elasticsearch 6.8](https://www.elastic.co/products/elasticsearch) is used to store
-the data which be active and ready to accept connections before the crawler is started.
+The generated YAML files are then used by
+[developers.italia.it build](https://github.com/italia/developers.italia.it)
+to generate its static pages.
 
 ## Setup and deployment processes
 
 The crawler can either run manually on the target machine or it can be deployed
-in form of Docker container with
+from a Docker container with
 [its helm-chart](https://github.com/teamdigitale/devita-infra-kubernetes) in Kubernetes.
+
+[Elasticsearch 6.8](https://www.elastic.co/products/elasticsearch) is used to store
+the data and has ready to accept connections before the crawler is started.
 
 ### Manually configure and build the crawler
 
@@ -43,9 +47,9 @@ in form of Docker container with
 The repository has a `Dockerfile`, used to build the production image,
 and a `docker-compose.yml` file to setup the development environment.
 
-1. Copy the [`.env.example`](.env.example) file into `.env` and modify the
+1. Copy the [`.env.example`](.env.example) file into `.env` and edit the
    environment variables as it suits you.
-   [`.env.example`](.env.example) holds the detailed description of each variable.
+   [`.env.example`](.env.example) has detailed descriptions for each variable.
 
    ```shell
    cp .env.example .env
@@ -65,42 +69,46 @@ and a `docker-compose.yml` file to setup the development environment.
 
 ## Run the crawler
 
-* Crawl mode (all item in whitelists): `bin/crawler crawl whitelist/*.yml`
-  * `crawl` supports blacklists (see below for details). The crawler will try to
-    match each repository URL in its list with the ones listed in blacklists and,
-    if it does, it will print a warn log and skip all operation on it.
-    Furthermore it will immediately remove the blacklisted repository from ES if
-    it is present.
+### Crawl mode (all item in whitelists): `bin/crawler crawl whitelist/*.yml`
 
-    It also generates:
-    * `amministrazioni.yml` containing all the Public Administrations their
-      name, website URL and iPA code.
+Gets the list of organizations in `whitelist/*.yml` and starts to crawl
+their repositories.
 
-    * `softwares.yml` containing all the software that the crawler scraped,
-      validated and saved into ElasticSearch.
+If it finds a blacklisted repository, it will remove it from Elasticsearch, if
+it is present.
 
-      The structure is similar to publiccode data structure with some additional
-      fields like vitality and vitality score.
+It also generates:
 
-    * `software-riuso.yml` containing all the software in `softwares.yml`
-       having an iPA code.
+* `amministrazioni.yml` containing all the Public Administrations their
+   name, website URL and iPA code.
 
-    * `software-open-source.yml` containing all the software in `softwares.yml`
-      with no iPA code.
+* `softwares.yml` containing all the software that the crawler scraped,
+  validated and saved into ElasticSearch.
 
-* One mode (single repository url): `bin/crawler one [repo url] whitelist/*.yml`
-  * In this mode one single repository at the time will be evaluated. If the
-    organization is present, its IPA code will be matched with the ones in
-    whitelist otherwise it will be set to null and the `slug` will have a random
-    code in the end (instead of the IPA code). Furthermore, the IPA code
-    validation, which is a simple check within whitelists (to ensure that code
-    belongs to the selected PA), will be skipped.
-  * `one` supports blacklists (see below for details), whether `[repo url]` is
-    present in one of the indicated blacklists, the crawler will exit immediately.
-    Basically ignore all repository defined in list preventing the unauthorized
-    loading in catalog.
+  The structure is similar to publiccode data structure with some additional
+  fields like vitality and vitality score.
 
-* `bin/crawler updateipa` downloads IPA data and writes them into Elasticsearch
+* `software-riuso.yml` containing all the software in `softwares.yml`
+  having an iPA code.
+
+* `software-open-source.yml` containing all the software in `softwares.yml`
+  with no iPA code.
+
+### One mode (single repository url): `bin/crawler one [repo url] whitelist/*.yml`
+
+In this mode one single repository at the time will be evaluated. If the
+organization is present, its iPA code will be matched with the ones in
+whitelist, otherwise it will be set to null and the `slug` will have a random
+code in the end (instead of the iPA code).
+
+Furthermore, the iPA code validation, which is a simple check within whitelists
+(to ensure that code belongs to the selected PA), will be skipped.
+
+If it finds a blacklisted repository, it will exit immediately.
+
+### Other commands
+
+* `bin/crawler updateipa` downloads iPA data and writes them into Elasticsearch
 
 * `bin/crawler delete [URL]` deletes software from Elasticsearch using its code
    hosting URL specified in `publiccode.url`
@@ -141,9 +149,6 @@ Blacklisting is currently supported by the `one` and `crawl` commands.
 
 * [publiccode-parser-go](https://github.com/italia/publiccode-parser-go): the Go
   package for parsing publiccode.yml files
-
-* [developers-italia-onboarding](https://github.com/italia/developers-italia-onboarding):
-  the onboarding portal
 
 ## Authors
 
