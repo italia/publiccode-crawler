@@ -4,9 +4,12 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"os"
+	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -296,26 +299,67 @@ func (c *Crawler) ProcessRepositories(repos chan Repository) {
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
 func (c *Crawler) ProcessRepo(repository Repository) {
+	var sb strings.Builder
+	var message string = ""
+
+	// Write the log to a file, so it can be accessed from outside at
+	// http://crawler-host/$codehosting/$org/$reponame/log.txt
+	defer func() {
+		fname := path.Join(
+			viper.GetString("OUTPUT_DIR"),
+			repository.Hostname,
+			path.Clean(repository.Name),
+			"log.txt",
+		)
+
+		if err := os.MkdirAll(filepath.Dir(fname), 0775); err != nil {
+			log.Errorf("[%s]: %s", repository.Name, err.Error())
+
+			return
+		}
+
+		if err := ioutil.WriteFile(fname, []byte(sb.String()), 0644); err != nil {
+			log.Errorf("[%s]: %s", repository.Name, err.Error())
+
+			return
+		}
+	}()
+
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", c.index).Inc()
 
 	resp, err := httpclient.GetURL(repository.FileRawURL, repository.Headers)
 
 	if resp.Status.Code != http.StatusOK || err != nil {
-		// Failed to retrieve publiccode.yml
+		message = fmt.Sprintf("[%s] Failed to GET publiccode.yml\n", repository.Name)
+		log.Errorf(message)
+
+		sb.WriteString(message)
 		return
 	}
 
-	log.Infof("[%s] publiccode.yml found at %s", repository.Name, repository.FileRawURL)
+	message = fmt.Sprintf("[%s] publiccode.yml found at %s\n", repository.Name, repository.FileRawURL)
+	log.Infof(message)
+	sb.WriteString(message)
 
 	// Validate the publiccode.yml
 	if repository.Pa.UnknownIPA {
-		log.Warn("When UnknownIPA is set to true IPA match with whitelists will be skipped")
+		message = fmt.Sprintf(
+			"[%s] When UnknownIPA is set to true IPA match with whitelists will be skipped\n",
+			repository.Name,
+		)
+
+		log.Warn(message)
+		sb.WriteString(message)
 	} else {
 		err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa, repository.Domain)
 		if err != nil {
-			log.Errorf("[%s] invalid publiccode.yml: %+v", repository.Name, err)
+			message = fmt.Sprintf("[%s] invalid publiccode.yml: %+v\n", repository.Name, err)
+			log.Errorf(message)
+			sb.WriteString(message)
+
 			logBadYamlToFile(repository.FileRawURL)
+
 			return
 		}
 	}
@@ -323,7 +367,10 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	// Clone repository.
 	err = CloneRepository(repository.Domain, repository.Hostname, repository.Name, repository.GitCloneURL, repository.GitBranch, c.index)
 	if err != nil {
-		log.Errorf("[%s] error while cloning: %v", repository.Name, err)
+		message = fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err)
+		log.Errorf(message)
+
+		sb.WriteString(message)
 	}
 
 	// Calculate Repository activity index and vitality. Defaults to 60 days.
@@ -333,9 +380,15 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 	activityIndex, vitality, err := repository.CalculateRepoActivity(activityDays)
 	if err != nil {
-		log.Errorf("[%s] error calculating activity index: %v", repository.Name, err)
+		message = fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err)
+
+		log.Errorf(message)
+		sb.WriteString(message)
 	}
-	log.Infof("[%s] activity index in the last %d days: %f", repository.Name, activityDays, activityIndex)
+	message = fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex)
+	log.Infof(message)
+	sb.WriteString(message)
+
 	var vitalitySlice []int
 	for i := 0; i < len(vitality); i++ {
 		vitalitySlice = append(vitalitySlice, int(vitality[i]))
@@ -344,7 +397,10 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	// Save to ES.
 	err = c.saveToES(repository, activityIndex, vitalitySlice, resp.Body)
 	if err != nil {
-		log.Errorf("[%s] error saving to ElastcSearch: %v", repository.Name, err)
+		message = fmt.Sprintf("[%s] error saving to ElastcSearch: %v\n", repository.Name, err)
+		log.Errorf(message)
+
+		sb.WriteString(message)
 	}
 }
 
