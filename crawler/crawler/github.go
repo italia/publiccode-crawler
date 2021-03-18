@@ -262,6 +262,11 @@ func RegisterGithubAPI() OrganizationHandler {
 
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, v := range results {
+			if v.Private || v.Archived {
+				log.Warnf("Skipping %s: repo is private or archived", v.FullName)
+				continue
+			}
+
 			// Marshal all the repository metadata.
 			metadata, err := json.Marshal(v)
 			if err != nil {
@@ -339,6 +344,11 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 		err = json.Unmarshal(resp.Body, &v)
 		if err != nil {
 			return err
+		}
+
+		if v.Private || v.Archived {
+			log.Warnf("Skipping %s: repo is private or archived", v.FullName)
+			return errors.New("Skipping private or archived repo")
 		}
 
 		// Marshal all the repository metadata.
