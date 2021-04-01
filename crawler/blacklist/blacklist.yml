@@ -1,7 +1,17 @@
-# Policy https://docs.italia.it/italia/developers-italia
-# /policy-inserimento-catalogo-docs/it/stabile
-# /approvazione-del-software-a-catalogo.html
+# Policy https://docs.italia.it/italia/developers-italia/policy-inserimento-catalogo-docs/it/stabile/approvazione-del-software-a-catalogo.html
 
 ---
 
 repos:
+  - url: https://github.com/arpa-puglia/infoariaarpa
+    reason: 1
+    description: Repository currently not available
+  - url: https://github.com/arpa-puglia/infoaria
+    reason: 1
+    description: Repository currently not available
+  - url: https://github.com/arpa-puglia/accessoatti
+    reason: 1
+    description: Repository currently not available
+  - url: https://github.com/arpa-puglia/casarpa
+    reason: 1
+    description: Repository currently not available
