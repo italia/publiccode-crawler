@@ -5,15 +5,3 @@
 ---
 
 repos:
-  - url: https://github.com/arpa-puglia/infoariaarpa
-    reason: 1
-    description: Repository currently not available
-  - url: https://github.com/arpa-puglia/infoaria
-    reason: 1
-    description: Repository currently not available
-  - url: https://github.com/arpa-puglia/accessoatti
-    reason: 1
-    description: Repository currently not available
-  - url: https://github.com/arpa-puglia/casarpa
-    reason: 1
-    description: Repository currently not available
