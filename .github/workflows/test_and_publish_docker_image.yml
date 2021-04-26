@@ -25,7 +25,6 @@ jobs:
 
     if: ${{ github.event_name != 'pull_request' }}
     steps:
-      - uses: actions/checkout@v2
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
@@ -45,5 +44,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v2
         with:
+          build-args: |
+            BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
           push: true
           tags: ${{ steps.image_tags.outputs.tags }}
