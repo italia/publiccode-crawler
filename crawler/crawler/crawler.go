@@ -13,6 +13,7 @@ import (
 	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/italia/developers-italia-backend/crawler/elastic"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
@@ -297,6 +298,12 @@ func (c *Crawler) ProcessRepositories(repos chan Repository) {
 	}
 }
 
+func writeTimestamped(sb *strings.Builder, message string) {
+	sb.WriteString(time.Now().Format(time.RFC3339))
+	sb.WriteString(" ")
+	sb.WriteString(message)
+}
+
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
 func (c *Crawler) ProcessRepo(repository Repository) {
 	var sb strings.Builder
@@ -334,13 +341,13 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		message = fmt.Sprintf("[%s] Failed to GET publiccode.yml\n", repository.Name)
 		log.Errorf(message)
 
-		sb.WriteString(message)
+		writeTimestamped(&sb, message)
 		return
 	}
 
 	message = fmt.Sprintf("[%s] publiccode.yml found at %s\n", repository.Name, repository.FileRawURL)
 	log.Infof(message)
-	sb.WriteString(message)
+	writeTimestamped(&sb, message)
 
 	// Validate the publiccode.yml
 	if repository.Pa.UnknownIPA {
@@ -350,13 +357,13 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		)
 
 		log.Warn(message)
-		sb.WriteString(message)
+		writeTimestamped(&sb, message)
 	} else {
 		err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa, repository.Domain)
 		if err != nil {
 			message = fmt.Sprintf("[%s] invalid publiccode.yml: %+v\n", repository.Name, err)
 			log.Errorf(message)
-			sb.WriteString(message)
+			writeTimestamped(&sb, message)
 
 			logBadYamlToFile(repository.FileRawURL)
 
@@ -370,7 +377,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		message = fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err)
 		log.Errorf(message)
 
-		sb.WriteString(message)
+		writeTimestamped(&sb, message)
 	}
 
 	// Calculate Repository activity index and vitality. Defaults to 60 days.
@@ -383,11 +390,11 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		message = fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err)
 
 		log.Errorf(message)
-		sb.WriteString(message)
+		writeTimestamped(&sb, message)
 	}
 	message = fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex)
 	log.Infof(message)
-	sb.WriteString(message)
+	writeTimestamped(&sb, message)
 
 	var vitalitySlice []int
 	for i := 0; i < len(vitality); i++ {
@@ -400,7 +407,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		message = fmt.Sprintf("[%s] error saving to ElastcSearch: %v\n", repository.Name, err)
 		log.Errorf(message)
 
-		sb.WriteString(message)
+		writeTimestamped(&sb, message)
 	}
 }
 
