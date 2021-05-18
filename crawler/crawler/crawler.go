@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,12 +17,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/alranel/go-vcsurl/v2"
 	"github.com/italia/developers-italia-backend/crawler/elastic"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/jekyll"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	httpclient "github.com/italia/httpclient-lib-go"
-	publiccode "github.com/italia/publiccode-parser-go"
+	publiccode "github.com/italia/publiccode-parser-go/v2"
 	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -378,6 +380,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	log.Infof(message)
 	addLogEntry(&logEntries, message)
 
+	var parser *publiccode.Parser
 	// Validate the publiccode.yml
 	if repository.Pa.UnknownIPA {
 		message = fmt.Sprintf(
@@ -388,7 +391,24 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		log.Warn(message)
 		addLogEntry(&logEntries, message)
 	} else {
-		err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa, repository.Domain)
+		parser, err = publiccode.NewParser(repository.FileRawURL)
+		if err != nil {
+			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
+			log.Errorf(message)
+			addLogEntry(&logEntries, message)
+
+			return
+		}
+		err = parser.ParseInDomain(resp.Body, repository.Domain.Host, repository.Domain.UseTokenFor, repository.Domain.BasicAuth)
+		if err != nil {
+			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
+			log.Errorf(message)
+			addLogEntry(&logEntries, message)
+
+			return
+		}
+
+		err = validateFile(repository.Pa, *parser, repository.FileRawURL)
 		if err != nil {
 			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
 			log.Errorf(message)
@@ -442,7 +462,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 
 	// Save to ES.
-	err = c.saveToES(repository, activityIndex, vitalitySlice, resp.Body)
+	err = c.saveToES(repository, activityIndex, vitalitySlice, *parser)
 	if err != nil {
 		message = fmt.Sprintf("[%s] error saving to ElasticSearch: %v\n", repository.Name, err)
 		log.Errorf(message)
@@ -451,30 +471,33 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 }
 
-func validateRemoteFile(data []byte, fileRawURL string, pa PA, domain Domain) error {
-	parser, err := getRemoteFile(data, fileRawURL, pa, domain)
-	if err != nil {
-		return err
-	}
-	return validateFile(pa, parser, fileRawURL)
-}
-
-func getRemoteFile(data []byte, fileRawURL string, pa PA, domain Domain) (publiccode.Parser, error) {
-	parser := publiccode.NewParser()
-	parser.Strict = false
-	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
-	err := parser.ParseInDomain(data, domain.Host, domain.UseTokenFor, domain.BasicAuth)
-	if err != nil {
-		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
-		return *parser, err
-	}
-	return *parser, nil
-}
-
 // validateFile will check if codiceIPA match
 // with relative entry in whitelist.
 // Using `one` command this check will be skipped.
 func validateFile(pa PA, parser publiccode.Parser, fileRawURL string) error {
+	u, _ := url.Parse(fileRawURL)
+	repo1 := vcsurl.GetRepo((*url.URL)(u))
+
+	repo2 := vcsurl.GetRepo((*url.URL)(parser.PublicCode.URL))
+
+	if repo1 != nil && repo2 != nil {
+		// Let's ignore the schema when checking for equality.
+		//
+		// This is mainly to match repos regardless of whether they are served
+		// through HTTPS or HTTP.
+		repo1.Scheme, repo2.Scheme = "", ""
+
+		if !strings.EqualFold(repo1.String(), repo2.String()) {
+			return errors.New(
+				fmt.Sprintf(
+					"declared url (%s) and actual publiccode.yml location URL (%s) "+
+					"are not in the same repo: '%s' vs '%s'",
+					parser.PublicCode.URL, fileRawURL, repo2, repo1,
+				),
+			)
+		}
+	}
+
 	if !strings.EqualFold(
 		strings.TrimSpace(pa.CodiceIPA),
 		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
