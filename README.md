@@ -77,20 +77,24 @@ it is present.
 
 It also generates:
 
-* `amministrazioni.yml` containing all the Public Administrations their
-   name, website URL and iPA code.
+* [`amministrazioni.yml`](https://crawler.developers.italia.it/amministrazioni.yml)
+  containing all the Public Administrations their name, website URL and iPA code.
 
-* `softwares.yml` containing all the software that the crawler scraped,
-  validated and saved into ElasticSearch.
+* [`softwares.yml`](https://crawler.developers.italia.it/softwares.yml) containing
+  all the software that the crawler scraped, validated and saved into ElasticSearch.
 
   The structure is similar to publiccode data structure with some additional
   fields like vitality and vitality score.
 
-* `software-riuso.yml` containing all the software in `softwares.yml`
-  having an iPA code.
+* [`software-riuso.yml`](https://crawler.developers.italia.it/software-riuso.yml)
+  containing all the software in `softwares.yml` having an iPA code.
 
-* `software-open-source.yml` containing all the software in `softwares.yml`
-  with no iPA code.
+* [`software-open-source.yml`](https://crawler.developers.italia.it/software-open-source.yml)
+  containing all the software in `softwares.yml` with no iPA code.
+
+* `https://crawler.developers.italia.it/HOSTING/ORGANIZATION/REPO/log.json` containing
+  the logs of the scraping for that particular `REPO`.
+  (eg. [`https://crawler.developers.italia.it/github.com/italia/design-scuole-wordpress-theme/log.json`](https://crawler.developers.italia.it/github.com/italia/design-scuole-wordpress-theme/log.json))
 
 ### One mode (single repository url): `bin/crawler one [repo url] whitelist/*.yml`
 
