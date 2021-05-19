@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -298,15 +299,22 @@ func (c *Crawler) ProcessRepositories(repos chan Repository) {
 	}
 }
 
-func writeTimestamped(sb *strings.Builder, message string) {
-	sb.WriteString(time.Now().Format(time.RFC3339))
-	sb.WriteString(" ")
-	sb.WriteString(message)
+type logEntry struct {
+	Datetime string `json:"datetime"`
+	Message  string `json:"message"`
+}
+
+func addLogEntry(logEntries *[]logEntry, message string) {
+	*logEntries = append(
+		*logEntries,
+		logEntry{Datetime: time.Now().UTC().Format(time.RFC3339), Message: message},
+	)
 }
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
 func (c *Crawler) ProcessRepo(repository Repository) {
-	var sb strings.Builder
+	var logEntries []logEntry
+
 	var message string = ""
 
 	// Write the log to a file, so it can be accessed from outside at
@@ -316,7 +324,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 			viper.GetString("OUTPUT_DIR"),
 			repository.Hostname,
 			path.Clean(repository.Name),
-			"log.txt",
+			"log.json",
 		)
 
 		if err := os.MkdirAll(filepath.Dir(fname), 0775); err != nil {
@@ -325,7 +333,8 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 			return
 		}
 
-		if err := ioutil.WriteFile(fname, []byte(sb.String()), 0644); err != nil {
+		jsonOut, _ := json.Marshal(logEntries)
+		if err := ioutil.WriteFile(fname, jsonOut, 0644); err != nil {
 			log.Errorf("[%s]: %s", repository.Name, err.Error())
 
 			return
@@ -341,13 +350,13 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		message = fmt.Sprintf("[%s] Failed to GET publiccode.yml\n", repository.Name)
 		log.Errorf(message)
 
-		writeTimestamped(&sb, message)
+		addLogEntry(&logEntries, message)
 		return
 	}
 
 	message = fmt.Sprintf("[%s] publiccode.yml found at %s\n", repository.Name, repository.FileRawURL)
 	log.Infof(message)
-	writeTimestamped(&sb, message)
+	addLogEntry(&logEntries, message)
 
 	// Validate the publiccode.yml
 	if repository.Pa.UnknownIPA {
@@ -357,13 +366,13 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		)
 
 		log.Warn(message)
-		writeTimestamped(&sb, message)
+		addLogEntry(&logEntries, message)
 	} else {
 		err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa, repository.Domain)
 		if err != nil {
 			message = fmt.Sprintf("[%s] invalid publiccode.yml: %+v\n", repository.Name, err)
 			log.Errorf(message)
-			writeTimestamped(&sb, message)
+			addLogEntry(&logEntries, message)
 
 			logBadYamlToFile(repository.FileRawURL)
 
@@ -377,7 +386,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		message = fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err)
 		log.Errorf(message)
 
-		writeTimestamped(&sb, message)
+		addLogEntry(&logEntries, message)
 	}
 
 	// Calculate Repository activity index and vitality. Defaults to 60 days.
@@ -390,11 +399,11 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		message = fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err)
 
 		log.Errorf(message)
-		writeTimestamped(&sb, message)
+		addLogEntry(&logEntries, message)
 	}
 	message = fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex)
 	log.Infof(message)
-	writeTimestamped(&sb, message)
+	addLogEntry(&logEntries, message)
 
 	var vitalitySlice []int
 	for i := 0; i < len(vitality); i++ {
@@ -407,7 +416,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		message = fmt.Sprintf("[%s] error saving to ElastcSearch: %v\n", repository.Name, err)
 		log.Errorf(message)
 
-		writeTimestamped(&sb, message)
+		addLogEntry(&logEntries, message)
 	}
 }
 
