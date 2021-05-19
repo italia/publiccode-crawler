@@ -11,6 +11,7 @@
     - "https://github.com/italia/agavecms"
     - "https://github.com/italia/dati-ckan-docker"
     - "https://github.com/italia/design-wordpress-theme"
+    - "https://github.com/italia/publiccode-editor"
     - "https://github.com/immuni-app/immuni"
 
 - name: "Ministero per i Beni e le Attività Culturali"
