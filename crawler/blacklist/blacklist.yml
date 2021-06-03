@@ -5,6 +5,3 @@
 ---
 
 repos:
-  - url: https://github.com/cmdrc/gasplanet
-    reason: 1
-    description: Repository empty
