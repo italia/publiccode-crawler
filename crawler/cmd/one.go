@@ -9,6 +9,8 @@ import (
 )
 
 func init() {
+	oneCmd.Flags().BoolVarP(&dryRun, "dry-run", "n", false, "perform a dry run with no changes made")
+
 	rootCmd.AddCommand(oneCmd)
 }
 
@@ -26,7 +28,7 @@ var oneCmd = &cobra.Command{
 			return
 		}
 
-		c := crawler.NewCrawler()
+		c := crawler.NewCrawler(dryRun)
 
 		repoURL, whitelists := args[0], args[1:]
 		err := c.CrawlRepo(repoURL, getPAfromWhiteList(repoURL, whitelists))

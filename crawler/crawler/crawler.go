@@ -29,6 +29,8 @@ import (
 
 // Crawler is a helper class representing a crawler.
 type Crawler struct {
+	DryRun         bool
+
 	// Sync mutex guard.
 	es             *es.Client
 	index          string
@@ -51,10 +53,12 @@ type Repository struct {
 	Metadata    []byte
 }
 
-// NewCrawler initializes a new Crawler object, updates the IPA list and connects to Elasticsearch.
-func NewCrawler() *Crawler {
+// NewCrawler initializes a new Crawler object, updates the IPA list and connects to Elasticsearch (if dryRun == false).
+func NewCrawler(dryRun bool) *Crawler {
 	var c Crawler
 	var err error
+
+	c.DryRun = dryRun
 
 	// Make sure the data directory exists or spit an error
 	if stat, err := os.Stat(viper.GetString("CRAWLER_DATADIR")); err != nil || !stat.IsDir() {
@@ -65,6 +69,21 @@ func NewCrawler() *Crawler {
 	c.domains, err = ReadAndParseDomains("domains.yml")
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	// Initiate a channel of repositories.
+	c.repositories = make(chan Repository, 1000)
+
+	// Register Prometheus metrics.
+	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", c.index)
+	metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", c.index)
+	metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", c.index)
+	metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", c.index)
+	//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", c.index)
+
+	if c.DryRun {
+		log.Info("Skipping ElasticSearch update (--dry-run)")
+		return &c
 	}
 
 	log.Debug("Connecting to ElasticSearch...")
@@ -95,16 +114,6 @@ func NewCrawler() *Crawler {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	// Initiate a channel of repositories.
-	c.repositories = make(chan Repository, 1000)
-
-	// Register Prometheus metrics.
-	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", c.index)
-	metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", c.index)
-	metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", c.index)
-	metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", c.index)
-	//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", c.index)
 
 	return &c
 }
@@ -205,6 +214,12 @@ func (c *Crawler) crawl() error {
 	close(reposChan)
 	c.repositoriesWg.Wait()
 
+	if c.DryRun {
+		log.Info("Skipping ElasticSearch indexes update (--dry-run)")
+
+		return nil
+	}
+
 	// ElasticFlush to flush all the operations on ES.
 	err := elastic.Flush(c.index, c.es)
 	if err != nil {
@@ -226,6 +241,11 @@ func (c *Crawler) crawl() error {
 
 // ExportForJekyll exports YAML data files for the Jekyll website.
 func (c *Crawler) ExportForJekyll() error {
+	if c.DryRun {
+		log.Info("Skipping YAML output (--dry-run)")
+		return nil;
+	}
+
 	return jekyll.GenerateJekyllYML(c.es)
 }
 
@@ -370,14 +390,25 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	} else {
 		err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa, repository.Domain)
 		if err != nil {
-			message = fmt.Sprintf("[%s] invalid publiccode.yml: %+v\n", repository.Name, err)
+			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
 			log.Errorf(message)
 			addLogEntry(&logEntries, message)
 
-			logBadYamlToFile(repository.FileRawURL)
+			if ! c.DryRun {
+				logBadYamlToFile(repository.FileRawURL)
+			}
 
 			return
 		}
+	}
+
+	message = fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name)
+	log.Infof(message)
+	addLogEntry(&logEntries, message)
+
+	if c.DryRun {
+		log.Infof("[%s]: Skipping repository clone and save to ElasticSearch (--dry-run)", repository.Name)
+		return;
 	}
 
 	// Clone repository.
@@ -413,7 +444,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	// Save to ES.
 	err = c.saveToES(repository, activityIndex, vitalitySlice, resp.Body)
 	if err != nil {
-		message = fmt.Sprintf("[%s] error saving to ElastcSearch: %v\n", repository.Name, err)
+		message = fmt.Sprintf("[%s] error saving to ElasticSearch: %v\n", repository.Name, err)
 		log.Errorf(message)
 
 		addLogEntry(&logEntries, message)
