@@ -1,0 +1,43 @@
+# This is an example goreleaser.yaml file with some sane defaults.
+# Make sure to check the documentation at http://goreleaser.com
+before:
+  hooks:
+    - cp crawler/config.toml.example ./config.toml
+builds:
+- 
+  id: crawler
+  binary: crawler
+  dir: crawler
+  main: ./main.go
+  ldflags:
+    - -s -w -X github.com/italia/developers-italia-backend/crawler/version.VERSION={{.Version}}
+  env:
+  - CGO_ENABLED=0
+  hooks:
+    post: cp config.toml {{ dir .Path }}/config.toml
+archives:
+- 
+  builds:
+    - crawler
+  wrap_in_directory: false
+  files:
+    - config.toml
+  replacements:
+    darwin: macOS
+    linux: Linux
+    windows: Windows
+    386: 32-bit
+    amd64: 64-bit
+  format_overrides:
+    - goos: windows
+      format: zip
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'

@@ -177,13 +177,14 @@ func (sw *software) variantsFeatures() map[string][]string {
 func (sw *software) findRelated(numberOfSimilarSoftware int, elasticClient *es.Client) []software {
 	query := elastic.NewBoolQuery("software")
 	for _, tag := range sw.PublicCode.Categories {
-		query = query.Should(es.NewTermQuery("categories", tag))
+		query = query.Should(es.NewTermQuery("publiccode.categories", tag))
 	}
 	query = query.MustNot(es.NewTermsQuery("id", sw.ID))
 
 	searchResult, err := elasticClient.Search().
 		Index(viper.GetString("ELASTIC_PUBLICCODE_INDEX")). // search in index "publiccode"
 		Query(query).                                       // specify the query
+		Sort("_score", false).                              // specify the sort order
 		From(0).Size(numberOfSimilarSoftware).              // take documents from 0-numberOfSimilarSoftware
 		Pretty(true).                                       // pretty print request and response JSON
 		Do(context.Background())                            // execute

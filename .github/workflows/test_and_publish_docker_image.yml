@@ -1,0 +1,50 @@
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+name: ci
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.13.15'
+
+      - run: cd crawler && make build
+      - run: cd crawler && make test
+
+  build_and_publish_docker_image:
+    needs: test
+
+    runs-on: ubuntu-latest
+
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Get Docker image tags
+        id: image_tags
+        run: |
+          IMAGE=italia/developers-italia-backend
+
+          TAGS=${IMAGE}:latest
+          TAGS="$TAGS,${IMAGE}:${GITHUB_SHA::8}"
+
+          echo ::set-output name=tags::${TAGS}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          build-args: |
+            BUILDKIT_CONTEXT_KEEP_GIT_DIR=1
+          push: true
+          tags: ${{ steps.image_tags.outputs.tags }}

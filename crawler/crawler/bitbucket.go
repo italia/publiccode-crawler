@@ -8,7 +8,7 @@ import (
 	"path"
 	"time"
 
-	"github.com/italia/developers-italia-backend/crawler/httpclient"
+	httpclient "github.com/italia/httpclient-lib-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

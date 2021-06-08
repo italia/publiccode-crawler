@@ -14,8 +14,9 @@ import (
 // Domain is a single code hosting service.
 type Domain struct {
 	// Domains.yml data
-	Host      string   `yaml:"host"`
-	BasicAuth []string `yaml:"basic-auth"`
+	Host        string   `yaml:"host"`
+	UseTokenFor []string `yaml:"use-token-for"`
+	BasicAuth   []string `yaml:"basic-auth"`
 }
 
 // API returns a Domain without tld.

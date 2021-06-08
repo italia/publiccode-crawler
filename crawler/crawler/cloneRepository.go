@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -28,26 +29,23 @@ func CloneRepository(domain Domain, hostname, name, gitURL, gitBranch, index str
 	// If folder already exists it will do a fetch instead of a clone.
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		//	Command is: git fetch --all
-		cmd := exec.Command("git", "-C", path, "fetch", "--all") // nolint: gas
-		err := cmd.Run()
+		out, err := exec.Command("git", "-C", path, "fetch", "--all").CombinedOutput() // nolint: gas
 		if err != nil {
-			return errors.New("cannot git pull the repository: " + err.Error())
+			return errors.New(fmt.Sprintf("cannot git pull the repository: %s: %s", err.Error(), out))
 		}
 		// Command is: git reset --hard origin/<branch_name>
-		cmd = exec.Command("git", "-C", path, "reset", "--hard", "origin/"+gitBranch) // nolint: gas
-		err = cmd.Run()
+		out, err = exec.Command("git", "-C", path, "reset", "--hard", "origin/"+gitBranch).CombinedOutput() // nolint: gas
 		if err != nil {
-			return errors.New("cannot git pull the repository: " + err.Error())
+			return errors.New(fmt.Sprintf("cannot git pull the repository: %s: %s", err.Error(), out))
 		}
 		return err
 	}
 
 	// Clone the repository using the external command "git".
 	// Command is: git clone -b <branch> <remote_repo>
-	cmd := exec.Command("git", "clone", "-b", gitBranch, gitURL, path) // nolint: gas
-	err := cmd.Run()
+	out, err := exec.Command("git", "clone", "-b", gitBranch, gitURL, path).CombinedOutput() // nolint: gas
 	if err != nil {
-		return errors.New("cannot git clone the repository: " + err.Error())
+		return errors.New(fmt.Sprintf("cannot git clone the repository: %s: %s", err.Error(), out))
 	}
 
 	metrics.GetCounter("repository_cloned", index).Inc()

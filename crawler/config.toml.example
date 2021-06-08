@@ -34,3 +34,6 @@ OUTPUT_DIR = "/var/crawler/output"
 # Blacklist folder
 BLACKLIST_FOLDER = "blacklist/"
 BLACKLIST_PATTERN = "*.yml"
+
+# Number of days for activity (vitality index) calculation
+ACTIVITY_DAYS = 60

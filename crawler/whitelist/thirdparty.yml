@@ -1,6 +1,9 @@
-# This file lists the repositories of third-party open source software indexed by
-# Developers Italia. If you want your software to be listed in the Developers italia
-# catalog, please add its repository to this file by opening a pull request.
+# This file lists the repositories of third-party open source software
+# indexed by Developers Italia. If you want your software to be listed
+# in the Developers italia catalog, please add its repository to
+# this file by opening a pull request.
+
+---
 
 - name: "GlobaLeaks"
   repos:
@@ -42,6 +45,11 @@
   repos:
     - "https://github.com/WikiToLearn/WikiToLearn"
 
+- name: "KDE"
+  repos:
+    - "https://invent.kde.org/education/gcompris"
+    - "https://invent.kde.org/pim/mygnuhealth/"
+
 - name: "Opencontent"
   repos:
     - "https://gitlab.com/opencontent/stanzadelcittadino"
@@ -64,3 +72,23 @@
 - name: "vtenext"
   repos:
     - "https://github.com/VTECRM/vtenext"
+
+- name: "PEC Parser"
+  repos:
+    - "https://github.com/biagioT/java-pec-parser"
+
+- name: Xades.NetCore
+  repos:
+    - "https://github.com/pgiacomo69/Xades.NetCore"
+
+- name: "RiscossioneConverter"
+  repos:
+    - "https://github.com/alessiolombardo/RiscossioneConverter"
+
+- name: "WooCommerce 18app"
+  repos:
+    - "https://github.com/ilGhera/wc-18app"
+
+- name: "WooCommerce Carta Docente"
+  repos:
+    - "https://github.com/ilGhera/wc-carta-docente"

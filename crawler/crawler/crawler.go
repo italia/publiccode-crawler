@@ -2,19 +2,25 @@ package crawler
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"os"
+	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/italia/developers-italia-backend/crawler/elastic"
-	"github.com/italia/developers-italia-backend/crawler/httpclient"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/jekyll"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
+	httpclient "github.com/italia/httpclient-lib-go"
 	publiccode "github.com/italia/publiccode-parser-go"
 	es "github.com/olivere/elastic"
 	log "github.com/sirupsen/logrus"
@@ -177,13 +183,27 @@ func (c *Crawler) removeBlackListedFromRepositories(listedRepos map[string]strin
 }
 
 func (c *Crawler) crawl() error {
+	reposChan := make(chan Repository)
+
 	// Start the metrics server.
 	go metrics.StartPrometheusMetricsServer()
 
 	defer c.publishersWg.Wait()
 
+	// Get cpus number
+	numCPUs := runtime.NumCPU()
+
 	// Process the repositories in order to retrieve the files.
-	c.ProcessRepositories()
+	for i := 0; i < numCPUs; i++ {
+		c.repositoriesWg.Add(1)
+		go c.ProcessRepositories(reposChan)
+	}
+
+	for repo := range c.repositories {
+		reposChan <- repo
+	}
+	close(reposChan)
+	c.repositoriesWg.Wait()
 
 	// ElasticFlush to flush all the operations on ES.
 	err := elastic.Flush(c.index, c.es)
@@ -271,18 +291,55 @@ func generateRandomInt(max int) (int, error) {
 }
 
 // ProcessRepositories process the repositories channel and check the availability of the file.
-func (c *Crawler) ProcessRepositories() {
-	for repository := range c.repositories {
-		c.repositoriesWg.Add(1)
-		go c.ProcessRepo(repository)
+func (c *Crawler) ProcessRepositories(repos chan Repository) {
+	defer c.repositoriesWg.Done()
+
+	for repository := range repos {
+		c.ProcessRepo(repository)
 	}
-	c.repositoriesWg.Wait()
+}
+
+type logEntry struct {
+	Datetime string `json:"datetime"`
+	Message  string `json:"message"`
+}
+
+func addLogEntry(logEntries *[]logEntry, message string) {
+	*logEntries = append(
+		*logEntries,
+		logEntry{Datetime: time.Now().UTC().Format(time.RFC3339), Message: message},
+	)
 }
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
 func (c *Crawler) ProcessRepo(repository Repository) {
-	// Defer waiting group close.
-	defer c.repositoriesWg.Done()
+	var logEntries []logEntry
+
+	var message string = ""
+
+	// Write the log to a file, so it can be accessed from outside at
+	// http://crawler-host/$codehosting/$org/$reponame/log.txt
+	defer func() {
+		fname := path.Join(
+			viper.GetString("OUTPUT_DIR"),
+			repository.Hostname,
+			path.Clean(repository.Name),
+			"log.json",
+		)
+
+		if err := os.MkdirAll(filepath.Dir(fname), 0775); err != nil {
+			log.Errorf("[%s]: %s", repository.Name, err.Error())
+
+			return
+		}
+
+		jsonOut, _ := json.Marshal(logEntries)
+		if err := ioutil.WriteFile(fname, jsonOut, 0644); err != nil {
+			log.Errorf("[%s]: %s", repository.Name, err.Error())
+
+			return
+		}
+	}()
 
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", c.index).Inc()
@@ -290,20 +347,35 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	resp, err := httpclient.GetURL(repository.FileRawURL, repository.Headers)
 
 	if resp.Status.Code != http.StatusOK || err != nil {
-		// Failed to retrieve publiccode.yml
+		message = fmt.Sprintf("[%s] Failed to GET publiccode.yml\n", repository.Name)
+		log.Errorf(message)
+
+		addLogEntry(&logEntries, message)
 		return
 	}
 
-	log.Infof("[%s] publiccode.yml found at %s", repository.Name, repository.FileRawURL)
+	message = fmt.Sprintf("[%s] publiccode.yml found at %s\n", repository.Name, repository.FileRawURL)
+	log.Infof(message)
+	addLogEntry(&logEntries, message)
 
 	// Validate the publiccode.yml
 	if repository.Pa.UnknownIPA {
-		log.Warn("When UnknownIPA is set to true IPA match with whitelists will be skipped")
+		message = fmt.Sprintf(
+			"[%s] When UnknownIPA is set to true IPA match with whitelists will be skipped\n",
+			repository.Name,
+		)
+
+		log.Warn(message)
+		addLogEntry(&logEntries, message)
 	} else {
 		err = validateRemoteFile(resp.Body, repository.FileRawURL, repository.Pa, repository.Domain)
 		if err != nil {
-			log.Errorf("[%s] invalid publiccode.yml: %+v", repository.Name, err)
+			message = fmt.Sprintf("[%s] invalid publiccode.yml: %+v\n", repository.Name, err)
+			log.Errorf(message)
+			addLogEntry(&logEntries, message)
+
 			logBadYamlToFile(repository.FileRawURL)
+
 			return
 		}
 	}
@@ -311,15 +383,28 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	// Clone repository.
 	err = CloneRepository(repository.Domain, repository.Hostname, repository.Name, repository.GitCloneURL, repository.GitBranch, c.index)
 	if err != nil {
-		log.Errorf("[%s] error while cloning: %v", repository.Name, err)
+		message = fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err)
+		log.Errorf(message)
+
+		addLogEntry(&logEntries, message)
 	}
 
-	// Calculate Repository activity index and vitality.
-	activityIndex, vitality, err := repository.CalculateRepoActivity(60)
-	if err != nil {
-		log.Errorf("[%s] error calculating activity index: %v", repository.Name, err)
+	// Calculate Repository activity index and vitality. Defaults to 60 days.
+	var activityDays int = 60
+	if viper.IsSet("ACTIVITY_DAYS") {
+		activityDays = viper.GetInt("ACTIVITY_DAYS")
 	}
-	log.Infof("[%s] activity index: %f", repository.Name, activityIndex)
+	activityIndex, vitality, err := repository.CalculateRepoActivity(activityDays)
+	if err != nil {
+		message = fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err)
+
+		log.Errorf(message)
+		addLogEntry(&logEntries, message)
+	}
+	message = fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex)
+	log.Infof(message)
+	addLogEntry(&logEntries, message)
+
 	var vitalitySlice []int
 	for i := 0; i < len(vitality); i++ {
 		vitalitySlice = append(vitalitySlice, int(vitality[i]))
@@ -328,7 +413,10 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	// Save to ES.
 	err = c.saveToES(repository, activityIndex, vitalitySlice, resp.Body)
 	if err != nil {
-		log.Errorf("[%s] error saving to ElastcSearch: %v", repository.Name, err)
+		message = fmt.Sprintf("[%s] error saving to ElastcSearch: %v\n", repository.Name, err)
+		log.Errorf(message)
+
+		addLogEntry(&logEntries, message)
 	}
 }
 
@@ -344,8 +432,7 @@ func getRemoteFile(data []byte, fileRawURL string, pa PA, domain Domain) (public
 	parser := publiccode.NewParser()
 	parser.Strict = false
 	parser.RemoteBaseURL = strings.TrimRight(fileRawURL, viper.GetString("CRAWLED_FILENAME"))
-
-	err := parser.ParseInDomain(data, domain.Host, domain.BasicAuth)
+	err := parser.ParseInDomain(data, domain.Host, domain.UseTokenFor, domain.BasicAuth)
 	if err != nil {
 		log.Errorf("Error parsing publiccode.yml for %s.", fileRawURL)
 		return *parser, err
