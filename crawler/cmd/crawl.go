@@ -7,6 +7,8 @@ import (
 )
 
 func init() {
+	crawlCmd.Flags().BoolVarP(&dryRun, "dry-run", "n", false, "perform a dry run with no changes made")
+
 	rootCmd.AddCommand(crawlCmd)
 }
 
@@ -17,7 +19,7 @@ var crawlCmd = &cobra.Command{
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		orgs := make(map[string]bool)
-		c := crawler.NewCrawler()
+		c := crawler.NewCrawler(dryRun)
 
 		// Read the supplied whitelists.
 		var publishers []crawler.PA

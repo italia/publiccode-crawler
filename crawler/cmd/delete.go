@@ -17,7 +17,7 @@ var deleteCmd = &cobra.Command{
 		No organizations! Only single repositories!`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		c := crawler.NewCrawler()
+		c := crawler.NewCrawler(false)
 
 		err := c.DeleteByQueryFromES(args[0])
 		if err != nil {

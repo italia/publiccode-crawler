@@ -15,7 +15,7 @@ var exportCmd = &cobra.Command{
 	Short: "Export YAML files.",
 	Long:  `Export YAML files for the front end.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		c := crawler.NewCrawler()
+		c := crawler.NewCrawler(false)
 
 		// Generate the data files for Jekyll.
 		err := c.ExportForJekyll()
