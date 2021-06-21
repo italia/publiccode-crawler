@@ -36,3 +36,8 @@
   codice-iPA: "istsc_blps020006"
   repos:
     - "https://github.com/italia/design-scuole-wordpress-theme"
+
+- name: "Ministero della Salute"
+  codice-iPA: "m_sa"
+  orgs:
+    - "https://github.com/ministero-salute"
