@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var dryRun bool
 var rootCmd = &cobra.Command{
 	Use:   "crawler",
 	Short: "A crawler for publiccode.yml files.",
