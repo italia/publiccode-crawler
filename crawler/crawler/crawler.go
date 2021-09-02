@@ -22,7 +22,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	httpclient "github.com/italia/httpclient-lib-go"
 	publiccode "github.com/italia/publiccode-parser-go"
-	es "github.com/olivere/elastic"
+	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

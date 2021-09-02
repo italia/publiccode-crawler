@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/olivere/elastic"
+	elastic "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -61,371 +61,369 @@ const (
   }
 },
 "mappings": {
-  "software": {
-    "dynamic_templates": [
-      {
-        "description": {
-          "path_match": "publiccode.description.*",
-          "mapping": {
-            "type": "object",
-            "properties": {
-              "localisedName": {
-                "type": "text",
-                "analyzer": "autocomplete",
-                "search_analyzer": "autocomplete_search",
-                "fields": {
-                  "keyword": { "type": "keyword", "ignore_above": 256 }
-                }
-              },
-              "genericName": {
-                "type": "text",
-                "fields": {
-                  "keyword": { "type": "keyword", "ignore_above": 256 }
-                }
-              },
-              "shortDescription": {
-                "type": "text",
-                "analyzer": "autocomplete",
-                "search_analyzer": "autocomplete_search"
-              },
-              "longDescription": {
-                "type": "text",
-                "analyzer": "autocomplete",
-                "search_analyzer": "autocomplete_search"
-              },
-              "documentation": {
-                "type": "text",
-                "index": false
-              },
-              "apiDocumentation": {
-                "type": "text",
-                "index": false
-              },
-              "features": {
-                "type": "keyword"
-              },
-              "screenshots": {
-                "type": "keyword",
-                "index": false
-              },
-              "videos": {
-                "type": "keyword",
-                "index": false
-              },
-              "awards": {
-                "type": "keyword"
+  "dynamic_templates": [
+    {
+      "description": {
+        "path_match": "publiccode.description.*",
+        "mapping": {
+          "type": "object",
+          "properties": {
+            "localisedName": {
+              "type": "text",
+              "analyzer": "autocomplete",
+              "search_analyzer": "autocomplete_search",
+              "fields": {
+                "keyword": { "type": "keyword", "ignore_above": 256 }
               }
+            },
+            "genericName": {
+              "type": "text",
+              "fields": {
+                "keyword": { "type": "keyword", "ignore_above": 256 }
+              }
+            },
+            "shortDescription": {
+              "type": "text",
+              "analyzer": "autocomplete",
+              "search_analyzer": "autocomplete_search"
+            },
+            "longDescription": {
+              "type": "text",
+              "analyzer": "autocomplete",
+              "search_analyzer": "autocomplete_search"
+            },
+            "documentation": {
+              "type": "text",
+              "index": false
+            },
+            "apiDocumentation": {
+              "type": "text",
+              "index": false
+            },
+            "features": {
+              "type": "keyword"
+            },
+            "screenshots": {
+              "type": "keyword",
+              "index": false
+            },
+            "videos": {
+              "type": "keyword",
+              "index": false
+            },
+            "awards": {
+              "type": "keyword"
             }
-          }
-        }
-      },
-      {
-        "dynamic-suggestions": {
-          "match": "suggest-*",
-          "mapping": {
-            "type": "completion",
-            "preserve_separators": false
           }
         }
       }
-    ],
-    "properties": {
-      "fileRawURL": {
-        "type": "keyword",
-        "index": true
-      },
-      "id": {
-        "type": "keyword",
-        "index": true
-      },
-      "crawltime": {
-        "type": "date",
-        "index": false
-      },
-      "publiccodeYmlVersion": {
-        "type": "keyword",
-        "index": false
-      },
+    },
+    {
+      "dynamic-suggestions": {
+        "match": "suggest-*",
+        "mapping": {
+          "type": "completion",
+          "preserve_separators": false
+        }
+      }
+    }
+  ],
+  "properties": {
+    "fileRawURL": {
+      "type": "keyword",
+      "index": true
+    },
+    "id": {
+      "type": "keyword",
+      "index": true
+    },
+    "crawltime": {
+      "type": "date",
+      "index": false
+    },
+    "publiccodeYmlVersion": {
+      "type": "keyword",
+      "index": false
+    },
 
-      "publiccode": {
-        "properties": {
-          "name": {
-            "type": "text",
-            "analyzer": "autocomplete",
-            "search_analyzer": "autocomplete_search"
-          },
-          "applicationSuite": {
-            "type": "text",
-            "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-          },
-          "url": {
-            "type": "keyword",
-            "index": true,
-            "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-          },
-          "landingURL": {
-            "type": "keyword",
-            "index": false
-          },
-          "isBasedOn": {
-            "type": "keyword",
-            "index": true
-          },
-          "softwareVersion": {
-            "type": "keyword"
-          },
-          "releaseDate": {
-            "type": "date",
-            "format": "strict_date"
-          },
-          "logo": {
-            "type": "keyword",
-            "index": false
-          },
-          "monochromeLogo": {
-            "type": "keyword",
-            "index": false
-          },
-          "inputTypes": {
-            "type": "keyword"
-          },
-          "outputTypes": {
-            "type": "keyword"
-          },
-          "platforms": {
-            "type": "keyword"
-          },
-          "categories": {
-            "type": "keyword"
-          },
-          "usedBy": {
-            "type": "text",
-            "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-          },
-          "roadmap": {
-            "type": "keyword",
-            "index": false
-          },
-          "developmentStatus": {
-            "type": "keyword"
-          },
-          "softwareType": {
-            "type": "keyword"
-          },
-          "intendedAudience": {
-            "properties": {
-              "scope": {
-                "type": "keyword"
-              },
-              "countries": {
-                "type": "keyword"
-              },
-              "unsupportedCountries": {
-                "type": "keyword"
-              }
+    "publiccode": {
+      "properties": {
+        "name": {
+          "type": "text",
+          "analyzer": "autocomplete",
+          "search_analyzer": "autocomplete_search"
+        },
+        "applicationSuite": {
+          "type": "text",
+          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+        },
+        "url": {
+          "type": "keyword",
+          "index": true,
+          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+        },
+        "landingURL": {
+          "type": "keyword",
+          "index": false
+        },
+        "isBasedOn": {
+          "type": "keyword",
+          "index": true
+        },
+        "softwareVersion": {
+          "type": "keyword"
+        },
+        "releaseDate": {
+          "type": "date",
+          "format": "strict_date"
+        },
+        "logo": {
+          "type": "keyword",
+          "index": false
+        },
+        "monochromeLogo": {
+          "type": "keyword",
+          "index": false
+        },
+        "inputTypes": {
+          "type": "keyword"
+        },
+        "outputTypes": {
+          "type": "keyword"
+        },
+        "platforms": {
+          "type": "keyword"
+        },
+        "categories": {
+          "type": "keyword"
+        },
+        "usedBy": {
+          "type": "text",
+          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+        },
+        "roadmap": {
+          "type": "keyword",
+          "index": false
+        },
+        "developmentStatus": {
+          "type": "keyword"
+        },
+        "softwareType": {
+          "type": "keyword"
+        },
+        "intendedAudience": {
+          "properties": {
+            "scope": {
+              "type": "keyword"
+            },
+            "countries": {
+              "type": "keyword"
+            },
+            "unsupportedCountries": {
+              "type": "keyword"
             }
-          },
-          "legal": {
-            "properties": {
-              "license": {
-                "type": "keyword",
-                "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
-              },
-              "mainCopyrightOwner": {
-                "type": "keyword"
-              },
-              "repoOwner": {
-                "type": "keyword"
-              },
-              "authorsFile": {
-                "type": "keyword",
-                "index": false
-              }
+          }
+        },
+        "legal": {
+          "properties": {
+            "license": {
+              "type": "keyword",
+              "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
+            },
+            "mainCopyrightOwner": {
+              "type": "keyword"
+            },
+            "repoOwner": {
+              "type": "keyword"
+            },
+            "authorsFile": {
+              "type": "keyword",
+              "index": false
             }
-          },
-          "maintainance": {
-            "properties": {
-              "type": {
-                "type": "keyword"
-              },
-              "contractors": {
-                "type": "nested",
-                "properties": {
-                  "name": {
-                    "type": "text"
-                  },
-                  "until": {
-                    "type": "date",
-                    "format": "strict_date"
-                  },
-                  "website": {
-                    "type": "text",
-                    "index": false
-                  }
-                }
-              },
-              "contacts": {
-                "type": "nested",
-                "properties": {
-                  "name": {
-                    "type": "text"
-                  },
-                  "email": {
-                    "type": "text"
-                  },
-                  "phone": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "affiliation": {
-                    "type": "text"
-                  }
+          }
+        },
+        "maintainance": {
+          "properties": {
+            "type": {
+              "type": "keyword"
+            },
+            "contractors": {
+              "type": "nested",
+              "properties": {
+                "name": {
+                  "type": "text"
+                },
+                "until": {
+                  "type": "date",
+                  "format": "strict_date"
+                },
+                "website": {
+                  "type": "text",
+                  "index": false
                 }
               }
-            }
-          },
-          "localisation": {
-            "properties": {
-              "localisationReady": {
-                "type": "boolean"
-              },
-              "availableLanguages": {
-                "type": "keyword"
-              }
-            }
-          },
-          "dependsOn": {
-            "properties": {
-              "open": {
-                "type": "nested",
-                "properties": {
-                  "name": {
-                    "type": "text"
-                  },
-                  "version-min": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "version-max": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "version": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "optional": {
-                    "type": "boolean"
-                  }
-                }
-              },
-              "proprietary": {
-                "type": "nested",
-                "properties": {
-                  "name": {
-                    "type": "text"
-                  },
-                  "version-min": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "version-max": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "version": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "optional": {
-                    "type": "boolean"
-                  }
-                }
-              },
-              "hardware": {
-                "type": "nested",
-                "properties": {
-                  "name": {
-                    "type": "text"
-                  },
-                  "version-min": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "version-max": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "version": {
-                    "type": "text",
-                    "index": false
-                  },
-                  "optional": {
-                    "type": "boolean"
-                  }
+            },
+            "contacts": {
+              "type": "nested",
+              "properties": {
+                "name": {
+                  "type": "text"
+                },
+                "email": {
+                  "type": "text"
+                },
+                "phone": {
+                  "type": "text",
+                  "index": false
+                },
+                "affiliation": {
+                  "type": "text"
                 }
               }
             }
-          },
-          "it": {
-            "properties": {
-              "countryExtensionVersion": {
-                "type": "keyword",
-                "index": false
-              },
-              "conforme": {
-                "properties": {
-                  "lineeGuidaDesign": {
-                    "type": "boolean"
-                  },
-                  "modelloInteroperabilita": {
-                    "type": "boolean"
-                  },
-                  "misureMinimeSicurezza": {
-                    "type": "boolean"
-                  },
-                  "gdpr": {
-                    "type": "boolean"
-                  }
+          }
+        },
+        "localisation": {
+          "properties": {
+            "localisationReady": {
+              "type": "boolean"
+            },
+            "availableLanguages": {
+              "type": "keyword"
+            }
+          }
+        },
+        "dependsOn": {
+          "properties": {
+            "open": {
+              "type": "nested",
+              "properties": {
+                "name": {
+                  "type": "text"
+                },
+                "version-min": {
+                  "type": "text",
+                  "index": false
+                },
+                "version-max": {
+                  "type": "text",
+                  "index": false
+                },
+                "version": {
+                  "type": "text",
+                  "index": false
+                },
+                "optional": {
+                  "type": "boolean"
                 }
-              },
-              "piattaforme": {
-                "properties": {
-                  "spid": {
-                    "type": "boolean"
-                  },
-                  "cie": {
-                    "type": "boolean"
-                  },
-                  "anpr": {
-                    "type": "boolean"
-                  },
-                  "pagopa": {
-                    "type": "boolean"
-                  }
+              }
+            },
+            "proprietary": {
+              "type": "nested",
+              "properties": {
+                "name": {
+                  "type": "text"
+                },
+                "version-min": {
+                  "type": "text",
+                  "index": false
+                },
+                "version-max": {
+                  "type": "text",
+                  "index": false
+                },
+                "version": {
+                  "type": "text",
+                  "index": false
+                },
+                "optional": {
+                  "type": "boolean"
                 }
-              },
-              "riuso": {
-                "properties": {
-                  "codiceIPA": {
-                    "type": "keyword"
-                  }
+              }
+            },
+            "hardware": {
+              "type": "nested",
+              "properties": {
+                "name": {
+                  "type": "text"
+                },
+                "version-min": {
+                  "type": "text",
+                  "index": false
+                },
+                "version-max": {
+                  "type": "text",
+                  "index": false
+                },
+                "version": {
+                  "type": "text",
+                  "index": false
+                },
+                "optional": {
+                  "type": "boolean"
+                }
+              }
+            }
+          }
+        },
+        "it": {
+          "properties": {
+            "countryExtensionVersion": {
+              "type": "keyword",
+              "index": false
+            },
+            "conforme": {
+              "properties": {
+                "lineeGuidaDesign": {
+                  "type": "boolean"
+                },
+                "modelloInteroperabilita": {
+                  "type": "boolean"
+                },
+                "misureMinimeSicurezza": {
+                  "type": "boolean"
+                },
+                "gdpr": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "piattaforme": {
+              "properties": {
+                "spid": {
+                  "type": "boolean"
+                },
+                "cie": {
+                  "type": "boolean"
+                },
+                "anpr": {
+                  "type": "boolean"
+                },
+                "pagopa": {
+                  "type": "boolean"
+                }
+              }
+            },
+            "riuso": {
+              "properties": {
+                "codiceIPA": {
+                  "type": "keyword"
                 }
               }
             }
           }
         }
-      },
-
-      "suggest-name": {
-        "type": "completion"
-      },
-      "vitalityScore": {
-        "type": "integer"
-      },
-      "vitalityDataChart": {
-        "type": "integer"
       }
+    },
+
+    "suggest-name": {
+      "type": "completion"
+    },
+    "vitalityScore": {
+      "type": "integer"
+    },
+    "vitalityDataChart": {
+      "type": "integer"
     }
   }
 }
@@ -457,16 +455,17 @@ const (
     }
   },
   "mappings": {
-    "administration": {
-      "properties": {
-        "it-riuso-codiceIPA": {
-          "type": "keyword"
-        },
-        "it-riuso-codiceIPA-label": {
-          "type": "text",
-          "analyzer": "autocomplete",
-          "search_analyzer": "autocomplete_search"
-        }
+    "properties": {
+      "it-riuso-codiceIPA": {
+        "type": "keyword"
+      },
+      "it-riuso-codiceIPA-label": {
+        "type": "text",
+        "analyzer": "autocomplete",
+        "search_analyzer": "autocomplete_search"
+      },
+      "type": {
+        type: "keyword"
       }
     }
   }
@@ -506,47 +505,45 @@ const (
       }
     },
     "mappings": {
-      "pa": {
-        "dynamic": "strict",
-        "properties": {
-          "ipa": {
-            "type": "text",
-            "analyzer": "autocomplete",
-            "search_analyzer": "autocomplete_search",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256,
-                "normalizer": "lowercase_normalizer"
-              }
+      "dynamic": "strict",
+      "properties": {
+        "ipa": {
+          "type": "text",
+          "analyzer": "autocomplete",
+          "search_analyzer": "autocomplete_search",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256,
+              "normalizer": "lowercase_normalizer"
             }
-          },
-          "description": {
-            "type": "text",
-            "analyzer": "autocomplete",
-            "search_analyzer": "autocomplete_search"
-          },
-          "pec": {
-            "type": "text",
-            "analyzer": "autocomplete",
-            "search_analyzer": "autocomplete_search",
-            "fields": {
-              "keyword": {
-                "type": "keyword",
-                "ignore_above": 256,
-                "normalizer": "lowercase_normalizer"
-              }
-            }
-          },
-          "type": {
-            "type": "keyword"
-          },
-          "cf": {
-            "type": "keyword"
-          },
-          "website": {
-            "type": "keyword"
           }
+        },
+        "description": {
+          "type": "text",
+          "analyzer": "autocomplete",
+          "search_analyzer": "autocomplete_search"
+        },
+        "pec": {
+          "type": "text",
+          "analyzer": "autocomplete",
+          "search_analyzer": "autocomplete_search",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 256,
+              "normalizer": "lowercase_normalizer"
+            }
+          }
+        },
+        "type": {
+          "type": "keyword"
+        },
+        "cf": {
+          "type": "keyword"
+        },
+        "website": {
+          "type": "keyword"
         }
       }
     }
@@ -619,7 +616,6 @@ func (r *Retrier) Retry(ctx context.Context, retry int, req *http.Request, resp 
 // NewBoolQuery initializes a boolean query for Elasticsearch.
 func NewBoolQuery(queryType string) *elastic.BoolQuery {
 	query := elastic.NewBoolQuery()
-	query = query.Filter(elastic.NewTypeQuery(queryType))
 	if queryType == "software" {
 		unsupportedCountries := viper.GetStringSlice("IGNORE_UNSUPPORTEDCOUNTRIES")
 		uc := make([]interface{}, len(unsupportedCountries))

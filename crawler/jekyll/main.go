@@ -4,7 +4,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/olivere/elastic"
+	elastic "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

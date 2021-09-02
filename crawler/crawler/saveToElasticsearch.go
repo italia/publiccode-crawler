@@ -12,7 +12,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	pcode "github.com/italia/publiccode-parser-go"
-	"github.com/olivere/elastic"
+	elastic "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -20,6 +20,7 @@ import (
 type administration struct {
 	Name      string `json:"it-riuso-codiceIPA-label"`
 	CodiceIPA string `json:"it-riuso-codiceIPA"`
+	Type      string `json:"type"`
 }
 
 // saveToES save the chosen data []byte in elasticsearch
@@ -36,6 +37,7 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 		VitalityScore         float64           `json:"vitalityScore"`
 		VitalityDataChart     []int             `json:"vitalityDataChart"`
 		OEmbedHTML            map[string]string `json:"oEmbedHTML"`
+		Type                  string            `json:"type"`
 	}
 
 	// Parse the publiccode.yml file
@@ -57,6 +59,7 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 		VitalityScore:         activityIndex,
 		VitalityDataChart:     vitality,
 		OEmbedHTML:            parser.OEmbed,
+		Type:                  "software",
 	}
 
 	// Convert parser.PublicCode to YAML and parse it again into the softwareES record
@@ -70,7 +73,6 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 	ctx := context.Background()
 	_, err = c.es.Index().
 		Index(c.index).
-		Type("software").
 		Id(file.ID).
 		BodyJson(file).
 		Do(ctx)
@@ -85,11 +87,11 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 		// Put administrations data in ES.
 		_, err = c.es.Index().
 			Index(viper.GetString("ELASTIC_PUBLISHERS_INDEX")).
-			Type("administration").
 			Id(parser.PublicCode.It.Riuso.CodiceIPA).
 			BodyJson(administration{
 				Name:      file.ItRiusoCodiceIPALabel,
 				CodiceIPA: parser.PublicCode.It.Riuso.CodiceIPA,
+				Type:      "administration",
 			}).
 			Do(ctx)
 		if err != nil {
@@ -134,7 +136,6 @@ func (c *Crawler) DeleteByQueryFromES(search string) error {
 	ctx := context.Background()
 	searchResult, err := c.es.DeleteByQuery().
 		Index(c.index).
-		Type("software").
 		Query(termQuery). // specify the query
 		Do(ctx)           // execute
 	if err != nil {
