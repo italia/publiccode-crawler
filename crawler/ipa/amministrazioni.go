@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/italia/developers-italia-backend/crawler/elastic"
-	es "github.com/olivere/elastic"
+	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -87,48 +87,17 @@ func UpdateFromIndicePAIfNeeded(elasticClient *es.Client) error {
 	return nil
 }
 
-// UpdateFromIndicePA downloads the amministrazioni.txt file and loads it into Elasticsearch.
+// UpdateFromIndicePA downloads the pec.txt file and loads it into Elasticsearch.
 func UpdateFromIndicePA(elasticClient *es.Client) error {
-	// Download the main iPA file to disk (TODO: remove this)
-	url := viper.GetString("INDICEPA_URL")
-	log.Infof("Updating our cached copy from IndicePA from %v...", url)
-	file := localIPAFile()
-	err := downloadFile(file, url)
-	if err != nil {
-		log.Error(err)
-		return err
-	}
-
 	type amministrazioneES struct {
 		IPA         string `json:"ipa"`
 		Description string `json:"description"`
 		Type        string `json:"type"`
 		PEC         string `json:"pec"`
-		FiscalCode  string `json:"cf"`
-		Website     string `json:"website"`
-	}
-
-	// Open file for parsing
-	lines, err := readCSV(file)
-	if err != nil {
-		return err
-	}
-
-	// Parse lines
-	amms := make(map[string]amministrazioneES)
-	for _, line := range lines {
-		ipaCode := strings.ToLower(line[0])
-		amms[ipaCode] = amministrazioneES{
-			IPA:         ipaCode,
-			Description: line[1],
-			Type:        line[12],
-			FiscalCode:  line[14],
-			Website:     line[8],
-		}
 	}
 
 	// Read the PEC CSV file
-	lines, err = readCSVFromURL(viper.GetString("INDICEPA_PEC_URL"))
+	lines, err := readCSVFromURL(viper.GetString("INDICEPA_PEC_URL"))
 	if err != nil {
 		return err
 	}
@@ -136,21 +105,15 @@ func UpdateFromIndicePA(elasticClient *es.Client) error {
 	// Loop through the PEC addresses, retrieve the template record for each entity
 	// and add the PEC address to each one.
 	var records []amministrazioneES
-	for _, line := range lines {
-		ipaCode := strings.ToLower(line[0])
-		amm, ok := amms[ipaCode]
-		if !ok {
-			log.Debugf("skipping non-existing IPA code found in AOO: %s", line[0])
-			continue
-		}
 
-		if line[8] == "pec" {
-			amm.PEC = line[7]
-		} else {
-			continue
-		}
-
-		records = append(records, amm)
+	// Skip header
+	for _, line := range lines[1:] {
+		records = append(records, amministrazioneES{
+			IPA:         strings.ToLower(line[0]),
+			Description: line[1],
+			Type:        line[3],
+			PEC:         line[7],
+		})
 	}
 
 	if len(records) == 0 {
@@ -178,7 +141,6 @@ func UpdateFromIndicePA(elasticClient *es.Client) error {
 	for n, amm := range records {
 		req := es.NewBulkIndexRequest().
 			Index(viper.GetString("ELASTIC_INDICEPA_INDEX")).
-			Type("pa").
 			Id(strconv.Itoa(n)).
 			Doc(amm)
 		bulkRequest.Add(req)

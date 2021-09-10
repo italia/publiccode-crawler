@@ -9,7 +9,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	es "github.com/olivere/elastic"
+	es "github.com/olivere/elastic/v7"
 )
 
 // shortSoftware is the subset of a software document that we want to output
@@ -86,7 +86,7 @@ func exportSoftwareList(query *es.BoolQuery, filename string, results int, elast
 	var items []shortSoftware
 	for _, hit := range searchResult.Hits.Hits {
 		var sw shortSoftware
-		if err := json.Unmarshal(*hit.Source, &sw); err != nil {
+		if err := json.Unmarshal(hit.Source, &sw); err != nil {
 			log.Error(err)
 		}
 		items = append(items, sw)

@@ -12,7 +12,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/icza/dyno"
 	"github.com/italia/developers-italia-backend/crawler/elastic"
-	es "github.com/olivere/elastic"
+	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/thoas/go-funk"
 )
@@ -92,14 +92,14 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularCat
 		// YAML that looks like a single item and we can append it to the output
 		// file as we go, without keeping all items in memory.
 		full := make([]interface{}, 1)
-		if err := json.Unmarshal(*hit.Source, &full[0]); err != nil {
+		if err := json.Unmarshal(hit.Source, &full[0]); err != nil {
 			log.Error(err)
 		}
 
 		// Let's parse the record again to get the fields we need for computing
 		// additional information.
 		var sw software
-		if err := json.Unmarshal(*hit.Source, &sw); err != nil {
+		if err := json.Unmarshal(hit.Source, &sw); err != nil {
 			log.Error(err)
 		}
 

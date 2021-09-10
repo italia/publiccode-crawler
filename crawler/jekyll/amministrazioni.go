@@ -12,7 +12,7 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/italia/developers-italia-backend/crawler/elastic"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
-	es "github.com/olivere/elastic"
+	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -66,7 +66,7 @@ func AmministrazioniYML(filename string, elasticClient *es.Client) error {
 	seen := make(map[string]struct{})
 	for _, hit := range searchResult.Hits.Hits {
 		var v interface{}
-		if err := json.Unmarshal(*hit.Source, &v); err != nil {
+		if err := json.Unmarshal(hit.Source, &v); err != nil {
 			log.Error(err)
 		}
 
