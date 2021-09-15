@@ -151,7 +151,8 @@ const (
         "name": {
           "type": "text",
           "analyzer": "autocomplete",
-          "search_analyzer": "autocomplete_search"
+          "search_analyzer": "autocomplete_search",
+          "fields": { "keyword": { "type": "keyword", "ignore_above": 256 } }
         },
         "applicationSuite": {
           "type": "text",
