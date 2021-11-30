@@ -4,6 +4,10 @@
 # this file by opening a pull request.
 
 ---
+- name: "GITLAB"
+  repos:
+    - "https://gitlab.com/gitlab-org/gitlab"
+
 
 - name: "GlobaLeaks"
   repos:
