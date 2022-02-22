@@ -6,7 +6,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/italia/httpclient-lib-go v0.0.0-20201009133728-9044482688d7
-	github.com/italia/publiccode-parser-go v1.2.1
+	github.com/italia/publiccode-parser-go v1.2.4
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/mitchellh/mapstructure v1.3.2 // indirect
 	github.com/olekukonko/tablewriter v0.0.4
