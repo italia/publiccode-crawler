@@ -1,4 +1,4 @@
-FROM golang:1.13.1
+FROM golang:1.17
 
 # Env variables definition
 ENV USER developers
