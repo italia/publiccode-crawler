@@ -5,13 +5,16 @@ import (
 	"crypto/sha1"
 	"errors"
 	"fmt"
+	"net/url"
+	"path"
 	"strings"
 	"time"
 
 	"github.com/ghodss/yaml"
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
-	pcode "github.com/italia/publiccode-parser-go"
+	"github.com/alranel/go-vcsurl/v2"
+	publiccode "github.com/italia/publiccode-parser-go/v2"
 	elastic "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -25,7 +28,7 @@ type administration struct {
 
 // saveToES save the chosen data []byte in elasticsearch
 // data contains the raw publiccode.yml file
-func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []int, data []byte) error {
+func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []int, parser publiccode.Parser) error {
 	// softwareES represents a software record in Elasticsearch
 	type softwareES struct {
 		FileRawURL            string            `json:"fileRawURL"`
@@ -40,13 +43,35 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 		Type                  string            `json:"type"`
 	}
 
-	// Parse the publiccode.yml file
-	parser := pcode.NewParser()
-	parser.Strict = false
-	parser.RemoteBaseURL = strings.TrimRight(repo.FileRawURL, viper.GetString("CRAWLED_FILENAME"))
-	err := parser.ParseInDomain(data, repo.Domain.Host, repo.Domain.UseTokenFor, repo.Domain.BasicAuth)
+	// TODO: We should probably get rid of this and maintain the original
+	// publiccode.yml in the database, and expand the logo and screenshots paths
+	// client side.
+	publiccode := &parser.PublicCode;
+	rawRoot, err := vcsurl.GetRawRoot((*url.URL)(parser.PublicCode.URL), parser.Branch)
+
+	if publiccode.Logo != "" {
+		logoURL, _ := url.Parse(publiccode.Logo)
+		if ! logoURL.IsAbs() {
+			*logoURL = *rawRoot
+			logoURL.Path = path.Join(rawRoot.Path, publiccode.Logo)
+		}
+		publiccode.Logo = logoURL.String()
+	}
+	for lang, desc := range publiccode.Description {
+		for idx, screenshot := range desc.Screenshots {
+			screenshotURL, _ := url.Parse(screenshot)
+			if ! screenshotURL.IsAbs() {
+				*screenshotURL = *rawRoot
+				screenshotURL.Path = path.Join(rawRoot.Path, screenshot)
+			}
+
+			publiccode.Description[lang].Screenshots[idx] = screenshotURL.String()
+		}
+	}
+
+	yml, err := parser.ToYAML()
 	if err != nil {
-		log.Errorf("Error parsing publiccode.yml: %v", err)
+		return err
 	}
 
 	// Create a softwareES object and populate it
@@ -55,18 +80,11 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 		ID:                    repo.generateID(),
 		CrawlTime:             time.Now().Format(time.RFC3339),
 		Slug:                  repo.generateSlug(),
-		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(parser.PublicCode.It.Riuso.CodiceIPA),
+		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(publiccode.It.Riuso.CodiceIPA),
 		VitalityScore:         activityIndex,
 		VitalityDataChart:     vitality,
-		OEmbedHTML:            parser.OEmbed,
-		Type:                  "software",
 	}
 
-	// Convert parser.PublicCode to YAML and parse it again into the softwareES record
-	yml, err := parser.ToYAML()
-	if err != nil {
-		return err
-	}
 	err = yaml.Unmarshal(yml, &file.PublicCode)
 
 	// Put publiccode data in ES.
@@ -83,14 +101,14 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 	metrics.GetCounter("repository_file_indexed", c.index).Inc()
 
 	// Add administration data.
-	if parser.PublicCode.It.Riuso.CodiceIPA != "" {
+	if publiccode.It.Riuso.CodiceIPA != "" {
 		// Put administrations data in ES.
 		_, err = c.es.Index().
 			Index(viper.GetString("ELASTIC_PUBLISHERS_INDEX")).
-			Id(parser.PublicCode.It.Riuso.CodiceIPA).
+			Id(publiccode.It.Riuso.CodiceIPA).
 			BodyJson(administration{
 				Name:      file.ItRiusoCodiceIPALabel,
-				CodiceIPA: parser.PublicCode.It.Riuso.CodiceIPA,
+				CodiceIPA: publiccode.It.Riuso.CodiceIPA,
 				Type:      "administration",
 			}).
 			Do(ctx)

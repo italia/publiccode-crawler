@@ -2,9 +2,10 @@ package crawler
 
 import (
 	"io/ioutil"
+    "net/url"
 	"testing"
 
-	publiccode "github.com/italia/publiccode-parser-go"
+	publiccode "github.com/italia/publiccode-parser-go/v2"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	yaml "gopkg.in/yaml.v2"
@@ -35,6 +36,10 @@ func TestIPAMatch(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
 	var pas []PA
 	var parser publiccode.Parser
+
+    u, _ := url.Parse("https://github.com/a/b/blob/main/publiccode.yml")
+    parser.PublicCode.URL = (*publiccode.URL)(u)
+
 	err := yaml.Unmarshal([]byte(whitelist), &pas)
 	if err != nil {
 		t.Errorf("error on unmarsalling whitelist %s", err)
@@ -44,7 +49,7 @@ func TestIPAMatch(t *testing.T) {
 	// on both sides
 	for _, pa := range pas {
 		parser.PublicCode.It.Riuso.CodiceIPA = pa.CodiceIPA
-		err = validateFile(pa, parser, "")
+		err = validateFile(pa, parser, "https://raw.githubusercontent.com/a/b/main/publiccode.yml")
 		if err != nil {
 			t.Errorf("error comparing IPA codes %s", err)
 		}
@@ -53,7 +58,7 @@ func TestIPAMatch(t *testing.T) {
 	// it should thowns errors since they always mismatch
 	for _, pa := range pas {
 		parser.PublicCode.It.Riuso.CodiceIPA = pa.CodiceIPA + "x"
-		err = validateFile(pa, parser, "")
+		err = validateFile(pa, parser, "https://raw.githubusercontent.com/a/b/main/publiccode.yml")
 		if err == nil {
 			t.Errorf("error comparing IPA codes %v", err)
 		}
