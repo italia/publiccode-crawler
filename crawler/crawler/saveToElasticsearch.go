@@ -83,6 +83,7 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(publiccode.It.Riuso.CodiceIPA),
 		VitalityScore:         activityIndex,
 		VitalityDataChart:     vitality,
+		Type:                  "software",
 	}
 
 	err = yaml.Unmarshal(yml, &file.PublicCode)
