@@ -408,17 +408,22 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 			return
 		}
 
-		err = validateFile(repository.Pa, *parser, repository.FileRawURL)
-		if err != nil {
-			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
-			log.Errorf(message)
-			addLogEntry(&logEntries, message)
+		// HACK: Publishers named "_"" are special and get to skip the additional checks.
+		// This can be used to add repositories and organizations, under the crawler's admins control,
+		// that describe arbitrary repos (eg. metarepos for other entities)
+		if repository.Pa.Name != "_" {
+			err = validateFile(repository.Pa, *parser, repository.FileRawURL)
+			if err != nil {
+				message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
+				log.Errorf(message)
+				addLogEntry(&logEntries, message)
 
-			if ! c.DryRun {
-				logBadYamlToFile(repository.FileRawURL)
+				if ! c.DryRun {
+					logBadYamlToFile(repository.FileRawURL)
+				}
+
+				return
 			}
-
-			return
 		}
 	}
 
