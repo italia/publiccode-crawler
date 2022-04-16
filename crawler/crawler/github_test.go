@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"io/ioutil"
+	"net/url"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -46,13 +47,14 @@ func TestGenerateGithubAPIURL(t *testing.T) {
 		out string
 	}{
 		{"https://github.com/italia", "https://api.github.com/orgs/italia/repos"},
-		{":unparsable", ":unparsable"},
 	}
 
 	for _, l := range links {
 		genURL := GenerateGithubAPIURL()
-		if out, err := genURL(l.in); out[0] != l.out {
-			t.Logf("Expected %s == %s: %v ", out[0], l.out, err)
+
+		u, _ := url.Parse(l.in)
+		if out, err := genURL(*u); out[0].String() != l.out {
+			t.Logf("Expected %s == %s: %v ", out[0].String(), l.out, err)
 			t.Fail()
 		}
 	}

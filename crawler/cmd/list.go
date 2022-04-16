@@ -30,11 +30,11 @@ var listCmd = &cobra.Command{
 		var data [][]string
 
 		// Process every item in whitelist.
-		for _, pa := range whitelist {
+		for _, publisher := range whitelist {
 			// And add to data table.
-			data = append(data, []string{pa.Name, pa.CodiceIPA, ""})
-			for _, org := range pa.Organizations {
-				data = append(data, []string{pa.Name, pa.CodiceIPA, org})
+			data = append(data, []string{publisher.Name, publisher.Id, ""})
+			for _, org := range publisher.Organizations {
+				data = append(data, []string{publisher.Name, publisher.Id, org.String()})
 			}
 		}
 

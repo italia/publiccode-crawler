@@ -181,40 +181,35 @@ type Links struct {
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
 func RegisterBitbucketAPI() OrganizationHandler {
-	return func(domain Domain, link string, repositories chan Repository, pa PA) (string, error) {
+	return func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) (*url.URL, error) {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
 			n, err := generateRandomInt(len(domain.BasicAuth))
 			if err != nil {
-				return link, err
+				return nil, err
 			}
 			headers["Authorization"] = domain.BasicAuth[n]
 		}
 
-		// Parse url.
-		u, err := url.Parse(link)
-		if err != nil {
-			return link, err
-		}
 		// Set domain host to new host.
-		domain.Host = u.Hostname()
+		domain.Host = url.Hostname()
 
 		// Get List of repositories.
-		resp, err := httpclient.GetURL(link, headers)
+		resp, err := httpclient.GetURL(url.String(), headers)
 		if err != nil {
-			return link, err
+			return nil, err
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return "", errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return nil, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
 		var result Bitbucket
 		err = json.Unmarshal(resp.Body, &result)
 		if err != nil {
-			return link, err
+			return nil, err
 		}
 
 		// Add repositories to the channel that will perform the check on everyone.
@@ -223,7 +218,7 @@ func RegisterBitbucketAPI() OrganizationHandler {
 			// Join file raw URL.
 			u, err := url.Parse(v.Links.HTML.Href)
 			if err != nil {
-				return link, err
+				return nil, err
 			}
 			u.Path = path.Join(u.Path, "raw", v.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
@@ -242,7 +237,7 @@ func RegisterBitbucketAPI() OrganizationHandler {
 					GitCloneURL: v.Links.Clone[0].Href,
 					GitBranch:   v.Mainbranch.Name,
 					Domain:      domain,
-					Pa:          pa,
+					Publisher:   publisher,
 					Headers:     headers,
 					Metadata:    metadata,
 				}
@@ -251,17 +246,18 @@ func RegisterBitbucketAPI() OrganizationHandler {
 
 		// if last page for this organization, the result.Next is empty.
 		if len(result.Next) == 0 {
-			return "", nil
+            return nil, nil
 		}
 
 		// Return next url.
-		return result.Next, nil
+		u, _ := url.Parse(result.Next)
+		return u, nil
 	}
 }
 
 // RegisterSingleBitbucketAPI register the crawler function for single Bitbucket repository.
 func RegisterSingleBitbucketAPI() SingleRepoHandler {
-	return func(domain Domain, link string, repositories chan Repository, pa PA) error {
+	return func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		if domain.BasicAuth != nil {
@@ -272,22 +268,15 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 			headers["Authorization"] = domain.BasicAuth[n]
 		}
 
-		// Parse url.
-		u, err := url.Parse(link)
-		if err != nil {
-			return err
-		}
-
 		// Set domain host to new host.
-		domain.Host = u.Hostname()
+		domain.Host = url.Hostname()
 
-		u.Path = path.Join("/2.0/repositories", u.Path)
-		u.Host = "api." + u.Host
-
-		linkRepo := u.String()
+		apiUrl := *&url
+		apiUrl.Path = path.Join("/2.0/repositories", url.Path)
+		apiUrl.Host = "api." + url.Host
 
 		// Get single Repo
-		resp, err := httpclient.GetURL(linkRepo, headers)
+		resp, err := httpclient.GetURL(apiUrl.String(), headers)
 		if err != nil {
 			return err
 		}
@@ -303,12 +292,7 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 			return err
 		}
 
-		// Join file raw URL.
-		u, err = url.Parse(link)
-		if err != nil {
-			return err
-		}
-		fullURL := path.Join(u.Hostname(), result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
+		fullURL := path.Join(url.Hostname(), result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
 		// Marshal all the repository metadata.
 		metadata, err := json.Marshal(result)
@@ -319,11 +303,11 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 		if result.Mainbranch.Name != "" {
 			repositories <- Repository{
 				Name:       result.FullName,
-				Hostname:   u.Hostname(),
+				Hostname:   url.Hostname(),
 				FileRawURL: "https://" + fullURL,
 				GitBranch:  result.Mainbranch.Name,
 				Domain:     domain,
-				Pa:         pa,
+				Publisher:  publisher,
 				Headers:    headers,
 				Metadata:   metadata,
 			}
@@ -339,15 +323,11 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 // IN: https://bitbucket.org/Soft
 // OUT:https://api.bitbucket.org/2.0/repositories/Soft?pagelen=100
 func GenerateBitbucketAPIURL() GeneratorAPIURL {
-	return func(in string) (out []string, err error) {
-		u, err := url.Parse(in)
-		if err != nil {
-			return []string{in}, err
-		}
+	return func(u url.URL) (out []url.URL, err error) {
 		u.Path = path.Join("/2.0/repositories", u.Path)
 		u.Host = "api." + u.Host
 
-		out = append(out, u.String())
+		out = append(out, u)
 		return
 	}
 }

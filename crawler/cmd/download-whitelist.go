@@ -4,12 +4,14 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/italia/developers-italia-backend/crawler/crawler"
 	"github.com/spf13/cobra"
-	"github.com/thoas/go-funk"
 	"gopkg.in/yaml.v2"
+
+	ymlurl "github.com/italia/developers-italia-backend/crawler/internal"
 )
 
 func init() {
@@ -62,18 +64,20 @@ var downloadWhitelistCmd = &cobra.Command{
 	REPOLIST:
 		for _, i := range repolist.Registrati {
 			for idx, publisher := range publishers {
-				if publisher.CodiceIPA == i.IPA {
-					// If this IPA code is already known, append this URL to the existing item
-					publishers[idx].Organizations = funk.UniqString(append(publisher.Organizations, i.URL))
+				if publisher.Id == i.IPA {
+					u, _ := url.Parse(i.URL)
+					// If this Id is already known, append this URL to the existing item
+					publishers[idx].Organizations = append(publisher.Organizations, (ymlurl.URL)(*u))
 					continue REPOLIST
 				}
 			}
 
+			u, _ := url.Parse(i.URL)
 			// If this IPA code is not known, append a new publisher item
-			publishers = append(publishers, crawler.PA{
+			publishers = append(publishers, crawler.Publisher{
 				Name:          i.IPA,
-				CodiceIPA:     i.IPA,
-				Organizations: []string{i.URL},
+				Id:            i.IPA,
+				Organizations: []ymlurl.URL{(ymlurl.URL)(*u)},
 			})
 		}
 

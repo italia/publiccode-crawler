@@ -24,8 +24,8 @@ func isGitlabGroup(u url.URL) bool {
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
 func RegisterGitlabAPI() OrganizationHandler {
-	return func(domain Domain, link string, repositories chan Repository, pa PA) (string, error) {
-		log.Debugf("RegisterGitlabAPI: %s ", link)
+	return func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) (*url.URL, error) {
+		log.Debugf("RegisterGitlabAPI: %s ", url.String())
 
 		headers := make(map[string]string)
 
@@ -36,30 +36,26 @@ func RegisterGitlabAPI() OrganizationHandler {
 			headers["Authorization"] = token
 		}
 
-		u, err := url.Parse(link)
-		if err != nil {
-			return link, err
-		}
 		// Set domain host to new host.
-		domain.Host = u.Hostname()
+		domain.Host = url.Hostname()
 
-		apiURL, _ := u.Parse("/api/v4")
+		apiURL, _ := url.Parse("/api/v4")
 		git, err := gitlab.NewClient(token, gitlab.WithBaseURL(apiURL.String()))
 		if err != nil {
-			return link, err
+			return nil, err
 		}
 
-		if isGitlabGroup(*u) {
-			groupName := strings.Replace(u.Path, "/api/v4/groups/", "", -1)
+		if isGitlabGroup(url) {
+			groupName := strings.Replace(url.Path, "/api/v4/groups/", "", -1)
 
 			group, _, err := git.Groups.GetGroup(groupName, &gitlab.GetGroupOptions{})
 			if err != nil {
-				return link, err
+				return nil, err
 			}
 
-			err = addGroupProjects(*group, domain, pa, headers, repositories, git)
+			err = addGroupProjects(*group, domain, publisher, headers, repositories, git)
 			if err != nil {
-				return link, err
+				return nil, err
 			}
 		} else {
 			opts := &gitlab.ListProjectsOptions{
@@ -69,12 +65,12 @@ func RegisterGitlabAPI() OrganizationHandler {
 			for {
 				projects, res, err := git.Projects.ListProjects(opts)
 				if err != nil {
-					return link, err
+					return nil, err
 				}
 				for _, prj := range projects {
-					err = addProject(*prj, domain, pa, headers, repositories)
+					err = addProject(*prj, domain, publisher, headers, repositories)
 					if err != nil {
-						return link, err
+						return nil, err
 					}
 				}
 
@@ -85,13 +81,13 @@ func RegisterGitlabAPI() OrganizationHandler {
 			}
 		}
 
-		return "", nil
+		return nil, nil
 	}
 }
 
 // RegisterSingleGitlabAPI register the crawler function for single Bitbucket API.
 func RegisterSingleGitlabAPI() SingleRepoHandler {
-	return func(domain Domain, link string, repositories chan Repository, pa PA) error {
+	return func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) error {
 		headers := make(map[string]string)
 
 		token := ""
@@ -101,26 +97,22 @@ func RegisterSingleGitlabAPI() SingleRepoHandler {
 			headers["Authorization"] = token
 		}
 
-		u, err := url.Parse(link)
-		if err != nil {
-			return err
-		}
 		// Set domain host to new host.
-		domain.Host = u.Hostname()
+		domain.Host = url.Hostname()
 
-		apiURL, _ := u.Parse("/api/v4")
+		apiURL, _ := url.Parse("/api/v4")
 		git, err := gitlab.NewClient(token, gitlab.WithBaseURL(apiURL.String()))
 		if err != nil {
 			return err
 		}
 
-		projectName := strings.Trim(u.Path, "/")
+		projectName := strings.Trim(url.Path, "/")
 		prj, _, err := git.Projects.GetProject(projectName, &gitlab.GetProjectOptions{})
 		if err != nil {
 			return err
 		}
 
-		err = addProject(*prj, domain, pa, headers, repositories)
+		err = addProject(*prj, domain, publisher, headers, repositories)
 		if err != nil {
 			return err
 		}
@@ -142,7 +134,7 @@ func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 
 // addGroupProjects sends all the projects in a GitLab group, including all subgroups, to
 // the repositories channel
-func addGroupProjects(group gitlab.Group, domain Domain, pa PA, headers map[string]string, repositories chan Repository, client *gitlab.Client) error {
+func addGroupProjects(group gitlab.Group, domain Domain, publisher Publisher, headers map[string]string, repositories chan Repository, client *gitlab.Client) error {
 	opts := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{Page: 1},
 	}
@@ -153,7 +145,7 @@ func addGroupProjects(group gitlab.Group, domain Domain, pa PA, headers map[stri
 			return err
 		}
 		for _, prj := range projects {
-			err = addProject(*prj, domain, pa, headers, repositories)
+			err = addProject(*prj, domain, publisher, headers, repositories)
 			if err != nil {
 				return err
 			}
@@ -174,7 +166,7 @@ func addGroupProjects(group gitlab.Group, domain Domain, pa PA, headers map[stri
 			return err
 		}
 		for _, g := range groups {
-			err = addGroupProjects(*g, domain, pa, headers, repositories, client)
+			err = addGroupProjects(*g, domain, publisher, headers, repositories, client)
 			if err != nil {
 				return err
 			}
@@ -190,7 +182,7 @@ func addGroupProjects(group gitlab.Group, domain Domain, pa PA, headers map[stri
 }
 
 // addGroupProjects sends the GitLab project the repositories channel
-func addProject(project gitlab.Project, domain Domain, pa PA, headers map[string]string, repositories chan Repository) error {
+func addProject(project gitlab.Project, domain Domain, publisher Publisher, headers map[string]string, repositories chan Repository) error {
 	// Join file raw URL string.
 	rawURL, err := generateGitlabRawURL(project.WebURL, project.DefaultBranch)
 	if err != nil {
@@ -212,7 +204,7 @@ func addProject(project gitlab.Project, domain Domain, pa PA, headers map[string
 			GitCloneURL: project.HTTPURLToRepo,
 			GitBranch:   project.DefaultBranch,
 			Domain:      domain,
-			Pa:          pa,
+			Publisher:   publisher,
 			Headers:     headers,
 			Metadata:    metadata,
 		}
@@ -225,14 +217,10 @@ func addProject(project gitlab.Project, domain Domain, pa PA, headers map[string
 // IN: https://gitlab.org/blockninja
 // OUT:https://gitlab.com/api/v4/groups/blockninja
 func GenerateGitlabAPIURL() GeneratorAPIURL {
-	return func(in string) (out []string, err error) {
-		u, err := url.Parse(in)
-		if err != nil {
-			return []string{in}, err
-		}
+	return func(u url.URL) (out []url.URL, err error) {
 		u.Path = path.Join("api/v4/groups", u.Path)
 
-		out = append(out, u.String())
+		out = append(out, u)
 		return
 	}
 }
