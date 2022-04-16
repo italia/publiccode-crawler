@@ -137,12 +137,12 @@ func (repo *Repository) generateSlug() string {
 	vendorAndName := strings.Replace(repo.Name, "/", "-", -1)
 	vendorAndName = strings.ReplaceAll(vendorAndName, ".", "_")
 
-	if repo.Pa.CodiceIPA == "" {
+	if repo.Publisher.Id == "" {
 		ID := repo.generateID()
 		return fmt.Sprintf("%s-%s", vendorAndName, ID[0:6])
 	}
 
-	return fmt.Sprintf("%s-%s", repo.Pa.CodiceIPA, vendorAndName)
+	return fmt.Sprintf("%s-%s", repo.Publisher.Id, vendorAndName)
 }
 
 // DeleteByQueryFromES delete record from elasticsearch

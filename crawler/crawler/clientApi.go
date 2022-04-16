@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"fmt"
+	"net/url"
 )
 
 // ClientAPI contains all the API function in a single Client.
@@ -13,13 +14,13 @@ type ClientAPI struct {
 }
 
 // OrganizationHandler returns the client handler for an organization/team/group page (every domain has a different handler implementation).
-type OrganizationHandler func(domain Domain, url string, repositories chan Repository, pa PA) (string, error)
+type OrganizationHandler func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) (*url.URL, error)
 
 // SingleRepoHandler returns the client handler for an a single repository (every domain has a different handler implementation).
-type SingleRepoHandler func(domain Domain, url string, repositories chan Repository, pa PA) error
+type SingleRepoHandler func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) error
 
 // GeneratorAPIURL returns the url in the api correct ecosystem.
-type GeneratorAPIURL func(url string) ([]string, error)
+type GeneratorAPIURL func(url url.URL) ([]url.URL, error)
 
 var clientAPIs map[string]ClientAPI
 

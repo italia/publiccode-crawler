@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"net/url"
 	"regexp"
 
 	"github.com/italia/developers-italia-backend/crawler/crawler"
@@ -30,8 +31,13 @@ var oneCmd = &cobra.Command{
 
 		c := crawler.NewCrawler(dryRun)
 
-		repoURL, whitelists := args[0], args[1:]
-		err := c.CrawlRepo(repoURL, getPAfromWhiteList(repoURL, whitelists))
+		whitelists := args[1:]
+		url, err := url.Parse(args[0])
+		if err != nil {
+			log.Error(err)
+		}
+
+		err = c.CrawlRepo(*url, getPAfromWhiteList(*url, whitelists))
 		if err != nil {
 			log.Error(err)
 		}
@@ -44,9 +50,9 @@ var oneCmd = &cobra.Command{
 	},
 }
 
-func getPAfromWhiteList(repoURL string, args []string) (pa crawler.PA) {
+func getPAfromWhiteList(repoURL url.URL, args []string) (p crawler.Publisher) {
 	// Read the supplied whitelists.
-	var publishers []crawler.PA
+	var publishers []crawler.Publisher
 	for id := range args {
 		readWhitelist, err := crawler.ReadAndParseWhitelist(args[id])
 		if err != nil {
@@ -58,26 +64,23 @@ func getPAfromWhiteList(repoURL string, args []string) (pa crawler.PA) {
 	for _, paWl := range publishers {
 		// looking into repositories
 		for _, paWlRepo := range paWl.Repositories {
-			log.Tracef("matching %s with %s", paWlRepo, repoURL)
-			if paWlRepo == repoURL {
-				log.Debugf("PA found in whitelist %+v", paWl)
+			log.Tracef("matching %s with %s", paWlRepo.String(), repoURL.String())
+			if (url.URL)(paWlRepo) == repoURL {
+				log.Debugf("Publisher found in whitelist %+v", paWl)
 				return paWl
 			}
 		}
 		// looking into organizations
 		for _, paWlRepo := range paWl.Organizations {
-			log.Tracef("matching %s.* with %s", paWlRepo, repoURL)
-			if matched, _ := regexp.MatchString(paWlRepo+".*", repoURL); matched {
-				log.Debugf("PA found in whitelist %+v", paWl)
+			log.Tracef("matching %s.* with %s", paWlRepo.String(), repoURL.String())
+			if matched, _ := regexp.MatchString(paWlRepo.String()+".*", repoURL.String()); matched {
+				log.Debugf("Publisher found in whitelist %+v", paWl)
 				return paWl
 			}
 		}
 	}
 
-	log.Warn("PA not found in whitelist, slug will be generated without coideIPA")
-	// since this routine is called by command: `<command_name> one ...`
-	// that is not aware about whitelists
-	// this hack will skip IPA code match with those lists
-	pa.UnknownIPA = true
-	return pa
+	log.Warn("Publisher not found in whitelist, slug will be generated without Id")
+
+	return p
 }

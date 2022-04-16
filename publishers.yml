@@ -3,7 +3,7 @@
 ---
 
 - name: "Presidenza del Consiglio dei Ministri"
-  codice-iPA: "pcm"
+  id: "pcm"
   orgs:
     - "https://github.com/teamdigitale"
     - "https://github.com/pagopa"
@@ -19,33 +19,33 @@
     - "https://github.com/italia/bootstrap-italia"
 
 - name: "Ministero per i Beni e le Attività Culturali"
-  codice-iPA: "m_bac"
+  id: "m_bac"
   repos:
     - "https://github.com/italia/18app"
   orgs:
     - "https://github.com/IstitutoCentraleCatalogoUnicoBiblio"
 
 - name: "Ministero degli Interni"
-  codice-iPA: "m_it"
+  id: "m_it"
   orgs:
     - "https://github.com/vvfosprojects"
 
 - name: "Agenzia Regionale per la Protezione dell'Ambiente del Piemonte"
-  codice-iPA: "arlpa_to"
+  id: "arlpa_to"
   orgs:
     - "https://github.com/Arpapiemonte"
 
 - name: "Liceo Scientifico - Giorgio Dal Piaz"
-  codice-iPA: "istsc_blps020006"
+  id: "istsc_blps020006"
   repos:
     - "https://github.com/italia/design-scuole-wordpress-theme"
 
 - name: "Ministero della Salute"
-  codice-iPA: "m_sa"
+  id: "m_sa"
   orgs:
     - "https://github.com/ministero-salute"
 
 - name: "Istituto di Istruzione Superiore - Michele Giua"
-  codice-iPA: "istsc_catf04000p"
+  id: "istsc_catf04000p"
   repos:
     - "https://github.com/trinko/giuaschool"

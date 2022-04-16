@@ -6,24 +6,24 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
+
+	url "github.com/italia/developers-italia-backend/crawler/internal"
 )
 
 var fileReaderInject = ioutil.ReadFile
 
 // Whitelist contain a list of Public Administrations.
-type Whitelist []PA
+type Whitelist []Publisher
 
-// PA is a Public Administration.
-type PA struct {
-	Name          string   `yaml:"name"`
-	CodiceIPA     string   `yaml:"codice-iPA"`
-	Organizations []string `yaml:"orgs"`
-	Repositories  []string `yaml:"repos"`
-	UnknownIPA    bool     `yaml:"unknown-iPA"`
+type Publisher struct {
+	Id            string    `yaml:"id"`
+	Name          string    `yaml:"name"`
+	Organizations []url.URL `yaml:"orgs"`
+	Repositories  []url.URL `yaml:"repos"`
 }
 
 // ReadAndParseWhitelist read the whitelist and return the parsed content in a slice of PA.
-func ReadAndParseWhitelist(whitelistFile string) ([]PA, error) {
+func ReadAndParseWhitelist(whitelistFile string) ([]Publisher, error) {
 	// Open and read whitelist file.
 	data, err := fileReaderInject(whitelistFile)
 	if err != nil {
@@ -41,8 +41,8 @@ func ReadAndParseWhitelist(whitelistFile string) ([]PA, error) {
 }
 
 // parseWhitelistFile parses the whitelist file to build a slice of PA.
-func parseWhitelistFile(data []byte) ([]PA, error) {
-	var whitelist []PA
+func parseWhitelistFile(data []byte) ([]Publisher, error) {
+	var whitelist []Publisher
 
 	// Unmarshal the yml in domains list.
 	err := yaml.Unmarshal(data, &whitelist)

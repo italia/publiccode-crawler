@@ -22,7 +22,7 @@ func (f FakeReadFiler) ReadFile(filename string) ([]byte, error) {
 func TestReadWhitelists(t *testing.T) {
 	payload := `---
 - name: pcm
-  codice-iPA: pcm
+  id: pcm
   orgs:
     - https://github.com/italia
   repos: []`

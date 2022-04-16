@@ -50,7 +50,7 @@ type Repository struct {
 	GitCloneURL string
 	GitBranch   string
 	Domain      Domain
-	Pa          PA
+	Publisher   Publisher
 	Headers     map[string]string
 	Metadata    []byte
 }
@@ -121,8 +121,8 @@ func NewCrawler(dryRun bool) *Crawler {
 }
 
 // CrawlRepo crawls a single repository.
-func (c *Crawler) CrawlRepo(repoURL string, pa PA) error {
-	log.Infof("Processing repository: %s", repoURL)
+func (c *Crawler) CrawlRepo(repoURL url.URL, publisher Publisher) error {
+	log.Infof("Processing repository: %s", repoURL.String())
 
 	// Check if current host is in known in domains.yml hosts.
 	domain, err := c.KnownHost(repoURL)
@@ -131,7 +131,7 @@ func (c *Crawler) CrawlRepo(repoURL string, pa PA) error {
 	}
 
 	// Process repository.
-	err = domain.processSingleRepo(repoURL, c.repositories, pa)
+	err = domain.processSingleRepo(repoURL, c.repositories, publisher)
 	if err != nil {
 		return err
 	}
@@ -140,19 +140,19 @@ func (c *Crawler) CrawlRepo(repoURL string, pa PA) error {
 }
 
 // CrawlPublishers processes a list of publishers.
-func (c *Crawler) CrawlPublishers(publishers []PA) ([]string, error) {
+func (c *Crawler) CrawlPublishers(publishers []Publisher) ([]string, error) {
 	// Count configured orgs
 	orgCount := 0
-	for _, pa := range publishers {
-		orgCount += len(pa.Organizations)
+	for _, publisher := range publishers {
+		orgCount += len(publisher.Organizations)
 	}
 	log.Infof("%v organizations belonging to %v publishers are going to be scanned",
 		orgCount, len(publishers))
 
 	// Process every item in publishers.
-	for _, pa := range publishers {
+	for _, publisher := range publishers {
 		c.publishersWg.Add(1)
-		go c.CrawlPublisher(pa)
+		go c.CrawlPublisher(publisher)
 	}
 
 	// Close the repositories channel when all the publisher goroutines are done
@@ -251,12 +251,13 @@ func (c *Crawler) ExportForJekyll() error {
 	return jekyll.GenerateJekyllYML(c.es)
 }
 
-// CrawlPublisher delegates the work to single PA crawlers.
-func (c *Crawler) CrawlPublisher(pa PA) {
-	log.Infof("Processing publisher: %s", pa.Name)
+// CrawlPublisher delegates the work to single Publisher crawlers.
+func (c *Crawler) CrawlPublisher(publisher Publisher) {
+	log.Infof("Processing publisher: %s", publisher.Name)
 	defer c.publishersWg.Done()
 
-	for _, orgURL := range pa.Organizations {
+	for _, u := range publisher.Organizations {
+		orgURL := (url.URL)(u)
 		// Check if host is in list of known code hosting domains
 		domain, err := c.KnownHost(orgURL)
 		if err != nil {
@@ -264,22 +265,23 @@ func (c *Crawler) CrawlPublisher(pa PA) {
 		}
 
 		// Process the organization
-		c.CrawlOrg(orgURL, domain, pa)
+		c.CrawlOrg(orgURL, domain, publisher)
 	}
 
-	for _, repoURL := range pa.Repositories {
+	for _, u := range publisher.Repositories {
+		repoURL := (url.URL)(u)
 		// Check if host is in list of known code hosting domains
 		domain, err := c.KnownHost(repoURL)
 		if err != nil {
 			log.Error(err)
 		}
 
-		domain.processSingleRepo(repoURL, c.repositories, pa)
+		domain.processSingleRepo(repoURL, c.repositories, publisher)
 	}
 }
 
 // CrawlOrg fetches all the repositories belonging to an org and crawls them.
-func (c *Crawler) CrawlOrg(orgURL string, domain *Domain, pa PA) {
+func (c *Crawler) CrawlOrg(orgURL url.URL, domain *Domain, publisher Publisher) {
 	orgURLs, err := domain.generateAPIURLs(orgURL)
 	if err != nil {
 		log.Errorf("generateAPIURLs error: %v", err)
@@ -289,18 +291,18 @@ ORG:
 	for _, orgURL := range orgURLs {
 		// Process the pages until the end is reached.
 		for {
-			nextURL, err := domain.processAndGetNextURL(orgURL, c.repositories, pa)
+			nextURL, err := domain.processAndGetNextURL(orgURL, c.repositories, publisher)
 			if err != nil {
-				log.Errorf("error reading %s repository list: %v; nextURL: %v", orgURL, err, nextURL)
+				log.Errorf("error reading %s repository list: %v; nextURL: %v", orgURL.String(), err, nextURL)
 				continue ORG
 			}
 
 			// If end is reached or fails, nextURL is empty.
-			if nextURL == "" {
+			if nextURL == nil {
 				return
 			}
 			// Update url to nextURL.
-			orgURL = nextURL
+			orgURL = *nextURL
 		}
 	}
 }
@@ -381,61 +383,50 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	addLogEntry(&logEntries, message)
 
 	var parser *publiccode.Parser
-	// Validate the publiccode.yml
-	if repository.Pa.UnknownIPA {
-		message = fmt.Sprintf(
-			"[%s] When UnknownIPA is set to true IPA match with whitelists will be skipped\n",
-			repository.Name,
-		)
-
-		log.Warn(message)
+	parser, err = publiccode.NewParser(repository.FileRawURL)
+	if err != nil {
+		message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
+		log.Errorf(message)
 		addLogEntry(&logEntries, message)
-	} else {
-		parser, err = publiccode.NewParser(repository.FileRawURL)
-		if err != nil {
+
+		return
+	}
+	err = parser.ParseInDomain(resp.Body, repository.Domain.Host, repository.Domain.UseTokenFor, repository.Domain.BasicAuth)
+    if err != nil {
+		valid := true
+	out:
+		for _, res := range err.(publiccode.ValidationResults) {
+			switch res.(type) {
+			case publiccode.ValidationError:
+				valid = false
+				break out
+			}
+		}
+
+		if !valid {
 			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
 			log.Errorf(message)
 			addLogEntry(&logEntries, message)
 
 			return
 		}
-		err = parser.ParseInDomain(resp.Body, repository.Domain.Host, repository.Domain.UseTokenFor, repository.Domain.BasicAuth)
+	}
+
+	// HACK: Publishers named "_"" are special and get to skip the additional checks.
+	// This can be used to add repositories and organizations, under the crawler's admins control,
+	// that describe arbitrary repos (eg. metarepos for other entities)
+	if repository.Publisher.Name != "_" {
+		err = validateFile(repository.Publisher, *parser, repository.FileRawURL)
 		if err != nil {
-			valid := true
-		out:
-			for _, res := range err.(publiccode.ValidationResults) {
-				switch res.(type) {
-				case publiccode.ValidationError:
-					valid = false
-					break out
-				}
+			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
+			log.Errorf(message)
+			addLogEntry(&logEntries, message)
+
+			if ! c.DryRun {
+				logBadYamlToFile(repository.FileRawURL)
 			}
 
-			if !valid {
-				message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
-				log.Errorf(message)
-				addLogEntry(&logEntries, message)
-
-				return
-			}
-		}
-
-		// HACK: Publishers named "_"" are special and get to skip the additional checks.
-		// This can be used to add repositories and organizations, under the crawler's admins control,
-		// that describe arbitrary repos (eg. metarepos for other entities)
-		if repository.Pa.Name != "_" {
-			err = validateFile(repository.Pa, *parser, repository.FileRawURL)
-			if err != nil {
-				message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
-				log.Errorf(message)
-				addLogEntry(&logEntries, message)
-
-				if ! c.DryRun {
-					logBadYamlToFile(repository.FileRawURL)
-				}
-
-				return
-			}
+			return
 		}
 	}
 
@@ -491,7 +482,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 // validateFile will check if codiceIPA match
 // with relative entry in whitelist.
 // Using `one` command this check will be skipped.
-func validateFile(pa PA, parser publiccode.Parser, fileRawURL string) error {
+func validateFile(publisher Publisher, parser publiccode.Parser, fileRawURL string) error {
 	u, _ := url.Parse(fileRawURL)
 	repo1 := vcsurl.GetRepo((*url.URL)(u))
 
@@ -516,10 +507,10 @@ func validateFile(pa PA, parser publiccode.Parser, fileRawURL string) error {
 	}
 
 	if !strings.EqualFold(
-		strings.TrimSpace(pa.CodiceIPA),
+		strings.TrimSpace(publisher.Id),
 		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
 	) {
-		return errors.New("codiceIPA for: " + fileRawURL + " is " + parser.PublicCode.It.Riuso.CodiceIPA + ", which differs from the one assigned to the org in the whitelist: " + pa.CodiceIPA)
+		return errors.New("id for: " + fileRawURL + " is " + parser.PublicCode.It.Riuso.CodiceIPA + ", which differs from the one assigned to the org in the whitelist: " + publisher.Id)
 	}
 
 	return nil

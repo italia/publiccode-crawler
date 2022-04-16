@@ -230,34 +230,29 @@ func githubBasicAuth(domain Domain) string {
 // If a next page is available return its url.
 // Otherwise returns an empty ("") string.
 func RegisterGithubAPI() OrganizationHandler {
-	return func(domain Domain, link string, repositories chan Repository, pa PA) (string, error) {
+	return func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) (*url.URL, error) {
 		// Set BasicAuth header
 		headers := make(map[string]string)
 		headers["Authorization"] = githubBasicAuth(domain)
 
-		// Parse url.
-		u, err := url.Parse(link)
-		if err != nil {
-			return link, err
-		}
 		// Set domain host to new host.
-		domain.Host = u.Hostname()
+		domain.Host = url.Hostname()
 
 		// Get List of repositories.
-		resp, err := httpclient.GetURL(link, headers)
+		resp, err := httpclient.GetURL(url.String(), headers)
 		if err != nil {
-			return link, err
+			return nil, err
 		}
 		if resp.Status.Code != http.StatusOK {
 			log.Warnf("Request returned: %s", string(resp.Body))
-			return "", errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+			return nil, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
 		}
 
 		// Fill response as list of values (repositories data).
 		var results GithubOrgs
 		err = json.Unmarshal(resp.Body, &results)
 		if err != nil {
-			return link, err
+			return nil, err
 		}
 
 		// Add repositories to the channel that will perform the check on everyone.
@@ -286,25 +281,25 @@ func RegisterGithubAPI() OrganizationHandler {
 			var files GithubFiles
 			err = json.Unmarshal(resp.Body, &files)
 			if err != nil {
-				log.Infof("Repository is empty: %s", link)
+				log.Infof("Repository is empty: %s", url.String())
 			}
 
-			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, v.DefaultBranch, domain.Host, domain, pa, headers, metadata, repositories)
+			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, v.DefaultBranch, domain.Host, domain, publisher, headers, metadata, repositories)
 			if err != nil {
 				log.Infof("addGithubProectsToRepositories %v", err)
 			}
-
 		}
 
 		// Return next url.
 		nextLink := httpclient.HeaderLink(resp.Headers.Get("Link"), "next")
 
 		// if last page for this organization, the nextLink is empty or equal to actual link.
-		if nextLink == "" || nextLink == link {
-			return "", nil
+		if nextLink == "" || nextLink == url.String() {
+			return nil, nil
 		}
 
-		return nextLink, nil
+		u, _ := url.Parse(nextLink)
+		return u, nil
 	}
 }
 
@@ -312,26 +307,20 @@ func RegisterGithubAPI() OrganizationHandler {
 // Return nil if the repository was successfully added to repositories channel.
 // Otherwise return the generated error.
 func RegisterSingleGithubAPI() SingleRepoHandler {
-	return func(domain Domain, link string, repositories chan Repository, pa PA) error {
+	return func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) error {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
 		headers["Authorization"] = githubBasicAuth(domain)
 
-		// Parse url.
-		u, err := url.Parse(link)
-		if err != nil {
-			return err
-		}
-
 		// Set domain host to new host.
-		domain.Host = u.Hostname()
+		domain.Host = url.Hostname()
 
-		u.Path = path.Join("repos", u.Path)
-		u.Path = strings.Trim(u.Path, "/")
-		u.Host = "api." + u.Host
+		url.Path = path.Join("repos", url.Path)
+		url.Path = strings.Trim(url.Path, "/")
+		url.Host = "api." + url.Host
 
 		// Get List of repositories.
-		resp, err := httpclient.GetURL(u.String(), headers)
+		resp, err := httpclient.GetURL(url.String(), headers)
 		if err != nil {
 			return err
 		}
@@ -372,7 +361,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 		var files GithubFiles
 		err = json.Unmarshal(resp.Body, &files)
 		if err != nil {
-			log.Infof("Repository is empty: %s", link)
+			log.Infof("Repository is empty: %s", url.String())
 		}
 
 		foundIt := false
@@ -382,12 +371,12 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 				// Add repository to channel.
 				repositories <- Repository{
 					Name:        v.FullName,
-					Hostname:    u.Hostname(),
+					Hostname:    url.Hostname(),
 					FileRawURL:  f.DownloadURL,
 					GitCloneURL: v.CloneURL,
 					GitBranch:   v.DefaultBranch,
 					Domain:      domain,
-					Pa:          pa,
+					Publisher:   publisher,
 					Headers:     headers,
 					Metadata:    metadata,
 				}
@@ -403,7 +392,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 
 // addGithubProjectsToRepositories adds the projects from api response to repository channel.
 func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defaultBranch, hostname string,
-	domain Domain, pa PA, headers map[string]string, metadata []byte, repositories chan Repository) error {
+	domain Domain, publisher Publisher, headers map[string]string, metadata []byte, repositories chan Repository) error {
 	// Search a file with a valid name and a downloadURL.
 	for _, f := range files {
 		if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
@@ -415,7 +404,7 @@ func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defa
 				GitCloneURL: cloneURL,
 				GitBranch:   defaultBranch,
 				Domain:      domain,
-				Pa:          pa,
+				Publisher:   publisher,
 				Headers:     headers,
 				Metadata:    metadata,
 			}
@@ -429,24 +418,18 @@ func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defa
 // IN: https://github.com/italia
 // OUT:https://api.github.com/orgs/italia/repos,https://api.github.com/users/italia/repos
 func GenerateGithubAPIURL() GeneratorAPIURL {
-	return func(in string) (out []string, err error) {
-		u, err := url.Parse(in)
-		if err != nil {
-			return []string{in}, err
-		}
+	return func(in url.URL) (out []url.URL, err error) {
+		u := *&in
 		u.Path = path.Join("orgs", u.Path, "repos")
 		u.Path = strings.Trim(u.Path, "/")
 		u.Host = "api." + u.Host
-		out = append(out, u.String())
+		out = append(out, u)
 
-		u2, err := url.Parse(in)
-		if err != nil {
-			return []string{in}, err
-		}
+		u2 := *&in
 		u2.Path = path.Join("users", u2.Path, "repos")
 		u2.Path = strings.Trim(u2.Path, "/")
 		u2.Host = "api." + u2.Host
-		out = append(out, u2.String())
+		out = append(out, u2)
 
 		return
 	}

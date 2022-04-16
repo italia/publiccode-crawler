@@ -17,14 +17,14 @@ var whitelist string = `
   repos: 
     - "https://github.com/test/testrepo"
 -
-  codice-iPA:
+  Id:
   name: testit
-  repos: 
+  repos:
     - "https://github.com/test/testrepo"
 -
-  codice-iPA: test
+  Id: test
   name: testit
-  repos: 
+  repos:
     - "https://github.com/test/testrepo"
 `
 
@@ -34,31 +34,31 @@ var whitelist string = `
 // whithelist file and publiccode itself
 func TestIPAMatch(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	var pas []PA
+	var publishers []Publisher
 	var parser publiccode.Parser
 
     u, _ := url.Parse("https://github.com/a/b/blob/main/publiccode.yml")
     parser.PublicCode.URL = (*publiccode.URL)(u)
 
-	err := yaml.Unmarshal([]byte(whitelist), &pas)
+	err := yaml.Unmarshal([]byte(whitelist), &publishers)
 	if err != nil {
 		t.Errorf("error on unmarsalling whitelist %s", err)
 	}
 
 	// should not throw error codiceIPA key is equal
 	// on both sides
-	for _, pa := range pas {
-		parser.PublicCode.It.Riuso.CodiceIPA = pa.CodiceIPA
-		err = validateFile(pa, parser, "https://raw.githubusercontent.com/a/b/main/publiccode.yml")
+	for _, publisher := range publishers {
+		parser.PublicCode.It.Riuso.CodiceIPA = publisher.Id
+		err = validateFile(publisher, parser, "https://raw.githubusercontent.com/a/b/main/publiccode.yml")
 		if err != nil {
 			t.Errorf("error comparing IPA codes %s", err)
 		}
 	}
 
 	// it should thowns errors since they always mismatch
-	for _, pa := range pas {
-		parser.PublicCode.It.Riuso.CodiceIPA = pa.CodiceIPA + "x"
-		err = validateFile(pa, parser, "https://raw.githubusercontent.com/a/b/main/publiccode.yml")
+	for _, publisher := range publishers {
+		parser.PublicCode.It.Riuso.CodiceIPA = publisher.Id + "x"
+		err = validateFile(publisher, parser, "https://raw.githubusercontent.com/a/b/main/publiccode.yml")
 		if err == nil {
 			t.Errorf("error comparing IPA codes %v", err)
 		}

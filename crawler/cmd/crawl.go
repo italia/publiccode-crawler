@@ -22,7 +22,7 @@ var crawlCmd = &cobra.Command{
 		c := crawler.NewCrawler(dryRun)
 
 		// Read the supplied whitelists.
-		var publishers []crawler.PA
+		var publishers []crawler.Publisher
 		for id := range args {
 			readWhitelist, err := crawler.ReadAndParseWhitelist(args[id])
 			if err != nil {
@@ -31,12 +31,12 @@ var crawlCmd = &cobra.Command{
 
 		Publisher:
 			for _, publisher := range readWhitelist {
-				for _, org := range publisher.Organizations {
-					if orgs[org] {
-						log.Warnf("Skipping publisher '%s': organization '%s' already present", publisher.Name, org)
+				for _, orgURL := range publisher.Organizations {
+					if orgs[orgURL.String()] {
+						log.Warnf("Skipping publisher '%s': organization '%s' already present", publisher.Name, orgURL.String())
 						continue Publisher
 					} else {
-						orgs[org] = true
+						orgs[orgURL.String()] = true
 					}
 				}
 				publishers = append(publishers, publisher)
