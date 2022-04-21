@@ -1,4 +1,4 @@
-module github.com/italia/developers-italia-backend/crawler
+module github.com/italia/developers-italia-backend
 
 require (
 	github.com/alranel/go-vcsurl/v2 v2.0.1

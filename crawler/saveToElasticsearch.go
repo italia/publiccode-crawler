@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/ghodss/yaml"
-	"github.com/italia/developers-italia-backend/crawler/ipa"
-	"github.com/italia/developers-italia-backend/crawler/metrics"
+	"github.com/italia/developers-italia-backend/ipa"
+	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/alranel/go-vcsurl/v2"
 	publiccode "github.com/italia/publiccode-parser-go/v3"
 	elastic "github.com/olivere/elastic/v7"

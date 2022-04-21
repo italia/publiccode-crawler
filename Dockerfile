@@ -15,24 +15,24 @@ WORKDIR ${HOME}
 
 # Copy crawler files inside the workdir
 COPY .git .git
-COPY crawler/cmd cmd
-COPY crawler/crawler crawler
-COPY crawler/elastic elastic
-COPY crawler/ipa ipa
-COPY crawler/jekyll jekyll
-COPY crawler/metrics metrics
-COPY crawler/version version
-COPY crawler/whitelist whitelist
-COPY crawler/blacklist blacklist
-COPY crawler/config.toml.example config.toml
-COPY crawler/domains.yml.example domains.yml
-COPY crawler/go.mod .
-COPY crawler/go.sum .
-COPY crawler/main.go .
-COPY crawler/Makefile .
-COPY crawler/start.sh .
-COPY crawler/vitality-ranges.yml .
-COPY crawler/wait-for-it.sh .
+COPY cmd cmd
+COPY crawler crawler
+COPY elastic elastic
+COPY ipa ipa
+COPY jekyll jekyll
+COPY metrics metrics
+COPY version version
+COPY whitelist whitelist
+COPY blacklist blacklist
+COPY config.toml.example config.toml
+COPY domains.yml.example domains.yml
+COPY go.mod .
+COPY go.sum .
+COPY main.go .
+COPY Makefile .
+COPY start.sh .
+COPY vitality-ranges.yml .
+COPY wait-for-it.sh .
 
 # Run as unprivileged user
 RUN adduser --home ${HOME} --shell /bin/sh --disabled-password ${USER}

@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/italia/developers-italia-backend/crawler/version"
+	"github.com/italia/developers-italia-backend/version"
 	"github.com/spf13/cobra"
 )
 

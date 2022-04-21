@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
-	url "github.com/italia/developers-italia-backend/crawler/internal"
+	url "github.com/italia/developers-italia-backend/internal"
 )
 
 var fileReaderInject = ioutil.ReadFile

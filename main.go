@@ -1,10 +1,10 @@
-package main // import "github.com/italia/developers-italia-backend/crawler"
+package main // import "github.com/italia/developers-italia-backend"
 
 import (
 	"fmt"
 
-	"github.com/italia/developers-italia-backend/crawler/cmd"
-	"github.com/italia/developers-italia-backend/crawler/crawler"
+	"github.com/italia/developers-italia-backend/cmd"
+	"github.com/italia/developers-italia-backend/crawler"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

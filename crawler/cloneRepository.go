@@ -7,7 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/italia/developers-italia-backend/crawler/metrics"
+	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/spf13/viper"
 )
 

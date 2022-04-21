@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/italia/developers-italia-backend/crawler/crawler"
+	"github.com/italia/developers-italia-backend/crawler"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

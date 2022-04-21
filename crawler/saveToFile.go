@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/italia/developers-italia-backend/crawler/metrics"
+	"github.com/italia/developers-italia-backend/metrics"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

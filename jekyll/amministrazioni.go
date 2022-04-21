@@ -10,8 +10,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/ghodss/yaml"
-	"github.com/italia/developers-italia-backend/crawler/elastic"
-	"github.com/italia/developers-italia-backend/crawler/ipa"
+	"github.com/italia/developers-italia-backend/elastic"
+	"github.com/italia/developers-italia-backend/ipa"
 	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 )

@@ -19,7 +19,7 @@ log/
 vendor
 
 # Compiled binaries
-crawler/bin/*
+bin/*
 
 # Elasticsearch data volume
 es_data
@@ -35,14 +35,14 @@ elasticsearch/config/searchguard/sg_internal_users.yml
 .env
 
 # Configurations
-crawler/config.toml
-crawler/domains.yml
+config.toml
+domains.yml
 # GoReleaser workaround
 config.toml
 
 # Downloaded files
-crawler/cache
-crawler/data
+cache
+data
 
 # Elasticsearch scripts
 elasticsearch/scripts/config.sh

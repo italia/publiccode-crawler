@@ -7,11 +7,11 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/italia/developers-italia-backend/crawler/crawler"
+	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 
-	ymlurl "github.com/italia/developers-italia-backend/crawler/internal"
+	ymlurl "github.com/italia/developers-italia-backend/internal"
 )
 
 func init() {

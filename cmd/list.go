@@ -5,7 +5,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/italia/developers-italia-backend/crawler/crawler"
+	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )

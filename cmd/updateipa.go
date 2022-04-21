@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/italia/developers-italia-backend/crawler/elastic"
-	"github.com/italia/developers-italia-backend/crawler/ipa"
+	"github.com/italia/developers-italia-backend/elastic"
+	"github.com/italia/developers-italia-backend/ipa"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"

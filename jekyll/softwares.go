@@ -11,7 +11,7 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/icza/dyno"
-	"github.com/italia/developers-italia-backend/crawler/elastic"
+	"github.com/italia/developers-italia-backend/elastic"
 	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/thoas/go-funk"

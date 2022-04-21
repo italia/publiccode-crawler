@@ -28,17 +28,15 @@ the data and has ready to accept connections before the crawler is started.
 
 ### Manually configure and build the crawler
 
-1. `cd crawler`
+1. Save the auth tokens to `domains.yml`.
 
-2. Save the auth tokens to `domains.yml`.
-
-3. Rename `config.toml.example` to `config.toml` and set the variables
+2. Rename `config.toml.example` to `config.toml` and set the variables
 
    > **NOTE**: The application also supports environment variables in substitution
    > to config.toml file. Remember: "environment variables get higher priority than
    > the ones in configuration file"
 
-4. Build the crawler binary with `make`
+3. Build the crawler binary with `make`
 
 ### Docker
 
