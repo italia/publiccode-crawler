@@ -79,7 +79,6 @@ func appendGitExt(repo string) string {
 // ReadAndParseBlacklist read the blacklist and return the parsed content in a slice of PA.
 func ReadAndParseBlacklist(blacklistFile string) ([]Repo, error) {
 	// Open and read blacklist file.
-	// fileReaderInject is a var in the package, whitelist.go
 	data, err := fileReaderInject(blacklistFile)
 	if err != nil {
 		return nil, fmt.Errorf("error in reading %s file: %v", blacklistFile, err)

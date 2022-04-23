@@ -4,16 +4,12 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
 	url "github.com/italia/developers-italia-backend/internal"
 )
 
 var fileReaderInject = ioutil.ReadFile
-
-// Whitelist contain a list of Public Administrations.
-type Whitelist []Publisher
 
 type Publisher struct {
 	Id            string    `yaml:"id"`
@@ -22,33 +18,18 @@ type Publisher struct {
 	Repositories  []url.URL `yaml:"repos"`
 }
 
-// ReadAndParseWhitelist read the whitelist and return the parsed content in a slice of PA.
-func ReadAndParseWhitelist(whitelistFile string) ([]Publisher, error) {
-	// Open and read whitelist file.
-	data, err := fileReaderInject(whitelistFile)
+// LoadPublishers loads the publishers YAML file and returns a slice of Publisher.
+func LoadPublishers(path string) ([]Publisher, error) {
+	data, err := fileReaderInject(path)
 	if err != nil {
-		return nil, fmt.Errorf("error in reading %s file: %v", whitelistFile, err)
+		return nil, fmt.Errorf("error in reading `%s': %v", path, err)
 	}
 
-	// Parse whitelist file.
-	whitelist, err := parseWhitelistFile(data)
+	var publishers []Publisher
+	err = yaml.Unmarshal(data, &publishers)
 	if err != nil {
-		return nil, fmt.Errorf("error in parsing %s file: %v", whitelistFile, err)
-	}
-	log.Infof("Loaded and parsed %s", whitelistFile)
-
-	return whitelist, err
-}
-
-// parseWhitelistFile parses the whitelist file to build a slice of PA.
-func parseWhitelistFile(data []byte) ([]Publisher, error) {
-	var whitelist []Publisher
-
-	// Unmarshal the yml in domains list.
-	err := yaml.Unmarshal(data, &whitelist)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error in parsing `%s': %v", path, err)
 	}
 
-	return whitelist, err
+	return publishers, nil
 }

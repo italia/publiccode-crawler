@@ -9,13 +9,13 @@ import (
 
 	"github.com/italia/developers-italia-backend/crawler"
 	"github.com/spf13/cobra"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	ymlurl "github.com/italia/developers-italia-backend/internal"
 )
 
 func init() {
-	rootCmd.AddCommand(downloadWhitelistCmd)
+	rootCmd.AddCommand(downloadPublishersCmd)
 }
 
 type repolistType struct {
@@ -26,14 +26,13 @@ type repolistType struct {
 	} `yaml:"registrati"`
 }
 
-var downloadWhitelistCmd = &cobra.Command{
-	Use:   "download-whitelist REPOLIST_URL DEST_FILE",
+var downloadPublishersCmd = &cobra.Command{
+	Use:   "download-publishers REPOLIST_URL DEST_FILE",
 	Short: "Download the list of repos and orgs from the onboarding portal.",
-	Long:  `Download the list of repos and orgs from the onboarding portal and convert it into a yml whitelist file.`,
+	Long:  `Download the list of repos and orgs from the onboarding portal and convert it into a publishers.yml.`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		// Read the current destinatin whitelist, if any
-		var publishers crawler.Whitelist
+		var publishers []crawler.Publisher
 		if _, err := os.Stat(args[1]); err == nil {
 			data, err := ioutil.ReadFile(args[1])
 			if err != nil {
@@ -42,7 +41,6 @@ var downloadWhitelistCmd = &cobra.Command{
 			yaml.Unmarshal(data, &publishers)
 		}
 
-		// Download the repo-list file
 		resp, err := http.Get(args[0])
 		if err != nil {
 			log.Fatal(err)
@@ -53,14 +51,12 @@ var downloadWhitelistCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// Parse the repo-list file
 		var repolist repolistType
 		err = yaml.Unmarshal(bodyBytes, &repolist)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		// Merge the repo-list file into the whitelist
 	REPOLIST:
 		for _, i := range repolist.Registrati {
 			for idx, publisher := range publishers {

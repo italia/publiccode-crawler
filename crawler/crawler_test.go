@@ -11,7 +11,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-var whitelist string = `
+var publishersYml = `
 -
   name: testit
   repos: 
@@ -40,9 +40,9 @@ func TestIPAMatch(t *testing.T) {
     u, _ := url.Parse("https://github.com/a/b/blob/main/publiccode.yml")
     parser.PublicCode.URL = (*publiccode.URL)(u)
 
-	err := yaml.Unmarshal([]byte(whitelist), &publishers)
+	err := yaml.Unmarshal([]byte(publishersYml), &publishers)
 	if err != nil {
-		t.Errorf("error on unmarsalling whitelist %s", err)
+		t.Errorf("error unmarsalling YAML: %s", err)
 	}
 
 	// should not throw error codiceIPA key is equal

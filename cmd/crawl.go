@@ -13,24 +13,25 @@ func init() {
 }
 
 var crawlCmd = &cobra.Command{
-	Use:   "crawl whitelist.yml whitelist/*.yml",
-	Short: "Crawl publiccode.yml files from given domains.",
-	Long:  `Crawl publiccode.yml files according to the supplied whitelist file(s).`,
+	Use:   "crawl publishers.yml directory/*.yml ...",
+	Short: "Crawl publiccode.yml files in publishers' repos.",
+	Long:  `Crawl publiccode.yml files according to the supplied publisher file(s).`,
 	Args:  cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		orgs := make(map[string]bool)
 		c := crawler.NewCrawler(dryRun)
 
-		// Read the supplied whitelists.
-		var publishers []crawler.Publisher
+		var dedupedPublishers []crawler.Publisher
 		for id := range args {
-			readWhitelist, err := crawler.ReadAndParseWhitelist(args[id])
+			publishers, err := crawler.LoadPublishers(args[id])
 			if err != nil {
 				log.Fatal(err)
+			} else {
+				log.Infof("Loaded and parsed %s", args[id])
 			}
 
 		Publisher:
-			for _, publisher := range readWhitelist {
+			for _, publisher := range publishers {
 				for _, orgURL := range publisher.Organizations {
 					if orgs[orgURL.String()] {
 						log.Warnf("Skipping publisher '%s': organization '%s' already present", publisher.Name, orgURL.String())
@@ -39,11 +40,11 @@ var crawlCmd = &cobra.Command{
 						orgs[orgURL.String()] = true
 					}
 				}
-				publishers = append(publishers, publisher)
+				dedupedPublishers = append(dedupedPublishers, publisher)
 			}
 		}
 
-		toBeRemoved, err := c.CrawlPublishers(publishers)
+		toBeRemoved, err := c.CrawlPublishers(dedupedPublishers)
 		if err != nil {
 			log.Fatal(err)
 		}

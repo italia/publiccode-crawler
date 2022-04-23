@@ -19,7 +19,7 @@ func (f FakeReadFiler) ReadFile(filename string) ([]byte, error) {
 	return ioutil.ReadAll(buf)
 }
 
-func TestReadWhitelists(t *testing.T) {
+func TestReadPublishers(t *testing.T) {
 	payload := `---
 - name: pcm
   id: pcm
@@ -32,7 +32,7 @@ func TestReadWhitelists(t *testing.T) {
 	// reassign myReadFile
 	fake := FakeReadFiler{Str: payload}
 	fileReaderInject = fake.ReadFile
-	result, err := ReadAndParseWhitelist(path)
+	result, err := LoadPublishers(path)
 
 	if err != nil {
 		t.Logf("err: %+v", err)

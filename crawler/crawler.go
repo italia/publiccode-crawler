@@ -479,8 +479,8 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 }
 
-// validateFile will check if codiceIPA match
-// with relative entry in whitelist.
+// validateFile checks if it.riuso.codiceIPA in the publiccode.yml matches with the
+// Publisher's Id
 // Using `one` command this check will be skipped.
 func validateFile(publisher Publisher, parser publiccode.Parser, fileRawURL string) error {
 	u, _ := url.Parse(fileRawURL)
@@ -510,7 +510,7 @@ func validateFile(publisher Publisher, parser publiccode.Parser, fileRawURL stri
 		strings.TrimSpace(publisher.Id),
 		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
 	) {
-		return errors.New("id for: " + fileRawURL + " is " + parser.PublicCode.It.Riuso.CodiceIPA + ", which differs from the one assigned to the org in the whitelist: " + publisher.Id)
+		return errors.New("id for: " + fileRawURL + " is " + parser.PublicCode.It.Riuso.CodiceIPA + ", which differs from the one assigned to the org in the publishers file: " + publisher.Id)
 	}
 
 	return nil

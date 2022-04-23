@@ -16,10 +16,10 @@ func init() {
 }
 
 var oneCmd = &cobra.Command{
-	Use:   "one [repo url] whitelist.yml whitelist/*.yml",
+	Use:   "one [repo url] publishers.*.yml",
 	Short: "Crawl publiccode.yml from one single [repo url].",
-	Long: `Crawl publiccode.yml from a single repository defined with [repo url] 
-		according to the supplied whitelist file(s).
+	Long: `Crawl publiccode.yml from a single repository defined with [repo url]
+		according to the supplied file(s).
 		No organizations! Only single repositories!`,
 	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -31,13 +31,13 @@ var oneCmd = &cobra.Command{
 
 		c := crawler.NewCrawler(dryRun)
 
-		whitelists := args[1:]
+		paths := args[1:]
 		url, err := url.Parse(args[0])
 		if err != nil {
 			log.Error(err)
 		}
 
-		err = c.CrawlRepo(*url, getPAfromWhiteList(*url, whitelists))
+		err = c.CrawlRepo(*url, getPublisher(*url, paths))
 		if err != nil {
 			log.Error(err)
 		}
@@ -50,37 +50,36 @@ var oneCmd = &cobra.Command{
 	},
 }
 
-func getPAfromWhiteList(repoURL url.URL, args []string) (p crawler.Publisher) {
-	// Read the supplied whitelists.
+func getPublisher(repoURL url.URL, paths []string) (p crawler.Publisher) {
 	var publishers []crawler.Publisher
-	for id := range args {
-		readWhitelist, err := crawler.ReadAndParseWhitelist(args[id])
+	for _, path := range paths {
+		p, err := crawler.LoadPublishers(path)
 		if err != nil {
 			log.Fatal(err)
 		}
-		publishers = append(publishers, readWhitelist...)
+		publishers = append(publishers, p...)
 	}
 
-	for _, paWl := range publishers {
+	for _, publisher := range publishers {
 		// looking into repositories
-		for _, paWlRepo := range paWl.Repositories {
-			log.Tracef("matching %s with %s", paWlRepo.String(), repoURL.String())
-			if (url.URL)(paWlRepo) == repoURL {
-				log.Debugf("Publisher found in whitelist %+v", paWl)
-				return paWl
+		for _, repo := range publisher.Repositories {
+			log.Tracef("matching %s with %s", repo.String(), repoURL.String())
+			if (url.URL)(repo) == repoURL {
+				log.Debugf("Publisher found %+v", publisher)
+				return publisher
 			}
 		}
 		// looking into organizations
-		for _, paWlRepo := range paWl.Organizations {
-			log.Tracef("matching %s.* with %s", paWlRepo.String(), repoURL.String())
-			if matched, _ := regexp.MatchString(paWlRepo.String()+".*", repoURL.String()); matched {
-				log.Debugf("Publisher found in whitelist %+v", paWl)
-				return paWl
+		for _, repo := range publisher.Organizations {
+			log.Tracef("matching %s.* with %s", repo.String(), repoURL.String())
+			if matched, _ := regexp.MatchString(repo.String()+".*", repoURL.String()); matched {
+				log.Debugf("Publisher found %+v", publisher)
+				return publisher
 			}
 		}
 	}
 
-	log.Warn("Publisher not found in whitelist, slug will be generated without Id")
+	log.Warn("Publisher not found in publishers list, slug will be generated without Id")
 
 	return p
 }

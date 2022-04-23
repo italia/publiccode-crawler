@@ -22,7 +22,8 @@ COPY ipa ipa
 COPY jekyll jekyll
 COPY metrics metrics
 COPY version version
-COPY whitelist whitelist
+COPY publishers.thirparty.yml publishers.thirparty.yml
+COPY publishers.yml publishers.yml
 COPY blacklist blacklist
 COPY config.toml.example config.toml
 COPY domains.yml.example domains.yml
