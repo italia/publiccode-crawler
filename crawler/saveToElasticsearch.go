@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/alranel/go-vcsurl/v2"
 	"github.com/ghodss/yaml"
 	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/metrics"
-	"github.com/alranel/go-vcsurl/v2"
 	publiccode "github.com/italia/publiccode-parser-go/v3"
 	elastic "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
@@ -46,12 +46,12 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 	// TODO: We should probably get rid of this and maintain the original
 	// publiccode.yml in the database, and expand the logo and screenshots paths
 	// client side.
-	publiccode := &parser.PublicCode;
+	publiccode := &parser.PublicCode
 	rawRoot, err := vcsurl.GetRawRoot((*url.URL)(parser.PublicCode.URL), parser.Branch)
 
 	if publiccode.Logo != "" {
 		logoURL, _ := url.Parse(publiccode.Logo)
-		if ! logoURL.IsAbs() {
+		if !logoURL.IsAbs() {
 			*logoURL = *rawRoot
 			logoURL.Path = path.Join(rawRoot.Path, publiccode.Logo)
 		}
@@ -60,7 +60,7 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 	for lang, desc := range publiccode.Description {
 		for idx, screenshot := range desc.Screenshots {
 			screenshotURL, _ := url.Parse(screenshot)
-			if ! screenshotURL.IsAbs() {
+			if !screenshotURL.IsAbs() {
 				*screenshotURL = *rawRoot
 				screenshotURL.Path = path.Join(rawRoot.Path, screenshot)
 			}

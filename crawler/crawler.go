@@ -31,7 +31,7 @@ import (
 
 // Crawler is a helper class representing a crawler.
 type Crawler struct {
-	DryRun         bool
+	DryRun bool
 
 	// Sync mutex guard.
 	es             *es.Client
@@ -245,7 +245,7 @@ func (c *Crawler) crawl() error {
 func (c *Crawler) ExportForJekyll() error {
 	if c.DryRun {
 		log.Info("Skipping YAML output (--dry-run)")
-		return nil;
+		return nil
 	}
 
 	return jekyll.GenerateJekyllYML(c.es)
@@ -422,7 +422,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 			log.Errorf(message)
 			addLogEntry(&logEntries, message)
 
-			if ! c.DryRun {
+			if !c.DryRun {
 				logBadYamlToFile(repository.FileRawURL)
 			}
 
@@ -436,7 +436,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 
 	if c.DryRun {
 		log.Infof("[%s]: Skipping repository clone and save to ElasticSearch (--dry-run)", repository.Name)
-		return;
+		return
 	}
 
 	// Clone repository.
@@ -499,7 +499,7 @@ func validateFile(publisher Publisher, parser publiccode.Parser, fileRawURL stri
 			return errors.New(
 				fmt.Sprintf(
 					"declared url (%s) and actual publiccode.yml location URL (%s) "+
-					"are not in the same repo: '%s' vs '%s'",
+						"are not in the same repo: '%s' vs '%s'",
 					parser.PublicCode.URL, fileRawURL, repo2, repo1,
 				),
 			)

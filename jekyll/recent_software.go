@@ -7,9 +7,9 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/italia/developers-italia-backend/elastic"
+	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	es "github.com/olivere/elastic/v7"
 )
 
 // shortSoftware is the subset of a software document that we want to output

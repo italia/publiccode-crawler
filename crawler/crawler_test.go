@@ -2,7 +2,7 @@ package crawler
 
 import (
 	"io/ioutil"
-    "net/url"
+	"net/url"
 	"testing"
 
 	publiccode "github.com/italia/publiccode-parser-go/v3"
@@ -37,8 +37,8 @@ func TestIPAMatch(t *testing.T) {
 	var publishers []Publisher
 	var parser publiccode.Parser
 
-    u, _ := url.Parse("https://github.com/a/b/blob/main/publiccode.yml")
-    parser.PublicCode.URL = (*publiccode.URL)(u)
+	u, _ := url.Parse("https://github.com/a/b/blob/main/publiccode.yml")
+	parser.PublicCode.URL = (*publiccode.URL)(u)
 
 	err := yaml.Unmarshal([]byte(publishersYml), &publishers)
 	if err != nil {

@@ -246,7 +246,7 @@ func RegisterBitbucketAPI() OrganizationHandler {
 
 		// if last page for this organization, the result.Next is empty.
 		if len(result.Next) == 0 {
-            return nil, nil
+			return nil, nil
 		}
 
 		// Return next url.
