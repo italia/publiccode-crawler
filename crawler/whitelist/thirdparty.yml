@@ -11,7 +11,11 @@
   orgs:
     - "https://github.com/italia-software"
 
-- name: "GlobaLeaks"
+- name: "DXC-Industrialized-AI-Starter"
+  repos:
+    - "https://github.com/dxc-technology/DXC-Industrialized-AI-Starter"
+    
+    - name: "GlobaLeaks"
   repos:
     - "https://github.com/globaleaks/GlobaLeaks"
 
