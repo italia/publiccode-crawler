@@ -33,17 +33,12 @@ func CloneRepository(domain Domain, hostname, name, gitURL, index string) error 
 		if err != nil {
 			return errors.New(fmt.Sprintf("cannot git pull the repository: %s: %s", err.Error(), out))
 		}
-		out, err = exec.Command("git", "-C", path, "reset", "--hard", "origin/HEAD").CombinedOutput() // nolint: gas
-		if err != nil {
-			return errors.New(fmt.Sprintf("cannot git pull the repository: %s: %s", err.Error(), out))
-		}
-
 		return nil
 	}
 
 	// Clone the repository using the external command "git".
-	// Command is: git clone -b <branch> <remote_repo>
-	out, err := exec.Command("git", "clone", gitURL, path).CombinedOutput() // nolint: gas
+	// Command is: git clone --filter=blob:none --mirror -b <branch> <remote_repo>
+	out, err := exec.Command("git", "clone", "--filter=blob:none", "--mirror", "-b", gitURL, path).CombinedOutput() // nolint: gas
 	if err != nil {
 		return errors.New(fmt.Sprintf("cannot git clone the repository: %s: %s", err.Error(), out))
 	}
