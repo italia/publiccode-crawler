@@ -101,7 +101,7 @@ const (
               "index": false
             },
             "features": {
-              "type": "keyword"
+              "type": "text"
             },
             "screenshots": {
               "type": "keyword",
