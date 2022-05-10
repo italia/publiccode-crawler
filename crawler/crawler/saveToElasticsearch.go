@@ -14,7 +14,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/ipa"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	"github.com/alranel/go-vcsurl/v2"
-	publiccode "github.com/italia/publiccode-parser-go/v2"
+	publiccode "github.com/italia/publiccode-parser-go/v3"
 	elastic "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
