@@ -12,7 +12,7 @@ import (
 )
 
 // CloneRepository clone the repository into DATADIR/repos/<hostname>/<vendor>/<repo>/gitClone
-func CloneRepository(domain Domain, hostname, name, gitURL, gitBranch, index string) error {
+func CloneRepository(domain Domain, hostname, name, gitURL, index string) error {
 	if domain.Host == "" {
 		return errors.New("cannot save a file without domain host")
 	}
@@ -33,17 +33,17 @@ func CloneRepository(domain Domain, hostname, name, gitURL, gitBranch, index str
 		if err != nil {
 			return errors.New(fmt.Sprintf("cannot git pull the repository: %s: %s", err.Error(), out))
 		}
-		// Command is: git reset --hard origin/<branch_name>
-		out, err = exec.Command("git", "-C", path, "reset", "--hard", "origin/"+gitBranch).CombinedOutput() // nolint: gas
+		out, err = exec.Command("git", "-C", path, "reset", "--hard", "origin/HEAD").CombinedOutput() // nolint: gas
 		if err != nil {
 			return errors.New(fmt.Sprintf("cannot git pull the repository: %s: %s", err.Error(), out))
 		}
-		return err
+
+		return nil
 	}
 
 	// Clone the repository using the external command "git".
 	// Command is: git clone -b <branch> <remote_repo>
-	out, err := exec.Command("git", "clone", "-b", gitBranch, gitURL, path).CombinedOutput() // nolint: gas
+	out, err := exec.Command("git", "clone", gitURL, path).CombinedOutput() // nolint: gas
 	if err != nil {
 		return errors.New(fmt.Sprintf("cannot git clone the repository: %s: %s", err.Error(), out))
 	}

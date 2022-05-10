@@ -437,7 +437,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 
 	// Clone repository.
-	err = CloneRepository(repository.Domain, repository.Hostname, repository.Name, repository.GitCloneURL, repository.GitBranch, c.index)
+	err = CloneRepository(repository.Domain, repository.Hostname, repository.Name, parser.PublicCode.URL.String(), c.index)
 	if err != nil {
 		message = fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err)
 		log.Errorf(message)
