@@ -32,14 +32,6 @@ func GenerateJekyllYML(elasticClient *elastic.Client) error {
 		log.Error(err)
 	}
 
-	// Create and populate software-riuso-all.yml
-	softwareRiusoAllFilePath := path.Join(outputDir, "software-riuso-all.yml")
-	numberOfSoftwareRiusoAll := 10000
-	err = FirstSoftwareRiuso(softwareRiusoAllFilePath, numberOfSoftwareRiusoAll, elasticClient)
-	if err != nil {
-		log.Error(err)
-	}
-	
 	// Create and populate software-open-source.yml
 	softwareOSFilePath := path.Join(outputDir, "software-open-source.yml")
 	numberOfSoftwareOS := 4
