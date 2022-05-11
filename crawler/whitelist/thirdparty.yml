@@ -118,3 +118,7 @@
 - name: "PDFsam Basic"
   repos:
     - "https://github.com/torakiki/pdfsam"
+
+- name: "BATMAN"
+  repos:
+    - "https://github.com/DXC-Technology-Italy/batman"
