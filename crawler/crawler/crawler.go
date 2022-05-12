@@ -23,7 +23,7 @@ import (
 	"github.com/italia/developers-italia-backend/crawler/jekyll"
 	"github.com/italia/developers-italia-backend/crawler/metrics"
 	httpclient "github.com/italia/httpclient-lib-go"
-	publiccode "github.com/italia/publiccode-parser-go/v2"
+	publiccode "github.com/italia/publiccode-parser-go/v3"
 	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -401,11 +401,23 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		}
 		err = parser.ParseInDomain(resp.Body, repository.Domain.Host, repository.Domain.UseTokenFor, repository.Domain.BasicAuth)
 		if err != nil {
-			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
-			log.Errorf(message)
-			addLogEntry(&logEntries, message)
+			valid := true
+		out:
+			for _, res := range err.(publiccode.ValidationResults) {
+				switch res.(type) {
+				case publiccode.ValidationError:
+					valid = false
+					break out
+				}
+			}
 
-			return
+			if !valid {
+				message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
+				log.Errorf(message)
+				addLogEntry(&logEntries, message)
+
+				return
+			}
 		}
 
 		// HACK: Publishers named "_"" are special and get to skip the additional checks.
