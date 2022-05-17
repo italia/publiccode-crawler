@@ -122,3 +122,8 @@
 - name: "DXC Technology"
   repos:
     - "https://github.com/dxc-technology/DXC-Industrialized-AI-Starter"
+
+- name: "BATMAN"
+  repos:
+    - "https://github.com/DXC-Technology-Italy/batman"
+    
