@@ -122,3 +122,8 @@
 - name: "Software Registry"
   repos:
     - "https://github.com/DXC-Technology-Italy/softwareregistry"
+
+- name: "DXC Technology"
+  repos:
+    - "https://github.com/dxc-technology/DXC-Industrialized-AI-Starter"
+    - "https://github.com/DXC-Technology-Italy/batman"

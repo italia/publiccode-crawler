@@ -5,7 +5,7 @@ import (
     "net/url"
 	"testing"
 
-	publiccode "github.com/italia/publiccode-parser-go/v2"
+	publiccode "github.com/italia/publiccode-parser-go/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	yaml "gopkg.in/yaml.v2"
