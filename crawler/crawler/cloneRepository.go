@@ -35,7 +35,7 @@ func CloneRepository(domain Domain, hostname, name, gitURL, index string) error 
 		return nil
 	}
 
-	out, err := exec.Command("git", "clone", "--filter=blob:none", "--mirror", "-b", gitURL, path).CombinedOutput() // nolint: gas
+	out, err := exec.Command("git", "clone", "--filter=blob:none", "--mirror", gitURL, path).CombinedOutput() // nolint: gas
 	if err != nil {
 		return errors.New(fmt.Sprintf("cannot git clone the repository: %s: %s", err.Error(), out))
 	}
