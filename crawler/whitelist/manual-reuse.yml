@@ -43,3 +43,8 @@
   codice-iPA: "m_sa"
   orgs:
     - "https://github.com/ministero-salute"
+
+- name: "Istituto di Istruzione Superiore - Michele Giua"
+  codice-iPA: "istsc_catf04000p"
+  repos:
+    - "https://github.com/trinko/giuaschool"
