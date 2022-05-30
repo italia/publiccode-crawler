@@ -125,3 +125,7 @@
     - "https://github.com/DXC-Technology-Italy/batman"
     - "https://github.com/DXC-Technology-Italy/softwareregistry"
     - "https://github.com/DXC-Technology-Italy/crowdspin"
+
+-name : "Web service interoperabilità applicativa protocollo informatico"
+repos:
+    - "https://github.com/ANORC/Allegato-6"
