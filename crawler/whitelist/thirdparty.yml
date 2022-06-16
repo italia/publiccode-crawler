@@ -133,7 +133,3 @@
 - name: "Tiledesk"
   repos:
     - "https://github.com/Tiledesk/tiledesk-deployment"
-    - "https://github.com/Tiledesk/tiledesk-server"
-    - "https://github.com/Tiledesk/tiledesk-dashboard"
-    - "https://github.com/Tiledesk/chat21-ionic"
-    - "https://github.com/Tiledesk/chat21-web-widget"
