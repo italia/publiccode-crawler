@@ -3,10 +3,10 @@ module github.com/italia/developers-italia-backend
 require (
 	github.com/alranel/go-vcsurl/v2 v2.0.1
 	github.com/ghodss/yaml v1.0.0
+	github.com/google/go-github/v43 v43.0.0
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/italia/httpclient-lib-go v0.0.0-20201009133728-9044482688d7
 	github.com/italia/publiccode-parser-go/v3 v3.0.0
-	github.com/olekukonko/tablewriter v0.0.4
 	github.com/olivere/elastic/v7 v7.0.27
 	github.com/prometheus/client_golang v1.7.1
 	github.com/sirupsen/logrus v1.7.0
@@ -17,6 +17,7 @@ require (
 	github.com/xanzy/go-gitlab v0.57.0
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.3.0
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
 require (
@@ -44,7 +45,6 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-runewidth v0.0.7 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.1.2 // indirect
@@ -70,12 +70,11 @@ require (
 	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
-	google.golang.org/appengine v1.6.6 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/ini.v1 v1.57.0 // indirect
 	gopkg.in/src-d/go-billy.v4 v4.3.2 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
 go 1.17
