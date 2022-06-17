@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"path"
@@ -17,12 +18,12 @@ func RegisterBitbucketAPI() OrganizationHandler {
 	return func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) (*url.URL, error) {
 		// Set BasicAuth header.
 		headers := make(map[string]string)
+
+		token := ""
 		if domain.BasicAuth != nil {
-			n, err := generateRandomInt(len(domain.BasicAuth))
-			if err != nil {
-				return nil, err
-			}
-			headers["Authorization"] = domain.BasicAuth[n]
+			token = domain.BasicAuth[rand.Intn(len(domain.BasicAuth))]
+			// TODO: refactor in order to not need to pass Headers around
+			headers["Authorization"] = token
 		}
 
 		// Set domain host to new host.
@@ -82,12 +83,12 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 	return func(domain Domain, url url.URL, repositories chan Repository, publisher Publisher) error {
 		// Set BasicAuth header
 		headers := make(map[string]string)
+
+		token := ""
 		if domain.BasicAuth != nil {
-			n, err := generateRandomInt(len(domain.BasicAuth))
-			if err != nil {
-				return err
-			}
-			headers["Authorization"] = domain.BasicAuth[n]
+			token = domain.BasicAuth[rand.Intn(len(domain.BasicAuth))]
+			// TODO: refactor in order to not need to pass Headers around
+			headers["Authorization"] = token
 		}
 
 		// Set domain host to new host.

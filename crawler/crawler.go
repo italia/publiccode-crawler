@@ -1,12 +1,10 @@
 package crawler
 
 import (
-	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"math/big"
 	"net/http"
 	"net/url"
 	"os"
@@ -304,13 +302,6 @@ ORG:
 			orgURL = *nextURL
 		}
 	}
-}
-
-// generateRandomInt returns an integer between 0 and max parameter.
-// "Max" must be less than math.MaxInt32
-func generateRandomInt(max int) (int, error) {
-	result, err := rand.Int(rand.Reader, big.NewInt(int64(max)))
-	return int(result.Int64()), err
 }
 
 // ProcessRepositories process the repositories channel and check the availability of the file.
