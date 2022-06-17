@@ -1,183 +1,16 @@
 package crawler
 
 import (
-	"encoding/json"
-	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"path"
-	"time"
+	"strings"
 
 	httpclient "github.com/italia/httpclient-lib-go"
+	"github.com/ktrysmt/go-bitbucket"
 	log "github.com/sirupsen/logrus"
-	"github.com/spf13/viper"
 )
-
-// Bitbucket is the complete response for the Bitbucket all repositories list.
-type Bitbucket struct {
-	Pagelen int `json:"pagelen"`
-	Values  []struct {
-		Scm        string `json:"scm"`
-		Website    string `json:"website"`
-		HasWiki    bool   `json:"has_wiki"`
-		Name       string `json:"name"`
-		Links      Links  `json:"links"`
-		ForkPolicy string `json:"fork_policy"`
-		UUID       string `json:"uuid"`
-		Language   string `json:"language"`
-		CreatedOn  string `json:"created_on"`
-		Mainbranch struct {
-			Type string `json:"type"`
-			Name string `json:"name"`
-		} `json:"mainbranch"`
-		FullName  string `json:"full_name"`
-		HasIssues bool   `json:"has_issues"`
-		Owner     struct {
-			Username    string `json:"username"`
-			DisplayName string `json:"display_name"`
-			Type        string `json:"type"`
-			UUID        string `json:"uuid"`
-			Links       struct {
-				Self struct {
-					Href string `json:"href"`
-				} `json:"self"`
-				HTML struct {
-					Href string `json:"href"`
-				} `json:"html"`
-				Avatar struct {
-					Href string `json:"href"`
-				} `json:"avatar"`
-			} `json:"links"`
-		} `json:"owner"`
-		UpdatedOn   string `json:"updated_on"`
-		Size        int    `json:"size"`
-		Type        string `json:"type"`
-		Slug        string `json:"slug"`
-		IsPrivate   bool   `json:"is_private"`
-		Description string `json:"description"`
-		Project     struct {
-			Key   string `json:"key"`
-			Type  string `json:"type"`
-			UUID  string `json:"uuid"`
-			Links struct {
-				Self struct {
-					Href string `json:"href"`
-				} `json:"self"`
-				HTML struct {
-					Href string `json:"href"`
-				} `json:"html"`
-				Avatar struct {
-					Href string `json:"href"`
-				} `json:"avatar"`
-			} `json:"links"`
-			Name string `json:"name"`
-		} `json:"project,omitempty"`
-		Parent struct {
-			Links struct {
-				Self struct {
-					Href string `json:"href"`
-				} `json:"self"`
-				HTML struct {
-					Href string `json:"href"`
-				} `json:"html"`
-				Avatar struct {
-					Href string `json:"href"`
-				} `json:"avatar"`
-			} `json:"links"`
-			Type     string `json:"type"`
-			Name     string `json:"name"`
-			FullName string `json:"full_name"`
-			UUID     string `json:"uuid"`
-		} `json:"parent,omitempty"`
-	} `json:"values"`
-	Next string `json:"next"`
-}
-
-// BitbucketRepo is the complete response for the Bitbucket single repository.
-type BitbucketRepo struct {
-	Scm        string    `json:"scm"`
-	Website    string    `json:"website"`
-	HasWiki    bool      `json:"has_wiki"`
-	Name       string    `json:"name"`
-	Links      Links     `json:"links"`
-	ForkPolicy string    `json:"fork_policy"`
-	UUID       string    `json:"uuid"`
-	Language   string    `json:"language"`
-	CreatedOn  time.Time `json:"created_on"`
-	Mainbranch struct {
-		Type string `json:"type"`
-		Name string `json:"name"`
-	} `json:"mainbranch"`
-	FullName  string `json:"full_name"`
-	HasIssues bool   `json:"has_issues"`
-	Owner     struct {
-		Username    string `json:"username"`
-		DisplayName string `json:"display_name"`
-		Type        string `json:"type"`
-		UUID        string `json:"uuid"`
-		Links       struct {
-			Self struct {
-				Href string `json:"href"`
-			} `json:"self"`
-			HTML struct {
-				Href string `json:"href"`
-			} `json:"html"`
-			Avatar struct {
-				Href string `json:"href"`
-			} `json:"avatar"`
-		} `json:"links"`
-	} `json:"owner"`
-	UpdatedOn   time.Time `json:"updated_on"`
-	Size        int       `json:"size"`
-	Type        string    `json:"type"`
-	Slug        string    `json:"slug"`
-	IsPrivate   bool      `json:"is_private"`
-	Description string    `json:"description"`
-}
-
-// Links is the list of Links associated to the repository.
-type Links struct {
-	Watchers struct {
-		Href string `json:"href"`
-	} `json:"watchers"`
-	Branches struct {
-		Href string `json:"href"`
-	} `json:"branches"`
-	Tags struct {
-		Href string `json:"href"`
-	} `json:"tags"`
-	Commits struct {
-		Href string `json:"href"`
-	} `json:"commits"`
-	Clone []struct {
-		Href string `json:"href"`
-		Name string `json:"name"`
-	} `json:"clone"`
-	Self struct {
-		Href string `json:"href"`
-	} `json:"self"`
-	Source struct {
-		Href string `json:"href"`
-	} `json:"source"`
-	HTML struct {
-		Href string `json:"href"`
-	} `json:"html"`
-	Avatar struct {
-		Href string `json:"href"`
-	} `json:"avatar"`
-	Hooks struct {
-		Href string `json:"href"`
-	} `json:"hooks"`
-	Forks struct {
-		Href string `json:"href"`
-	} `json:"forks"`
-	Downloads struct {
-		Href string `json:"href"`
-	} `json:"downloads"`
-	Pullrequests struct {
-		Href string `json:"href"`
-	} `json:"pullrequests"`
-}
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
 func RegisterBitbucketAPI() OrganizationHandler {
@@ -195,41 +28,44 @@ func RegisterBitbucketAPI() OrganizationHandler {
 		// Set domain host to new host.
 		domain.Host = url.Hostname()
 
-		// Get List of repositories.
-		resp, err := httpclient.GetURL(url.String(), headers)
-		if err != nil {
-			return nil, err
-		}
-		if resp.Status.Code != http.StatusOK {
-			log.Warnf("Request returned: %s", string(resp.Body))
-			return nil, errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+
+		team := strings.Split(url.Path, "/")[3]
+		opt := &bitbucket.RepositoriesOptions{
+			Owner: team,
 		}
 
-		// Fill response as list of values (repositories data).
-		var result Bitbucket
-		err = json.Unmarshal(resp.Body, &result)
+		client := bitbucket.NewBasicAuth("", "")
+		res, err := client.Repositories.ListForAccount(opt)
+
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("Can't list repositories in `%s'", team)
 		}
 
 		// Add repositories to the channel that will perform the check on everyone.
-		for _, v := range result.Values {
-
-			// Join file raw URL.
-			u, err := url.Parse(v.Links.HTML.Href)
-			if err != nil {
-				return nil, err
+		for _, r := range res.Items {
+			if r.Is_private {
+				log.Warnf("Skipping %s: repo is private", r.Full_name)
+				continue
 			}
-			u.Path = path.Join(u.Path, "raw", v.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
 
-			// If the repository was never used, the Mainbranch is empty ("").
-			if v.Mainbranch.Name != "" {
+			opt := &bitbucket.RepositoryFilesOptions {
+				Owner: team,
+				RepoSlug: r.Slug,
+				Ref: r.Mainbranch.Name,
+				Path: "publiccode.yml",
+			}
+			res, err := client.Repositories.Repository.GetFileContent(opt)
+			if (err != nil) {
+				log.Infof("[%s]: no publiccode.yml: %s", r.Full_name, err.Error())
+				continue
+			}
+			if res != nil {
 				repositories <- Repository{
-					Name:        v.FullName,
-					Hostname:    u.Hostname(),
-					FileRawURL:  u.String(),
-					GitCloneURL: v.Links.Clone[0].Href,
-					GitBranch:   v.Mainbranch.Name,
+					Name:        r.Full_name,
+					Hostname:    domain.Host,
+					FileRawURL:  fmt.Sprintf("https://bitbucket.org/%s/%s/raw/%s/publiccode.yml", team,r.Slug, r.Mainbranch.Name),
+					GitCloneURL: fmt.Sprintf("https://bitbucket.org/%s/%s.git", team, r.Slug),
+					GitBranch:   r.Mainbranch.Name,
 					Domain:      domain,
 					Publisher:   publisher,
 					Headers:     headers,
@@ -237,14 +73,7 @@ func RegisterBitbucketAPI() OrganizationHandler {
 			}
 		}
 
-		// if last page for this organization, the result.Next is empty.
-		if len(result.Next) == 0 {
-			return nil, nil
-		}
-
-		// Return next url.
-		u, _ := url.Parse(result.Next)
-		return u, nil
+		return nil, nil
 	}
 }
 
@@ -264,42 +93,39 @@ func RegisterSingleBitbucketAPI() SingleRepoHandler {
 		// Set domain host to new host.
 		domain.Host = url.Hostname()
 
-		apiUrl := *&url
-		apiUrl.Path = path.Join("/2.0/repositories", url.Path)
-		apiUrl.Host = "api." + url.Host
-
-		// Get single Repo
-		resp, err := httpclient.GetURL(apiUrl.String(), headers)
-		if err != nil {
-			return err
-		}
-		if resp.Status.Code != http.StatusOK {
-			log.Warnf("Request returned: %s", string(resp.Body))
-			return errors.New("request returned an incorrect http.Status: " + resp.Status.Text)
+		repoName := strings.Split(strings.Trim(url.Path, "/"), "/")
+		opt := &bitbucket.RepositoryOptions{
+			Owner: repoName[0],
+			RepoSlug: repoName[1],
 		}
 
-		// Fill response as list of values (repositories data).
-		var result BitbucketRepo
-		err = json.Unmarshal(resp.Body, &result)
+		client := bitbucket.NewBasicAuth("", "")
+
+		repo , err := client.Repositories.Repository.Get(opt)
 		if err != nil {
 			return err
 		}
 
-		fullURL := path.Join(url.Hostname(), result.FullName, "raw", result.Mainbranch.Name, viper.GetString("CRAWLED_FILENAME"))
-
-		// If the repository was never used, the Mainbranch is empty ("").
-		if result.Mainbranch.Name != "" {
+		filesOpt := &bitbucket.RepositoryFilesOptions {
+			Owner: repoName[0],
+			RepoSlug: repoName[1],
+			Path: "publiccode.yml",
+		}
+		res, err := client.Repositories.Repository.GetFileContent(filesOpt)
+		if (err != nil) {
+			return err
+		}
+		if res != nil {
 			repositories <- Repository{
-				Name:       result.FullName,
-				Hostname:   url.Hostname(),
-				FileRawURL: "https://" + fullURL,
-				GitBranch:  result.Mainbranch.Name,
-				Domain:     domain,
-				Publisher:  publisher,
-				Headers:    headers,
+				Name:        repo.Full_name,
+				Hostname:    domain.Host,
+				FileRawURL:  fmt.Sprintf("https://bitbucket.org/%s/%s/raw/%s/publiccode.yml", repoName[0], repoName[1], repo.Mainbranch.Name),
+				GitCloneURL: fmt.Sprintf("https://bitbucket.org/%s/%s.git", repoName[0], repoName[1]),
+				GitBranch:   repo.Mainbranch.Name,
+				Domain:      domain,
+				Publisher:   publisher,
+				Headers:     headers,
 			}
-		} else {
-			return errors.New("repository is: empty")
 		}
 
 		return nil
