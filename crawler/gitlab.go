@@ -1,7 +1,6 @@
 package crawler
 
 import (
-	"encoding/json"
 	"math/rand"
 	"net/url"
 	"path"
@@ -187,13 +186,6 @@ func addProject(project gitlab.Project, domain Domain, publisher Publisher, head
 		return err
 	}
 
-	// Marshal all the repository metadata.
-	metadata, err := json.Marshal(project)
-	if err != nil {
-		log.Errorf("gitlab metadata: %v", err)
-		return err
-	}
-
 	if project.DefaultBranch != "" {
 		repositories <- Repository{
 			Name:        project.PathWithNamespace,
@@ -204,7 +196,6 @@ func addProject(project gitlab.Project, domain Domain, publisher Publisher, head
 			Domain:      domain,
 			Publisher:   publisher,
 			Headers:     headers,
-			Metadata:    metadata,
 		}
 	}
 

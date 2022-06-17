@@ -52,7 +52,6 @@ type Repository struct {
 	Domain      Domain
 	Publisher   Publisher
 	Headers     map[string]string
-	Metadata    []byte
 }
 
 // NewCrawler initializes a new Crawler object, updates the IPA list and connects to Elasticsearch (if dryRun == false).

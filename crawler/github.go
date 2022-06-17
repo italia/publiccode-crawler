@@ -262,11 +262,6 @@ func RegisterGithubAPI() OrganizationHandler {
 				continue
 			}
 
-			// Marshal all the repository metadata.
-			metadata, err := json.Marshal(v)
-			if err != nil {
-				log.Errorf("github metadata: %v", err)
-			}
 			contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
 			// Get List of files.
 			resp, err := httpclient.GetURL(contents, headers)
@@ -284,7 +279,7 @@ func RegisterGithubAPI() OrganizationHandler {
 				log.Infof("Repository is empty: %s", url.String())
 			}
 
-			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, v.DefaultBranch, domain.Host, domain, publisher, headers, metadata, repositories)
+			err = addGithubProjectsToRepositories(files, v.FullName, v.CloneURL, v.DefaultBranch, domain.Host, domain, publisher, headers, repositories)
 			if err != nil {
 				log.Infof("addGithubProectsToRepositories %v", err)
 			}
@@ -340,12 +335,6 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 			return errors.New("Skipping private or archived repo")
 		}
 
-		// Marshal all the repository metadata.
-		metadata, err := json.Marshal(v)
-		if err != nil {
-			log.Errorf("github metadata: %v", err)
-			return err
-		}
 		contents := strings.Replace(v.ContentsURL, "{+path}", "", -1)
 
 		// Get List of files.
@@ -378,7 +367,6 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 					Domain:      domain,
 					Publisher:   publisher,
 					Headers:     headers,
-					Metadata:    metadata,
 				}
 				foundIt = true
 			}
@@ -392,7 +380,7 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 
 // addGithubProjectsToRepositories adds the projects from api response to repository channel.
 func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defaultBranch, hostname string,
-	domain Domain, publisher Publisher, headers map[string]string, metadata []byte, repositories chan Repository) error {
+	domain Domain, publisher Publisher, headers map[string]string, repositories chan Repository) error {
 	// Search a file with a valid name and a downloadURL.
 	for _, f := range files {
 		if f.Name == viper.GetString("CRAWLED_FILENAME") && f.DownloadURL != "" {
@@ -406,7 +394,6 @@ func addGithubProjectsToRepositories(files GithubFiles, fullName, cloneURL, defa
 				Domain:      domain,
 				Publisher:   publisher,
 				Headers:     headers,
-				Metadata:    metadata,
 			}
 		}
 	}
