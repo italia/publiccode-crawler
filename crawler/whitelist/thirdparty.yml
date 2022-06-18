@@ -133,3 +133,8 @@
 - name: "Tiledesk"
   repos:
     - "https://github.com/Tiledesk/tiledesk-deployment"
+
+- name: "SmartMonit"
+  repos:
+    - "https://gitlab.paadvice.com/opensource/smartmonit"
+
