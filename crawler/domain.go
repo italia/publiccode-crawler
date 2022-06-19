@@ -96,13 +96,13 @@ func (c *Crawler) KnownHost(link url.URL) (*Domain, error) {
 
 	// host unknown, needs to be inferred.
 	if vcsurl.IsGitHub(&link) {
-		log.Infof("%s - API inferred: %s", link, "github")
+		log.Infof("%s - API inferred: %s", link.String(), "github")
 		return &Domain{Host: "github"}, nil
 	} else if vcsurl.IsBitBucket(&link) {
-		log.Infof("%s - API inferred: %s", link, "bitbucket")
+		log.Infof("%s - API inferred: %s", link.String(), "bitbucket")
 		return &Domain{Host: "bitbucket"}, nil
 	} else if vcsurl.IsGitLab(&link) {
-		log.Infof("%s - API inferred: %s", link, "gitlab")
+		log.Infof("%s - API inferred: %s", link.String(), "gitlab")
 		return &Domain{Host: "gitlab"}, nil
 	}
 

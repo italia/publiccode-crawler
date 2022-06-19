@@ -30,14 +30,14 @@ func CloneRepository(domain Domain, hostname, name, gitURL, index string) error 
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		out, err := exec.Command("git", "-C", path, "fetch", "--all").CombinedOutput() // nolint: gas
 		if err != nil {
-			return errors.New(fmt.Sprintf("cannot git pull the repository: %s: %s", err.Error(), out))
+			return fmt.Errorf("cannot git pull the repository: %s: %s", err.Error(), out)
 		}
 		return nil
 	}
 
 	out, err := exec.Command("git", "clone", "--filter=blob:none", "--mirror", gitURL, path).CombinedOutput() // nolint: gas
 	if err != nil {
-		return errors.New(fmt.Sprintf("cannot git clone the repository: %s: %s", err.Error(), out))
+		return fmt.Errorf("cannot git clone the repository: %s: %s", err.Error(), out)
 	}
 
 	metrics.GetCounter("repository_cloned", index).Inc()

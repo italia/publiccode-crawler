@@ -3,12 +3,10 @@ package crawler
 import (
 	"fmt"
 	"math/rand"
-	"net/http"
 	"net/url"
 	"path"
 	"strings"
 
-	httpclient "github.com/italia/httpclient-lib-go"
 	"github.com/ktrysmt/go-bitbucket"
 	log "github.com/sirupsen/logrus"
 )

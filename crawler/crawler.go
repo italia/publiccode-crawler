@@ -273,7 +273,10 @@ func (c *Crawler) CrawlPublisher(publisher Publisher) {
 			log.Error(err)
 		}
 
-		domain.processSingleRepo(repoURL, c.repositories, publisher)
+		err = domain.processSingleRepo(repoURL, c.repositories, publisher)
+		if (err != nil) {
+			log.Error(err)
+		}
 	}
 }
 
@@ -329,7 +332,7 @@ func addLogEntry(logEntries *[]logEntry, message string) {
 func (c *Crawler) ProcessRepo(repository Repository) {
 	var logEntries []logEntry
 
-	var message string = ""
+	var message string
 
 	// Write the log to a file, so it can be accessed from outside at
 	// http://crawler-host/$codehosting/$org/$reponame/log.txt
@@ -486,12 +489,10 @@ func validateFile(publisher Publisher, parser publiccode.Parser, fileRawURL stri
 		repo1.Scheme, repo2.Scheme = "", ""
 
 		if !strings.EqualFold(repo1.String(), repo2.String()) {
-			return errors.New(
-				fmt.Sprintf(
-					"declared url (%s) and actual publiccode.yml location URL (%s) "+
-						"are not in the same repo: '%s' vs '%s'",
-					parser.PublicCode.URL, fileRawURL, repo2, repo1,
-				),
+			return fmt.Errorf(
+				"declared url (%s) and actual publiccode.yml location URL (%s) "+
+					"are not in the same repo: '%s' vs '%s'",
+				parser.PublicCode.URL, fileRawURL, repo2, repo1,
 			)
 		}
 	}

@@ -104,10 +104,18 @@ func AllSoftwareYML(filename string, numberOfSimilarSoftware, numberOfPopularCat
 		}
 
 		// Populate the output object with additional information
-		dyno.Set(full[0], sw.findVariants(elasticClient), "oldVariant")
-		dyno.Set(full[0], sw.variantsFeatures(), "oldFeatures")
-		dyno.Set(full[0], sw.findRelated(numberOfSimilarSoftware, elasticClient), "relatedSoftwares")
-		dyno.Set(full[0], sw.getPopularCategories(numberOfPopularCategories, elasticClient), "popularCategories")
+		if err = dyno.Set(full[0], sw.findVariants(elasticClient), "oldVariant"); err != nil {
+			log.Error(err)
+		}
+		if err = dyno.Set(full[0], sw.variantsFeatures(), "oldFeatures"); err != nil {
+			log.Error(err)
+		}
+		if err = dyno.Set(full[0], sw.findRelated(numberOfSimilarSoftware, elasticClient), "relatedSoftwares"); err != nil {
+			log.Error(err)
+		}
+		if err = dyno.Set(full[0], sw.getPopularCategories(numberOfPopularCategories, elasticClient), "popularCategories"); err != nil {
+			log.Error(err)
+		}
 
 		// Convert it to YAML
 		yaml, err := yaml.Marshal(&full)

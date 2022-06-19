@@ -6,14 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
-	"net/http"
 	"net/url"
 	"path"
 	"strings"
 
 	"golang.org/x/oauth2"
 
-	httpclient "github.com/italia/httpclient-lib-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/google/go-github/v43/github"
 )
@@ -167,13 +165,13 @@ func RegisterSingleGithubAPI() SingleRepoHandler {
 // OUT:https://api.github.com/orgs/italia/repos,https://api.github.com/users/italia/repos
 func GenerateGithubAPIURL() GeneratorAPIURL {
 	return func(in url.URL) (out []url.URL, err error) {
-		u := *&in
+		u := in
 		u.Path = path.Join("orgs", u.Path, "repos")
 		u.Path = strings.Trim(u.Path, "/")
 		u.Host = "api." + u.Host
 		out = append(out, u)
 
-		u2 := *&in
+		u2 := in
 		u2.Path = path.Join("users", u2.Path, "repos")
 		u2.Path = strings.Trim(u2.Path, "/")
 		u2.Host = "api." + u2.Host

@@ -38,7 +38,7 @@ var downloadPublishersCmd = &cobra.Command{
 			if err != nil {
 				log.Fatalf("error in reading %s: %v", args[1], err)
 			}
-			yaml.Unmarshal(data, &publishers)
+			_ = yaml.Unmarshal(data, &publishers)
 		}
 
 		resp, err := http.Get(args[0])
@@ -87,5 +87,7 @@ var downloadPublishersCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		f.Write(data)
+		if _, err = f.Write(data); err != nil {
+			log.Fatal(err)
+		}
 	}}

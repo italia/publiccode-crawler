@@ -6,7 +6,6 @@ import (
 	"crypto/tls"
 	"encoding/csv"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -180,21 +179,6 @@ func GetAdministrationName(codiceiPA string) string {
 	return ""
 }
 
-func readCSV(file string) ([][]string, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	// Read the CSV file
-	reader := csv.NewReader(f)
-	reader.Comma = '\t'
-	reader.ReuseRecord = true
-	reader.LazyQuotes = true
-	return reader.ReadAll()
-}
-
 func readCSVFromURL(url string) ([][]string, error) {
 	// disable HTTP/2 because IndicePA does not support it
 	tr := &http.Transport{
@@ -255,33 +239,4 @@ func parseLine(line string) Amministrazione {
 	}
 
 	return amm
-}
-
-func downloadFile(filepath string, url string) error {
-	// Create the file.
-	out, err := os.Create(filepath)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := out.Close(); err != nil {
-			log.Error(err)
-		}
-	}()
-
-	// Get the data from the url.
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if err := resp.Body.Close(); err != nil {
-			log.Error(err)
-		}
-	}()
-
-	// Write the body to file.
-	_, err = io.Copy(out, resp.Body)
-
-	return err
 }

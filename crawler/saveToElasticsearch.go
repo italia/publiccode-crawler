@@ -48,6 +48,9 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 	// client side.
 	publiccode := &parser.PublicCode
 	rawRoot, err := vcsurl.GetRawRoot((*url.URL)(parser.PublicCode.URL), parser.Branch)
+	if err != nil {
+		return err
+	}
 
 	if publiccode.Logo != "" {
 		logoURL, _ := url.Parse(publiccode.Logo)
@@ -87,6 +90,9 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 	}
 
 	err = yaml.Unmarshal(yml, &file.PublicCode)
+	if err != nil {
+		return err
+	}
 
 	// Put publiccode data in ES.
 	ctx := context.Background()
