@@ -1,7 +1,7 @@
-# Crawler for the OSS catalog of Developers Italia
+# publiccode.yml crawler for the software catalog of Developers Italia
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/italia/developers-italia-backend)](https://goreportcard.com/report/github.com/italia/developers-italia-backend)
-[![Join the #website channel](https://img.shields.io/badge/Slack%20channel-%23website-blue.svg?logo=slack)](https://developersitalia.slack.com/messages/C9R26QMT6)
+[![Join the #publiccode channel](https://img.shields.io/badge/Slack%20channel-%23website-blue.svg?logo=slack)](https://developersitalia.slack.com/messages/CAM3F785T)
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 
 ## Description
@@ -9,7 +9,7 @@
 Developers Italia provides [a catalog of Free and Open Source](https://developers.italia.it/en/search)
 software aimed to Public Administrations.
 
-This **crawler** finds and retrieves the `publiccode.yml` files from the
+This **crawler** retrieves the `publiccode.yml` files from the
 organizations publishing the software that have registered through the
 [onboarding procedure](https://github.com/italia/developers-italia-onboarding).
 
@@ -23,7 +23,7 @@ The crawler can either run manually on the target machine or it can be deployed
 from a Docker container with
 [its helm-chart](https://github.com/teamdigitale/devita-infra-kubernetes) in Kubernetes.
 
-[Elasticsearch 6.8](https://www.elastic.co/products/elasticsearch) is used to store
+[Elasticsearch](https://www.elastic.co/products/elasticsearch) is used to store
 the data and has ready to accept connections before the crawler is started.
 
 ### Manually configure and build the crawler
