@@ -138,3 +138,6 @@
   repos:
     - "https://gitlab.paadvice.com/opensource/smartmonit"
 
+- name: "Trasporti Lecce"
+  repos:
+    - "https://github.com/piersoft/trasportilecceeu"
