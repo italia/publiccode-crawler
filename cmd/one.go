@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"regexp"
 
+	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/crawler"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -25,7 +26,7 @@ var oneCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		// check if repo url is not present in blacklist
 		// if so report error and exit.
-		if crawler.IsRepoInBlackList(args[0]) {
+		if common.IsRepoInBlackList(args[0]) {
 			return
 		}
 
@@ -50,10 +51,10 @@ var oneCmd = &cobra.Command{
 	},
 }
 
-func getPublisher(repoURL url.URL, paths []string) (p crawler.Publisher) {
-	var publishers []crawler.Publisher
+func getPublisher(repoURL url.URL, paths []string) (p common.Publisher) {
+	var publishers []common.Publisher
 	for _, path := range paths {
-		p, err := crawler.LoadPublishers(path)
+		p, err := common.LoadPublishers(path)
 		if err != nil {
 			log.Fatal(err)
 		}

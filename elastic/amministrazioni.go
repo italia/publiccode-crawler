@@ -1,4 +1,4 @@
-package ipa
+package elastic
 
 import (
 	"bufio"
@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/italia/developers-italia-backend/elastic"
 	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -130,7 +129,7 @@ func UpdateFromIndicePA(elasticClient *es.Client) error {
 	}
 
 	// Create mapping if it does not exist
-	err = elastic.CreateIndexMapping(viper.GetString("ELASTIC_INDICEPA_INDEX"), elastic.IPAMapping, elasticClient)
+	err = CreateIndexMapping(viper.GetString("ELASTIC_INDICEPA_INDEX"), IPAMapping, elasticClient)
 	if err != nil {
 		return err
 	}

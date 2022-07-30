@@ -1,4 +1,4 @@
-package crawler
+package git
 
 import (
 	"errors"
@@ -7,15 +7,13 @@ import (
 	"os/exec"
 	"path/filepath"
 
+	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/spf13/viper"
 )
 
 // CloneRepository clone the repository into DATADIR/repos/<hostname>/<vendor>/<repo>/gitClone
-func CloneRepository(domain Domain, hostname, name, gitURL, index string) error {
-	if domain.Host == "" {
-		return errors.New("cannot save a file without domain host")
-	}
+func CloneRepository(hostname, name, gitURL, index string) error {
 	if name == "" {
 		return errors.New("cannot save a file without name")
 	}
@@ -23,7 +21,7 @@ func CloneRepository(domain Domain, hostname, name, gitURL, index string) error 
 		return errors.New("cannot clone a repository without git URL")
 	}
 
-	vendor, repo := splitFullName(name)
+	vendor, repo := common.SplitFullName(name)
 	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), "repos", hostname, vendor, repo, "gitClone")
 
 	// If folder already exists it will do a fetch instead of a clone.

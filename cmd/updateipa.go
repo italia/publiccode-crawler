@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"github.com/italia/developers-italia-backend/elastic"
-	"github.com/italia/developers-italia-backend/ipa"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -25,7 +24,7 @@ var updateIPACmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		err = ipa.UpdateFromIndicePA(es)
+		err = elastic.UpdateFromIndicePA(es)
 		if err != nil {
 			log.Error(err)
 		}

@@ -1,23 +1,21 @@
-package crawler
+package elastic
 
 import (
 	"context"
-	"crypto/sha1"
 	"errors"
-	"fmt"
 	"net/url"
 	"path"
-	"strings"
 	"time"
 
 	"github.com/alranel/go-vcsurl/v2"
 	"github.com/ghodss/yaml"
-	"github.com/italia/developers-italia-backend/ipa"
 	"github.com/italia/developers-italia-backend/metrics"
 	publiccode "github.com/italia/publiccode-parser-go/v3"
 	elastic "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
+	"github.com/italia/developers-italia-backend/common"
 )
 
 type administration struct {
@@ -26,9 +24,7 @@ type administration struct {
 	Type      string `json:"type"`
 }
 
-// saveToES save the chosen data []byte in elasticsearch
-// data contains the raw publiccode.yml file
-func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []int, parser publiccode.Parser) error {
+func SaveToES(client *elastic.Client, index string, repo common.Repository, activityIndex float64, vitality []int, parser publiccode.Parser) error {
 	// softwareES represents a software record in Elasticsearch
 	type softwareES struct {
 		FileRawURL            string            `json:"fileRawURL"`
@@ -80,10 +76,10 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 	// Create a softwareES object and populate it
 	file := softwareES{
 		FileRawURL:            repo.FileRawURL,
-		ID:                    repo.generateID(),
+		ID:                    repo.GenerateID(),
 		CrawlTime:             time.Now().Format(time.RFC3339),
-		Slug:                  repo.generateSlug(),
-		ItRiusoCodiceIPALabel: ipa.GetAdministrationName(publiccode.It.Riuso.CodiceIPA),
+		Slug:                  repo.GenerateSlug(),
+		ItRiusoCodiceIPALabel: GetAdministrationName(publiccode.It.Riuso.CodiceIPA),
 		VitalityScore:         activityIndex,
 		VitalityDataChart:     vitality,
 		Type:                  "software",
@@ -96,8 +92,8 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 
 	// Put publiccode data in ES.
 	ctx := context.Background()
-	_, err = c.es.Index().
-		Index(c.index).
+	_, err = client.Index().
+		Index(index).
 		Id(file.ID).
 		BodyJson(file).
 		Do(ctx)
@@ -105,12 +101,12 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 		return err
 	}
 
-	metrics.GetCounter("repository_file_indexed", c.index).Inc()
+	metrics.GetCounter("repository_file_indexed", index).Inc()
 
 	// Add administration data.
 	if publiccode.It.Riuso.CodiceIPA != "" {
 		// Put administrations data in ES.
-		_, err = c.es.Index().
+		_, err = client.Index().
 			Index(viper.GetString("ELASTIC_PUBLISHERS_INDEX")).
 			Id(publiccode.It.Riuso.CodiceIPA).
 			BodyJson(administration{
@@ -127,40 +123,16 @@ func (c *Crawler) saveToES(repo Repository, activityIndex float64, vitality []in
 	return nil
 }
 
-// generateID generates a hash based on unique git repo URL.
-func (repo *Repository) generateID() string {
-	hash := sha1.New()
-	_, err := hash.Write([]byte(repo.GitCloneURL))
-	if err != nil {
-		log.Errorf("Error generating the repository hash: %+v", err)
-		return ""
-	}
-	return fmt.Sprintf("%x", hash.Sum(nil))
-}
-
-// generateSlug generates a readable unique string based on repository name.
-func (repo *Repository) generateSlug() string {
-	vendorAndName := strings.Replace(repo.Name, "/", "-", -1)
-	vendorAndName = strings.ReplaceAll(vendorAndName, ".", "_")
-
-	if repo.Publisher.Id == "" {
-		ID := repo.generateID()
-		return fmt.Sprintf("%s-%s", vendorAndName, ID[0:6])
-	}
-
-	return fmt.Sprintf("%s-%s", repo.Publisher.Id, vendorAndName)
-}
-
 // DeleteByQueryFromES delete record from elasticsearch
 // that will match search string for publiccode.url field
-func (c *Crawler) DeleteByQueryFromES(search string) error {
+func DeleteByQueryFromES(client *elastic.Client, search string, index string) error {
 	// Search with a term query
 	termQuery := elastic.NewTermQuery("publiccode.url", search)
 
 	// Put publiccode data in ES.
 	ctx := context.Background()
-	searchResult, err := c.es.DeleteByQuery().
-		Index(c.index).
+	searchResult, err := client.DeleteByQuery().
+		Index(index).
 		Query(termQuery). // specify the query
 		Do(ctx)           // execute
 	if err != nil {

@@ -15,10 +15,13 @@ WORKDIR ${HOME}
 
 # Copy crawler files inside the workdir
 COPY .git .git
+COPY common common
 COPY cmd cmd
 COPY crawler crawler
 COPY elastic elastic
-COPY ipa ipa
+COPY git git
+COPY internal internal
+COPY scanner scanner
 COPY jekyll jekyll
 COPY metrics metrics
 COPY version version

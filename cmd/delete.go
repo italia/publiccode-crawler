@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -19,7 +20,7 @@ var deleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		c := crawler.NewCrawler(false)
 
-		err := c.DeleteByQueryFromES(args[0])
+		err := elastic.DeleteByQueryFromES(c.Es, args[0], c.Index)
 		if err != nil {
 			log.Error(err)
 		}

@@ -1,4 +1,4 @@
-package crawler
+package common
 
 import (
 	"errors"
@@ -24,7 +24,7 @@ func SaveToFile(domain Domain, hostname string, name string, data []byte, index 
 	}
 
 	fileName := index + "_" + viper.GetString("CRAWLED_FILENAME")
-	vendor, repo := splitFullName(name)
+	vendor, repo := SplitFullName(name)
 
 	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), hostname, vendor, repo)
 
@@ -45,14 +45,14 @@ func SaveToFile(domain Domain, hostname string, name string, data []byte, index 
 	return err
 }
 
-// splitFullName split a git FullName format to vendor and repo strings.
-func splitFullName(fullName string) (string, string) {
+// SplitFullName split a git FullName format to vendor and repo strings.
+func SplitFullName(fullName string) (string, string) {
 	s := strings.Split(fullName, "/")
 	return s[0], s[1]
 }
 
 // Save the bad publiccode.yaml url to a file used by the publiccode-issueopener script.
-func logBadYamlToFile(fileRawURL string) {
+func LogBadYamlToFile(fileRawURL string) {
 	log.Errorf("Appending the bad file URL to the list: %s", fileRawURL)
 
 	filePath := path.Join(viper.GetString("CRAWLER_DATADIR"), "bad_publiccodes.lst")

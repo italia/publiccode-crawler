@@ -7,6 +7,7 @@ require (
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/italia/httpclient-lib-go v0.0.0-20201009133728-9044482688d7
 	github.com/italia/publiccode-parser-go/v3 v3.0.0
+	github.com/ktrysmt/go-bitbucket v0.9.47
 	github.com/olivere/elastic/v7 v7.0.27
 	github.com/prometheus/client_golang v1.7.1
 	github.com/sirupsen/logrus v1.7.0
@@ -15,6 +16,7 @@ require (
 	github.com/stretchr/testify v1.7.2
 	github.com/thoas/go-funk v0.7.0
 	github.com/xanzy/go-gitlab v0.57.0
+	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43
 	gopkg.in/src-d/go-git.v4 v4.13.1
 	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -41,7 +43,6 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd // indirect
-	github.com/ktrysmt/go-bitbucket v0.9.47 // indirect
 	github.com/kyoh86/go-spdx v0.0.5-0.20220421143955-2f42f2d4c410 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
@@ -67,7 +68,6 @@ require (
 	github.com/xanzy/ssh-agent v0.2.1 // indirect
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
-	golang.org/x/oauth2 v0.0.0-20200902213428-5d25da1a8d43 // indirect
 	golang.org/x/sys v0.0.0-20210806184541-e5e7981a1069 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect

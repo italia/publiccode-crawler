@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"os"
 
-	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/common"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 
@@ -32,7 +32,7 @@ var downloadPublishersCmd = &cobra.Command{
 	Long:  `Download the list of repos and orgs from the onboarding portal and convert it into a publishers.yml.`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		var publishers []crawler.Publisher
+		var publishers []common.Publisher
 		if _, err := os.Stat(args[1]); err == nil {
 			data, err := ioutil.ReadFile(args[1])
 			if err != nil {
@@ -70,7 +70,7 @@ var downloadPublishersCmd = &cobra.Command{
 
 			u, _ := url.Parse(i.URL)
 			// If this IPA code is not known, append a new publisher item
-			publishers = append(publishers, crawler.Publisher{
+			publishers = append(publishers, common.Publisher{
 				Name:          i.IPA,
 				Id:            i.IPA,
 				Organizations: []ymlurl.URL{(ymlurl.URL)(*u)},

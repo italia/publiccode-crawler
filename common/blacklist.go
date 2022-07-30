@@ -1,4 +1,4 @@
-package crawler
+package common
 
 import (
 	"fmt"
@@ -39,7 +39,7 @@ func GetAllBlackListedRepos() map[string]string {
 	}
 	var repoListed = make(map[string]string)
 	for _, repo := range readBlacklist {
-		repoListed[appendGitExt(repo.URL)] = repo.URL
+		repoListed[AppendGitExt(repo.URL)] = repo.URL
 	}
 	return repoListed
 }
@@ -68,7 +68,7 @@ func IsRepoInBlackList(repoURL string) bool {
 	return false
 }
 
-func appendGitExt(repo string) string {
+func AppendGitExt(repo string) string {
 	re := regexp.MustCompile(`\.git$`)
 	if re.MatchString(repo) {
 		return repo

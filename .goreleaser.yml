@@ -2,12 +2,11 @@
 # Make sure to check the documentation at http://goreleaser.com
 before:
   hooks:
-    - cp crawler/config.toml.example ./config.toml
+    - cp config.toml.example ./config.toml
 builds:
 - 
   id: crawler
   binary: crawler
-  dir: crawler
   main: ./main.go
   ldflags:
     - -s -w -X github.com/italia/developers-italia-backend/crawler/version.VERSION={{.Version}}

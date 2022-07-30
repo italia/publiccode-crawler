@@ -16,10 +16,12 @@ import (
 	"time"
 
 	"github.com/alranel/go-vcsurl/v2"
+	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/elastic"
-	"github.com/italia/developers-italia-backend/ipa"
+	"github.com/italia/developers-italia-backend/git"
 	"github.com/italia/developers-italia-backend/jekyll"
 	"github.com/italia/developers-italia-backend/metrics"
+	"github.com/italia/developers-italia-backend/scanner"
 	httpclient "github.com/italia/httpclient-lib-go"
 	publiccode "github.com/italia/publiccode-parser-go/v3"
 	es "github.com/olivere/elastic/v7"
@@ -32,24 +34,16 @@ type Crawler struct {
 	DryRun bool
 
 	// Sync mutex guard.
-	es             *es.Client
-	index          string
-	domains        []Domain
-	repositories   chan Repository
+	Es             *es.Client
+	Index          string
+	domains        []common.Domain
+	repositories   chan common.Repository
 	publishersWg   sync.WaitGroup
 	repositoriesWg sync.WaitGroup
-}
 
-// Repository is a single code repository. FileRawURL contains the direct url to the raw file.
-type Repository struct {
-	Name        string
-	Hostname    string
-	FileRawURL  string
-	GitCloneURL string
-	GitBranch   string
-	Domain      Domain
-	Publisher   Publisher
-	Headers     map[string]string
+	gitHubScanner    scanner.Scanner
+	gitLabScanner    scanner.Scanner
+	bitBucketScanner scanner.Scanner
 }
 
 // NewCrawler initializes a new Crawler object, updates the IPA list and connects to Elasticsearch (if dryRun == false).
@@ -65,20 +59,24 @@ func NewCrawler(dryRun bool) *Crawler {
 	}
 
 	// Read and parse list of domains.
-	c.domains, err = ReadAndParseDomains("domains.yml")
+	c.domains, err = common.ReadAndParseDomains("domains.yml")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Initiate a channel of repositories.
-	c.repositories = make(chan Repository, 1000)
+	c.repositories = make(chan common.Repository, 1000)
 
 	// Register Prometheus metrics.
-	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", c.index)
-	metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", c.index)
-	metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", c.index)
-	metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", c.index)
-	//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", c.index)
+	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", c.Index)
+	metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", c.Index)
+	metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", c.Index)
+	metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", c.Index)
+	//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", c.Index)
+
+	c.gitHubScanner = scanner.NewGitHubScanner()
+	c.gitLabScanner = scanner.NewGitLabScanner()
+	c.bitBucketScanner = scanner.NewBitBucketScanner()
 
 	if c.DryRun {
 		log.Info("Skipping ElasticSearch update (--dry-run)")
@@ -86,7 +84,7 @@ func NewCrawler(dryRun bool) *Crawler {
 	}
 
 	log.Debug("Connecting to ElasticSearch...")
-	c.es, err = elastic.ClientFactory(
+	c.Es, err = elastic.ClientFactory(
 		viper.GetString("ELASTIC_URL"),
 		viper.GetString("ELASTIC_USER"),
 		viper.GetString("ELASTIC_PWD"))
@@ -96,20 +94,20 @@ func NewCrawler(dryRun bool) *Crawler {
 	log.Debug("Successfully connected to ElasticSearch")
 
 	// Update ipa to lastest data.
-	err = ipa.UpdateFromIndicePAIfNeeded(c.es)
+	err = elastic.UpdateFromIndicePAIfNeeded(c.Es)
 	if err != nil {
 		log.Error(err)
 	}
 
 	// Initialize ES index mapping
-	c.index = viper.GetString("ELASTIC_PUBLICCODE_INDEX")
-	err = elastic.CreateIndexMapping(c.index, elastic.PubliccodeMapping, c.es)
+	c.Index = viper.GetString("ELASTIC_PUBLICCODE_INDEX")
+	err = elastic.CreateIndexMapping(c.Index, elastic.PubliccodeMapping, c.Es)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Create ES index with mapping "administration-codiceIPA".
-	err = elastic.CreateIndexMapping(viper.GetString("ELASTIC_PUBLISHERS_INDEX"), elastic.AdministrationsMapping, c.es)
+	err = elastic.CreateIndexMapping(viper.GetString("ELASTIC_PUBLISHERS_INDEX"), elastic.AdministrationsMapping, c.Es)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -117,27 +115,31 @@ func NewCrawler(dryRun bool) *Crawler {
 	return &c
 }
 
-// CrawlRepo crawls a single repository.
-func (c *Crawler) CrawlRepo(repoURL url.URL, publisher Publisher) error {
+// CrawlRepo crawls a single repository (only used by the 'one' command).
+func (c *Crawler) CrawlRepo(repoURL url.URL, publisher common.Publisher) error {
 	log.Infof("Processing repository: %s", repoURL.String())
 
-	// Check if current host is in known in domains.yml hosts.
-	domain, err := c.KnownHost(repoURL)
+	var err error
+	if vcsurl.IsGitHub(&repoURL) {
+		err = c.gitHubScanner.ScanRepo(repoURL, publisher, c.repositories)
+	} else if vcsurl.IsBitBucket(&repoURL) {
+		err = c.bitBucketScanner.ScanRepo(repoURL, publisher, c.repositories)
+	} else if vcsurl.IsGitLab(&repoURL) {
+		err = c.gitLabScanner.ScanRepo(repoURL, publisher, c.repositories)
+	} else {
+		err = fmt.Errorf("unsupported code hosting platform for %s", repoURL.String())
+	}
+
 	if err != nil {
 		return err
 	}
 
-	// Process repository.
-	err = domain.processSingleRepo(repoURL, c.repositories, publisher)
-	if err != nil {
-		return err
-	}
 	close(c.repositories)
 	return c.crawl()
 }
 
 // CrawlPublishers processes a list of publishers.
-func (c *Crawler) CrawlPublishers(publishers []Publisher) ([]string, error) {
+func (c *Crawler) CrawlPublishers(publishers []common.Publisher) ([]string, error) {
 	// Count configured orgs
 	orgCount := 0
 	for _, publisher := range publishers {
@@ -149,7 +151,7 @@ func (c *Crawler) CrawlPublishers(publishers []Publisher) ([]string, error) {
 	// Process every item in publishers.
 	for _, publisher := range publishers {
 		c.publishersWg.Add(1)
-		go c.CrawlPublisher(publisher)
+		go c.ScanPublisher(publisher)
 	}
 
 	// Close the repositories channel when all the publisher goroutines are done
@@ -163,7 +165,7 @@ func (c *Crawler) CrawlPublishers(publishers []Publisher) ([]string, error) {
 	// is listed.
 	// we should return the ones listed to crawl command
 	// and call deleteFromES if present
-	toBeRemoved := c.removeBlackListedFromRepositories(GetAllBlackListedRepos())
+	toBeRemoved := c.removeBlackListedFromRepositories(common.GetAllBlackListedRepos())
 
 	return toBeRemoved, c.crawl()
 }
@@ -173,9 +175,9 @@ func (c *Crawler) CrawlPublishers(publishers []Publisher) ([]string, error) {
 // It returns a slice of them, ready to be removed
 // from elasticsearch.
 func (c *Crawler) removeBlackListedFromRepositories(listedRepos map[string]string) (toBeRemoved []string) {
-	temp := make(chan Repository, 1000)
+	temp := make(chan common.Repository, 1000)
 	for repo := range c.repositories {
-		if val, ok := listedRepos[repo.GitCloneURL]; ok {
+		if val, ok := listedRepos[repo.URL.String()]; ok {
 			// add repository that should be processed but
 			// they are marked as blacklisted
 			// and then ready to be removed from ES if they exist
@@ -191,7 +193,7 @@ func (c *Crawler) removeBlackListedFromRepositories(listedRepos map[string]strin
 }
 
 func (c *Crawler) crawl() error {
-	reposChan := make(chan Repository)
+	reposChan := make(chan common.Repository)
 
 	// Start the metrics server.
 	go metrics.StartPrometheusMetricsServer()
@@ -220,17 +222,17 @@ func (c *Crawler) crawl() error {
 	}
 
 	// ElasticFlush to flush all the operations on ES.
-	err := elastic.Flush(c.index, c.es)
+	err := elastic.Flush(c.Index, c.Es)
 	if err != nil {
 		log.Errorf("Error flushing ElasticSearch: %v", err)
 	}
 
 	// Update Elastic alias.
-	err = elastic.AliasUpdate(viper.GetString("ELASTIC_PUBLISHERS_INDEX"), viper.GetString("ELASTIC_ALIAS"), c.es)
+	err = elastic.AliasUpdate(viper.GetString("ELASTIC_PUBLISHERS_INDEX"), viper.GetString("ELASTIC_ALIAS"), c.Es)
 	if err != nil {
 		return fmt.Errorf("Error updating Elastic Alias: %v", err)
 	}
-	err = elastic.AliasUpdate(c.index, viper.GetString("ELASTIC_ALIAS"), c.es)
+	err = elastic.AliasUpdate(c.Index, viper.GetString("ELASTIC_ALIAS"), c.Es)
 	if err != nil {
 		return fmt.Errorf("Error updating Elastic Alias: %v", err)
 	}
@@ -245,70 +247,62 @@ func (c *Crawler) ExportForJekyll() error {
 		return nil
 	}
 
-	return jekyll.GenerateJekyllYML(c.es)
+	return jekyll.GenerateJekyllYML(c.Es)
 }
 
-// CrawlPublisher delegates the work to single Publisher crawlers.
-func (c *Crawler) CrawlPublisher(publisher Publisher) {
+// ScanPublisher scans all the publisher' repositories and sends the ones
+// with a valid publiccode.yml to the repositories channel.
+func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 	log.Infof("Processing publisher: %s", publisher.Name)
 	defer c.publishersWg.Done()
 
+	var err error
 	for _, u := range publisher.Organizations {
 		orgURL := (url.URL)(u)
-		// Check if host is in list of known code hosting domains
-		domain, err := c.KnownHost(orgURL)
-		if err != nil {
-			log.Error(err)
-		}
 
-		// Process the organization
-		c.CrawlOrg(orgURL, domain, publisher)
+		if vcsurl.IsGitHub(&orgURL) {
+			err = c.gitHubScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
+		} else if vcsurl.IsBitBucket(&orgURL) {
+			err = c.bitBucketScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
+		} else if vcsurl.IsGitLab(&orgURL) {
+			err = c.gitLabScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
+		} else {
+			err = fmt.Errorf("unsupported code hosting platform for %s", u.String())
+		}
+		if err != nil {
+			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
+				log.Warnf("[%s] %s", orgURL.String(), err.Error())
+			} else {
+				log.Error(err)
+			}
+		}
 	}
 
 	for _, u := range publisher.Repositories {
 		repoURL := (url.URL)(u)
-		// Check if host is in list of known code hosting domains
-		domain, err := c.KnownHost(repoURL)
+
+		if vcsurl.IsGitHub(&repoURL) {
+			err = c.gitHubScanner.ScanRepo(repoURL, publisher, c.repositories)
+		} else if vcsurl.IsBitBucket(&repoURL) {
+			err = c.bitBucketScanner.ScanRepo(repoURL, publisher, c.repositories)
+		} else if vcsurl.IsGitLab(&repoURL) {
+			err = c.gitLabScanner.ScanRepo(repoURL, publisher, c.repositories)
+		} else {
+			err = fmt.Errorf("unsupported code hosting platform for %s", u.String())
+		}
+
 		if err != nil {
-			log.Error(err)
-		}
-
-		err = domain.processSingleRepo(repoURL, c.repositories, publisher)
-		if (err != nil) {
-			log.Error(err)
-		}
-	}
-}
-
-// CrawlOrg fetches all the repositories belonging to an org and crawls them.
-func (c *Crawler) CrawlOrg(orgURL url.URL, domain *Domain, publisher Publisher) {
-	orgURLs, err := domain.generateAPIURLs(orgURL)
-	if err != nil {
-		log.Errorf("generateAPIURLs error: %v", err)
-	}
-
-ORG:
-	for _, orgURL := range orgURLs {
-		// Process the pages until the end is reached.
-		for {
-			nextURL, err := domain.processAndGetNextURL(orgURL, c.repositories, publisher)
-			if err != nil {
-				log.Errorf("error reading %s repository list: %v; nextURL: %v", orgURL.String(), err, nextURL)
-				continue ORG
+			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
+				log.Warnf("[%s] %s", repoURL.String(), err.Error())
+			} else {
+				log.Error(err)
 			}
-
-			// If end is reached or fails, nextURL is empty.
-			if nextURL == nil {
-				return
-			}
-			// Update url to nextURL.
-			orgURL = *nextURL
 		}
 	}
 }
 
 // ProcessRepositories process the repositories channel and check the availability of the file.
-func (c *Crawler) ProcessRepositories(repos chan Repository) {
+func (c *Crawler) ProcessRepositories(repos chan common.Repository) {
 	defer c.repositoriesWg.Done()
 
 	for repository := range repos {
@@ -329,7 +323,7 @@ func addLogEntry(logEntries *[]logEntry, message string) {
 }
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
-func (c *Crawler) ProcessRepo(repository Repository) {
+func (c *Crawler) ProcessRepo(repository common.Repository) {
 	var logEntries []logEntry
 
 	var message string
@@ -339,7 +333,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	defer func() {
 		fname := path.Join(
 			viper.GetString("OUTPUT_DIR"),
-			repository.Hostname,
+			repository.URL.String(),
 			path.Clean(repository.Name),
 			"log.json",
 		)
@@ -359,7 +353,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}()
 
 	// Increment counter for the number of repositories processed.
-	metrics.GetCounter("repository_processed", c.index).Inc()
+	metrics.GetCounter("repository_processed", c.Index).Inc()
 
 	resp, err := httpclient.GetURL(repository.FileRawURL, repository.Headers)
 
@@ -384,7 +378,9 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 
 		return
 	}
-	err = parser.ParseInDomain(resp.Body, repository.Domain.Host, repository.Domain.UseTokenFor, repository.Domain.BasicAuth)
+
+	domain := common.GetDomain(c.domains, repository.URL.Host)
+	err = parser.ParseInDomain(resp.Body, domain.Host, domain.UseTokenFor, domain.BasicAuth)
     if err != nil {
 		valid := true
 	out:
@@ -416,7 +412,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 			addLogEntry(&logEntries, message)
 
 			if !c.DryRun {
-				logBadYamlToFile(repository.FileRawURL)
+				common.LogBadYamlToFile(repository.FileRawURL)
 			}
 
 			return
@@ -433,7 +429,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	}
 
 	// Clone repository.
-	err = CloneRepository(repository.Domain, repository.Hostname, repository.Name, parser.PublicCode.URL.String(), c.index)
+	err = git.CloneRepository(repository.URL.Host, repository.Name, parser.PublicCode.URL.String(), c.Index)
 	if err != nil {
 		message = fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err)
 		log.Errorf(message)
@@ -446,7 +442,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 	if viper.IsSet("ACTIVITY_DAYS") {
 		activityDays = viper.GetInt("ACTIVITY_DAYS")
 	}
-	activityIndex, vitality, err := repository.CalculateRepoActivity(activityDays)
+	activityIndex, vitality, err := git.CalculateRepoActivity(repository, activityDays)
 	if err != nil {
 		message = fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err)
 
@@ -462,9 +458,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 		vitalitySlice = append(vitalitySlice, int(vitality[i]))
 	}
 
-	// Save to ES.
-	err = c.saveToES(repository, activityIndex, vitalitySlice, *parser)
-	if err != nil {
+	if err = elastic.SaveToES(c.Es, c.Index, repository, activityIndex, vitalitySlice, *parser); err != nil {
 		message = fmt.Sprintf("[%s] error saving to ElasticSearch: %v\n", repository.Name, err)
 		log.Errorf(message)
 
@@ -475,7 +469,7 @@ func (c *Crawler) ProcessRepo(repository Repository) {
 // validateFile checks if it.riuso.codiceIPA in the publiccode.yml matches with the
 // Publisher's Id
 // Using `one` command this check will be skipped.
-func validateFile(publisher Publisher, parser publiccode.Parser, fileRawURL string) error {
+func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawURL string) error {
 	u, _ := url.Parse(fileRawURL)
 	repo1 := vcsurl.GetRepo((*url.URL)(u))
 
