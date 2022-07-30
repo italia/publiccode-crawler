@@ -3,12 +3,10 @@ package crawler
 import (
 	"encoding/json"
 	"math/rand"
-	"net/http"
 	"net/url"
 	"path"
 	"strings"
 
-	httpclient "github.com/italia/httpclient-lib-go"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"github.com/xanzy/go-gitlab"
@@ -235,33 +233,4 @@ func GenerateGitlabAPIURL() GeneratorAPIURL {
 		out = append(out, u.String())
 		return
 	}
-}
-
-// IsGitlab returns "true" if the url can use Gitlab API.
-func IsGitlab(link string) bool {
-	if len(link) == 0 {
-		log.Errorf("IsGitlab: empty link %s.", link)
-		return false
-	}
-
-	u, err := url.Parse(link)
-	if err != nil {
-		log.Errorf("IsGitlab: impossible to parse %s.", link)
-		return false
-	}
-
-	u.Path = "api/v4/templates/gitlab_ci_ymls"
-
-	resp, err := httpclient.GetURL(u.String(), nil)
-	if err != nil {
-		log.Debugf("can %s use Gitlab API? No.", link)
-		return false
-	}
-	if resp.Status.Code != http.StatusOK {
-		log.Debugf("can %s use Gitlab API? No.", link)
-		return false
-	}
-
-	log.Debugf("can %s use Gitlab API? Yes.", link)
-	return true
 }
