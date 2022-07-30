@@ -451,32 +451,3 @@ func GenerateGithubAPIURL() GeneratorAPIURL {
 		return
 	}
 }
-
-// IsGithub returns "true" if the url can use Github API.
-func IsGithub(link string) bool {
-	if len(link) == 0 {
-		log.Errorf("IsGithub: empty link %s.", link)
-		return false
-	}
-
-	u, err := url.Parse(link)
-	if err != nil {
-		log.Errorf("IsGithub: impossible to parse %s.", link)
-		return false
-	}
-	u.Path = "rate_limit"
-	u.Host = "api." + u.Host
-
-	resp, err := httpclient.GetURL(u.String(), nil)
-	if err != nil {
-		log.Debugf("can %s use Github API? No.", link)
-		return false
-	}
-	if resp.Status.Code != http.StatusOK {
-		log.Debugf("can %s use Github API? No.", link)
-		return false
-	}
-
-	log.Debugf("can %s use Github API? Yes.", link)
-	return true
-}

@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/alranel/go-vcsurl/v2"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
@@ -99,13 +100,13 @@ func (c *Crawler) KnownHost(link string) (*Domain, error) {
 	}
 
 	// host unknown, needs to be inferred.
-	if IsGithub(link) {
+	if vcsurl.IsGitHub(u) {
 		log.Infof("%s - API inferred: %s", link, "github")
 		return &Domain{Host: "github"}, nil
-	} else if IsBitbucket(link) {
+	} else if vcsurl.IsBitBucket(u) {
 		log.Infof("%s - API inferred: %s", link, "bitbucket")
 		return &Domain{Host: "bitbucket"}, nil
-	} else if IsGitlab(link) {
+	} else if vcsurl.IsGitLab(u) {
 		log.Infof("%s - API inferred: %s", link, "gitlab")
 		return &Domain{Host: "gitlab"}, nil
 	}

@@ -351,32 +351,3 @@ func GenerateBitbucketAPIURL() GeneratorAPIURL {
 		return
 	}
 }
-
-// IsBitbucket returns "true" if the url can use Bitbucket API.
-func IsBitbucket(link string) bool {
-	if len(link) == 0 {
-		log.Errorf("IsBitbucket: empty link %s.", link)
-		return false
-	}
-
-	u, err := url.Parse(link)
-	if err != nil {
-		log.Errorf("IsBitbucket: impossible to parse %s.", link)
-		return false
-	}
-	u.Path = "2.0/hook_events"
-	u.Host = "api." + u.Host
-
-	resp, err := httpclient.GetURL(u.String(), nil)
-	if err != nil {
-		log.Debugf("can %s use Bitbucket API? No.", link)
-		return false
-	}
-	if resp.Status.Code != http.StatusOK {
-		log.Debugf("can %s use Bitbucket API? No.", link)
-		return false
-	}
-
-	log.Debugf("can %s use Bitbucket API? Yes.", link)
-	return true
-}
