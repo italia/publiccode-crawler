@@ -28,17 +28,15 @@ the data and has ready to accept connections before the crawler is started.
 
 ### Manually configure and build the crawler
 
-1. `cd crawler`
+1. Save the auth tokens to `domains.yml`.
 
-2. Save the auth tokens to `domains.yml`.
-
-3. Rename `config.toml.example` to `config.toml` and set the variables
+2. Rename `config.toml.example` to `config.toml` and set the variables
 
    > **NOTE**: The application also supports environment variables in substitution
    > to config.toml file. Remember: "environment variables get higher priority than
    > the ones in configuration file"
 
-4. Build the crawler binary with `make`
+3. Build the crawler binary with `make`
 
 ### Docker
 
@@ -67,9 +65,9 @@ and a `docker-compose.yml` file to setup the development environment.
 
 ## Run the crawler
 
-### Crawl mode (all item in whitelists): `bin/crawler crawl whitelist/*.yml`
+### Crawl mode: `bin/crawler crawl publishers.*.yml`
 
-Gets the list of organizations in `whitelist/*.yml` and starts to crawl
+Gets the list of publishers in `publishers.*.yml` and starts to crawl
 their repositories.
 
 If it finds a blacklisted repository, it will remove it from Elasticsearch, if
@@ -96,15 +94,15 @@ It also generates:
   the logs of the scraping for that particular `REPO`.
   (eg. [`https://crawler.developers.italia.it/github.com/italia/design-scuole-wordpress-theme/log.json`](https://crawler.developers.italia.it/github.com/italia/design-scuole-wordpress-theme/log.json))
 
-### One mode (single repository url): `bin/crawler one [repo url] whitelist/*.yml`
+### One mode (single repository url): `bin/crawler one [repo url] publishers.*.yml`
 
 In this mode one single repository at the time will be evaluated. If the
 organization is present, its iPA code will be matched with the ones in
-whitelist, otherwise it will be set to null and the `slug` will have a random
-code in the end (instead of the iPA code).
+the publishers' file, otherwise it will be set to null and the `slug` will have
+a random code in the end (instead of the iPA code).
 
-Furthermore, the iPA code validation, which is a simple check within whitelists
-(to ensure that code belongs to the selected PA), will be skipped.
+Furthermore, the iPA code validation, which is a simple check within the publishers'
+file (to ensure that code belongs to the selected publisher), will be skipped.
 
 If it finds a blacklisted repository, it will exit immediately.
 
@@ -115,27 +113,9 @@ If it finds a blacklisted repository, it will exit immediately.
 * `bin/crawler delete [URL]` deletes software from Elasticsearch using its code
    hosting URL specified in `publiccode.url`
 
-* `bin/crawler download-whitelist` downloads organizations and repositories from
+* `bin/crawler download-publishers` downloads organizations and repositories from
   the [onboarding portal repository](https://github.com/italia/developers-italia-onboarding)
-  and saves them to a whitelist file
-
-### Crawler whitelists
-
-The whitelist directory contains the of organizations to crawl from.
-
-`whitelist/manual-reuse.yml` is a list of Public Administrations repositories
-that for various reasons were not onboarded with
-[developers-italia-onboarding](https://github.com/italia/developers-italia-onboarding),
-while `whitelist/thirdparty.yml` contains the non-PAs repos.
-
-Here's an example of how the files might look like:
-
-```yaml
-- id: "Comune di Bagnacavallo" # generic name of the organization.
-  codice-iPA: "c_a547" # codice-iPA
-  organizations: # list of organization urls.
-    - "https://github.com/gith002"
-```
+  and saves them to a publishers YAML file.
 
 ### Crawler blacklists
 

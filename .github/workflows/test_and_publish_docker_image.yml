@@ -15,8 +15,8 @@ jobs:
         with:
           go-version: '1.17'
 
-      - run: cd crawler && make build
-      - run: cd crawler && make test
+      - run: make build
+      - run: make test
 
   build_and_publish_docker_image:
     needs: test
