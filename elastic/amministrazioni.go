@@ -2,19 +2,12 @@ package elastic
 
 import (
 	"bufio"
-	"context"
-	"crypto/tls"
-	"encoding/csv"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path"
-	"strconv"
 	"strings"
-	"time"
 
-	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -59,100 +52,6 @@ func localIPAFile() string {
 	return path.Join(viper.GetString("CRAWLER_DATADIR"), "indicepa.csv")
 }
 
-// UpdateFromIndicePAIfNeeded downloads the amministrazioni.txt file if it's older than 20 days
-// and loads it into Elasticsearch.
-func UpdateFromIndicePAIfNeeded(elasticClient *es.Client) error {
-	file := localIPAFile()
-
-	needUpdate := true
-
-	// we don't need to update if file does not exist and it's not older than 20 days
-	info, err := os.Stat(file)
-	if !os.IsNotExist(err) {
-		if err != nil {
-			log.Fatal(err)
-			return err
-		}
-		if info.ModTime().After(time.Now().AddDate(0, 0, -20)) {
-			needUpdate = false
-		}
-	}
-
-	if needUpdate {
-		return UpdateFromIndicePA(elasticClient)
-	}
-
-	return nil
-}
-
-// UpdateFromIndicePA downloads the pec.txt file and loads it into Elasticsearch.
-func UpdateFromIndicePA(elasticClient *es.Client) error {
-	type amministrazioneES struct {
-		IPA         string `json:"ipa"`
-		Description string `json:"description"`
-		Type        string `json:"type"`
-		PEC         string `json:"pec"`
-	}
-
-	// Read the PEC CSV file
-	lines, err := readCSVFromURL(viper.GetString("INDICEPA_PEC_URL"))
-	if err != nil {
-		return err
-	}
-
-	// Loop through the PEC addresses, retrieve the template record for each entity
-	// and add the PEC address to each one.
-	var records []amministrazioneES
-
-	// Skip header
-	for _, line := range lines[1:] {
-		records = append(records, amministrazioneES{
-			IPA:         strings.ToLower(line[0]),
-			Description: line[1],
-			Type:        line[3],
-			PEC:         line[7],
-		})
-	}
-
-	if len(records) == 0 {
-		return fmt.Errorf("0 PEC addresses read from IndicePA; aborting")
-	}
-
-	log.Debugf("inserting %d records into Elasticsearch", len(records))
-
-	// Delete existing index if exists
-	// TODO: use an alias for atomic updates!
-	ctx := context.Background()
-	_, err = elasticClient.DeleteIndex(viper.GetString("ELASTIC_INDICEPA_INDEX")).Do(ctx)
-	if err != nil && !es.IsNotFound(err) {
-		return err
-	}
-
-	// Create mapping if it does not exist
-	err = CreateIndexMapping(viper.GetString("ELASTIC_INDICEPA_INDEX"), IPAMapping, elasticClient)
-	if err != nil {
-		return err
-	}
-
-	// Perform a bulk request to Elasticsearch
-	bulkRequest := elasticClient.Bulk()
-	for n, amm := range records {
-		req := es.NewBulkIndexRequest().
-			Index(viper.GetString("ELASTIC_INDICEPA_INDEX")).
-			Id(strconv.Itoa(n)).
-			Doc(amm)
-		bulkRequest.Add(req)
-	}
-	bulkResponse, err := bulkRequest.Do(ctx)
-	if err != nil {
-		return err
-	}
-
-	log.Infof("%d records indexed from IndicePA", len(bulkResponse.Indexed()))
-
-	return nil
-}
-
 // GetAdministrationName return the administration name associated to the "codice iPA" asssociated.
 // TODO: load this mappings in memory instead of scanning the file every time
 func GetAdministrationName(codiceiPA string) string {
@@ -176,24 +75,6 @@ func GetAdministrationName(codiceiPA string) string {
 	}
 
 	return ""
-}
-
-func readCSVFromURL(url string) ([][]string, error) {
-	// disable HTTP/2 because IndicePA does not support it
-	tr := &http.Transport{
-		TLSNextProto: make(map[string]func(authority string, c *tls.Conn) http.RoundTripper),
-	}
-	client := &http.Client{Transport: tr}
-	resp, err := client.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	reader := csv.NewReader(resp.Body)
-	reader.Comma = '\t'
-	reader.ReuseRecord = true
-	reader.LazyQuotes = true
-	return reader.ReadAll()
 }
 
 // parseLine populate an Amministrazione with the values read.

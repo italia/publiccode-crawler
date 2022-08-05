@@ -46,7 +46,7 @@ type Crawler struct {
 	bitBucketScanner scanner.Scanner
 }
 
-// NewCrawler initializes a new Crawler object, updates the IPA list and connects to Elasticsearch (if dryRun == false).
+// NewCrawler initializes a new Crawler object and connects to Elasticsearch (if dryRun == false).
 func NewCrawler(dryRun bool) *Crawler {
 	var c Crawler
 	var err error
@@ -93,21 +93,9 @@ func NewCrawler(dryRun bool) *Crawler {
 	}
 	log.Debug("Successfully connected to ElasticSearch")
 
-	// Update ipa to lastest data.
-	err = elastic.UpdateFromIndicePAIfNeeded(c.Es)
-	if err != nil {
-		log.Error(err)
-	}
-
 	// Initialize ES index mapping
 	c.Index = viper.GetString("ELASTIC_PUBLICCODE_INDEX")
 	err = elastic.CreateIndexMapping(c.Index, elastic.PubliccodeMapping, c.Es)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Create ES index with mapping "administration-codiceIPA".
-	err = elastic.CreateIndexMapping(viper.GetString("ELASTIC_PUBLISHERS_INDEX"), elastic.AdministrationsMapping, c.Es)
 	if err != nil {
 		log.Fatal(err)
 	}

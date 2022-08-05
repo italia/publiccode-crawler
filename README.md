@@ -108,8 +108,6 @@ If it finds a blacklisted repository, it will exit immediately.
 
 ### Other commands
 
-* `bin/crawler updateipa` downloads iPA data and writes them into Elasticsearch
-
 * `bin/crawler delete [URL]` deletes software from Elasticsearch using its code
    hosting URL specified in `publiccode.url`
 
