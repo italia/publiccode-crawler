@@ -20,8 +20,9 @@ func NewBitBucketScanner() Scanner {
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
 func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.Publisher, repositories chan common.Repository) error {
-	splitted := strings.Split(url.Path, "/")
-	if len(splitted) == 0 {
+	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
+
+	if len(splitted) != 1 {
 		return fmt.Errorf("bitbucket URL %s doesn't look like a group of repos", url.String())
 	}
 
