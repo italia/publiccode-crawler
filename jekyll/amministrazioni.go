@@ -11,7 +11,6 @@ import (
 
 	"github.com/ghodss/yaml"
 	"github.com/italia/developers-italia-backend/elastic"
-	"github.com/italia/developers-italia-backend/ipa"
 	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 )
@@ -79,7 +78,7 @@ func AmministrazioniYML(filename string, elasticClient *es.Client) error {
 			seen[codiceIPA] = struct{}{}
 			administrations = append(administrations, administrationType{
 				codiceIPA,
-				ipa.GetAdministrationName(codiceIPA),
+				elastic.GetAdministrationName(codiceIPA),
 			})
 		}
 	}

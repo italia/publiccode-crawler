@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/developers-italia-backend/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -21,9 +23,9 @@ var crawlCmd = &cobra.Command{
 		orgs := make(map[string]bool)
 		c := crawler.NewCrawler(dryRun)
 
-		var dedupedPublishers []crawler.Publisher
+		var dedupedPublishers []common.Publisher
 		for id := range args {
-			publishers, err := crawler.LoadPublishers(args[id])
+			publishers, err := common.LoadPublishers(args[id])
 			if err != nil {
 				log.Fatal(err)
 			} else {
@@ -54,7 +56,7 @@ var crawlCmd = &cobra.Command{
 		// jekyll datafile
 		for _, repo := range toBeRemoved {
 			log.Warnf("blacklisted, going to remove from ES %s", repo)
-			err = c.DeleteByQueryFromES(repo)
+			err = elastic.DeleteByQueryFromES(c.Es, repo, c.Index)
 			if err != nil {
 				log.Errorf("Error while deleting data from ES: %v", err)
 			}
@@ -65,4 +67,5 @@ var crawlCmd = &cobra.Command{
 		if err != nil {
 			log.Errorf("Error while exporting data for Jekyll: %v", err)
 		}
-	}}
+	},
+}

@@ -5,6 +5,7 @@ import (
 	"net/url"
 	"testing"
 
+	"github.com/italia/developers-italia-backend/common"
 	publiccode "github.com/italia/publiccode-parser-go/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
@@ -34,7 +35,7 @@ var publishersYml = `
 // whithelist file and publiccode itself
 func TestIPAMatch(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
-	var publishers []Publisher
+	var publishers []common.Publisher
 	var parser publiccode.Parser
 
 	u, _ := url.Parse("https://github.com/a/b/blob/main/publiccode.yml")
@@ -65,16 +66,17 @@ func TestIPAMatch(t *testing.T) {
 	}
 }
 
-func createFakeRepo(name, gitCloneURL string) (r Repository) {
+func createFakeRepo(name, gitCloneURL string) (r common.Repository) {
 	r.Name = name
-	r.GitCloneURL = gitCloneURL
+	u, _ := url.Parse(gitCloneURL)
+	r.URL = *u
 	return
 }
 
 func TestRemovingRepoAsBlacklisted(t *testing.T) {
 	var c Crawler
 	// Faking repositories
-	c.repositories = make(chan Repository, 3)
+	c.repositories = make(chan common.Repository, 3)
 	c.repositories <- createFakeRepo("repo1", "https://github.com/italia/repo1.git")
 	c.repositories <- createFakeRepo("repo2", "https://github.com/italia/repo2.git")
 	c.repositories <- createFakeRepo("repo3", "https://github.com/italia/repo3.git")
@@ -89,6 +91,6 @@ func TestRemovingRepoAsBlacklisted(t *testing.T) {
 
 	assert.Len(t, toBeRemoved, 2)
 	for _, entry := range toBeRemoved {
-		assert.NotEmpty(t, repoListed[appendGitExt(entry)])
+		assert.NotEmpty(t, repoListed[common.AppendGitExt(entry)])
 	}
 }
