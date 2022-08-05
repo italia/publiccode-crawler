@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/crawler"
-	"github.com/italia/developers-italia-backend/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -46,24 +45,12 @@ var crawlCmd = &cobra.Command{
 			}
 		}
 
-		toBeRemoved, err := c.CrawlPublishers(dedupedPublishers)
-		if err != nil {
+		if err := c.CrawlPublishers(dedupedPublishers); err != nil {
 			log.Fatal(err)
 		}
 
-		// I should call delete for items in blacklist
-		// to ensure they are not present in ES and then in
-		// jekyll datafile
-		for _, repo := range toBeRemoved {
-			log.Warnf("blacklisted, going to remove from ES %s", repo)
-			err = elastic.DeleteByQueryFromES(c.Es, repo, c.Index)
-			if err != nil {
-				log.Errorf("Error while deleting data from ES: %v", err)
-			}
-		}
-
 		// Generate the data files for Jekyll.
-		err = c.ExportForJekyll()
+		err := c.ExportForJekyll()
 		if err != nil {
 			log.Errorf("Error while exporting data for Jekyll: %v", err)
 		}

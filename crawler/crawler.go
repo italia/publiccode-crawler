@@ -17,14 +17,12 @@ import (
 
 	"github.com/alranel/go-vcsurl/v2"
 	"github.com/italia/developers-italia-backend/common"
-	"github.com/italia/developers-italia-backend/elastic"
 	"github.com/italia/developers-italia-backend/git"
 	"github.com/italia/developers-italia-backend/jekyll"
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/italia/developers-italia-backend/scanner"
 	httpclient "github.com/italia/httpclient-lib-go"
 	publiccode "github.com/italia/publiccode-parser-go/v3"
-	es "github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -33,11 +31,10 @@ import (
 type Crawler struct {
 	DryRun bool
 
-	// Sync mutex guard.
-	Es             *es.Client
 	Index          string
 	domains        []common.Domain
 	repositories   chan common.Repository
+	// Sync mutex guard.
 	publishersWg   sync.WaitGroup
 	repositoriesWg sync.WaitGroup
 
@@ -78,28 +75,6 @@ func NewCrawler(dryRun bool) *Crawler {
 	c.gitLabScanner = scanner.NewGitLabScanner()
 	c.bitBucketScanner = scanner.NewBitBucketScanner()
 
-	if c.DryRun {
-		log.Info("Skipping ElasticSearch update (--dry-run)")
-		return &c
-	}
-
-	log.Debug("Connecting to ElasticSearch...")
-	c.Es, err = elastic.ClientFactory(
-		viper.GetString("ELASTIC_URL"),
-		viper.GetString("ELASTIC_USER"),
-		viper.GetString("ELASTIC_PWD"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Debug("Successfully connected to ElasticSearch")
-
-	// Initialize ES index mapping
-	c.Index = viper.GetString("ELASTIC_PUBLICCODE_INDEX")
-	err = elastic.CreateIndexMapping(c.Index, elastic.PubliccodeMapping, c.Es)
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	return &c
 }
 
@@ -127,7 +102,7 @@ func (c *Crawler) CrawlRepo(repoURL url.URL, publisher common.Publisher) error {
 }
 
 // CrawlPublishers processes a list of publishers.
-func (c *Crawler) CrawlPublishers(publishers []common.Publisher) ([]string, error) {
+func (c *Crawler) CrawlPublishers(publishers []common.Publisher) error {
 	// Count configured orgs
 	orgCount := 0
 	for _, publisher := range publishers {
@@ -148,14 +123,7 @@ func (c *Crawler) CrawlPublishers(publishers []common.Publisher) ([]string, erro
 		close(c.repositories)
 	}()
 
-	// here we got all repos to be scanned
-	// it's time to check blacklist and wheter one of them
-	// is listed.
-	// we should return the ones listed to crawl command
-	// and call deleteFromES if present
-	toBeRemoved := c.removeBlackListedFromRepositories(common.GetAllBlackListedRepos())
-
-	return toBeRemoved, c.crawl()
+	return c.crawl()
 }
 
 // removeBlackListedFromRepositories this function is in charge
@@ -202,28 +170,6 @@ func (c *Crawler) crawl() error {
 	}
 	close(reposChan)
 	c.repositoriesWg.Wait()
-
-	if c.DryRun {
-		log.Info("Skipping ElasticSearch indexes update (--dry-run)")
-
-		return nil
-	}
-
-	// ElasticFlush to flush all the operations on ES.
-	err := elastic.Flush(c.Index, c.Es)
-	if err != nil {
-		log.Errorf("Error flushing ElasticSearch: %v", err)
-	}
-
-	// Update Elastic alias.
-	err = elastic.AliasUpdate(viper.GetString("ELASTIC_PUBLISHERS_INDEX"), viper.GetString("ELASTIC_ALIAS"), c.Es)
-	if err != nil {
-		return fmt.Errorf("Error updating Elastic Alias: %v", err)
-	}
-	err = elastic.AliasUpdate(c.Index, viper.GetString("ELASTIC_ALIAS"), c.Es)
-	if err != nil {
-		return fmt.Errorf("Error updating Elastic Alias: %v", err)
-	}
 
 	return nil
 }
@@ -446,12 +392,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		vitalitySlice = append(vitalitySlice, int(vitality[i]))
 	}
 
-	if err = elastic.SaveToES(c.Es, c.Index, repository, activityIndex, vitalitySlice, *parser); err != nil {
-		message = fmt.Sprintf("[%s] error saving to ElasticSearch: %v\n", repository.Name, err)
-		log.Errorf(message)
-
-		addLogEntry(&logEntries, message)
-	}
+	// XXX save software & vitality to API
 }
 
 // validateFile checks if it.riuso.codiceIPA in the publiccode.yml matches with the
