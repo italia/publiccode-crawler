@@ -1,12 +1,12 @@
 module github.com/italia/developers-italia-backend
 
 require (
-	github.com/alranel/go-vcsurl/v2 v2.0.1
+	github.com/alranel/go-vcsurl/v2 v2.0.2
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/go-github/v43 v43.0.0
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/italia/httpclient-lib-go v0.0.0-20201009133728-9044482688d7
-	github.com/italia/publiccode-parser-go/v3 v3.0.0
+	github.com/italia/publiccode-parser-go/v3 v3.0.4
 	github.com/ktrysmt/go-bitbucket v0.9.47
 	github.com/olivere/elastic/v7 v7.0.27
 	github.com/prometheus/client_golang v1.7.1
@@ -27,7 +27,6 @@ require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/deadcheat/goblet v1.3.1 // indirect
 	github.com/dyatlov/go-oembed v0.0.0-20180429203341-4bc5ab7a42e9 // indirect
 	github.com/emirpasic/gods v1.12.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
@@ -43,7 +42,7 @@ require (
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd // indirect
-	github.com/kyoh86/go-spdx v0.0.5-0.20220421143955-2f42f2d4c410 // indirect
+	github.com/kyoh86/go-spdx v0.0.5-0.20220518012447-4d195d3a5da1 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/magiconair/properties v1.8.1 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
