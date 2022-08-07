@@ -4,6 +4,7 @@ require (
 	github.com/alranel/go-vcsurl/v2 v2.0.2
 	github.com/ghodss/yaml v1.0.0
 	github.com/google/go-github/v43 v43.0.0
+	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/icza/dyno v0.0.0-20200205103839-49cb13720835
 	github.com/italia/httpclient-lib-go v0.0.0-20201009133728-9044482688d7
 	github.com/italia/publiccode-parser-go/v3 v3.0.4
@@ -36,7 +37,6 @@ require (
 	github.com/golang/protobuf v1.4.3 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
-	github.com/hashicorp/go-retryablehttp v0.6.8 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect

@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/alranel/go-vcsurl/v2"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/git"
 	"github.com/italia/developers-italia-backend/jekyll"
@@ -391,6 +392,8 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 	for i := 0; i < len(vitality); i++ {
 		vitalitySlice = append(vitalitySlice, int(vitality[i]))
 	}
+
+	res, err := retryablehttp.Post("http://localhost:3000/v1/api/software", "application/json", "hello")
 
 	// XXX save software & vitality to API
 }

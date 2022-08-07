@@ -30,3 +30,5 @@ BLACKLIST_PATTERN = "*.yml"
 
 # Number of days for activity (vitality index) calculation
 ACTIVITY_DAYS = 60
+
+API_BASEURL = "https://api.developers.italia.it"
