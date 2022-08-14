@@ -25,7 +25,7 @@ COPY scanner scanner
 COPY jekyll jekyll
 COPY metrics metrics
 COPY version version
-COPY publishers.thirparty.yml publishers.thirparty.yml
+COPY publishers.thirdparty.yml publishers.thirdparty.yml
 COPY publishers.yml publishers.yml
 COPY blacklist blacklist
 COPY config.toml.example config.toml
