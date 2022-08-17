@@ -50,7 +50,7 @@ func (scanner GitLabScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 				return err
 			}
 			for _, prj := range projects {
-				if err = addProject(*prj, publisher, repositories); err != nil {
+				if err = addProject(nil, *prj, publisher, repositories); err != nil {
 					return err
 				}
 			}
@@ -79,7 +79,7 @@ func (scanner GitLabScanner) ScanRepo(url url.URL, publisher common.Publisher, r
 		return err
 	}
 
-	if err = addProject(*prj, publisher, repositories); err != nil {
+	if err = addProject(url, *prj, publisher, repositories); err != nil {
 		return err
 	}
 
@@ -121,7 +121,7 @@ func addGroupProjects(group gitlab.Group, publisher common.Publisher, repositori
 			return err
 		}
 		for _, prj := range projects {
-			err = addProject(*prj, publisher, repositories)
+			err = addProject(nil, *prj, publisher, repositories)
 			if err != nil {
 				return err
 			}
@@ -158,25 +158,30 @@ func addGroupProjects(group gitlab.Group, publisher common.Publisher, repositori
 }
 
 // addGroupProjects sends the GitLab project the repositories channel
-func addProject(project gitlab.Project, publisher common.Publisher, repositories chan common.Repository) error {
+func addProject(originalURL *url.URL, project gitlab.Project, publisher common.Publisher, repositories chan common.Repository) error {
 	// Join file raw URL string.
 	rawURL, err := generateGitlabRawURL(project.WebURL, project.DefaultBranch)
 	if err != nil {
 		return err
 	}
 
+
 	if project.DefaultBranch != "" {
-		u, err := url.Parse(project.HTTPURLToRepo)
+		canonicalURL, err := url.Parse(project.HTTPURLToRepo)
 		if err != nil {
 			return fmt.Errorf("failed to get canonical repo URL for %s: %w", project.WebURL, err)
 		}
+		if originalURL == nil {
+			originalURL = canonicalURL
+		}
 
 		repositories <- common.Repository{
-			Name:        project.PathWithNamespace,
-			FileRawURL:  rawURL,
-			URL:         *u,
-			GitBranch:   project.DefaultBranch,
-			Publisher:   publisher,
+			Name:         project.PathWithNamespace,
+			FileRawURL:   rawURL,
+			URL:          *originalURL,
+			CanonicalURL: *canonicalURL,
+			GitBranch:    project.DefaultBranch,
+			Publisher:    publisher,
 		}
 	}
 

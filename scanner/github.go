@@ -154,18 +154,19 @@ Retry:
 		return fmt.Errorf("[%s]: failed to get publiccode.yml: %w", *repo.FullName, err)
 	}
 	if file != nil {
-		u, err := url.Parse(*repo.CloneURL)
+		canonicalURL, err := url.Parse(*repo.CloneURL)
 		if err != nil {
 			return fmt.Errorf("failed to get canonical repo URL for %s: %w", url.String(), err)
 		}
 
 		repositories <- common.Repository{
-			Name:       *repo.FullName,
-			FileRawURL: *file.DownloadURL,
-			URL:        *u,
-			GitBranch:  *repo.DefaultBranch,
-			Publisher:  publisher,
-			Headers:    make(map[string]string),
+			Name:         *repo.FullName,
+			FileRawURL:   *file.DownloadURL,
+			URL:          url,
+			CanonicalURL: *canonicalURL,
+			GitBranch:    *repo.DefaultBranch,
+			Publisher:    publisher,
+			Headers:      make(map[string]string),
 		}
 	}
 
