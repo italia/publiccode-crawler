@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/italia/developers-italia-backend/apiclient"
 	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/crawler"
 	log "github.com/sirupsen/logrus"
@@ -22,9 +23,11 @@ var crawlCmd = &cobra.Command{
 		orgs := make(map[string]bool)
 		c := crawler.NewCrawler(dryRun)
 
+		apiclient := apiclient.NewClient()
+
 		var dedupedPublishers []common.Publisher
 		for id := range args {
-			publishers, err := common.LoadPublishers(args[id])
+			publishers, err := apiclient.GetPublishers()
 			if err != nil {
 				log.Fatal(err)
 			} else {

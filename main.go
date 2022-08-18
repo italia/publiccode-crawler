@@ -20,6 +20,8 @@ func main() {
 	viper.AutomaticEnv()
 	err := viper.ReadInConfig()
 
+	viper.SetDefault("API_BASEURL", "https://api.developers.italia.it/v1/")
+
 	if err != nil {
 		panic(fmt.Errorf("fatal error reding config file: %s", err))
 	}

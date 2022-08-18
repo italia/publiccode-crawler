@@ -79,7 +79,7 @@ func (scanner GitLabScanner) ScanRepo(url url.URL, publisher common.Publisher, r
 		return err
 	}
 
-	if err = addProject(url, *prj, publisher, repositories); err != nil {
+	if err = addProject(&url, *prj, publisher, repositories); err != nil {
 		return err
 	}
 

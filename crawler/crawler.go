@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/alranel/go-vcsurl/v2"
-	"github.com/hashicorp/go-retryablehttp"
+	"github.com/italia/developers-italia-backend/apiclient"
 	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/git"
 	"github.com/italia/developers-italia-backend/jekyll"
@@ -42,6 +42,8 @@ type Crawler struct {
 	gitHubScanner    scanner.Scanner
 	gitLabScanner    scanner.Scanner
 	bitBucketScanner scanner.Scanner
+
+	apiClient        apiclient.ApiClient
 }
 
 // NewCrawler initializes a new Crawler object and connects to Elasticsearch (if dryRun == false).
@@ -75,6 +77,8 @@ func NewCrawler(dryRun bool) *Crawler {
 	c.gitHubScanner = scanner.NewGitHubScanner()
 	c.gitLabScanner = scanner.NewGitLabScanner()
 	c.bitBucketScanner = scanner.NewBitBucketScanner()
+
+	c.apiClient = apiclient.NewClient()
 
 	return &c
 }
@@ -236,7 +240,8 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 	}
 }
 
-// ProcessRepositories process the repositories channel and check the availability of the file.
+// ProcessRepositories process the repositories channel, check the repo's publiccode.yml
+// and send new data to the API if the publiccode.yml file is valid.
 func (c *Crawler) ProcessRepositories(repos chan common.Repository) {
 	defer c.repositoriesWg.Done()
 
@@ -393,9 +398,21 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		vitalitySlice = append(vitalitySlice, int(vitality[i]))
 	}
 
-	res, err := retryablehttp.Post("http://localhost:3000/v1/api/software", "application/json", "hello")
+	// XXX doc first is current url
+	urls := []url.URL{repository.CanonicalURL,}
+	if repository.URL != repository.CanonicalURL {
+		urls = append(urls, repository.URL)
+	}
 
-	// XXX save software & vitality to API
+	publiccodeYml, err := parser.ToYAML()
+	if err != nil {
+		log.Errorf("XXX: %w", err)
+	}
+
+	_, err = c.apiClient.PutSoftware(urls, string(publiccodeYml))
+	if err != nil {
+		log.Errorf("XXX: %w", err)
+	}
 }
 
 // validateFile checks if it.riuso.codiceIPA in the publiccode.yml matches with the
