@@ -65,23 +65,11 @@ a random code in the end (instead of the iPA code).
 Furthermore, the iPA code validation, which is a simple check within the publishers'
 file (to ensure that code belongs to the selected publisher), will be skipped.
 
-If it finds a blacklisted repository, it will exit immediately.
-
 ### Other commands
 
 * `bin/crawler download-publishers` downloads organizations and repositories from
   the [onboarding portal repository](https://github.com/italia/developers-italia-onboarding)
   and saves them to a publishers YAML file.
-
-### Crawler blacklists
-
-Blacklists are needed to exclude individual repository that are not in line with
-our
-[guidelines](https://docs.italia.it/italia/developers-italia/policy-inserimento-catalogo-docs/it/stabile/approvazione-del-software-a-catalogo.html).
-
-You can set `BLACKLIST_FOLDER` in `config.toml` to point to a directory
-where blacklist files are located.
-Blacklisting is currently supported by the `one` and `crawl` commands.
 
 ## See also
 

@@ -22,7 +22,6 @@ COPY metrics metrics
 COPY version version
 COPY publishers.thirdparty.yml publishers.thirdparty.yml
 COPY publishers.yml publishers.yml
-COPY blacklist blacklist
 COPY config.toml.example config.toml
 COPY domains.yml.example domains.yml
 COPY go.mod .

@@ -135,28 +135,6 @@ func (c *Crawler) CrawlPublishers(publishers []common.Publisher) error {
 	return c.crawl()
 }
 
-// removeBlackListedFromRepositories this function is in charge
-// to discard repositories in blacklists.
-// It returns a slice of them, ready to be removed
-// from elasticsearch.
-func (c *Crawler) removeBlackListedFromRepositories(listedRepos map[string]string) (toBeRemoved []string) {
-	temp := make(chan common.Repository, 1000)
-	for repo := range c.repositories {
-		if val, ok := listedRepos[repo.URL.String()]; ok {
-			// add repository that should be processed but
-			// they are marked as blacklisted
-			// and then ready to be removed from ES if they exist
-			toBeRemoved = append(toBeRemoved, val)
-			log.Warnf("marked as blacklisted %s", val)
-		} else {
-			temp <- repo
-		}
-	}
-	close(temp)
-	c.repositories = temp
-	return
-}
-
 func (c *Crawler) crawl() error {
 	reposChan := make(chan common.Repository)
 
