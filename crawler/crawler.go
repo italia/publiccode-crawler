@@ -1,19 +1,15 @@
 package crawler
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
-	"path"
-	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/alranel/go-vcsurl/v2"
 	"github.com/italia/developers-italia-backend/apiclient"
@@ -26,6 +22,7 @@ import (
 	publiccode "github.com/italia/publiccode-parser-go/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/slices"
 )
 
 // Crawler is a helper class representing a crawler.
@@ -95,7 +92,11 @@ func (c *Crawler) CrawlRepo(repoURL url.URL, publisher common.Publisher) error {
 	} else if vcsurl.IsGitLab(&repoURL) {
 		err = c.gitLabScanner.ScanRepo(repoURL, publisher, c.repositories)
 	} else {
-		err = fmt.Errorf("unsupported code hosting platform for %s", repoURL.String())
+		err = fmt.Errorf(
+			"publisher %s: unsupported code hosting platform for %s",
+			publisher.Name,
+			repoURL.String(),
+		)
 	}
 
 	if err != nil {
@@ -108,13 +109,17 @@ func (c *Crawler) CrawlRepo(repoURL url.URL, publisher common.Publisher) error {
 
 // CrawlPublishers processes a list of publishers.
 func (c *Crawler) CrawlPublishers(publishers []common.Publisher) error {
-	// Count configured orgs
-	orgCount := 0
+	groupsNum := 0
 	for _, publisher := range publishers {
-		orgCount += len(publisher.Organizations)
+		groupsNum += len(publisher.Organizations)
 	}
-	log.Infof("%v organizations belonging to %v publishers are going to be scanned",
-		orgCount, len(publishers))
+
+	reposNum := 0
+	for _, publisher := range publishers {
+		reposNum += len(publisher.Repositories)
+	}
+
+	log.Infof("Scanning %d publishers (%d orgs + %d repositories)", len(publishers), groupsNum, reposNum)
 
 	// Process every item in publishers.
 	for _, publisher := range publishers {
@@ -206,7 +211,11 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 		} else if vcsurl.IsGitLab(&orgURL) {
 			err = c.gitLabScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
 		} else {
-			err = fmt.Errorf("unsupported code hosting platform for %s", u.String())
+				err = fmt.Errorf(
+				"publisher %s: unsupported code hosting platform for %s",
+				publisher.Name,
+				u.String(),
+			)
 		}
 		if err != nil {
 			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
@@ -227,7 +236,11 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 		} else if vcsurl.IsGitLab(&repoURL) {
 			err = c.gitLabScanner.ScanRepo(repoURL, publisher, c.repositories)
 		} else {
-			err = fmt.Errorf("unsupported code hosting platform for %s", u.String())
+			err = fmt.Errorf(
+				"publisher %s: unsupported code hosting platform for %s",
+				publisher.Name,
+				u.String(),
+			)
 		}
 
 		if err != nil {
@@ -250,71 +263,70 @@ func (c *Crawler) ProcessRepositories(repos chan common.Repository) {
 	}
 }
 
-type logEntry struct {
-	Datetime string `json:"datetime"`
-	Message  string `json:"message"`
-}
-
-func addLogEntry(logEntries *[]logEntry, message string) {
-	*logEntries = append(
-		*logEntries,
-		logEntry{Datetime: time.Now().UTC().Format(time.RFC3339), Message: message},
-	)
-}
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
 func (c *Crawler) ProcessRepo(repository common.Repository) {
-	var logEntries []logEntry
+	var logEntries []string
 
-	var message string
+	var software *apiclient.Software
 
-	// Write the log to a file, so it can be accessed from outside at
-	// http://crawler-host/$codehosting/$org/$reponame/log.txt
 	defer func() {
-		fname := path.Join(
-			viper.GetString("OUTPUT_DIR"),
-			repository.URL.String(),
-			path.Clean(repository.Name),
-			"log.json",
-		)
-
-		if err := os.MkdirAll(filepath.Dir(fname), 0775); err != nil {
-			log.Errorf("[%s]: %s", repository.Name, err.Error())
-
-			return
+		for _, e := range logEntries {
+			log.Info(e)
 		}
 
-		jsonOut, _ := json.Marshal(logEntries)
-		if err := ioutil.WriteFile(fname, jsonOut, 0644); err != nil {
-			log.Errorf("[%s]: %s", repository.Name, err.Error())
+		if !c.DryRun {
+			entries := strings.Join(logEntries, "\n")
 
-			return
+			var err error
+			if software != nil {
+				_, err = c.apiClient.PostSoftwareLog(software.ID, entries)
+			} else {
+				_, err = c.apiClient.PostLog(entries)
+			}
+
+			if err != nil {
+				log.Errorf("[%s]: %s", repository.Name, err.Error())
+			}
 		}
 	}()
 
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", c.Index).Inc()
 
-	resp, err := httpclient.GetURL(repository.FileRawURL, repository.Headers)
+	software, err := c.apiClient.GetSoftwareByURL(repository.URL.String())
+	if err != nil {
+		logEntries = append(logEntries, "[%s] failed to GET software from API: %s\n", repository.Name, err.Error())
 
-	if resp.Status.Code != http.StatusOK || err != nil {
-		message = fmt.Sprintf("[%s] Failed to GET publiccode.yml\n", repository.Name)
-		log.Errorf(message)
-
-		addLogEntry(&logEntries, message)
 		return
 	}
 
-	message = fmt.Sprintf("[%s] publiccode.yml found at %s\n", repository.Name, repository.FileRawURL)
-	log.Infof(message)
-	addLogEntry(&logEntries, message)
+	if software != nil && !software.Active {
+		logEntries = append(logEntries, "[%s] software has active = false, skipping update")
+
+		return
+	}
+
+	resp, err := httpclient.GetURL(repository.FileRawURL, repository.Headers)
+	if resp.Status.Code != http.StatusOK || err != nil {
+		logEntries = append(logEntries, fmt.Sprintf("[%s] Failed to GET publiccode.yml", repository.Name))
+
+		return
+	}
+
+	logEntries = append(
+		logEntries,
+		fmt.Sprintf(
+			"[%s] publiccode.yml found at %s\n",
+				repository.CanonicalURL.String(),
+				repository.FileRawURL,
+		),
+	)
 
 	var parser *publiccode.Parser
 	parser, err = publiccode.NewParser(repository.FileRawURL)
 	if err != nil {
-		message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
-		log.Errorf(message)
-		addLogEntry(&logEntries, message)
+		logEntries = append(logEntries,fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
 
 		return
 	}
@@ -333,9 +345,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		}
 
 		if !valid {
-			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
-			log.Errorf(message)
-			addLogEntry(&logEntries, message)
+			logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
 
 			return
 		}
@@ -347,9 +357,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 	if repository.Publisher.Name != "_" {
 		err = validateFile(repository.Publisher, *parser, repository.FileRawURL)
 		if err != nil {
-			message = fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err)
-			log.Errorf(message)
-			addLogEntry(&logEntries, message)
+			logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
 
 			if !c.DryRun {
 				common.LogBadYamlToFile(repository.FileRawURL)
@@ -359,22 +367,17 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		}
 	}
 
-	message = fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name)
-	log.Infof(message)
-	addLogEntry(&logEntries, message)
+	logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
 
 	if c.DryRun {
-		log.Infof("[%s]: Skipping repository clone and save to ElasticSearch (--dry-run)", repository.Name)
+		log.Infof("[%s]: Skipping other steps (--dry-run)", repository.Name)
 		return
 	}
 
 	// Clone repository.
 	err = git.CloneRepository(repository.URL.Host, repository.Name, parser.PublicCode.URL.String(), c.Index)
 	if err != nil {
-		message = fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err)
-		log.Errorf(message)
-
-		addLogEntry(&logEntries, message)
+		logEntries = append(logEntries, fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err))
 	}
 
 	// Calculate Repository activity index and vitality. Defaults to 60 days.
@@ -382,36 +385,43 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 	if viper.IsSet("ACTIVITY_DAYS") {
 		activityDays = viper.GetInt("ACTIVITY_DAYS")
 	}
-	activityIndex, vitality, err := git.CalculateRepoActivity(repository, activityDays)
+	activityIndex, _, err := git.CalculateRepoActivity(repository, activityDays)
 	if err != nil {
-		message = fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err)
-
-		log.Errorf(message)
-		addLogEntry(&logEntries, message)
-	}
-	message = fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex)
-	log.Infof(message)
-	addLogEntry(&logEntries, message)
-
-	var vitalitySlice []int
-	for i := 0; i < len(vitality); i++ {
-		vitalitySlice = append(vitalitySlice, int(vitality[i]))
+		logEntries = append(logEntries, fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err))
+	} else {
+		logEntries = append(logEntries, fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex))
 	}
 
-	// XXX doc first is current url
-	urls := []url.URL{repository.CanonicalURL,}
-	if repository.URL != repository.CanonicalURL {
-		urls = append(urls, repository.URL)
+	var aliases []string
+	url := repository.CanonicalURL.String()
+
+	// If the URL of the repo we have is different from the canonical URL
+	// we got from the code hosting API, it means the repo got renamed, so we
+	// add it to the slice of aliases for this software.
+	if repository.URL.String() != repository.CanonicalURL.String() {
+		aliases = append(aliases, repository.URL.String())
 	}
 
 	publiccodeYml, err := parser.ToYAML()
 	if err != nil {
-		log.Errorf("XXX: %w", err)
+		logEntries = append(logEntries, fmt.Sprintf("[%s] parsing error: %s", repository.Name, err.Error()))
+
+		return
 	}
 
-	_, err = c.apiClient.PutSoftware(urls, string(publiccodeYml))
+	if software == nil {
+		_, err = c.apiClient.PostSoftware(url, aliases, string(publiccodeYml))
+	} else {
+		for _, alias := range software.Aliases {
+			if !slices.Contains(aliases, alias) {
+				aliases = append(aliases, alias)
+			}
+		}
+
+		_, err = c.apiClient.PatchSoftware(software.ID, url, aliases, string(publiccodeYml))
+	}
 	if err != nil {
-		log.Errorf("XXX: %w", err)
+		logEntries = append(logEntries, fmt.Sprintf("[%s]: %s", repository.Name, err.Error()))
 	}
 }
 
@@ -440,11 +450,26 @@ func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawU
 		}
 	}
 
-	if !strings.EqualFold(
+	// When the publisher id is a UUID, it means that the Publisher didn't originally
+	// have an explicit AlternativeId, which in turn means that the Publisher
+	// is not an Italian Public Administration, since those are registered in
+	// the API with an alternativeId set to their iPA code (Italian PA code).
+	//
+	// TODO: This is not ideal and also an Italian-specific check
+	// (https://github.com/italia/developers-italia-backend/issues/298)
+	idIsUUID, _ := regexp.MatchString("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", publisher.Id)
+
+	if !idIsUUID && !strings.EqualFold(
 		strings.TrimSpace(publisher.Id),
 		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
 	) {
-		return errors.New("id for: " + fileRawURL + " is " + parser.PublicCode.It.Riuso.CodiceIPA + ", which differs from the one assigned to the org in the publishers file: " + publisher.Id)
+		return fmt.Errorf(
+			"codiceIPA is '%s', but '%s' was expected for '%s' in %s",
+			parser.PublicCode.It.Riuso.CodiceIPA,
+			publisher.Id,
+			publisher.Name,
+			fileRawURL,
+		)
 	}
 
 	return nil

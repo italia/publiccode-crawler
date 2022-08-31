@@ -15,40 +15,38 @@ func init() {
 }
 
 var crawlCmd = &cobra.Command{
-	Use:   "crawl publishers.yml directory/*.yml ...",
+	Use:   "crawl publishers.yml [directory/*.yml ...]",
 	Short: "Crawl publiccode.yml files in publishers' repos.",
-	Long:  `Crawl publiccode.yml files according to the supplied publisher file(s).`,
-	Args:  cobra.MinimumNArgs(1),
+	Long:  `Crawl publiccode.yml files in publishers' repos.
+				When run with no arguments, the publishers are fetched from the API,
+				otherwise the passed YAML files are used.`,
+	Args:  cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		orgs := make(map[string]bool)
 		c := crawler.NewCrawler(dryRun)
 
-		apiclient := apiclient.NewClient()
+		var publishers []common.Publisher
 
-		var dedupedPublishers []common.Publisher
-		for id := range args {
-			publishers, err := apiclient.GetPublishers()
+		if len(args) == 0 {
+			var err error
+
+			apiclient := apiclient.NewClient()
+
+			publishers, err = apiclient.GetPublishers()
 			if err != nil {
 				log.Fatal(err)
-			} else {
-				log.Infof("Loaded and parsed %s", args[id])
 			}
-
-		Publisher:
-			for _, publisher := range publishers {
-				for _, orgURL := range publisher.Organizations {
-					if orgs[orgURL.String()] {
-						log.Warnf("Skipping publisher '%s': organization '%s' already present", publisher.Name, orgURL.String())
-						continue Publisher
-					} else {
-						orgs[orgURL.String()] = true
-					}
+		} else {
+			for _, yamlFile := range args {
+				filePublishers, err := common.LoadPublishers(yamlFile)
+				if err != nil {
+					log.Fatal(err)
 				}
-				dedupedPublishers = append(dedupedPublishers, publisher)
+
+				publishers = append(publishers, filePublishers...)
 			}
 		}
 
-		if err := c.CrawlPublishers(dedupedPublishers); err != nil {
+		if err := c.CrawlPublishers(publishers); err != nil {
 			log.Fatal(err)
 		}
 
