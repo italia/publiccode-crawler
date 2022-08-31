@@ -108,9 +108,6 @@ If it finds a blacklisted repository, it will exit immediately.
 
 ### Other commands
 
-* `bin/crawler delete [URL]` deletes software from Elasticsearch using its code
-   hosting URL specified in `publiccode.url`
-
 * `bin/crawler download-publishers` downloads organizations and repositories from
   the [onboarding portal repository](https://github.com/italia/developers-italia-onboarding)
   and saves them to a publishers YAML file.
