@@ -42,12 +42,6 @@ var oneCmd = &cobra.Command{
 		if err != nil {
 			log.Error(err)
 		}
-
-		// Generate the data files for Jekyll.
-		err = c.ExportForJekyll()
-		if err != nil {
-			log.Errorf("Error while exporting data for Jekyll: %v", err)
-		}
 	},
 }
 

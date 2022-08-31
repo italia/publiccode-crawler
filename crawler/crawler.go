@@ -15,7 +15,6 @@ import (
 	"github.com/italia/developers-italia-backend/apiclient"
 	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/git"
-	"github.com/italia/developers-italia-backend/jekyll"
 	"github.com/italia/developers-italia-backend/metrics"
 	"github.com/italia/developers-italia-backend/scanner"
 	httpclient "github.com/italia/httpclient-lib-go"
@@ -184,16 +183,6 @@ func (c *Crawler) crawl() error {
 	return nil
 }
 
-// ExportForJekyll exports YAML data files for the Jekyll website.
-func (c *Crawler) ExportForJekyll() error {
-	if c.DryRun {
-		log.Info("Skipping YAML output (--dry-run)")
-		return nil
-	}
-
-	return jekyll.GenerateJekyllYML(c.Es)
-}
-
 // ScanPublisher scans all the publisher' repositories and sends the ones
 // with a valid publiccode.yml to the repositories channel.
 func (c *Crawler) ScanPublisher(publisher common.Publisher) {
@@ -358,10 +347,6 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		err = validateFile(repository.Publisher, *parser, repository.FileRawURL)
 		if err != nil {
 			logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
-
-			if !c.DryRun {
-				common.LogBadYamlToFile(repository.FileRawURL)
-			}
 
 			return
 		}

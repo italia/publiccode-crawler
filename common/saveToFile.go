@@ -4,13 +4,10 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/italia/developers-italia-backend/metrics"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -49,25 +46,4 @@ func SaveToFile(domain Domain, hostname string, name string, data []byte, index 
 func SplitFullName(fullName string) (string, string) {
 	s := strings.Split(fullName, "/")
 	return s[0], s[1]
-}
-
-// Save the bad publiccode.yaml url to a file used by the publiccode-issueopener script.
-func LogBadYamlToFile(fileRawURL string) {
-	log.Errorf("Appending the bad file URL to the list: %s", fileRawURL)
-
-	filePath := path.Join(viper.GetString("CRAWLER_DATADIR"), "bad_publiccodes.lst")
-
-	f, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Errorf(err.Error())
-	}
-
-	_, err = f.WriteString(time.Now().Format("2006-01-02T15:04:05") + " - " + fileRawURL + "\r\n")
-
-	if err != nil {
-		log.Errorf(err.Error())
-	}
-
-	f.Sync()        // nolint: errcheck
-	defer f.Close() // nolint: errcheck
 }

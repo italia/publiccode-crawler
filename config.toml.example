@@ -4,25 +4,8 @@ CRAWLED_FILENAME = "publiccode.yml"
 # Publiccode unsupported countries to ignore.
 IGNORE_UNSUPPORTEDCOUNTRIES = [ "it" ]
 
-# This URL should be visible from the crawler
-ELASTIC_URL = "http://localhost:9200"
-#ELASTIC_USER = "elastic"
-#ELASTIC_PWD = "changeme"
-
-# The search front end needs a single alias to search on multiple indexes.
-# We default to "jekyll" because searchyll (which injects website contents)
-# doet not support custom aliases and uses its base index name.
-ELASTIC_ALIAS = "jekyll"
-
-# Index names
-ELASTIC_PUBLICCODE_INDEX = "publiccodes"
-ELASTIC_PUBLISHERS_INDEX = "administrations"
-
 # Directory for storing working files
 CRAWLER_DATADIR = "/var/crawler/data"
-
-# Path to the directory where we want to output our YAML files used by Jekyll for generating the catalog
-OUTPUT_DIR = "/var/crawler/output"
 
 # Blacklist folder
 BLACKLIST_FOLDER = "blacklist/"

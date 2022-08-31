@@ -4,11 +4,8 @@ FROM golang:1.17
 ENV USER developers
 ENV HOME /go/developers-italia-backend/crawler
 
-ENV DEFAULT_TIMEOUT 300
-
 ENV BASE /var/crawler
 ENV DATA ${BASE}/data
-ENV OUTPUT ${BASE}/output
 
 # Set the work directory
 WORKDIR ${HOME}
@@ -18,11 +15,9 @@ COPY .git .git
 COPY common common
 COPY cmd cmd
 COPY crawler crawler
-COPY elastic elastic
 COPY git git
 COPY internal internal
 COPY scanner scanner
-COPY jekyll jekyll
 COPY metrics metrics
 COPY version version
 COPY publishers.thirdparty.yml publishers.thirdparty.yml
@@ -47,7 +42,6 @@ RUN chown -R ${USER}.${USER} ${HOME}
 # Create the crawler output directory structure and set user ownership
 # Must match what's written in config.toml.example
 RUN mkdir -p ${DATA}
-RUN mkdir -p ${OUTPUT}
 RUN chown -R ${USER}.${USER} ${BASE}
 
 # Set running user
@@ -59,5 +53,4 @@ RUN make
 # Remove unsed .git
 RUN rm -rf .git
 
-# By default, wait until Elasticsearch is not ready. Then start the crawler
-CMD ["bash", "-c", "./wait-for-it.sh ${ELASTIC_URL} -t ${DEFAULT_TIMEOUT} -- ./start.sh"]
+CMD ["start.sh"]
