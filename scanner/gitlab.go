@@ -7,7 +7,6 @@ import (
 	"path"
 	"strings"
 
-	"github.com/spf13/viper"
 	"github.com/xanzy/go-gitlab"
 
 	"github.com/italia/developers-italia-backend/common"
@@ -103,7 +102,7 @@ func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	u.Path = path.Join(u.Path, "raw", defaultBranch, viper.GetString("CRAWLED_FILENAME"))
+	u.Path = path.Join(u.Path, "raw", defaultBranch, "publiccode.yml")
 
 	return u.String(), err
 }

@@ -20,7 +20,7 @@ func SaveToFile(domain Domain, hostname string, name string, data []byte, index 
 		return errors.New("cannot save a file without name")
 	}
 
-	fileName := index + "_" + viper.GetString("CRAWLED_FILENAME")
+	fileName := index + "_publiccode.yml"
 	vendor, repo := SplitFullName(name)
 
 	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), hostname, vendor, repo)

@@ -1,6 +1,3 @@
-# Crawled filename.
-CRAWLED_FILENAME = "publiccode.yml"
-
 # Directory for storing working files
 CRAWLER_DATADIR = "/var/crawler/data"
 
