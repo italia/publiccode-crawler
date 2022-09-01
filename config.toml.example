@@ -1,9 +1,6 @@
 # Crawled filename.
 CRAWLED_FILENAME = "publiccode.yml"
 
-# Publiccode unsupported countries to ignore.
-IGNORE_UNSUPPORTEDCOUNTRIES = [ "it" ]
-
 # Directory for storing working files
 CRAWLER_DATADIR = "/var/crawler/data"
 
