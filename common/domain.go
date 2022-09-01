@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 )
 
@@ -28,7 +27,6 @@ func ReadAndParseDomains(domainsFile string) ([]Domain, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error in parsing %s file: %v", domainsFile, err)
 	}
-	log.Infof("Loaded and parsed %s", domainsFile)
 
 	return domains, err
 }
