@@ -1,6 +1,13 @@
 # Directory for storing working files
 CRAWLER_DATADIR = "/var/crawler/data"
 
+# Skip the repository's vitality calculation.
+# (default: false)
+#
+# When vitality calculation is enabled, the crawler will locally clone the
+# repositories in $CRAWLER_DATADIR as cache.
+SKIP_VITALITY = false
+
 # Number of days for activity (vitality index) calculation
 ACTIVITY_DAYS = 60
 

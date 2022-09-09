@@ -337,22 +337,24 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		return
 	}
 
-	// Clone repository.
-	err = git.CloneRepository(repository.URL.Host, repository.Name, parser.PublicCode.URL.String(), c.Index)
-	if err != nil {
-		logEntries = append(logEntries, fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err))
-	}
+	if !viper.GetBool("SKIP_VITALITY") {
+		// Clone repository.
+		err = git.CloneRepository(repository.URL.Host, repository.Name, parser.PublicCode.URL.String(), c.Index)
+		if err != nil {
+			logEntries = append(logEntries, fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err))
+		}
 
-	// Calculate Repository activity index and vitality. Defaults to 60 days.
-	var activityDays int = 60
-	if viper.IsSet("ACTIVITY_DAYS") {
-		activityDays = viper.GetInt("ACTIVITY_DAYS")
-	}
-	activityIndex, _, err := git.CalculateRepoActivity(repository, activityDays)
-	if err != nil {
-		logEntries = append(logEntries, fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err))
-	} else {
-		logEntries = append(logEntries, fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex))
+		// Calculate Repository activity index and vitality. Defaults to 60 days.
+		var activityDays int = 60
+		if viper.IsSet("ACTIVITY_DAYS") {
+			activityDays = viper.GetInt("ACTIVITY_DAYS")
+		}
+		activityIndex, _, err := git.CalculateRepoActivity(repository, activityDays)
+		if err != nil {
+			logEntries = append(logEntries, fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err))
+		} else {
+			logEntries = append(logEntries, fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex))
+		}
 	}
 
 	var aliases []string
