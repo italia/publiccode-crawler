@@ -21,29 +21,20 @@ from a Docker container with
 
 ### Manually configure and build the crawler
 
-1. Save the auth tokens to `domains.yml`.
-
-2. Rename `config.toml.example` to `config.toml` and set the variables
+1. Rename `config.toml.example` to `config.toml` and set the variables
 
    > **NOTE**: The application also supports environment variables in substitution
    > to config.toml file. Remember: "environment variables get higher priority than
    > the ones in configuration file"
 
-3. Build the crawler binary with `make`
+2. Build the crawler binary with `make`
 
 ### Docker
 
 The repository has a `Dockerfile`, used to build the production image,
 and a `docker-compose.yml` file to setup the development environment.
 
-1. Save your auth tokens to `domains.yml`
-
-   ```shell
-   cp crawler/domains.yml.example crawler/domains.yml
-   editor crawler/domains.yml
-   ```
-
-2. Start the environment:
+1. Start the environment:
 
    ```shell
    docker-compose up

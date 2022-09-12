@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net/url"
 	"os"
 	"strings"
@@ -30,22 +29,6 @@ func NewGitHubScanner() Scanner {
 	ctx := context.Background()
 
 	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		domains, err := common.ReadAndParseDomains("domains.yml")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		for _, domain := range domains {
-			if domain.Host == "github.com" {
-				if len(domain.BasicAuth) > 0 {
-					auth := domain.BasicAuth[rand.Intn(len(domain.BasicAuth))]
-
-					token = strings.Split(auth, ":")[1]
-				}
-			}
-		}
-	}
 
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},

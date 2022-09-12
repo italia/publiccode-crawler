@@ -19,3 +19,5 @@ API_BASEURL = "https://api.developers.italia.it/v1"
 # The authentication token used to authenticate to the API.
 # See https://github.com/italia/developers-italia-api for details.
 API_BEARER_TOKEN = "v2.local.xxxx"
+
+GITHUB_TOKEN = ""

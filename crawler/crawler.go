@@ -29,7 +29,6 @@ type Crawler struct {
 	DryRun bool
 
 	Index          string
-	domains        []common.Domain
 	repositories   chan common.Repository
 	// Sync mutex guard.
 	publishersWg   sync.WaitGroup
@@ -45,19 +44,12 @@ type Crawler struct {
 // NewCrawler initializes a new Crawler object and connects to Elasticsearch (if dryRun == false).
 func NewCrawler(dryRun bool) *Crawler {
 	var c Crawler
-	var err error
 
 	c.DryRun = dryRun
 
 	datadir := viper.GetString("CRAWLER_DATADIR")
 	if err := os.MkdirAll(datadir, 0744); err != nil {
 		log.Fatalf("can't create data directory (%s): %s", datadir, err.Error())
-	}
-
-	// Read and parse list of domains.
-	c.domains, err = common.ReadAndParseDomains("domains.yml")
-	if err != nil {
-		log.Fatal(err)
 	}
 
 	// Initiate a channel of repositories.
@@ -298,7 +290,13 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		return
 	}
 
-	domain := common.GetDomain(c.domains, repository.URL.Host)
+	// FIXME: this is hardcoded for now, because it requires changes to publiccode-parser-go.
+	domain := publiccode.Domain{
+		Host: "github.com",
+		UseTokenFor: []string{"github.com", "api.github.com", "raw.githubusercontent.com"},
+		BasicAuth: []string{os.Getenv("GITHUB_TOKEN")},
+	}
+
 	err = parser.ParseInDomain(resp.Body, domain.Host, domain.UseTokenFor, domain.BasicAuth)
     if err != nil {
 		valid := true
