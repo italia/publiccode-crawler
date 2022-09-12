@@ -1,55 +1,10 @@
-FROM golang:1.17
+FROM golang:1.18 as build
 
-# Env variables definition
-ENV USER developers
-ENV HOME /go/developers-italia-backend/crawler
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags "-X github.com/italia/developers-italia-backend/crawler/version.VERSION=$(shell git describe --abbrev=0 --tags)"
 
-ENV BASE /var/crawler
-ENV DATA ${BASE}/data
+FROM alpine:3
 
-# Set the work directory
-WORKDIR ${HOME}
-
-# Copy crawler files inside the workdir
-COPY .git .git
-COPY common common
-COPY cmd cmd
-COPY crawler crawler
-COPY git git
-COPY internal internal
-COPY scanner scanner
-COPY metrics metrics
-COPY version version
-COPY publishers.thirdparty.yml publishers.thirdparty.yml
-COPY publishers.yml publishers.yml
-COPY config.toml.example config.toml
-COPY domains.yml.example domains.yml
-COPY go.mod .
-COPY go.sum .
-COPY main.go .
-COPY Makefile .
-COPY start.sh .
-COPY vitality-ranges.yml .
-COPY wait-for-it.sh .
-
-# Run as unprivileged user
-RUN adduser --home ${HOME} --shell /bin/sh --disabled-password ${USER}
-
-# Set user ownership on workdir and subdirectories
-RUN chown -R ${USER}.${USER} ${HOME}
-
-# Create the crawler output directory structure and set user ownership
-# Must match what's written in config.toml.example
-RUN mkdir -p ${DATA}
-RUN chown -R ${USER}.${USER} ${BASE}
-
-# Set running user
-USER ${USER}
-
-# Compile a new crawler
-RUN make
-
-# Remove unsed .git
-RUN rm -rf .git
-
-CMD ["start.sh"]
+COPY --from=build /src/developers-italia-backend /usr/local/bin/developers-italia-backend
+CMD ["developers-italia-backend", "crawl"]
