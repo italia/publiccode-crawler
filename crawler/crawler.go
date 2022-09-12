@@ -49,9 +49,9 @@ func NewCrawler(dryRun bool) *Crawler {
 
 	c.DryRun = dryRun
 
-	// Make sure the data directory exists or spit an error
-	if stat, err := os.Stat(viper.GetString("CRAWLER_DATADIR")); err != nil || !stat.IsDir() {
-		log.Fatalf("The configured data directory (%v) does not exist: %v", viper.GetString("CRAWLER_DATADIR"), err)
+	datadir := viper.GetString("CRAWLER_DATADIR")
+	if err := os.MkdirAll(datadir, 0744); err != nil {
+		log.Fatalf("can't create data directory (%s): %s", datadir, err.Error())
 	}
 
 	// Read and parse list of domains.
