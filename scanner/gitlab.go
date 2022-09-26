@@ -33,7 +33,7 @@ func (scanner GitLabScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 
 		group, _, err := git.Groups.GetGroup(groupName, &gitlab.GetGroupOptions{})
 		if err != nil {
-			return err
+			return fmt.Errorf("can't get GitLag group '%s': %w", groupName, err)
 		}
 
 		if err = addGroupProjects(*group, publisher, repositories, git); err != nil {
@@ -88,10 +88,13 @@ func (scanner GitLabScanner) ScanRepo(url url.URL, publisher common.Publisher, r
 
 // isGitlabGroup returns true if the API URL points to a group.
 func isGitlabGroup(u url.URL) bool {
-	return strings.ToLower(u.Hostname()) == "gitlab.com" ||
-		// When u.Path is /api/v4/groups there's no group, otherwise
-		// it would have been /api/v4/groups/$GROUPNAME.
-		u.Path != "/api/v4/groups"
+	return (
+		// Always assume it's a group if the projects are hosted on gitlab.com,
+		// because we only want to support groups (ie. not repos belonging to a user)
+		strings.ToLower(u.Hostname()) == "gitlab.com" ||
+		// Assume an on-premise GitLab's URL is a group if the path is not the root
+		// path (/) or empty
+		len(u.Path) > 1)
 }
 
 // generateGitlabRawURL returns the file Gitlab specific file raw url.
