@@ -10,8 +10,7 @@ Developers Italia provides [a catalog of Free and Open Source](https://developer
 software aimed to Public Administrations.
 
 This **crawler** retrieves the `publiccode.yml` files from the
-organizations publishing the software that have registered through the
-[onboarding procedure](https://github.com/italia/developers-italia-onboarding).
+repositories of publishers found in the [Developers Italia API](https://github.com/italia/developers-italia-api).
 
 ## Setup and deployment processes
 
@@ -39,31 +38,28 @@ and a `docker-compose.yml` file to setup the development environment.
    ```shell
    docker-compose up
 
-## Run the crawler
+## Commands
 
-### Crawl mode: `bin/crawler crawl publishers*.yml`
+### `crawler crawl`
+
+Gets the list of publishers from `https://api.developers.italia.it/v1/publishers`
+and starts to crawl their repositories.
+
+### `crawler crawl publishers*.yml`
 
 Gets the list of publishers in `publishers*.yml` and starts to crawl
 their repositories.
 
-### One mode (single repository url): `bin/crawler one [repo url] publishers*.yml`
-
-In this mode one single repository at the time will be evaluated. If the
-organization is present, its iPA code will be matched with the ones in
-the publishers' file, otherwise it will be set to null and the `slug` will have
-a random code in the end (instead of the iPA code).
-
-Furthermore, the iPA code validation, which is a simple check within the publishers'
-file (to ensure that code belongs to the selected publisher), will be skipped.
-
 ### Other commands
 
-* `bin/crawler download-publishers` downloads organizations and repositories from
+* `crawler download-publishers` downloads organizations and repositories from
   the [onboarding portal repository](https://github.com/italia/developers-italia-onboarding)
   and saves them to a publishers YAML file.
 
 ## See also
 
+* [developers-italia-api](https://github.com/italia/developers-italia-api): the API
+  used to store the results of the crawling
 * [publiccode-parser-go](https://github.com/italia/publiccode-parser-go): the Go
   package for parsing publiccode.yml files
 
