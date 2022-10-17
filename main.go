@@ -18,10 +18,13 @@ func main() {
 
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
-	err := viper.ReadInConfig()
 
-	if err != nil {
-		panic(fmt.Errorf("fatal error reding config file: %s", err))
+	viper.SetDefault("API_BASEURL", "https://api.developers.italia.it/v1/")
+
+	if err := viper.ReadInConfig(); err != nil {
+		if _, fileNotFound := err.(viper.ConfigFileNotFoundError); !fileNotFound {
+			panic(fmt.Errorf("error reading config file: %w", err))
+		}
 	}
 
 	cmd.Execute()

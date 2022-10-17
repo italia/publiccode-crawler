@@ -1,8 +1,9 @@
+# Test and publish the legacy docker image
+# (italia/developers-italia-backend:legacy) when we push to the `legacy` branch.
 on:
   push:
     branches:
-      - main
-  pull_request:
+      - legacy
 
 name: ci
 
@@ -35,7 +36,7 @@ jobs:
         run: |
           IMAGE=italia/developers-italia-backend
 
-          TAGS=${IMAGE}:latest
+          TAGS=${IMAGE}:legacy
           TAGS="$TAGS,${IMAGE}:${GITHUB_SHA::8}"
 
           echo ::set-output name=tags::${TAGS}

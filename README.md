@@ -10,12 +10,7 @@ Developers Italia provides [a catalog of Free and Open Source](https://developer
 software aimed to Public Administrations.
 
 This **crawler** retrieves the `publiccode.yml` files from the
-organizations publishing the software that have registered through the
-[onboarding procedure](https://github.com/italia/developers-italia-onboarding).
-
-The generated YAML files are then used by
-[developers.italia.it build](https://github.com/italia/developers.italia.it)
-to generate its static pages.
+repositories of publishers found in the [Developers Italia API](https://github.com/italia/developers-italia-api).
 
 ## Setup and deployment processes
 
@@ -23,112 +18,48 @@ The crawler can either run manually on the target machine or it can be deployed
 from a Docker container with
 [its helm-chart](https://github.com/teamdigitale/devita-infra-kubernetes) in Kubernetes.
 
-[Elasticsearch](https://www.elastic.co/products/elasticsearch) is used to store
-the data and has ready to accept connections before the crawler is started.
-
 ### Manually configure and build the crawler
 
-1. Save the auth tokens to `domains.yml`.
-
-2. Rename `config.toml.example` to `config.toml` and set the variables
+1. Rename `config.toml.example` to `config.toml` and set the variables
 
    > **NOTE**: The application also supports environment variables in substitution
    > to config.toml file. Remember: "environment variables get higher priority than
    > the ones in configuration file"
 
-3. Build the crawler binary with `make`
+2. Build the crawler binary with `make`
 
 ### Docker
 
 The repository has a `Dockerfile`, used to build the production image,
 and a `docker-compose.yml` file to setup the development environment.
 
-1. Copy the [`.env.example`](.env.example) file into `.env` and edit the
-   environment variables as it suits you.
-   [`.env.example`](.env.example) has detailed descriptions for each variable.
-
-   ```shell
-   cp .env.example .env
-   ```
-
-2. Save your auth tokens to `domains.yml`
-
-   ```shell
-   cp crawler/domains.yml.example crawler/domains.yml
-   editor crawler/domains.yml
-   ```
-
-3. Start the environment:
+1. Start the environment:
 
    ```shell
    docker-compose up
 
-## Run the crawler
+## Commands
 
-### Crawl mode: `bin/crawler crawl publishers.*.yml`
+### `crawler crawl`
 
-Gets the list of publishers in `publishers.*.yml` and starts to crawl
+Gets the list of publishers from `https://api.developers.italia.it/v1/publishers`
+and starts to crawl their repositories.
+
+### `crawler crawl publishers*.yml`
+
+Gets the list of publishers in `publishers*.yml` and starts to crawl
 their repositories.
-
-If it finds a blacklisted repository, it will remove it from Elasticsearch, if
-it is present.
-
-It also generates:
-
-* [`amministrazioni.yml`](https://crawler.developers.italia.it/amministrazioni.yml)
-  containing all the Public Administrations their name, website URL and iPA code.
-
-* [`softwares.yml`](https://crawler.developers.italia.it/softwares.yml) containing
-  all the software that the crawler scraped, validated and saved into ElasticSearch.
-
-  The structure is similar to publiccode data structure with some additional
-  fields like vitality and vitality score.
-
-* [`software-riuso.yml`](https://crawler.developers.italia.it/software-riuso.yml)
-  containing all the software in `softwares.yml` having an iPA code.
-
-* [`software-open-source.yml`](https://crawler.developers.italia.it/software-open-source.yml)
-  containing all the software in `softwares.yml` with no iPA code.
-
-* `https://crawler.developers.italia.it/HOSTING/ORGANIZATION/REPO/log.json` containing
-  the logs of the scraping for that particular `REPO`.
-  (eg. [`https://crawler.developers.italia.it/github.com/italia/design-scuole-wordpress-theme/log.json`](https://crawler.developers.italia.it/github.com/italia/design-scuole-wordpress-theme/log.json))
-
-### One mode (single repository url): `bin/crawler one [repo url] publishers.*.yml`
-
-In this mode one single repository at the time will be evaluated. If the
-organization is present, its iPA code will be matched with the ones in
-the publishers' file, otherwise it will be set to null and the `slug` will have
-a random code in the end (instead of the iPA code).
-
-Furthermore, the iPA code validation, which is a simple check within the publishers'
-file (to ensure that code belongs to the selected publisher), will be skipped.
-
-If it finds a blacklisted repository, it will exit immediately.
 
 ### Other commands
 
-* `bin/crawler updateipa` downloads iPA data and writes them into Elasticsearch
-
-* `bin/crawler delete [URL]` deletes software from Elasticsearch using its code
-   hosting URL specified in `publiccode.url`
-
-* `bin/crawler download-publishers` downloads organizations and repositories from
+* `crawler download-publishers` downloads organizations and repositories from
   the [onboarding portal repository](https://github.com/italia/developers-italia-onboarding)
   and saves them to a publishers YAML file.
 
-### Crawler blacklists
-
-Blacklists are needed to exclude individual repository that are not in line with
-our
-[guidelines](https://docs.italia.it/italia/developers-italia/policy-inserimento-catalogo-docs/it/stabile/approvazione-del-software-a-catalogo.html).
-
-You can set `BLACKLIST_FOLDER` in `config.toml` to point to a directory
-where blacklist files are located.
-Blacklisting is currently supported by the `one` and `crawl` commands.
-
 ## See also
 
+* [developers-italia-api](https://github.com/italia/developers-italia-api): the API
+  used to store the results of the crawling
 * [publiccode-parser-go](https://github.com/italia/publiccode-parser-go): the Go
   package for parsing publiccode.yml files
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net/url"
 	"os"
 	"strings"
@@ -30,22 +29,6 @@ func NewGitHubScanner() Scanner {
 	ctx := context.Background()
 
 	token := os.Getenv("GITHUB_TOKEN")
-	if token == "" {
-		domains, err := common.ReadAndParseDomains("domains.yml")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		for _, domain := range domains {
-			if domain.Host == "github.com" {
-				if len(domain.BasicAuth) > 0 {
-					auth := domain.BasicAuth[rand.Intn(len(domain.BasicAuth))]
-
-					token = strings.Split(auth, ":")[1]
-				}
-			}
-		}
-	}
 
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
@@ -154,18 +137,19 @@ Retry:
 		return fmt.Errorf("[%s]: failed to get publiccode.yml: %w", *repo.FullName, err)
 	}
 	if file != nil {
-		u, err := url.Parse(*repo.CloneURL)
+		canonicalURL, err := url.Parse(*repo.CloneURL)
 		if err != nil {
 			return fmt.Errorf("failed to get canonical repo URL for %s: %w", url.String(), err)
 		}
 
 		repositories <- common.Repository{
-			Name:       *repo.FullName,
-			FileRawURL: *file.DownloadURL,
-			URL:        *u,
-			GitBranch:  *repo.DefaultBranch,
-			Publisher:  publisher,
-			Headers:    make(map[string]string),
+			Name:         *repo.FullName,
+			FileRawURL:   *file.DownloadURL,
+			URL:          url,
+			CanonicalURL: *canonicalURL,
+			GitBranch:    *repo.DefaultBranch,
+			Publisher:    publisher,
+			Headers:      make(map[string]string),
 		}
 	}
 

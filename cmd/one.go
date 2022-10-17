@@ -24,12 +24,6 @@ var oneCmd = &cobra.Command{
 		No organizations! Only single repositories!`,
 	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
-		// check if repo url is not present in blacklist
-		// if so report error and exit.
-		if common.IsRepoInBlackList(args[0]) {
-			return
-		}
-
 		c := crawler.NewCrawler(dryRun)
 
 		paths := args[1:]
@@ -41,12 +35,6 @@ var oneCmd = &cobra.Command{
 		err = c.CrawlRepo(*url, getPublisher(*url, paths))
 		if err != nil {
 			log.Error(err)
-		}
-
-		// Generate the data files for Jekyll.
-		err = c.ExportForJekyll()
-		if err != nil {
-			log.Errorf("Error while exporting data for Jekyll: %v", err)
 		}
 	},
 }

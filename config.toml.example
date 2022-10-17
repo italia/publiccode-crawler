@@ -1,39 +1,24 @@
-# Crawled filename.
-CRAWLED_FILENAME = "publiccode.yml"
-
-# Publiccode unsupported countries to ignore.
-IGNORE_UNSUPPORTEDCOUNTRIES = [ "it" ]
-
-# This URL should be visible from the crawler
-ELASTIC_URL = "http://localhost:9200"
-#ELASTIC_USER = "elastic"
-#ELASTIC_PWD = "changeme"
-
-# The search front end needs a single alias to search on multiple indexes.
-# We default to "jekyll" because searchyll (which injects website contents)
-# doet not support custom aliases and uses its base index name.
-ELASTIC_ALIAS = "jekyll"
-
-# Index names
-ELASTIC_PUBLICCODE_INDEX = "publiccodes"
-ELASTIC_PUBLISHERS_INDEX = "administrations"
-ELASTIC_INDICEPA_INDEX   = "indicepa_pec"
-
-# URL of the list of Italian public administration agencies
-INDICEPA_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=amministrazioni.txt"
-INDICEPA_AOO_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=aoo.txt"
-INDICEPA_OU_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=ou.txt"
-INDICEPA_PEC_URL = "https://www.indicepa.gov.it/public-services/opendata-read-service.php?dstype=FS&filename=pec.txt"
-
 # Directory for storing working files
 CRAWLER_DATADIR = "/var/crawler/data"
 
-# Path to the directory where we want to output our YAML files used by Jekyll for generating the catalog
-OUTPUT_DIR = "/var/crawler/output"
-
-# Blacklist folder
-BLACKLIST_FOLDER = "blacklist/"
-BLACKLIST_PATTERN = "*.yml"
+# Skip the repository's vitality calculation.
+# (default: false)
+#
+# When vitality calculation is enabled, the crawler will locally clone the
+# repositories in $CRAWLER_DATADIR as cache.
+SKIP_VITALITY = false
 
 # Number of days for activity (vitality index) calculation
 ACTIVITY_DAYS = 60
+
+# The base URL of the API used for loading Publishers and saving crawled
+# software.
+# (default: https://api.developers.italia.it/v1)
+API_BASEURL = "https://api.developers.italia.it/v1"
+
+# The authentication token used to authenticate to the API.
+# See https://github.com/italia/developers-italia-api for details.
+API_BEARER_TOKEN = "v2.local.xxxx"
+
+# The GitHub token used to authenticate to the GitHub API.
+GITHUB_TOKEN = ""

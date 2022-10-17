@@ -62,11 +62,12 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.P
 			}
 
 			repositories <- common.Repository{
-				Name:        r.Full_name,
-				FileRawURL:  fmt.Sprintf("https://bitbucket.org/%s/%s/raw/%s/publiccode.yml", owner,r.Slug, r.Mainbranch.Name),
-				URL:         *u,
-				GitBranch:   r.Mainbranch.Name,
-				Publisher:   publisher,
+				Name:         r.Full_name,
+				FileRawURL:   fmt.Sprintf("https://bitbucket.org/%s/%s/raw/%s/publiccode.yml", owner,r.Slug, r.Mainbranch.Name),
+				URL:          *u,
+				CanonicalURL: *u,
+				GitBranch:    r.Mainbranch.Name,
+				Publisher:    publisher,
 			}
 		}
 	}
@@ -104,17 +105,18 @@ func (scanner BitBucketScanner) ScanRepo(url url.URL, publisher common.Publisher
 		return err
 	}
 	if res != nil {
-		u, err := url.Parse(fmt.Sprintf("https://bitbucket.org/%s/%s.git", owner, slug))
+		canonicalURL, err := url.Parse(fmt.Sprintf("https://bitbucket.org/%s/%s.git", repo.Owner, repo.Slug))
 		if err != nil {
 			return fmt.Errorf("failed to get canonical repo URL for %s: %w", url.String(), err)
 		}
 
 		repositories <- common.Repository{
-			Name:        repo.Full_name,
-			FileRawURL:  fmt.Sprintf("https://bitbucket.org/%s/%s/raw/%s/publiccode.yml", owner, slug, repo.Mainbranch.Name),
-			URL:         *u,
-			GitBranch:   repo.Mainbranch.Name,
-			Publisher:   publisher,
+			Name:         repo.Full_name,
+			FileRawURL:   fmt.Sprintf("https://bitbucket.org/%s/%s/raw/%s/publiccode.yml", owner, slug, repo.Mainbranch.Name),
+			URL:          url,
+			CanonicalURL: *canonicalURL,
+			GitBranch:    repo.Mainbranch.Name,
+			Publisher:    publisher,
 		}
 	}
 

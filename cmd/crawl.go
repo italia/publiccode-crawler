@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"github.com/italia/developers-italia-backend/apiclient"
 	"github.com/italia/developers-italia-backend/common"
 	"github.com/italia/developers-italia-backend/crawler"
-	"github.com/italia/developers-italia-backend/elastic"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -15,57 +15,39 @@ func init() {
 }
 
 var crawlCmd = &cobra.Command{
-	Use:   "crawl publishers.yml directory/*.yml ...",
+	Use:   "crawl publishers.yml [directory/*.yml ...]",
 	Short: "Crawl publiccode.yml files in publishers' repos.",
-	Long:  `Crawl publiccode.yml files according to the supplied publisher file(s).`,
-	Args:  cobra.MinimumNArgs(1),
+	Long:  `Crawl publiccode.yml files in publishers' repos.
+				When run with no arguments, the publishers are fetched from the API,
+				otherwise the passed YAML files are used.`,
+	Args:  cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
-		orgs := make(map[string]bool)
 		c := crawler.NewCrawler(dryRun)
 
-		var dedupedPublishers []common.Publisher
-		for id := range args {
-			publishers, err := common.LoadPublishers(args[id])
+		var publishers []common.Publisher
+
+		if len(args) == 0 {
+			var err error
+
+			apiclient := apiclient.NewClient()
+
+			publishers, err = apiclient.GetPublishers()
 			if err != nil {
 				log.Fatal(err)
-			} else {
-				log.Infof("Loaded and parsed %s", args[id])
 			}
-
-		Publisher:
-			for _, publisher := range publishers {
-				for _, orgURL := range publisher.Organizations {
-					if orgs[orgURL.String()] {
-						log.Warnf("Skipping publisher '%s': organization '%s' already present", publisher.Name, orgURL.String())
-						continue Publisher
-					} else {
-						orgs[orgURL.String()] = true
-					}
+		} else {
+			for _, yamlFile := range args {
+				filePublishers, err := common.LoadPublishers(yamlFile)
+				if err != nil {
+					log.Fatal(err)
 				}
-				dedupedPublishers = append(dedupedPublishers, publisher)
+
+				publishers = append(publishers, filePublishers...)
 			}
 		}
 
-		toBeRemoved, err := c.CrawlPublishers(dedupedPublishers)
-		if err != nil {
+		if err := c.CrawlPublishers(publishers); err != nil {
 			log.Fatal(err)
-		}
-
-		// I should call delete for items in blacklist
-		// to ensure they are not present in ES and then in
-		// jekyll datafile
-		for _, repo := range toBeRemoved {
-			log.Warnf("blacklisted, going to remove from ES %s", repo)
-			err = elastic.DeleteByQueryFromES(c.Es, repo, c.Index)
-			if err != nil {
-				log.Errorf("Error while deleting data from ES: %v", err)
-			}
-		}
-
-		// Generate the data files for Jekyll.
-		err = c.ExportForJekyll()
-		if err != nil {
-			log.Errorf("Error while exporting data for Jekyll: %v", err)
 		}
 	},
 }

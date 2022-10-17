@@ -1,6 +1,0 @@
-# Policy https://docs.italia.it/italia/developers-italia/policy-inserimento-catalogo-docs/it/stabile/approvazione-del-software-a-catalogo.html
-
-repos:
-  - url: https://github.com/italia/repo1
-    reason: 1
-    description: GitHub takedown

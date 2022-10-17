@@ -1,23 +1,11 @@
 version: '3.3'
 
 services:
-  elasticsearch:
-    image: italia/publiccode-tools-elasticsearch:ceb40894eaa142c8aec55c8dbcc9df038ec491e1
-    networks:
-      - overlay
-
   devita_crawler:
     container_name: devita_crawler
     image: italia/developers-italia-backend
     build:
       context: ./
       dockerfile: Dockerfile
-    env_file:
-      - .env
     volumes:
       - ./crawler/domains.yml:/go/developers-italia-backend/crawler/domains.yml
-    networks:
-      - overlay
-
-networks:
-  overlay:
