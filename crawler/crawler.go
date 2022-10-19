@@ -285,7 +285,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 	var parser *publiccode.Parser
 	parser, err = publiccode.NewParser(repository.FileRawURL)
 	if err != nil {
-		logEntries = append(logEntries,fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
+		logEntries = append(logEntries,fmt.Sprintf("[%s] BAD publiccode.yml: %s\n", repository.Name, err.Error()))
 
 		return
 	}
