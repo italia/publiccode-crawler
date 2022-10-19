@@ -1,6 +1,6 @@
 # publiccode.yml crawler for the software catalog of Developers Italia
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/italia/publiccode-crawler)](https://goreportcard.com/report/github.com/italia/publiccode-crawler)
+[![Go Report Card](https://goreportcard.com/badge/github.com/italia/publiccode-crawler/v3)](https://goreportcard.com/report/github.com/italia/publiccode-crawler/v3)
 [![Join the #publiccode channel](https://img.shields.io/badge/Slack%20channel-%23publiccode-blue.svg?logo=slack)](https://developersitalia.slack.com/messages/CAM3F785T)
 [![Get invited](https://slack.developers.italia.it/badge.svg)](https://slack.developers.italia.it/)
 
