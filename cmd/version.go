@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 
-	"github.com/italia/developers-italia-backend/version"
+	"github.com/italia/developers-italia-backend/internal"
 	"github.com/spf13/cobra"
 )
 
@@ -16,6 +16,7 @@ var versionCmd = &cobra.Command{
 	Short: "Print the version number of the crawler.",
 	Long:  `All software has versions. This too.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Version " + version.VERSION)
+		fmt.Println("Version:\t", internal.VERSION)
+		fmt.Println("Build time:\t", internal.BuildTime)
 	},
 }
