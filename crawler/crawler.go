@@ -333,7 +333,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 	defer func() {
 		fname := path.Join(
 			viper.GetString("OUTPUT_DIR"),
-			repository.URL.String(),
+			repository.URL.Hostname(),
 			path.Clean(repository.Name),
 			"log.json",
 		)
