@@ -30,13 +30,17 @@ from a Docker container with
 
 ### Docker
 
-The repository has a `Dockerfile`, used to build the production image,
-and a `docker-compose.yml` file to setup the development environment.
+You can build the Docker image using
 
-1. Start the environment:
+```console
+docker build .
+```
 
-   ```shell
-   docker-compose up
+or use the image published to DockerHub:
+
+```console
+docker run -it italia/publiccode-crawler
+```
 
 ## Commands
 
