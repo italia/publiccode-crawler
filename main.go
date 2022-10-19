@@ -1,9 +1,9 @@
-package main // import "github.com/italia/developers-italia-backend"
+package main
 
 import (
 	"fmt"
 
-	"github.com/italia/developers-italia-backend/cmd"
+	"github.com/italia/publiccode-crawler/v3/cmd"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"

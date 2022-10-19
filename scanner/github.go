@@ -14,7 +14,7 @@ import (
 	"github.com/google/go-github/v43/github"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/italia/developers-italia-backend/common"
+	"github.com/italia/publiccode-crawler/v3/common"
 )
 
 type GitHubScanner struct {

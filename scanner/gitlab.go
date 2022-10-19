@@ -9,7 +9,7 @@ import (
 
 	"github.com/xanzy/go-gitlab"
 
-	"github.com/italia/developers-italia-backend/common"
+	"github.com/italia/publiccode-crawler/v3/common"
 )
 
 type GitLabScanner struct {

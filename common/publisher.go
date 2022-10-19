@@ -6,7 +6,7 @@ import (
 
 	"gopkg.in/yaml.v2"
 
-	url "github.com/italia/developers-italia-backend/internal"
+	url "github.com/italia/publiccode-crawler/v3/internal"
 )
 
 var fileReaderInject = ioutil.ReadFile

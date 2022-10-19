@@ -10,7 +10,7 @@ var rootCmd = &cobra.Command{
 	Use:   "crawler",
 	Short: "A crawler for publiccode.yml files.",
 	Long: `A fast and robust publiccode.yml file crawler.
-Complete documentation is available at https://github.com/italia/developers-italia-backend`,
+Complete documentation is available at https://github.com/italia/publiccode-crawler`,
 	Run: func(cmd *cobra.Command, args []string) {
 		err := cmd.Help()
 		if err != nil {
