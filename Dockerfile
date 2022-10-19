@@ -6,5 +6,7 @@ RUN go build -ldflags "-s -w -X 'github.com/italia/publiccode-crawler/v3/interna
 
 FROM alpine:3
 
+RUN apk add --no-cache gcompat
+
 COPY --from=build /src/publiccode-crawler /usr/local/bin/publiccode-crawler
 CMD ["publiccode-crawler", "crawl"]
