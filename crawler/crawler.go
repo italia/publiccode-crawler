@@ -12,11 +12,11 @@ import (
 	"sync"
 
 	"github.com/alranel/go-vcsurl/v2"
-	"github.com/italia/developers-italia-backend/apiclient"
-	"github.com/italia/developers-italia-backend/common"
-	"github.com/italia/developers-italia-backend/git"
-	"github.com/italia/developers-italia-backend/metrics"
-	"github.com/italia/developers-italia-backend/scanner"
+	"github.com/italia/publiccode-crawler/v3/apiclient"
+	"github.com/italia/publiccode-crawler/v3/common"
+	"github.com/italia/publiccode-crawler/v3/git"
+	"github.com/italia/publiccode-crawler/v3/metrics"
+	"github.com/italia/publiccode-crawler/v3/scanner"
 	httpclient "github.com/italia/httpclient-lib-go"
 	publiccode "github.com/italia/publiccode-parser-go/v3"
 	log "github.com/sirupsen/logrus"
@@ -419,7 +419,7 @@ func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawU
 	// the API with an alternativeId set to their iPA code (Italian PA code).
 	//
 	// TODO: This is not ideal and also an Italian-specific check
-	// (https://github.com/italia/developers-italia-backend/issues/298)
+	// (https://github.com/italia/publiccode-crawler/issues/298)
 	idIsUUID, _ := regexp.MatchString("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", publisher.Id)
 
 	if !idIsUUID && !strings.EqualFold(

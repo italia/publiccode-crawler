@@ -33,7 +33,7 @@ jobs:
       - name: Get Docker image tags
         id: image_tags
         run: |
-          IMAGE=italia/developers-italia-backend
+          IMAGE=italia/publiccode-crawler
 
           TAGS=${IMAGE}:latest
           TAGS="$TAGS,${IMAGE}:${GITHUB_SHA::8}"

@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/italia/developers-italia-backend/common"
-	"github.com/italia/developers-italia-backend/metrics"
+	"github.com/italia/publiccode-crawler/v3/common"
+	"github.com/italia/publiccode-crawler/v3/metrics"
 	"github.com/spf13/viper"
 )
 

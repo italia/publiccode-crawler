@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/italia/developers-italia-backend/apiclient"
-	"github.com/italia/developers-italia-backend/common"
-	"github.com/italia/developers-italia-backend/crawler"
+	"github.com/italia/publiccode-crawler/v3/apiclient"
+	"github.com/italia/publiccode-crawler/v3/common"
+	"github.com/italia/publiccode-crawler/v3/crawler"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )

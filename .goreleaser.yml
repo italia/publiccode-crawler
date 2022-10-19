@@ -9,7 +9,7 @@ builds:
   binary: crawler
   main: ./main.go
   ldflags:
-    - -s -w -X github.com/italia/developers-italia-backend/internal.VERSION={{.Version}} -X github.com/italia/developers-italia-backend/internal.BuildTime={{.Date}}
+    - -s -w -X github.com/italia/publiccode-crawler/v3/internal.VERSION={{.Version}} -X github.com/italia/publiccode-crawler/v3/internal.BuildTime={{.Date}}
   env:
   - CGO_ENABLED=0
   hooks:

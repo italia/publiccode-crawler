@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/url"
 
-	"github.com/italia/developers-italia-backend/common"
+	"github.com/italia/publiccode-crawler/v3/common"
 )
 
 var (
