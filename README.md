@@ -26,7 +26,7 @@ from a Docker container with
    > to config.toml file. Remember: "environment variables get higher priority than
    > the ones in configuration file"
 
-2. Build the crawler binary with `make`
+2. Build the binary with `go build`
 
 ### Docker
 

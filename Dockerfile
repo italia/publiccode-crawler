@@ -2,7 +2,7 @@ FROM golang:1.18 as build
 
 WORKDIR /src
 COPY . .
-RUN CGO_ENABLED=0 go build -a -installsuffix cgo -ldflags "-X github.com/italia/developers-italia-backend/crawler/version.VERSION=$(shell git describe --abbrev=0 --tags)"
+RUN go build -ldflags "-s -w -X 'github.com/italia/developers-italia-backend/internal.VERSION=$(git describe --abbrev=0 --tags)' -X 'github.com/italia/developers-italia-backend/internal.BuildTime=$(date)'"
 
 FROM alpine:3
 
