@@ -9,50 +9,19 @@ ehthumbs.db
 Icon?
 Thumbs.db
 
-# Logs and database
-log/
-*.log
-*.sql
-*.sqlite
-
 # Golang vendor folder
 vendor
 
 # Compiled binaries
 bin/*
-
-# Elasticsearch data volume
-es_data
-
-# Elasticsearch keystore and certificates
-**/.keystore
-**/.p12
-
-# Local Search Guard sg_internal_users
-elasticsearch/config/searchguard/sg_internal_users.yml
+publiccode-crawler
 
 # Env
 .env
 
 # Configurations
 config.toml
-domains.yml
-# GoReleaser workaround
-config.toml
 
 # Downloaded files
 cache
 data
-
-# Elasticsearch scripts
-elasticsearch/scripts/config.sh
-elasticsearch/php/config.inc
-
-# Elasticsearch test query web application
-elasticsearch/html/assets/utils/node_modules
-
-# Elasticsearch js tests
-elasticsearch/html/assets/js/config.js
-
-# Bash history
-**/.bash_history
