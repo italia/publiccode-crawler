@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - main
+      - legacy
   pull_request:
 
 name: ci
@@ -36,7 +36,7 @@ jobs:
         run: |
           IMAGE=italia/developers-italia-backend
 
-          TAGS=${IMAGE}:latest
+          TAGS=${IMAGE}:legacy
           TAGS="$TAGS,${IMAGE}:${GITHUB_SHA::8}"
 
           echo ::set-output name=tags::${TAGS}
