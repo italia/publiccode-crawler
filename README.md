@@ -15,8 +15,7 @@ repositories of publishers found in the [Developers Italia API](https://github.c
 ## Setup and deployment processes
 
 The crawler can either run manually on the target machine or it can be deployed
-from a Docker container with
-[its helm-chart](https://github.com/teamdigitale/devita-infra-kubernetes) in Kubernetes.
+from a Docker container.
 
 ### Manually configure and build the crawler
 
