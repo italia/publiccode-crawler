@@ -57,10 +57,21 @@ func NewCrawler(dryRun bool) *Crawler {
 
 	// Register Prometheus metrics.
 	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", c.Index)
-	metrics.RegisterPrometheusCounter("repository_file_saved", "Number of file saved.", c.Index)
-	metrics.RegisterPrometheusCounter("repository_file_indexed", "Number of file indexed.", c.Index)
+	metrics.RegisterPrometheusCounter(
+		"repository_good_publiccodeyml", "Number of valid publiccode.yml files in the processed repos.",
+		c.Index,
+	)
+	metrics.RegisterPrometheusCounter(
+		"repository_bad_publiccodeyml", "Number of invalid publiccode.yml files in the processed repos.",
+		c.Index,
+	)
 	metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", c.Index)
-	//metrics.RegisterPrometheusCounter("repository_file_saved_valid", "Number of valid file saved.", c.Index)
+	metrics.RegisterPrometheusCounter("repository_new", "Number of new repositories", c.Index)
+	metrics.RegisterPrometheusCounter("repository_known", "Number of already known repositories", c.Index)
+	metrics.RegisterPrometheusCounter(
+		"repository_upsert_failures", "Number of failures in creating or updating software in the API",
+		c.Index,
+	)
 
 	c.gitHubScanner = scanner.NewGitHubScanner()
 	c.gitLabScanner = scanner.NewGitLabScanner()
@@ -149,6 +160,17 @@ func (c *Crawler) crawl() error {
 	}
 	close(reposChan)
 	c.repositoriesWg.Wait()
+
+	log.Infof(
+		"Summary: Total repos scanned: %v. With good publiccode.yml file: %v. With bad publiccode.yml file: %v\n"+
+		"Repos with good publiccode.yml file: New repos: %v, Known repos: %v, Failures saving to API: %v",
+		metrics.GetCounterValue("repository_processed", c.Index),
+		metrics.GetCounterValue("repository_good_publiccodeyml", c.Index),
+		metrics.GetCounterValue("repository_bad_publiccodeyml", c.Index),
+		metrics.GetCounterValue("repository_new", c.Index),
+		metrics.GetCounterValue("repository_known", c.Index),
+		metrics.GetCounterValue("repository_upsert_failures", c.Index),
+	)
 
 	return nil
 }
@@ -286,6 +308,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 	parser, err = publiccode.NewParser(repository.FileRawURL)
 	if err != nil {
 		logEntries = append(logEntries,fmt.Sprintf("[%s] BAD publiccode.yml: %s\n", repository.Name, err.Error()))
+		metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
 
 		return
 	}
@@ -311,6 +334,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 
 		if !valid {
 			logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
+			metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
 
 			return
 		}
@@ -323,36 +347,17 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		err = validateFile(repository.Publisher, *parser, repository.FileRawURL)
 		if err != nil {
 			logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
+			metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
 
 			return
 		}
 	}
 
 	logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
+	metrics.GetCounter("repository_good_publiccodeyml", c.Index).Inc()
 
 	if c.DryRun {
 		log.Infof("[%s]: Skipping other steps (--dry-run)", repository.Name)
-		return
-	}
-
-	if !viper.GetBool("SKIP_VITALITY") {
-		// Clone repository.
-		err = git.CloneRepository(repository.URL.Host, repository.Name, parser.PublicCode.URL.String(), c.Index)
-		if err != nil {
-			logEntries = append(logEntries, fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err))
-		}
-
-		// Calculate Repository activity index and vitality. Defaults to 60 days.
-		var activityDays int = 60
-		if viper.IsSet("ACTIVITY_DAYS") {
-			activityDays = viper.GetInt("ACTIVITY_DAYS")
-		}
-		activityIndex, _, err := git.CalculateRepoActivity(repository, activityDays)
-		if err != nil {
-			logEntries = append(logEntries, fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err))
-		} else {
-			logEntries = append(logEntries, fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex))
-		}
 	}
 
 	var aliases []string
@@ -373,7 +378,10 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 	}
 
 	if software == nil {
-		_, err = c.apiClient.PostSoftware(url, aliases, string(publiccodeYml))
+		metrics.GetCounter("repository_new", c.Index).Inc()
+		if !c.DryRun {
+			_, err = c.apiClient.PostSoftware(url, aliases, string(publiccodeYml))
+		}
 	} else {
 		for _, alias := range software.Aliases {
 			if !slices.Contains(aliases, alias) {
@@ -381,11 +389,36 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 			}
 		}
 
-		_, err = c.apiClient.PatchSoftware(software.ID, url, aliases, string(publiccodeYml))
+		metrics.GetCounter("repository_known", c.Index).Inc()
+		if !c.DryRun {
+			_, err = c.apiClient.PatchSoftware(software.ID, url, aliases, string(publiccodeYml))
+		}
 	}
 	if err != nil {
 		logEntries = append(logEntries, fmt.Sprintf("[%s]: %s", repository.Name, err.Error()))
+		metrics.GetCounter("repository_upsert_failures", c.Index).Inc()
 	}
+
+	if !viper.GetBool("SKIP_VITALITY") && !c.DryRun {
+		// Clone repository.
+		err = git.CloneRepository(repository.URL.Host, repository.Name, parser.PublicCode.URL.String(), c.Index)
+		if err != nil {
+			logEntries = append(logEntries, fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err))
+		}
+
+		// Calculate Repository activity index and vitality. Defaults to 60 days.
+		var activityDays int = 60
+		if viper.IsSet("ACTIVITY_DAYS") {
+			activityDays = viper.GetInt("ACTIVITY_DAYS")
+		}
+		activityIndex, _, err := git.CalculateRepoActivity(repository, activityDays)
+		if err != nil {
+			logEntries = append(logEntries, fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err))
+		} else {
+			logEntries = append(logEntries, fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex))
+		}
+	}
+
 }
 
 // validateFile checks if it.riuso.codiceIPA in the publiccode.yml matches with the
