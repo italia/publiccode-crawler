@@ -20,5 +20,13 @@ API_BASEURL = "https://api.developers.italia.it/v1"
 # See https://github.com/italia/developers-italia-api for details.
 API_BEARER_TOKEN = "v2.local.xxxx"
 
+# ID of the Main Publisher in the API.
+# Main Publisher's repositories can hold publiccode.yml files describing
+# arbitrary repos and not just the repos there in.
+#
+# This can be used to add upstream repos with no publiccode.yml file
+# (eg. metarepos for other entities), or to override other Publishers.
+# MAIN_PUBLISHER_ID = ""
+
 # The GitHub token used to authenticate to the GitHub API.
 GITHUB_TOKEN = ""

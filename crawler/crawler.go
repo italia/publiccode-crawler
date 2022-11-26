@@ -340,10 +340,8 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		}
 	}
 
-	// HACK: Publishers named "_"" are special and get to skip the additional checks.
-	// This can be used to add repositories and organizations, under the crawler's admins control,
-	// that describe arbitrary repos (eg. metarepos for other entities)
-	if repository.Publisher.Name != "_" {
+	publisherID := viper.GetString("MAIN_PUBLISHER_ID")
+	if publisherID != "" && repository.Publisher.Id == publisherID {
 		err = validateFile(repository.Publisher, *parser, repository.FileRawURL)
 		if err != nil {
 			logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
