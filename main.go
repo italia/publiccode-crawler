@@ -20,6 +20,7 @@ func main() {
 	viper.AutomaticEnv()
 
 	viper.SetDefault("API_BASEURL", "https://api.developers.italia.it/v1/")
+	viper.SetDefault("MAIN_PUBLISHER_ID", "")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, fileNotFound := err.(viper.ConfigFileNotFoundError); !fileNotFound {
