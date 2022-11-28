@@ -154,3 +154,8 @@
 - name: "GreenPass Turnstile"
   repos:
     - "https://github.com/zorbaproject/greenpass-turnstile"
+    
+- name: "WSO2"
+  repos:
+    - "https://github.com/profesiait/wso2apim"
+    - "https://github.com/profesiait/wso2is"
