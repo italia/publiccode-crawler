@@ -62,7 +62,21 @@ Retry:
 			time.Sleep(time.Until(resp.Rate.Reset.Time))
 			goto Retry
 		} else if err != nil {
-			return fmt.Errorf("can't list repositories in %s (not an GitHub organization?): %w", url.String(), err)
+			// Try to list repos by user, for backwards compatibility.
+			log.Warnf(
+				"can't list repositories in %s (not an GitHub organization?): %s",
+				url.String(), err.Error(),
+			)
+
+			repos, resp, err = scanner.client.Repositories.List(scanner.ctx, orgName, nil)
+			if err != nil {
+				return fmt.Errorf("can't list repositories in %s (not an GitHub organization?): %w", url.String(), err)
+			}
+
+			log.Warnf(
+				"%s is not a GitHub organization, listing repos as GitHub user. This will be removed in the future",
+				url.String(),
+			)
 		}
 
 		// Add repositories to the channel that will perform the check on everyone.
