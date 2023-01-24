@@ -136,6 +136,11 @@ Retry:
 
 		return fmt.Errorf("[%s]: failed to get publiccode.yml: %w", *repo.FullName, err)
 	}
+
+	if file.DownloadURL == nil {
+		return fmt.Errorf("[%s]: failed to get publiccode.yml: not a regular file?", *repo.FullName)
+	}
+
 	if file != nil {
 		canonicalURL, err := url.Parse(*repo.CloneURL)
 		if err != nil {
