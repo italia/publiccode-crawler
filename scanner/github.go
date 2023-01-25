@@ -128,6 +128,11 @@ Retry:
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
 		goto Retry
 	}
+	if _, ok := err.(*github.AbuseRateLimitError); ok {
+		log.Infof("GitHub secondary rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
+		time.Sleep(time.Until(resp.Rate.Reset.Time))
+		goto Retry
+	}
 	if err != nil {
 		return fmt.Errorf("can't get repo %s: %w", url.String(), err)
 	}
