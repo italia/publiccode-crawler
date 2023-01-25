@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/url"
 	"os"
 	"strings"
@@ -61,7 +62,12 @@ Retry:
 			log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 			time.Sleep(time.Until(resp.Rate.Reset.Time))
 			goto Retry
-		} else if err != nil {
+		}
+		if limitErr, ok := err.(*github.AbuseRateLimitError); ok {
+			secondaryRateLimit(limitErr)
+			goto Retry
+		}
+		if err != nil {
 			// Try to list repos by user, for backwards compatibility.
 			log.Warnf(
 				"can't list repositories in %s (not an GitHub organization?): %s",
@@ -128,9 +134,8 @@ Retry:
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
 		goto Retry
 	}
-	if _, ok := err.(*github.AbuseRateLimitError); ok {
-		log.Infof("GitHub secondary rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
-		time.Sleep(time.Until(resp.Rate.Reset.Time))
+	if limitErr, ok := err.(*github.AbuseRateLimitError); ok {
+		secondaryRateLimit(limitErr)
 		goto Retry
 	}
 	if err != nil {
@@ -145,6 +150,10 @@ Retry:
 	if _, ok := err.(*github.RateLimitError); ok {
 		log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
+		goto Retry
+	}
+	if limitErr, ok := err.(*github.AbuseRateLimitError); ok {
+		secondaryRateLimit(limitErr)
 		goto Retry
 	}
 
@@ -178,4 +187,16 @@ Retry:
 	}
 
 	return nil
+}
+
+func secondaryRateLimit(err *github.AbuseRateLimitError) {
+	var duration time.Duration
+	if err.RetryAfter != nil {
+		duration = *err.RetryAfter
+	} else {
+		duration = time.Duration(rand.Intn(100)) * time.Second
+	}
+
+	log.Infof("GitHub secondary rate limit hit, for %s", duration)
+	time.Sleep(duration)
 }
