@@ -341,7 +341,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 	}
 
 	publisherID := viper.GetString("MAIN_PUBLISHER_ID")
-	if publisherID != "" && repository.Publisher.Id == publisherID {
+	if repository.Publisher.Id != publisherID {
 		err = validateFile(repository.Publisher, *parser, repository.FileRawURL)
 		if err != nil {
 			logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
@@ -419,8 +419,8 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 
 }
 
-// validateFile checks if it.riuso.codiceIPA in the publiccode.yml matches with the
-// Publisher's Id
+// validateFile performs additional validations that are not strictly mandated
+// by the publiccode.yml Standard.
 // Using `one` command this check will be skipped.
 func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawURL string) error {
 	u, _ := url.Parse(fileRawURL)
