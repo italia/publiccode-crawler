@@ -277,13 +277,16 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 
 	software, err := c.apiClient.GetSoftwareByURL(repository.URL.String())
 	if err != nil {
-		logEntries = append(logEntries, "[%s] failed to GET software from API: %s\n", repository.Name, err.Error())
+		logEntries = append(logEntries, fmt.Sprintf("[%s] failed to GET software from API: %s\n", repository.Name, err.Error()))
 
 		return
 	}
 
 	if software != nil && !software.Active {
-		logEntries = append(logEntries, "[%s] software has active = false, skipping update")
+		logEntries = append(
+			logEntries,
+			fmt.Sprintf("[%s] software %s has active = false, skipping update", repository.Name, software.ID),
+		)
 
 		return
 	}
