@@ -5,17 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"time"
 
-	"golang.org/x/oauth2"
-
 	"github.com/google/go-github/v43/github"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/italia/publiccode-crawler/v3/common"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 )
 
 type GitHubScanner struct {
@@ -158,7 +157,7 @@ Retry:
 	}
 
 	if err != nil {
-		if resp.StatusCode == 404 {
+		if resp.StatusCode == http.StatusNotFound {
 			return ErrPubliccodeNotFound
 		}
 

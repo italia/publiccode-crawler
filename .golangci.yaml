@@ -88,7 +88,7 @@ linters:
     # - forbidigo
     # - forcetypeassert
     # - funlen
-    # - gci
+    - gci
     - ginkgolinter
     - gocheckcompilerdirectives
     # - gochecknoglobals
@@ -103,7 +103,7 @@ linters:
     - gofmt
     - gofumpt
     - goheader
-    # - goimports
+    - goimports
     # - gomnd
     - gomoddirectives
     - gomodguard
@@ -125,7 +125,7 @@ linters:
     # - nilnil
     # - nlreturn
     # - noctx
-    # - nolintlint
+    - nolintlint
     # - nonamedreturns
     - nosprintfhostport
     - paralleltest
@@ -143,12 +143,12 @@ linters:
     - testpackage
     - thelper
     - tparallel
-    # - unconvert
+    - unconvert
     # - unparam
-    # - usestdlibvars
+    - usestdlibvars
     # - varnamelen
     - wastedassign
-    # - whitespace
+    - whitespace
     # - wrapcheck
     # - wsl
 

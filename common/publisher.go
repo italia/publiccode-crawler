@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	"gopkg.in/yaml.v2"
-
 	url "github.com/italia/publiccode-crawler/v3/internal"
+	"gopkg.in/yaml.v2"
 )
 
 var fileReaderInject = ioutil.ReadFile

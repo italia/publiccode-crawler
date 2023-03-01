@@ -425,7 +425,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 // Using `one` command this check will be skipped.
 func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawURL string) error {
 	u, _ := url.Parse(fileRawURL)
-	repo1 := vcsurl.GetRepo((*url.URL)(u))
+	repo1 := vcsurl.GetRepo(u)
 
 	repo2 := vcsurl.GetRepo((*url.URL)(parser.PublicCode.URL))
 
