@@ -97,8 +97,8 @@ linters:
     - goconst
     # - gocritic
     # - gocyclo
-    # - godot
-    # - godox
+    - godot
+    - godox
     # - goerr113
     - gofmt
     - gofumpt
@@ -123,10 +123,10 @@ linters:
     # - nestif
     - nilerr
     # - nilnil
-    # - nlreturn
+    - nlreturn
     # - noctx
     - nolintlint
-    # - nonamedreturns
+    - nonamedreturns
     - nosprintfhostport
     - paralleltest
     # - prealloc

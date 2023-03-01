@@ -40,6 +40,7 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.P
 	for _, r := range res.Items {
 		if r.Is_private {
 			log.Warnf("Skipping %s: repo is private", r.Full_name)
+
 			continue
 		}
 
@@ -52,6 +53,7 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.P
 		res, err := scanner.client.Repositories.Repository.GetFileContent(opt)
 		if err != nil {
 			log.Infof("[%s]: no publiccode.yml: %s", r.Full_name, err.Error())
+
 			continue
 		}
 		if res != nil {

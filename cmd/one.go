@@ -39,8 +39,10 @@ var oneCmd = &cobra.Command{
 	},
 }
 
-func getPublisher(repoURL url.URL, paths []string) (p common.Publisher) {
+func getPublisher(repoURL url.URL, paths []string) common.Publisher {
 	var publishers []common.Publisher
+	var p common.Publisher
+
 	for _, path := range paths {
 		p, err := common.LoadPublishers(path)
 		if err != nil {
@@ -55,6 +57,7 @@ func getPublisher(repoURL url.URL, paths []string) (p common.Publisher) {
 			log.Tracef("matching %s with %s", repo.String(), repoURL.String())
 			if (url.URL)(repo) == repoURL {
 				log.Debugf("Publisher found %+v", publisher)
+
 				return publisher
 			}
 		}
@@ -63,6 +66,7 @@ func getPublisher(repoURL url.URL, paths []string) (p common.Publisher) {
 			log.Tracef("matching %s.* with %s", repo.String(), repoURL.String())
 			if matched, _ := regexp.MatchString(repo.String()+".*", repoURL.String()); matched {
 				log.Debugf("Publisher found %+v", publisher)
+
 				return publisher
 			}
 		}

@@ -16,7 +16,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// RangesData contains the data loaded from vitality-ranges.yml
+// RangesData contains the data loaded from vitality-ranges.yml.
 type RangesData []Ranges
 
 // Ranges are the ranges for a specific parameter (userCommunity, codeActivity, releaseHistory, longevity).
@@ -34,7 +34,7 @@ type Range struct {
 
 // CalculateRepoActivity return the repository activity index and the vitality slice calculated on the git clone.
 // It follows the document https://lg-acquisizione-e-riuso-software-per-la-pa.readthedocs.io/
-// In reference to section: 2.5.2. Fase 2.2: Valutazione soluzioni riusabili per la PA
+// In reference to section: 2.5.2. Fase 2.2: Valutazione soluzioni riusabili per la PA.
 func CalculateRepoActivity(repository common.Repository, days int) (float64, map[int]float64, error) {
 	if repository.Name == "" {
 		return 0, nil, errors.New("cannot  calculate repository activity without name")
@@ -62,6 +62,7 @@ func CalculateRepoActivity(repository common.Repository, days int) (float64, map
 	r, err := git.PlainOpen(path)
 	if err != nil {
 		log.Error(err)
+
 		return 0, nil, err
 	}
 
@@ -112,6 +113,7 @@ func CalculateRepoActivity(repository common.Repository, days int) (float64, map
 	if vitalityIndexTotal > 100 {
 		vitalityIndexTotal = float64(100)
 	}
+
 	return float64(int(vitalityIndexTotal)), vitalityIndex, nil
 }
 
@@ -123,6 +125,7 @@ func userCommunityLastDays(commits []*object.Commit) float64 {
 	for _, c := range commits {
 		totalAuthors[c.Author.Email]++
 	}
+
 	return float64(len(totalAuthors))
 }
 
@@ -157,6 +160,7 @@ func extractAllTagsCommit(r *git.Repository) ([]*object.Commit, error) {
 			tagObject, _ := r.CommitObject(t.Hash())
 			allTags = append(allTags, tagObject)
 		}
+
 		return nil
 	})
 	if err != nil {
@@ -173,34 +177,39 @@ func extractAllCommits(r *git.Repository) ([]*object.Commit, error) {
 	ref, err := r.Head()
 	if err != nil {
 		log.Error(err)
+
 		return nil, err
 	}
 	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
 	if err != nil {
 		log.Error(err)
+
 		return nil, err
 	}
 
 	err = cIter.ForEach(func(c *object.Commit) error {
 		commits = append(commits, c)
+
 		return nil
 	})
 	if err != nil {
 		log.Error(err)
 	}
+
 	return commits, nil
 }
 
-// calculateLongevityIndex cal
 func calculateLongevityIndex(r *git.Repository) (float64, error) {
 	ref, err := r.Head()
 	if err != nil {
 		log.Error(err)
+
 		return 0, err
 	}
 	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
 	if err != nil {
 		log.Error(err)
+
 		return 0, err
 	}
 	creationDate, err := extractOldestCommitDate(cIter)
@@ -228,11 +237,13 @@ func extractOldestCommitDate(cIter object.CommitIter) (time.Time, error) {
 		if c.Author.When.Before(result) {
 			result = c.Author.When
 		}
+
 		return nil
 	})
 	if err != nil {
 		log.Error(err)
 	}
+
 	return result, nil
 }
 
@@ -276,6 +287,7 @@ func extractCommitsLastDays(days int, commits []*object.Commit) map[int][]*objec
 			}
 		}
 	}
+
 	return commitsLastDays
 }
 
@@ -292,6 +304,7 @@ func extractCommitsPerDay(days int, commits []*object.Commit) map[int][]*object.
 			}
 		}
 	}
+
 	return commitsPerDay
 }
 
