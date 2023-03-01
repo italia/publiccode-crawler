@@ -257,7 +257,6 @@ func ranges(name string, value float64) float64 {
 					return r.Points
 				}
 			}
-
 		}
 	}
 

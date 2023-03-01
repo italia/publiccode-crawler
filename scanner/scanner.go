@@ -7,9 +7,7 @@ import (
 	"github.com/italia/publiccode-crawler/v3/common"
 )
 
-var (
-	ErrPubliccodeNotFound = errors.New("publiccode.yml not found")
-)
+var ErrPubliccodeNotFound = errors.New("publiccode.yml not found")
 
 type Scanner interface {
 	ScanRepo(url url.URL, publisher common.Publisher, repositories chan common.Repository) error

@@ -12,12 +12,12 @@ import (
 	"sync"
 
 	"github.com/alranel/go-vcsurl/v2"
+	httpclient "github.com/italia/httpclient-lib-go"
 	"github.com/italia/publiccode-crawler/v3/apiclient"
 	"github.com/italia/publiccode-crawler/v3/common"
 	"github.com/italia/publiccode-crawler/v3/git"
 	"github.com/italia/publiccode-crawler/v3/metrics"
 	"github.com/italia/publiccode-crawler/v3/scanner"
-	httpclient "github.com/italia/httpclient-lib-go"
 	publiccode "github.com/italia/publiccode-parser-go/v3"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -28,8 +28,8 @@ import (
 type Crawler struct {
 	DryRun bool
 
-	Index          string
-	repositories   chan common.Repository
+	Index        string
+	repositories chan common.Repository
 	// Sync mutex guard.
 	publishersWg   sync.WaitGroup
 	repositoriesWg sync.WaitGroup
@@ -38,7 +38,7 @@ type Crawler struct {
 	gitLabScanner    scanner.Scanner
 	bitBucketScanner scanner.Scanner
 
-	apiClient        apiclient.ApiClient
+	apiClient apiclient.ApiClient
 }
 
 // NewCrawler initializes a new Crawler object and connects to Elasticsearch (if dryRun == false).
@@ -48,7 +48,7 @@ func NewCrawler(dryRun bool) *Crawler {
 	c.DryRun = dryRun
 
 	datadir := viper.GetString("CRAWLER_DATADIR")
-	if err := os.MkdirAll(datadir, 0744); err != nil {
+	if err := os.MkdirAll(datadir, 0o744); err != nil {
 		log.Fatalf("can't create data directory (%s): %s", datadir, err.Error())
 	}
 
@@ -163,7 +163,7 @@ func (c *Crawler) crawl() error {
 
 	log.Infof(
 		"Summary: Total repos scanned: %v. With good publiccode.yml file: %v. With bad publiccode.yml file: %v\n"+
-		"Repos with good publiccode.yml file: New repos: %v, Known repos: %v, Failures saving to API: %v",
+			"Repos with good publiccode.yml file: New repos: %v, Known repos: %v, Failures saving to API: %v",
 		metrics.GetCounterValue("repository_processed", c.Index),
 		metrics.GetCounterValue("repository_good_publiccodeyml", c.Index),
 		metrics.GetCounterValue("repository_bad_publiccodeyml", c.Index),
@@ -192,7 +192,7 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 		} else if vcsurl.IsGitLab(&orgURL) {
 			err = c.gitLabScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
 		} else {
-				err = fmt.Errorf(
+			err = fmt.Errorf(
 				"publisher %s: unsupported code hosting platform for %s",
 				publisher.Name,
 				u.String(),
@@ -243,7 +243,6 @@ func (c *Crawler) ProcessRepositories(repos chan common.Repository) {
 		c.ProcessRepo(repository)
 	}
 }
-
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
 func (c *Crawler) ProcessRepo(repository common.Repository) {
@@ -302,15 +301,15 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		logEntries,
 		fmt.Sprintf(
 			"[%s] publiccode.yml found at %s\n",
-				repository.CanonicalURL.String(),
-				repository.FileRawURL,
+			repository.CanonicalURL.String(),
+			repository.FileRawURL,
 		),
 	)
 
 	var parser *publiccode.Parser
 	parser, err = publiccode.NewParser(repository.FileRawURL)
 	if err != nil {
-		logEntries = append(logEntries,fmt.Sprintf("[%s] BAD publiccode.yml: %s\n", repository.Name, err.Error()))
+		logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %s\n", repository.Name, err.Error()))
 		metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
 
 		return
@@ -318,13 +317,13 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 
 	// FIXME: this is hardcoded for now, because it requires changes to publiccode-parser-go.
 	domain := publiccode.Domain{
-		Host: "github.com",
+		Host:        "github.com",
 		UseTokenFor: []string{"github.com", "api.github.com", "raw.githubusercontent.com"},
-		BasicAuth: []string{os.Getenv("GITHUB_TOKEN")},
+		BasicAuth:   []string{os.Getenv("GITHUB_TOKEN")},
 	}
 
 	err = parser.ParseInDomain(resp.Body, domain.Host, domain.UseTokenFor, domain.BasicAuth)
-    if err != nil {
+	if err != nil {
 		valid := true
 	out:
 		for _, res := range err.(publiccode.ValidationResults) {
@@ -419,7 +418,6 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 			logEntries = append(logEntries, fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex))
 		}
 	}
-
 }
 
 // validateFile performs additional validations that are not strictly mandated

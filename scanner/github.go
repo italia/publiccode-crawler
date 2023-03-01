@@ -56,7 +56,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 	orgName := splitted[0]
 
 	for {
-Retry:
+	Retry:
 		repos, resp, err := scanner.client.Repositories.ListByOrg(scanner.ctx, orgName, opt)
 		if _, ok := err.(*github.RateLimitError); ok {
 			log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())

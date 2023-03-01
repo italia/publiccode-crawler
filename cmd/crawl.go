@@ -17,10 +17,10 @@ func init() {
 var crawlCmd = &cobra.Command{
 	Use:   "crawl publishers.yml [directory/*.yml ...]",
 	Short: "Crawl publiccode.yml files in publishers' repos.",
-	Long:  `Crawl publiccode.yml files in publishers' repos.
+	Long: `Crawl publiccode.yml files in publishers' repos.
 				When run with no arguments, the publishers are fetched from the API,
 				otherwise the passed YAML files are used.`,
-	Args:  cobra.MinimumNArgs(0),
+	Args: cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := crawler.NewCrawler(dryRun)
 

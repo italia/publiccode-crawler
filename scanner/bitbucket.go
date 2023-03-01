@@ -33,7 +33,6 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.P
 	}
 
 	res, err := scanner.client.Repositories.ListForAccount(opt)
-
 	if err != nil {
 		return fmt.Errorf("Can't list repositories in %s: %w", url.String(), err)
 	}
@@ -44,14 +43,14 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.P
 			continue
 		}
 
-		opt := &bitbucket.RepositoryFilesOptions {
-			Owner: owner,
+		opt := &bitbucket.RepositoryFilesOptions{
+			Owner:    owner,
 			RepoSlug: r.Slug,
-			Ref: r.Mainbranch.Name,
-			Path: "publiccode.yml",
+			Ref:      r.Mainbranch.Name,
+			Path:     "publiccode.yml",
 		}
 		res, err := scanner.client.Repositories.Repository.GetFileContent(opt)
-		if (err != nil) {
+		if err != nil {
 			log.Infof("[%s]: no publiccode.yml: %s", r.Full_name, err.Error())
 			continue
 		}
@@ -63,7 +62,7 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.P
 
 			repositories <- common.Repository{
 				Name:         r.Full_name,
-				FileRawURL:   fmt.Sprintf("https://bitbucket.org/%s/%s/raw/%s/publiccode.yml", owner,r.Slug, r.Mainbranch.Name),
+				FileRawURL:   fmt.Sprintf("https://bitbucket.org/%s/%s/raw/%s/publiccode.yml", owner, r.Slug, r.Mainbranch.Name),
 				URL:          *u,
 				CanonicalURL: *u,
 				GitBranch:    r.Mainbranch.Name,
@@ -86,22 +85,22 @@ func (scanner BitBucketScanner) ScanRepo(url url.URL, publisher common.Publisher
 	slug := splitted[1]
 
 	opt := &bitbucket.RepositoryOptions{
-		Owner: owner,
+		Owner:    owner,
 		RepoSlug: slug,
 	}
 
-	repo , err := scanner.client.Repositories.Repository.Get(opt)
+	repo, err := scanner.client.Repositories.Repository.Get(opt)
 	if err != nil {
 		return err
 	}
 
-	filesOpt := &bitbucket.RepositoryFilesOptions {
-		Owner: owner,
+	filesOpt := &bitbucket.RepositoryFilesOptions{
+		Owner:    owner,
 		RepoSlug: slug,
-		Path: "publiccode.yml",
+		Path:     "publiccode.yml",
 	}
 	res, err := scanner.client.Repositories.Repository.GetFileContent(filesOpt)
-	if (err != nil) {
+	if err != nil {
 		return err
 	}
 	if res != nil {

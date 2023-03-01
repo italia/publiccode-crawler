@@ -90,4 +90,5 @@ var downloadPublishersCmd = &cobra.Command{
 		if _, err = f.Write(data); err != nil {
 			log.Fatal(err)
 		}
-	}}
+	},
+}
