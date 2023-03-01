@@ -135,6 +135,8 @@ page:
 		return nil, fmt.Errorf("can't get publishers %s: %w", reqUrl, err)
 	}
 
+	defer res.Body.Close()
+
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		return nil, fmt.Errorf("can't get publishers %s: HTTP status %s", reqUrl, res.Status)
 	}
@@ -199,6 +201,8 @@ func (c ApiClient) GetSoftwareByURL(url string) (*Software, error) {
 	if err != nil {
 		return nil, fmt.Errorf("can't GET /software?url=%s: %w", url, err)
 	}
+
+	defer res.Body.Close()
 
 	err = json.NewDecoder(res.Body).Decode(&softwareResponse)
 	if err != nil {
