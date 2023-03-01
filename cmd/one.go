@@ -39,8 +39,10 @@ var oneCmd = &cobra.Command{
 	},
 }
 
-func getPublisher(repoURL url.URL, paths []string) (p common.Publisher) {
+func getPublisher(repoURL url.URL, paths []string) common.Publisher {
 	var publishers []common.Publisher
+	var p common.Publisher
+
 	for _, path := range paths {
 		p, err := common.LoadPublishers(path)
 		if err != nil {

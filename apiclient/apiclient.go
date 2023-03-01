@@ -76,7 +76,7 @@ func NewClient() ApiClient {
 	}
 }
 
-func (clt ApiClient) Get(url string) (resp *http.Response, err error) {
+func (clt ApiClient) Get(url string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (clt ApiClient) Get(url string) (resp *http.Response, err error) {
 	return clt.retryableClient.Do(req)
 }
 
-func (clt ApiClient) Post(url string, body []byte) (resp *http.Response, err error) {
+func (clt ApiClient) Post(url string, body []byte) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(
 		context.Background(),
 		http.MethodPost,
@@ -102,7 +102,7 @@ func (clt ApiClient) Post(url string, body []byte) (resp *http.Response, err err
 	return clt.retryableClient.Do(req)
 }
 
-func (clt ApiClient) Patch(url string, body []byte) (resp *http.Response, err error) {
+func (clt ApiClient) Patch(url string, body []byte) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(
 		context.Background(),
 		http.MethodPatch,
