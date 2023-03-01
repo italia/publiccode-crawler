@@ -148,7 +148,7 @@ linters:
     - usestdlibvars
     # - varnamelen
     - wastedassign
-    # - whitespace
+    - whitespace
     # - wrapcheck
     # - wsl
 

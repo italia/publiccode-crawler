@@ -149,7 +149,6 @@ page:
 		var groups, repos []internalUrl.URL
 
 		for _, codeHosting := range p.CodeHostings {
-
 			u, err := url.Parse(codeHosting.URL)
 			if err != nil {
 				return nil, fmt.Errorf("can't parse GET %s response: %w", reqUrl, err)
