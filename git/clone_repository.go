@@ -30,6 +30,7 @@ func CloneRepository(hostname, name, gitURL, index string) error {
 		if err != nil {
 			return fmt.Errorf("cannot git pull the repository: %s: %s", err.Error(), out)
 		}
+
 		return nil
 	}
 
@@ -39,5 +40,6 @@ func CloneRepository(hostname, name, gitURL, index string) error {
 	}
 
 	metrics.GetCounter("repository_cloned", index).Inc()
+
 	return err
 }

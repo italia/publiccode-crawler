@@ -63,6 +63,7 @@ var downloadPublishersCmd = &cobra.Command{
 					u, _ := url.Parse(i.URL)
 					// If this Id is already known, append this URL to the existing item
 					publishers[idx].Organizations = append(publisher.Organizations, (ymlurl.URL)(*u))
+
 					continue REPOLIST
 				}
 			}

@@ -106,6 +106,7 @@ func (c *Crawler) CrawlRepo(repoURL url.URL, publisher common.Publisher) error {
 	}
 
 	close(c.repositories)
+
 	return c.crawl()
 }
 
@@ -331,6 +332,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 			switch res.(type) {
 			case publiccode.ValidationError:
 				valid = false
+
 				break out
 			}
 		}

@@ -60,10 +60,12 @@ func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 		if _, ok := err.(*github.RateLimitError); ok {
 			log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 			time.Sleep(time.Until(resp.Rate.Reset.Time))
+
 			goto Retry
 		}
 		if limitErr, ok := err.(*github.AbuseRateLimitError); ok {
 			secondaryRateLimit(limitErr)
+
 			goto Retry
 		}
 		if err != nil {
@@ -89,6 +91,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 			repoURL, err := url.Parse(*r.HTMLURL)
 			if err != nil {
 				log.Errorf("can't parse URL %s: %s", *r.URL, err.Error())
+
 				continue
 			}
 
@@ -131,10 +134,12 @@ Retry:
 	if _, ok := err.(*github.RateLimitError); ok {
 		log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
+
 		goto Retry
 	}
 	if limitErr, ok := err.(*github.AbuseRateLimitError); ok {
 		secondaryRateLimit(limitErr)
+
 		goto Retry
 	}
 	if err != nil {
@@ -149,10 +154,12 @@ Retry:
 	if _, ok := err.(*github.RateLimitError); ok {
 		log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
+
 		goto Retry
 	}
 	if limitErr, ok := err.(*github.AbuseRateLimitError); ok {
 		secondaryRateLimit(limitErr)
+
 		goto Retry
 	}
 

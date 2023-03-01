@@ -26,8 +26,10 @@ func (repo *Repository) GenerateID() string {
 	_, err := hash.Write([]byte(repo.URL.String()))
 	if err != nil {
 		log.Errorf("Error generating the repository hash: %+v", err)
+
 		return ""
 	}
+
 	return fmt.Sprintf("%x", hash.Sum(nil))
 }
 
@@ -38,6 +40,7 @@ func (repo *Repository) GenerateSlug() string {
 
 	if repo.Publisher.Id == "" {
 		ID := repo.GenerateID()
+
 		return fmt.Sprintf("%s-%s", vendorAndName, ID[0:6])
 	}
 

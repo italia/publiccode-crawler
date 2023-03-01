@@ -36,6 +36,7 @@ func GetCounterValue(name, namespace string) float64 {
 
 	if err := GetCounter(name, namespace).Write(m); err != nil {
 		log.Error(err)
+
 		return 0
 	}
 
