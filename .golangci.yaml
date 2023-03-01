@@ -100,8 +100,8 @@ linters:
     # - godot
     # - godox
     # - goerr113
-    # - gofmt
-    # - gofumpt
+    - gofmt
+    - gofumpt
     - goheader
     # - goimports
     # - gomnd

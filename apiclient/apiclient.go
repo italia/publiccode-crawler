@@ -18,9 +18,9 @@ import (
 )
 
 type ApiClient struct {
-	baseURL          string
-	retryableClient  *http.Client
-	token            string
+	baseURL         string
+	retryableClient *http.Client
+	token           string
 }
 
 type Links struct {
@@ -29,31 +29,31 @@ type Links struct {
 }
 
 type PublishersPaginated struct {
-	Data []Publisher `json:"data"`
-	Links Links      `json:"links"`
+	Data  []Publisher `json:"data"`
+	Links Links       `json:"links"`
 }
 
 type SoftwarePaginated struct {
-	Data []Software `json:"data"`
+	Data  []Software `json:"data"`
 	Links Links      `json:"links"`
 }
 
 type Publisher struct {
-	ID             string        `json:"id"`
-	AlternativeID  string        `json:"alternativeId"`
-	Email          string        `json:"email"`
-	Description    string        `json:"description"`
-	CodeHostings   []CodeHosting `json:"codeHosting"`
-	Active         bool          `json:"active"`
-	CreatedAt      time.Time     `json:"createdAt"`
-	UpdatedAt      time.Time     `json:"updatedAt"`
+	ID            string        `json:"id"`
+	AlternativeID string        `json:"alternativeId"`
+	Email         string        `json:"email"`
+	Description   string        `json:"description"`
+	CodeHostings  []CodeHosting `json:"codeHosting"`
+	Active        bool          `json:"active"`
+	CreatedAt     time.Time     `json:"createdAt"`
+	UpdatedAt     time.Time     `json:"updatedAt"`
 }
 
 type CodeHosting struct {
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
-	Group       bool      `json:"group"`
-	URL         string    `json:"url"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+	Group     bool      `json:"group"`
+	URL       string    `json:"url"`
 }
 
 type Software struct {
@@ -70,9 +70,9 @@ func NewClient() ApiClient {
 	retryableClient := retryablehttp.NewClient().StandardClient()
 
 	return ApiClient{
-		baseURL: viper.GetString("API_BASEURL"),
+		baseURL:         viper.GetString("API_BASEURL"),
 		retryableClient: retryableClient,
-		token: "Bearer " + viper.GetString("API_BEARER_TOKEN"),
+		token:           "Bearer " + viper.GetString("API_BEARER_TOKEN"),
 	}
 }
 
@@ -175,10 +175,10 @@ page:
 			id = p.ID
 		}
 		publishers = append(publishers, common.Publisher{
-			Id: id,
-			Name: fmt.Sprintf("%s %s", p.Description, p.Email),
+			Id:            id,
+			Name:          fmt.Sprintf("%s %s", p.Description, p.Email),
 			Organizations: groups,
-			Repositories: repos,
+			Repositories:  repos,
 		})
 	}
 
@@ -218,8 +218,8 @@ func (c ApiClient) GetSoftwareByURL(url string) (*Software, error) {
 func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml string) (*http.Response, error) {
 	body, err := json.Marshal(map[string]interface{}{
 		"publiccodeYml": publiccodeYml,
-		"url": url,
-		"aliases": aliases,
+		"url":           url,
+		"aliases":       aliases,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("can't create software: %w", err)
@@ -242,14 +242,14 @@ func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml stri
 func (c ApiClient) PatchSoftware(id string, url string, aliases []string, publiccodeYml string) (*http.Response, error) {
 	body, err := json.Marshal(map[string]interface{}{
 		"publiccodeYml": publiccodeYml,
-		"url": url,
-		"aliases": aliases,
+		"url":           url,
+		"aliases":       aliases,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("can't update software: %w", err)
 	}
 
-	res, err := c.Patch(joinPath(c.baseURL, "/software/" + id), body)
+	res, err := c.Patch(joinPath(c.baseURL, "/software/"+id), body)
 	if err != nil {
 		return res, fmt.Errorf("can't update software: %w", err)
 	}

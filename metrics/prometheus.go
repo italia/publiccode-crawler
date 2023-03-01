@@ -5,8 +5,8 @@ import (
 	"regexp"
 
 	"github.com/prometheus/client_golang/prometheus"
-	dto "github.com/prometheus/client_model/go"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	dto "github.com/prometheus/client_model/go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -32,7 +32,7 @@ func GetCounter(name, namespace string) prometheus.Counter {
 }
 
 func GetCounterValue(name, namespace string) float64 {
-	var m = &dto.Metric{}
+	m := &dto.Metric{}
 
 	if err := GetCounter(name, namespace).Write(m); err != nil {
 		log.Error(err)

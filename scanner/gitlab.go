@@ -12,8 +12,7 @@ import (
 	"github.com/italia/publiccode-crawler/v3/common"
 )
 
-type GitLabScanner struct {
-}
+type GitLabScanner struct{}
 
 func NewGitLabScanner() Scanner {
 	return GitLabScanner{}
@@ -88,9 +87,9 @@ func (scanner GitLabScanner) ScanRepo(url url.URL, publisher common.Publisher, r
 // isGitlabGroup returns true if the API URL points to a group.
 func isGitlabGroup(u url.URL) bool {
 	return (
-		// Always assume it's a group if the projects are hosted on gitlab.com,
-		// because we only want to support groups (ie. not repos belonging to a user)
-		strings.ToLower(u.Hostname()) == "gitlab.com" ||
+	// Always assume it's a group if the projects are hosted on gitlab.com,
+	// because we only want to support groups (ie. not repos belonging to a user)
+	strings.ToLower(u.Hostname()) == "gitlab.com" ||
 		// Assume an on-premise GitLab's URL is a group if the path is not the root
 		// path (/) or empty
 		len(u.Path) > 1)
@@ -163,7 +162,6 @@ func addProject(originalURL *url.URL, project gitlab.Project, publisher common.P
 	if err != nil {
 		return err
 	}
-
 
 	if project.DefaultBranch != "" {
 		canonicalURL, err := url.Parse(project.HTTPURLToRepo)
