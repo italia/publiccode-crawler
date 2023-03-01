@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-// CloneRepository clone the repository into DATADIR/repos/<hostname>/<vendor>/<repo>/gitClone
+// CloneRepository clone the repository into DATADIR/repos/<hostname>/<vendor>/<repo>/gitClone.
 func CloneRepository(hostname, name, gitURL, index string) error {
 	if name == "" {
 		return errors.New("cannot save a file without name")

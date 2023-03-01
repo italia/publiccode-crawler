@@ -106,7 +106,7 @@ func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 }
 
 // addGroupProjects sends all the projects in a GitLab group, including all subgroups, to
-// the repositories channel
+// the repositories channel.
 func addGroupProjects(group gitlab.Group, publisher common.Publisher, repositories chan common.Repository, client *gitlab.Client) error {
 	opts := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{Page: 1},
@@ -154,7 +154,7 @@ func addGroupProjects(group gitlab.Group, publisher common.Publisher, repositori
 	return nil
 }
 
-// addGroupProjects sends the GitLab project the repositories channel
+// addGroupProjects sends the GitLab project the repositories channel.
 func addProject(originalURL *url.URL, project gitlab.Project, publisher common.Publisher, repositories chan common.Repository) error {
 	// Join file raw URL string.
 	rawURL, err := generateGitlabRawURL(project.WebURL, project.DefaultBranch)

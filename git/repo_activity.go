@@ -16,7 +16,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-// RangesData contains the data loaded from vitality-ranges.yml
+// RangesData contains the data loaded from vitality-ranges.yml.
 type RangesData []Ranges
 
 // Ranges are the ranges for a specific parameter (userCommunity, codeActivity, releaseHistory, longevity).
@@ -34,7 +34,7 @@ type Range struct {
 
 // CalculateRepoActivity return the repository activity index and the vitality slice calculated on the git clone.
 // It follows the document https://lg-acquisizione-e-riuso-software-per-la-pa.readthedocs.io/
-// In reference to section: 2.5.2. Fase 2.2: Valutazione soluzioni riusabili per la PA
+// In reference to section: 2.5.2. Fase 2.2: Valutazione soluzioni riusabili per la PA.
 func CalculateRepoActivity(repository common.Repository, days int) (float64, map[int]float64, error) {
 	if repository.Name == "" {
 		return 0, nil, errors.New("cannot  calculate repository activity without name")
@@ -191,7 +191,6 @@ func extractAllCommits(r *git.Repository) ([]*object.Commit, error) {
 	return commits, nil
 }
 
-// calculateLongevityIndex cal
 func calculateLongevityIndex(r *git.Repository) (float64, error) {
 	ref, err := r.Head()
 	if err != nil {
