@@ -315,6 +315,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		return
 	}
 
+	//nolint:godox
 	// FIXME: this is hardcoded for now, because it requires changes to publiccode-parser-go.
 	domain := publiccode.Domain{
 		Host:        "github.com",
@@ -450,6 +451,7 @@ func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawU
 	// is not an Italian Public Administration, since those are registered in
 	// the API with an alternativeId set to their iPA code (Italian PA code).
 	//
+	// //nolint:godox
 	// TODO: This is not ideal and also an Italian-specific check
 	// (https://github.com/italia/publiccode-crawler/issues/298)
 	idIsUUID, _ := regexp.MatchString("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", publisher.Id)
