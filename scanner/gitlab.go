@@ -7,9 +7,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/xanzy/go-gitlab"
-
 	"github.com/italia/publiccode-crawler/v3/common"
+	"github.com/xanzy/go-gitlab"
 )
 
 type GitLabScanner struct{}

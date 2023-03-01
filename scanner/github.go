@@ -10,12 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"golang.org/x/oauth2"
-
 	"github.com/google/go-github/v43/github"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/italia/publiccode-crawler/v3/common"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 )
 
 type GitHubScanner struct {
