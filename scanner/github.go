@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -156,7 +157,7 @@ Retry:
 	}
 
 	if err != nil {
-		if resp.StatusCode == 404 {
+		if resp.StatusCode == http.StatusNotFound {
 			return ErrPubliccodeNotFound
 		}
 

@@ -145,7 +145,7 @@ linters:
     - tparallel
     - unconvert
     # - unparam
-    # - usestdlibvars
+    - usestdlibvars
     # - varnamelen
     - wastedassign
     # - whitespace
