@@ -246,7 +246,7 @@ func (c *Crawler) ProcessRepositories(repos chan common.Repository) {
 }
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
-func (c *Crawler) ProcessRepo(repository common.Repository) {
+func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 	var logEntries []string
 
 	var software *apiclient.Software
@@ -282,10 +282,13 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		return
 	}
 
-	if software != nil && !software.Active {
+	if software != nil && !software.Active && software.CreatedAt != software.UpdatedAt {
 		logEntries = append(
 			logEntries,
-			fmt.Sprintf("[%s] software %s has active = false, skipping update", repository.Name, software.ID),
+			fmt.Sprintf(
+				`[%s] software %s has "active": false and "created_at" is different than "updated_at. `+
+					`This means the software was deactivated manually, skipping update.`, repository.Name, software.ID,
+			),
 		)
 
 		return
@@ -324,40 +327,34 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		BasicAuth:   []string{os.Getenv("GITHUB_TOKEN")},
 	}
 
+	valid := true
+
 	err = parser.ParseInDomain(resp.Body, domain.Host, domain.UseTokenFor, domain.BasicAuth)
 	if err != nil {
-		valid := true
-	out:
 		for _, res := range err.(publiccode.ValidationResults) {
-			switch res.(type) {
-			case publiccode.ValidationError:
+			if _, isValidationError := res.(publiccode.ValidationError); isValidationError {
 				valid = false
 
-				break out
+				break
 			}
-		}
-
-		if !valid {
-			logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
-			metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
-
-			return
 		}
 	}
 
 	publisherID := viper.GetString("MAIN_PUBLISHER_ID")
-	if repository.Publisher.Id != publisherID {
+	if valid && repository.Publisher.Id != publisherID {
 		err = validateFile(repository.Publisher, *parser, repository.FileRawURL)
 		if err != nil {
-			logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
-			metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
-
-			return
+			valid = false
 		}
 	}
 
-	logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
-	metrics.GetCounter("repository_good_publiccodeyml", c.Index).Inc()
+	if !valid {
+		logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
+		metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
+	} else {
+		logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
+		metrics.GetCounter("repository_good_publiccodeyml", c.Index).Inc()
+	}
 
 	if c.DryRun {
 		log.Infof("[%s]: Skipping other steps (--dry-run)", repository.Name)
@@ -380,11 +377,26 @@ func (c *Crawler) ProcessRepo(repository common.Repository) {
 		return
 	}
 
+	// New software to add
 	if software == nil {
 		metrics.GetCounter("repository_new", c.Index).Inc()
 		if !c.DryRun {
-			_, err = c.apiClient.PostSoftware(url, aliases, string(publiccodeYml))
+			// XXXX: Currently we only update or create a new Software entity only when the
+			// publiccode.yml is valid, so in case of a new repo with an invalid
+			// publiccode.yml nothing is added.
+
+			// This means the new software doesn't even exist from the API's point of view,
+			// and because of that publiccode-issueopener can't notify the maintainers about
+			// the errors, even if new repos are arguably the ones where error reporting and
+			// a little hand holding are more valuable.
+			active := valid
+
+			software, err = c.apiClient.PostSoftware(url, aliases, string(publiccodeYml), active)
+			if err != nil {
+				return
+			}
 		}
+		// Known software
 	} else {
 		for _, alias := range software.Aliases {
 			if !slices.Contains(aliases, alias) {
