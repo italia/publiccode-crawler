@@ -217,7 +217,7 @@ func (c ApiClient) GetSoftwareByURL(url string) (*Software, error) {
 }
 
 // PostSoftware creates a new software resource with the given fields and returns
-// an XXX http.Response and any error encountered.
+// a Software struct or any error encountered.
 func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml string, active bool) (*Software, error) {
 	body, err := json.Marshal(map[string]interface{}{
 		"publiccodeYml": publiccodeYml,

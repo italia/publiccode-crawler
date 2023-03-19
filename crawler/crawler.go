@@ -282,6 +282,12 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		return
 	}
 
+	// We don't want to re-activate software that was de-activated manually, but just
+	// if it was previously added automatically for the first time as inactive (to keep
+	// track of errors in new software - https://github.com/italia/publiccode-crawler/issues/325).
+	//
+	// When CreatedAt != UpdatedAt it is most likely a manual deactivation for a good reason and
+	// we don't wan't to re-enable in that case.
 	if software != nil && !software.Active && software.CreatedAt != software.UpdatedAt {
 		logEntries = append(
 			logEntries,
@@ -381,14 +387,10 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 	if software == nil {
 		metrics.GetCounter("repository_new", c.Index).Inc()
 		if !c.DryRun {
-			// XXXX: Currently we only update or create a new Software entity only when the
-			// publiccode.yml is valid, so in case of a new repo with an invalid
-			// publiccode.yml nothing is added.
-
-			// This means the new software doesn't even exist from the API's point of view,
-			// and because of that publiccode-issueopener can't notify the maintainers about
-			// the errors, even if new repos are arguably the ones where error reporting and
-			// a little hand holding are more valuable.
+			// Add the software even if publiccode.yml is invalid, setting active to
+			// false so that we know about the new software and for example
+			// [publiccode-issueopener](https://github.com/italia/publiccode-issueopener) can
+			// notify maintainers about the errors.
 			active := valid
 
 			software, err = c.apiClient.PostSoftware(url, aliases, string(publiccodeYml), active)
