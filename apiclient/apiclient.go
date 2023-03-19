@@ -217,12 +217,13 @@ func (c ApiClient) GetSoftwareByURL(url string) (*Software, error) {
 }
 
 // PostSoftware creates a new software resource with the given fields and returns
-// an http.Response and any error encountered.
-func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml string) (*http.Response, error) {
+// an XXX http.Response and any error encountered.
+func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml string, active bool) (*Software, error) {
 	body, err := json.Marshal(map[string]interface{}{
 		"publiccodeYml": publiccodeYml,
 		"url":           url,
 		"aliases":       aliases,
+		"active":        active,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("can't create software: %w", err)
@@ -230,14 +231,20 @@ func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml stri
 
 	res, err := c.Post(joinPath(c.baseURL, "/software"), body)
 	if err != nil {
-		return res, fmt.Errorf("can't create software: %w", err)
+		return nil, fmt.Errorf("can't create software: %w", err)
 	}
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return res, fmt.Errorf("can't create software: API replied with HTTP %s", res.Status)
+		return nil, fmt.Errorf("can't create software: API replied with HTTP %s", res.Status)
 	}
 
-	return res, nil
+	postSoftwareResponse := &Software{}
+	err = json.NewDecoder(res.Body).Decode(&postSoftwareResponse)
+	if err != nil {
+		return nil, fmt.Errorf("can't parse POST /software (for %s) response: %w", url, err)
+	}
+
+	return postSoftwareResponse, nil
 }
 
 // PatchSoftware updates a software resource with the given fields and returns
