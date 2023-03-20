@@ -18,6 +18,8 @@ func main() {
 	// Enable VIPER to read Environment Variables
 	viper.AutomaticEnv()
 
+	viper.SetDefault("DATADIR", "./data")
+	viper.SetDefault("ACTIVITY_DAYS", 60)
 	viper.SetDefault("API_BASEURL", "https://api.developers.italia.it/v1/")
 	viper.SetDefault("MAIN_PUBLISHER_ID", "")
 

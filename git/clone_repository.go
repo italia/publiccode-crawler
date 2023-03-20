@@ -22,7 +22,7 @@ func CloneRepository(hostname, name, gitURL, index string) error {
 	}
 
 	vendor, repo := common.SplitFullName(name)
-	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), "repos", hostname, vendor, repo, "gitClone")
+	path := filepath.Join(viper.GetString("DATADIR"), "repos", hostname, vendor, repo, "gitClone")
 
 	// If folder already exists it will do a fetch instead of a clone.
 	if _, err := os.Stat(path); !os.IsNotExist(err) {

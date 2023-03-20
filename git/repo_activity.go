@@ -42,7 +42,7 @@ func CalculateRepoActivity(repository common.Repository, days int) (float64, map
 
 	vendor, repo := common.SplitFullName(repository.Name)
 
-	path := filepath.Join(viper.GetString("CRAWLER_DATADIR"), "repos", repository.URL.Host, vendor, repo, "gitClone")
+	path := filepath.Join(viper.GetString("DATADIR"), "repos", repository.URL.Host, vendor, repo, "gitClone")
 
 	// MkdirAll will create all the folder path, if not exists.
 	if _, err := os.Stat(path); os.IsNotExist(err) {
