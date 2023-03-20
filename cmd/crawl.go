@@ -10,6 +10,7 @@ import (
 
 func init() {
 	crawlCmd.Flags().BoolVarP(&dryRun, "dry-run", "n", false, "perform a dry run with no changes made")
+	crawlCmd.Flags().CountVarP(&verboseCount, "verbose", "v", "XXX verbose")
 
 	rootCmd.AddCommand(crawlCmd)
 }
@@ -23,6 +24,20 @@ var crawlCmd = &cobra.Command{
 	Args: cobra.MinimumNArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		c := crawler.NewCrawler(dryRun)
+
+		var logLevelMap = map[int]log.Level{
+			0: log.ErrorLevel,
+			1: log.WarnLevel,
+			2: log.InfoLevel,
+			3: log.DebugLevel,
+		}
+
+		logLevel, exists := logLevelMap[verboseCount]
+		if !exists {
+			logLevel = log.TraceLevel
+		}
+
+		log.SetLevel(logLevel)
 
 		var publishers []common.Publisher
 

@@ -122,7 +122,7 @@ func (c *Crawler) CrawlPublishers(publishers []common.Publisher) error {
 		reposNum += len(publisher.Repositories)
 	}
 
-	log.Infof("Scanning %d publishers (%d orgs + %d repositories)", len(publishers), groupsNum, reposNum)
+	log.Printf("Scanning %d publishers (%d orgs + %d repositories)", len(publishers), groupsNum, reposNum)
 
 	// Process every item in publishers.
 	for _, publisher := range publishers {

@@ -70,27 +70,28 @@ func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 		}
 		if err != nil {
 			// Try to list repos by user, for backwards compatibility.
-			log.Warnf(
-				"can't list repositories in %s (not an GitHub organization?): %s",
-				url.String(), err.Error(),
+			log.WithFields(log.Fields{
+				"organization": url.String(),
+				"details": err.Error(),
+			}).Warn(
+				"can't list repositories (not an GitHub organization?) "+
+				"Trying to list repos as GitHub user. This will be removed in the future",
 			)
 
 			repos, resp, err = scanner.client.Repositories.List(scanner.ctx, orgName, nil)
 			if err != nil {
 				return fmt.Errorf("can't list repositories in %s (not an GitHub organization?): %w", url.String(), err)
 			}
-
-			log.Warnf(
-				"%s is not a GitHub organization, listing repos as GitHub user. This will be removed in the future",
-				url.String(),
-			)
 		}
 
 		// Add repositories to the channel that will perform the check on everyone.
 		for _, r := range repos {
 			repoURL, err := url.Parse(*r.HTMLURL)
 			if err != nil {
-				log.Errorf("can't parse URL %s: %s", *r.URL, err.Error())
+				log.WithFields(log.Fields{
+					"url": *r.URL,
+					"details": err.Error(),
+				}).Error("can't parse URL")
 
 				continue
 			}
