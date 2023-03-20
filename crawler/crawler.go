@@ -47,7 +47,7 @@ func NewCrawler(dryRun bool) *Crawler {
 
 	c.DryRun = dryRun
 
-	datadir := viper.GetString("CRAWLER_DATADIR")
+	datadir := viper.GetString("DATADIR")
 	if err := os.MkdirAll(datadir, 0o744); err != nil {
 		log.Fatalf("can't create data directory (%s): %s", datadir, err.Error())
 	}
