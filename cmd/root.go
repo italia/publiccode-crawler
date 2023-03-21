@@ -6,7 +6,9 @@ import (
 )
 
 var (
-	dryRun  bool
+	dryRun       bool
+	verboseCount int
+
 	rootCmd = &cobra.Command{
 		Use:   "crawler",
 		Short: "A crawler for publiccode.yml files.",

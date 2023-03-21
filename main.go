@@ -4,13 +4,10 @@ import (
 	"fmt"
 
 	"github.com/italia/publiccode-crawler/v3/cmd"
-	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
 func main() {
-	log.SetLevel(log.DebugLevel)
-
 	// Read configurations.
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")

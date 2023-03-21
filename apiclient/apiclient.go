@@ -5,6 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -13,7 +15,7 @@ import (
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/italia/publiccode-crawler/v3/common"
 	internalUrl "github.com/italia/publiccode-crawler/v3/internal"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -67,11 +69,22 @@ type Software struct {
 }
 
 func NewClient() ApiClient {
-	retryableClient := retryablehttp.NewClient().StandardClient()
+	retryClient := retryablehttp.NewClient()
+
+	retryClient.Logger = log.New(ioutil.Discard, "", log.LstdFlags)
+	retryClient.RequestLogHook = func(_ retryablehttp.Logger, req *http.Request, attempt int) {
+		logrus.WithFields(logrus.Fields{
+			"proto":    req.Proto,
+			"endpoint": req.URL.String(),
+			"attempt":  attempt,
+		}).Trace("Sending request to API")
+	}
+
+	// Create a standard *http.Client with the retryablehttp.Client as the transport
 
 	return ApiClient{
 		baseURL:         viper.GetString("API_BASEURL"),
-		retryableClient: retryableClient,
+		retryableClient: retryClient.StandardClient(),
 		token:           "Bearer " + viper.GetString("API_BEARER_TOKEN"),
 	}
 }
