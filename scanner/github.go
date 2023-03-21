@@ -30,9 +30,12 @@ func NewGitHubScanner() Scanner {
 
 	token := os.Getenv("GITHUB_TOKEN")
 
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token},
-	)
+	var ts oauth2.TokenSource = nil
+	if token != "" {
+		ts = oauth2.StaticTokenSource(
+			&oauth2.Token{AccessToken: token},
+		)
+	}
 	tc := oauth2.NewClient(ctx, ts)
 
 	client := github.NewClient(tc)
@@ -58,7 +61,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 	Retry:
 		repos, resp, err := scanner.client.Repositories.ListByOrg(scanner.ctx, orgName, opt)
 		if _, ok := err.(*github.RateLimitError); ok {
-			log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
+			log.Warnf("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 			time.Sleep(time.Until(resp.Rate.Reset.Time))
 
 			goto Retry
@@ -72,10 +75,10 @@ func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 			// Try to list repos by user, for backwards compatibility.
 			log.WithFields(log.Fields{
 				"organization": url.String(),
-				"details": err.Error(),
+				"details":      err.Error(),
 			}).Warn(
-				"can't list repositories (not an GitHub organization?) "+
-				"Trying to list repos as GitHub user. This will be removed in the future",
+				"can't list repositories (not an GitHub organization?) " +
+					"Trying to list repos as GitHub user. This will be removed in the future",
 			)
 
 			repos, resp, err = scanner.client.Repositories.List(scanner.ctx, orgName, nil)
@@ -89,7 +92,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 			repoURL, err := url.Parse(*r.HTMLURL)
 			if err != nil {
 				log.WithFields(log.Fields{
-					"url": *r.URL,
+					"url":     *r.URL,
 					"details": err.Error(),
 				}).Error("can't parse URL")
 
@@ -133,7 +136,7 @@ func (scanner GitHubScanner) ScanRepo(url url.URL, publisher common.Publisher, r
 Retry:
 	repo, resp, err := scanner.client.Repositories.Get(scanner.ctx, orgName, repoName)
 	if _, ok := err.(*github.RateLimitError); ok {
-		log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
+		log.Warnf("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
 
 		goto Retry
@@ -153,7 +156,7 @@ Retry:
 
 	file, _, resp, err := scanner.client.Repositories.GetContents(scanner.ctx, orgName, repoName, "publiccode.yml", nil)
 	if _, ok := err.(*github.RateLimitError); ok {
-		log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
+		log.Warnf("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
 
 		goto Retry
@@ -204,6 +207,6 @@ func secondaryRateLimit(err *github.AbuseRateLimitError) {
 		duration = time.Duration(rand.Intn(100)) * time.Second
 	}
 
-	log.Infof("GitHub secondary rate limit hit, for %s", duration)
+	log.Warnf("GitHub secondary rate limit hit, for %s", duration)
 	time.Sleep(duration)
 }

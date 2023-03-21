@@ -25,11 +25,10 @@ var crawlCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		c := crawler.NewCrawler(dryRun)
 
-		var logLevelMap = map[int]log.Level{
-			0: log.ErrorLevel,
-			1: log.WarnLevel,
-			2: log.InfoLevel,
-			3: log.DebugLevel,
+		logLevelMap := map[int]log.Level{
+			0: log.InfoLevel,
+			1: log.DebugLevel,
+			2: log.TraceLevel,
 		}
 
 		logLevel, exists := logLevelMap[verboseCount]

@@ -74,10 +74,10 @@ func NewClient() ApiClient {
 	retryClient.Logger = log.New(ioutil.Discard, "", log.LstdFlags)
 	retryClient.RequestLogHook = func(_ retryablehttp.Logger, req *http.Request, attempt int) {
 		logrus.WithFields(logrus.Fields{
-			"proto": req.Proto,
+			"proto":    req.Proto,
 			"endpoint": req.URL.String(),
-			"attempt": attempt,
-		}).Info("Sending request")
+			"attempt":  attempt,
+		}).Trace("Sending request to API")
 	}
 
 	// Create a standard *http.Client with the retryablehttp.Client as the transport

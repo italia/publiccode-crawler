@@ -179,11 +179,12 @@ func (c *Crawler) crawl() error {
 // ScanPublisher scans all the publisher' repositories and sends the ones
 // with a valid publiccode.yml to the repositories channel.
 func (c *Crawler) ScanPublisher(publisher common.Publisher) {
-	log.Infof("Processing publisher: %s", publisher.Name)
 	defer c.publishersWg.Done()
 
 	var err error
 	for _, u := range publisher.Organizations {
+		log.Debugf("Processing publisher: %s", publisher.Name)
+
 		orgURL := (url.URL)(u)
 
 		if vcsurl.IsGitHub(&orgURL) {
