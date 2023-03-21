@@ -52,7 +52,10 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.P
 		}
 		res, err := scanner.client.Repositories.Repository.GetFileContent(opt)
 		if err != nil {
-			log.Infof("[%s]: no publiccode.yml: %s", r.Full_name, err.Error())
+			log.WithFields(log.Fields{
+				"repository": url.String(),
+				"details":    err.Error(),
+			}).Debug("no publiccode.yml")
 
 			continue
 		}
