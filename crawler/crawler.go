@@ -87,13 +87,14 @@ func (c *Crawler) CrawlRepo(repoURL url.URL, publisher common.Publisher) error {
 	log.Infof("Processing repository: %s", repoURL.String())
 
 	var err error
-	if vcsurl.IsGitHub(&repoURL) {
+	switch {
+	case vcsurl.IsGitHub(&repoURL):
 		err = c.gitHubScanner.ScanRepo(repoURL, publisher, c.repositories)
-	} else if vcsurl.IsBitBucket(&repoURL) {
+	case vcsurl.IsBitBucket(&repoURL):
 		err = c.bitBucketScanner.ScanRepo(repoURL, publisher, c.repositories)
-	} else if vcsurl.IsGitLab(&repoURL) {
+	case vcsurl.IsGitLab(&repoURL):
 		err = c.gitLabScanner.ScanRepo(repoURL, publisher, c.repositories)
-	} else {
+	default:
 		err = fmt.Errorf(
 			"publisher %s: unsupported code hosting platform for %s",
 			publisher.Name,
@@ -186,13 +187,14 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 	for _, u := range publisher.Organizations {
 		orgURL := (url.URL)(u)
 
-		if vcsurl.IsGitHub(&orgURL) {
+		switch {
+		case vcsurl.IsGitHub(&orgURL):
 			err = c.gitHubScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
-		} else if vcsurl.IsBitBucket(&orgURL) {
+		case vcsurl.IsBitBucket(&orgURL):
 			err = c.bitBucketScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
-		} else if vcsurl.IsGitLab(&orgURL) {
+		case vcsurl.IsGitLab(&orgURL):
 			err = c.gitLabScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
-		} else {
+		default:
 			err = fmt.Errorf(
 				"publisher %s: unsupported code hosting platform for %s",
 				publisher.Name,
@@ -211,13 +213,14 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 	for _, u := range publisher.Repositories {
 		repoURL := (url.URL)(u)
 
-		if vcsurl.IsGitHub(&repoURL) {
+		switch {
+		case vcsurl.IsGitHub(&repoURL):
 			err = c.gitHubScanner.ScanRepo(repoURL, publisher, c.repositories)
-		} else if vcsurl.IsBitBucket(&repoURL) {
+		case vcsurl.IsBitBucket(&repoURL):
 			err = c.bitBucketScanner.ScanRepo(repoURL, publisher, c.repositories)
-		} else if vcsurl.IsGitLab(&repoURL) {
+		case vcsurl.IsGitLab(&repoURL):
 			err = c.gitLabScanner.ScanRepo(repoURL, publisher, c.repositories)
-		} else {
+		default:
 			err = fmt.Errorf(
 				"publisher %s: unsupported code hosting platform for %s",
 				publisher.Name,

@@ -74,10 +74,7 @@ func StartPrometheusMetricsServer() {
 
 // Validate and fix name (replace invalid chars with underscore "_").
 func validateAndFix(name string) string {
-	reg, err := regexp.Compile(validPrometheusName)
-	if err != nil {
-		log.Warningf("Error in metrics regex RegisterPrometheusCounter: %v", err)
-	}
+	reg := regexp.MustCompile(validPrometheusName)
 
 	// Replace invalid characters with a permitted one (undeerscore "_").
 	name = reg.ReplaceAllString(name, "_")
