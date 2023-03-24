@@ -144,7 +144,7 @@ linters:
     - thelper
     - tparallel
     - unconvert
-    # - unparam
+    - unparam
     - usestdlibvars
     # - varnamelen
     - wastedassign
