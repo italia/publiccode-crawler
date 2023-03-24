@@ -35,7 +35,7 @@ func (repo *Repository) GenerateID() string {
 
 // generateSlug generates a readable unique string based on repository name.
 func (repo *Repository) GenerateSlug() string {
-	vendorAndName := strings.Replace(repo.Name, "/", "-", -1)
+	vendorAndName := strings.ReplaceAll(repo.Name, "/", "-")
 	vendorAndName = strings.ReplaceAll(vendorAndName, ".", "_")
 
 	if repo.Publisher.Id == "" {
