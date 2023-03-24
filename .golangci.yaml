@@ -108,7 +108,7 @@ linters:
     - gomoddirectives
     - gomodguard
     - goprintffuncname
-    # - gosec
+    - gosec
     - grouper
     - importas
     - interfacebloat
