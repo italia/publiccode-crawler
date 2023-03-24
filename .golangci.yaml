@@ -86,7 +86,7 @@ linters:
     - exhaustive
     - exportloopref
     # - forbidigo
-    # - forcetypeassert
+    - forcetypeassert
     # - funlen
     - gci
     - ginkgolinter
