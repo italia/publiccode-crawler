@@ -123,7 +123,6 @@ func (clt ApiClient) Patch(url string, body []byte) (*http.Response, error) {
 // any error encountered.
 func (c ApiClient) GetPublishers() ([]common.Publisher, error) {
 	var publishersResponse *PublishersPaginated
-	var publishers []common.Publisher
 
 	pageAfter := ""
 
@@ -147,6 +146,7 @@ page:
 		return nil, fmt.Errorf("can't parse GET %s response: %w", reqUrl, err)
 	}
 
+	publishers := make([]common.Publisher, 0, len(publishersResponse.Data))
 	for _, p := range publishersResponse.Data {
 		var groups, repos []internalUrl.URL
 

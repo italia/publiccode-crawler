@@ -129,7 +129,7 @@ linters:
     - nonamedreturns
     - nosprintfhostport
     - paralleltest
-    # - prealloc
+    - prealloc
     - predeclared
     - promlinter
     - reassign
