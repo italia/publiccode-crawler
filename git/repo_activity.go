@@ -212,10 +212,7 @@ func calculateLongevityIndex(r *git.Repository) (float64, error) {
 
 		return 0, err
 	}
-	creationDate, err := extractOldestCommitDate(cIter)
-	if err != nil {
-		log.Error(err)
-	}
+	creationDate := extractOldestCommitDate(cIter)
 
 	age := time.Since(creationDate).Hours() / 24
 
@@ -230,21 +227,18 @@ func calculateLongevityIndex(r *git.Repository) (float64, error) {
 }
 
 // extractOldestCommitDate returns the oldest commit date.
-func extractOldestCommitDate(cIter object.CommitIter) (time.Time, error) {
+func extractOldestCommitDate(cIter object.CommitIter) time.Time {
 	// Iterates over the commits and extract infos.
 	result := time.Now()
-	err := cIter.ForEach(func(c *object.Commit) error {
+	_ = cIter.ForEach(func(c *object.Commit) error {
 		if c.Author.When.Before(result) {
 			result = c.Author.When
 		}
 
 		return nil
 	})
-	if err != nil {
-		log.Error(err)
-	}
 
-	return result, nil
+	return result
 }
 
 func ranges(name string, value float64) float64 {
