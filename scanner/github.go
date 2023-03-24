@@ -200,7 +200,7 @@ func secondaryRateLimit(err *github.AbuseRateLimitError) {
 	if err.RetryAfter != nil {
 		duration = *err.RetryAfter
 	} else {
-		duration = time.Duration(rand.Intn(100)) * time.Second
+		duration = time.Duration(rand.Intn(100)) * time.Second //nolint:gosec
 	}
 
 	log.Infof("GitHub secondary rate limit hit, for %s", duration)

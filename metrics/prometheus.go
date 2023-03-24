@@ -66,7 +66,7 @@ func RegisterPrometheusCounter(name, helpText, namespace string) {
 func StartPrometheusMetricsServer() {
 	http.Handle("/metrics", promhttp.Handler())
 
-	err := http.ListenAndServe(":8081", nil)
+	err := http.ListenAndServe(":8081", nil) //nolint:gosec
 	if err != nil {
 		log.Warningf("monitoring endpoint non available: %v: ", err)
 	}
