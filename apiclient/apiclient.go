@@ -194,6 +194,7 @@ page:
 
 // GetSoftwareByURL returns the software matching the given repo URL and
 // any error encountered.
+// In case no software is found and no error occours, (nil, nil) is returned.
 func (c ApiClient) GetSoftwareByURL(url string) (*Software, error) {
 	var softwareResponse SoftwarePaginated
 
@@ -213,7 +214,7 @@ func (c ApiClient) GetSoftwareByURL(url string) (*Software, error) {
 		return &softwareResponse.Data[0], nil
 	}
 
-	return nil, nil
+	return nil, nil //nolint:nilnil
 }
 
 // PostSoftware creates a new software resource with the given fields and returns
