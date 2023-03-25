@@ -81,7 +81,7 @@ linters:
     - durationcheck
     - errchkjson
     - errname
-    # - errorlint
+    - errorlint
     - execinquery
     - exhaustive
     - exportloopref

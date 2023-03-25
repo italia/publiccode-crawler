@@ -340,9 +340,11 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 
 	err = parser.ParseInDomain(resp.Body, domain.Host, domain.UseTokenFor, domain.BasicAuth)
 	if err != nil {
-		if validationResults, ok := err.(publiccode.ValidationResults); ok {
+		var validationResults publiccode.ValidationResults
+		if errors.As(err, &validationResults) {
+			var validationError publiccode.ValidationError
 			for _, res := range validationResults {
-				if _, isValidationError := res.(publiccode.ValidationError); isValidationError {
+				if errors.As(res, &validationError) {
 					valid = false
 
 					break

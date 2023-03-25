@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/italia/publiccode-crawler/v3/cmd"
@@ -24,7 +25,8 @@ func main() {
 	viper.SetDefault("MAIN_PUBLISHER_ID", "")
 
 	if err := viper.ReadInConfig(); err != nil {
-		if _, fileNotFound := err.(viper.ConfigFileNotFoundError); !fileNotFound {
+		var notFoundError viper.ConfigFileNotFoundError
+		if errors.As(err, &notFoundError) {
 			panic(fmt.Errorf("error reading config file: %w", err))
 		}
 	}

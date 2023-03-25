@@ -57,14 +57,17 @@ func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 	for {
 	Retry:
 		repos, resp, err := scanner.client.Repositories.ListByOrg(scanner.ctx, orgName, opt)
-		if _, ok := err.(*github.RateLimitError); ok {
+		var rateLimitError *github.RateLimitError
+		if errors.As(err, &rateLimitError) {
 			log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 			time.Sleep(time.Until(resp.Rate.Reset.Time))
 
 			goto Retry
 		}
-		if limitErr, ok := err.(*github.AbuseRateLimitError); ok {
-			secondaryRateLimit(limitErr)
+
+		var abuseRateLimitError *github.AbuseRateLimitError
+		if errors.As(err, &abuseRateLimitError) {
+			secondaryRateLimit(abuseRateLimitError)
 
 			goto Retry
 		}
@@ -131,14 +134,18 @@ func (scanner GitHubScanner) ScanRepo(url url.URL, publisher common.Publisher, r
 
 Retry:
 	repo, resp, err := scanner.client.Repositories.Get(scanner.ctx, orgName, repoName)
-	if _, ok := err.(*github.RateLimitError); ok {
+
+	var rateLimitError *github.RateLimitError
+	if errors.As(err, &rateLimitError) {
 		log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
 
 		goto Retry
 	}
-	if limitErr, ok := err.(*github.AbuseRateLimitError); ok {
-		secondaryRateLimit(limitErr)
+
+	var abuseRateLimitError *github.AbuseRateLimitError
+	if errors.As(err, &abuseRateLimitError) {
+		secondaryRateLimit(abuseRateLimitError)
 
 		goto Retry
 	}
@@ -151,14 +158,14 @@ Retry:
 	}
 
 	file, _, resp, err := scanner.client.Repositories.GetContents(scanner.ctx, orgName, repoName, "publiccode.yml", nil)
-	if _, ok := err.(*github.RateLimitError); ok {
+	if errors.As(err, &rateLimitError) {
 		log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
 
 		goto Retry
 	}
-	if limitErr, ok := err.(*github.AbuseRateLimitError); ok {
-		secondaryRateLimit(limitErr)
+	if errors.As(err, &abuseRateLimitError) {
+		secondaryRateLimit(abuseRateLimitError)
 
 		goto Retry
 	}

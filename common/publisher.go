@@ -21,13 +21,13 @@ type Publisher struct {
 func LoadPublishers(path string) ([]Publisher, error) {
 	data, err := fileReaderInject(path)
 	if err != nil {
-		return nil, fmt.Errorf("error in reading `%s': %v", path, err)
+		return nil, fmt.Errorf("error in reading `%s': %w", path, err)
 	}
 
 	var publishers []Publisher
 	err = yaml.Unmarshal(data, &publishers)
 	if err != nil {
-		return nil, fmt.Errorf("error in parsing `%s': %v", path, err)
+		return nil, fmt.Errorf("error in parsing `%s': %w", path, err)
 	}
 
 	return publishers, nil
