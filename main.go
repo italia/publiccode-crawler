@@ -26,7 +26,7 @@ func main() {
 
 	if err := viper.ReadInConfig(); err != nil {
 		var notFoundError viper.ConfigFileNotFoundError
-		if errors.As(err, &notFoundError) {
+		if !errors.As(err, &notFoundError) {
 			panic(fmt.Errorf("error reading config file: %w", err))
 		}
 	}
