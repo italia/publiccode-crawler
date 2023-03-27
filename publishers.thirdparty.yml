@@ -162,3 +162,7 @@
 - name: "io-Comune: il tema di Plone per la Pubblica Amministrazione"
   repos:
     - "https://github.com/italia/design-comuni-plone-theme"
+    
+- name: "OpenCity Labs"
+  repos:
+    - "https://gitlab.com/opencity-labs/sito-istituzionale/cms"    
