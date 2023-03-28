@@ -162,3 +162,7 @@
 - name: "io-Comune: il tema di Plone per la Pubblica Amministrazione"
   repos:
     - "https://github.com/italia/design-comuni-plone-theme"
+    
+- name: "MeO: Gestione Albi Ordini Professionali dei Medici Chirurghi e degli Odontoiatri"
+  repos:
+    - "https://github.com/latraccia/meo"
