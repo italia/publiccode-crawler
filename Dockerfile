@@ -25,8 +25,6 @@ COPY scanner scanner
 COPY jekyll jekyll
 COPY metrics metrics
 COPY version version
-COPY publishers.thirdparty.yml publishers.thirdparty.yml
-COPY publishers.yml publishers.yml
 COPY blacklist blacklist
 COPY config.toml.example config.toml
 COPY domains.yml.example domains.yml
@@ -37,6 +35,9 @@ COPY Makefile .
 COPY start.sh .
 COPY vitality-ranges.yml .
 COPY wait-for-it.sh .
+
+RUN wget https://raw.githubusercontent.com/italia/developers.italia.it/HEAD/_data/publishers.thirdparty.yml
+RUN wget https://raw.githubusercontent.com/italia/developers.italia.it/HEAD/_data/publishers.yml
 
 # Run as unprivileged user
 RUN adduser --home ${HOME} --shell /bin/sh --disabled-password ${USER}
