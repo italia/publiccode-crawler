@@ -157,5 +157,5 @@
     
 - name: "WSO2"
   repos:
-    - "https://github.com/profesiait/wso2apim"
-    - "https://github.com/profesiait/wso2is"
+    - "https://github.com/wso2/developers-italia-metadata/tree/main/APIM"
+    - "https://github.com/wso2/developers-italia-metadata/tree/main/IS"
