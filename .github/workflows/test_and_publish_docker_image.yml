@@ -3,6 +3,7 @@ on:
     branches:
       - legacy
   pull_request:
+  workflow_dispatch:
 
 name: ci
 
