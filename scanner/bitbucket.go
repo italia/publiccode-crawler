@@ -19,7 +19,9 @@ func NewBitBucketScanner() Scanner {
 }
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
-func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.Publisher, repositories chan common.Repository) error {
+func (scanner BitBucketScanner) ScanGroupOfRepos(
+	url url.URL, publisher common.Publisher, repositories chan common.Repository,
+) error {
 	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
 
 	if len(splitted) != 1 {
@@ -77,7 +79,9 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(url url.URL, publisher common.P
 }
 
 // RegisterSingleBitbucketAPI register the crawler function for single Bitbucket repository.
-func (scanner BitBucketScanner) ScanRepo(url url.URL, publisher common.Publisher, repositories chan common.Repository) error {
+func (scanner BitBucketScanner) ScanRepo(
+	url url.URL, publisher common.Publisher, repositories chan common.Repository,
+) error {
 	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
 	if len(splitted) != 2 {
 		return fmt.Errorf("bitbucket URL %s doesn't look like a repo", url.String())

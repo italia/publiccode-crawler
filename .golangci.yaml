@@ -113,7 +113,7 @@ linters:
     - importas
     - interfacebloat
     # - ireturn
-    # - lll
+    - lll
     - loggercheck
     - maintidx
     - makezero

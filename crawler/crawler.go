@@ -280,7 +280,10 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 
 	software, err := c.apiClient.GetSoftwareByURL(repository.URL.String())
 	if err != nil {
-		logEntries = append(logEntries, fmt.Sprintf("[%s] failed to GET software from API: %s\n", repository.Name, err.Error()))
+		logEntries = append(
+			logEntries,
+			fmt.Sprintf("[%s] failed to GET software from API: %s\n", repository.Name, err.Error()),
+		)
 
 		return
 	}
@@ -437,9 +440,14 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		}
 		activityIndex, _, err := git.CalculateRepoActivity(repository, activityDays)
 		if err != nil {
-			logEntries = append(logEntries, fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err))
+			logEntries = append(
+				logEntries, fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err),
+			)
 		} else {
-			logEntries = append(logEntries, fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex))
+			logEntries = append(
+				logEntries,
+				fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex),
+			)
 		}
 	}
 }

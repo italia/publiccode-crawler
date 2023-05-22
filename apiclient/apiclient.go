@@ -250,7 +250,9 @@ func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml stri
 
 // PatchSoftware updates a software resource with the given fields and returns
 // an http.Response and any error encountered.
-func (c ApiClient) PatchSoftware(id string, url string, aliases []string, publiccodeYml string) (*http.Response, error) {
+func (c ApiClient) PatchSoftware(
+	id string, url string, aliases []string, publiccodeYml string,
+) (*http.Response, error) {
 	body, err := json.Marshal(map[string]interface{}{
 		"publiccodeYml": publiccodeYml,
 		"url":           url,

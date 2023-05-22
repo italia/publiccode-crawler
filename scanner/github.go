@@ -44,7 +44,9 @@ func NewGitHubScanner() Scanner {
 // publisher and sends any repository containing a publiccode.yml to the repositories
 // channel as a [common.Repository].
 // It returns any error encountered if any, otherwise nil.
-func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publisher, repositories chan common.Repository) error {
+func (scanner GitHubScanner) ScanGroupOfRepos(
+	url url.URL, publisher common.Publisher, repositories chan common.Repository,
+) error {
 	opt := &github.RepositoryListByOrgOptions{}
 
 	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
@@ -123,7 +125,9 @@ func (scanner GitHubScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 // publisher and, if it contains a publiccode.yml, sends it as a [common.Repository]
 // repositories channel.
 // It returns any error encountered if any, otherwise nil.
-func (scanner GitHubScanner) ScanRepo(url url.URL, publisher common.Publisher, repositories chan common.Repository) error {
+func (scanner GitHubScanner) ScanRepo(
+	url url.URL, publisher common.Publisher, repositories chan common.Repository,
+) error {
 	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
 	if len(splitted) != 2 {
 		return fmt.Errorf("doesn't look like a GitHub repo %s", url.String())
