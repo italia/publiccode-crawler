@@ -293,7 +293,9 @@ func extractCommitsPerDay(days int, commits []*object.Commit) map[int][]*object.
 		lastDays := time.Now().AddDate(0, 0, -i)
 		// Append all the commits created before lastDays date.
 		for _, c := range commits {
-			if c.Author.When.Day() == lastDays.Day() && c.Author.When.Month() == lastDays.Month() && c.Author.When.Year() == lastDays.Year() {
+			if c.Author.When.Day() == lastDays.Day() &&
+				c.Author.When.Month() == lastDays.Month() && c.Author.When.Year() ==
+				lastDays.Year() {
 				commitsPerDay[i] = append(commitsPerDay[i], c)
 			}
 		}
@@ -310,7 +312,9 @@ func extractTagsPerDay(days int, tags []*object.Commit) map[int][]*object.Commit
 		// Append all the commits created before lastDays date.
 		for _, t := range tags {
 			if t != nil {
-				if t.Author.When.Day() == lastDays.Day() && t.Author.When.Month() == lastDays.Month() && t.Author.When.Year() == lastDays.Year() {
+				if t.Author.When.Day() == lastDays.Day() &&
+					t.Author.When.Month() == lastDays.Month() &&
+					t.Author.When.Year() == lastDays.Year() {
 					tagsPerDays[i] = append(tagsPerDays[i], t)
 				}
 			}

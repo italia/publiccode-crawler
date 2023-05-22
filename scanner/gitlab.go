@@ -18,7 +18,9 @@ func NewGitLabScanner() Scanner {
 }
 
 // RegisterGitlabAPI register the crawler function for Gitlab API.
-func (scanner GitLabScanner) ScanGroupOfRepos(url url.URL, publisher common.Publisher, repositories chan common.Repository) error {
+func (scanner GitLabScanner) ScanGroupOfRepos(
+	url url.URL, publisher common.Publisher, repositories chan common.Repository,
+) error {
 	apiURL, _ := url.Parse("/api/v4")
 	git, err := gitlab.NewClient(os.Getenv("GITLAB_TOKEN"), gitlab.WithBaseURL(apiURL.String()))
 	if err != nil {
@@ -63,7 +65,9 @@ func (scanner GitLabScanner) ScanGroupOfRepos(url url.URL, publisher common.Publ
 }
 
 // RegisterSingleGitlabAPI register the crawler function for single Bitbucket API.
-func (scanner GitLabScanner) ScanRepo(url url.URL, publisher common.Publisher, repositories chan common.Repository) error {
+func (scanner GitLabScanner) ScanRepo(
+	url url.URL, publisher common.Publisher, repositories chan common.Repository,
+) error {
 	apiURL, _ := url.Parse("/api/v4")
 	git, err := gitlab.NewClient(os.Getenv("GITLAB_TOKEN"), gitlab.WithBaseURL(apiURL.String()))
 	if err != nil {
@@ -107,7 +111,9 @@ func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 
 // addGroupProjects sends all the projects in a GitLab group, including all subgroups, to
 // the repositories channel.
-func addGroupProjects(group gitlab.Group, publisher common.Publisher, repositories chan common.Repository, client *gitlab.Client) error {
+func addGroupProjects(
+	group gitlab.Group, publisher common.Publisher, repositories chan common.Repository, client *gitlab.Client,
+) error {
 	opts := &gitlab.ListGroupProjectsOptions{
 		ListOptions: gitlab.ListOptions{Page: 1},
 	}
@@ -155,7 +161,9 @@ func addGroupProjects(group gitlab.Group, publisher common.Publisher, repositori
 }
 
 // addGroupProjects sends the GitLab project the repositories channel.
-func addProject(originalURL *url.URL, project gitlab.Project, publisher common.Publisher, repositories chan common.Repository) error {
+func addProject(
+	originalURL *url.URL, project gitlab.Project, publisher common.Publisher, repositories chan common.Repository,
+) error {
 	// Join file raw URL string.
 	rawURL, err := generateGitlabRawURL(project.WebURL, project.DefaultBranch)
 	if err != nil {
