@@ -36,9 +36,6 @@ COPY start.sh .
 COPY vitality-ranges.yml .
 COPY wait-for-it.sh .
 
-RUN wget https://raw.githubusercontent.com/italia/developers.italia.it/HEAD/_data/publishers.thirdparty.yml
-RUN wget https://raw.githubusercontent.com/italia/developers.italia.it/HEAD/_data/publishers.yml
-
 # Run as unprivileged user
 RUN adduser --home ${HOME} --shell /bin/sh --disabled-password ${USER}
 
