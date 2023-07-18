@@ -103,14 +103,15 @@ func (scanner BitBucketScanner) ScanRepo(
 	filesOpt := &bitbucket.RepositoryFilesOptions{
 		Owner:    owner,
 		RepoSlug: slug,
+		Ref:      "HEAD",
 		Path:     "publiccode.yml",
 	}
 	res, err := scanner.client.Repositories.Repository.GetFileContent(filesOpt)
 	if err != nil {
-		return err
+		return fmt.Errorf("[%s]: no publiccode.yml: %w", url.String(), err)
 	}
 	if res != nil {
-		canonicalURL, err := url.Parse(fmt.Sprintf("https://bitbucket.org/%s/%s.git", repo.Owner, repo.Slug))
+		canonicalURL, err := url.Parse(fmt.Sprintf("https://bitbucket.org/%s/%s.git", owner, repo.Slug))
 		if err != nil {
 			return fmt.Errorf("failed to get canonical repo URL for %s: %w", url.String(), err)
 		}
