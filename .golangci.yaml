@@ -74,7 +74,6 @@ linters:
     - contextcheck
     # - cyclop
     - decorder
-    - depguard
     - dogsled
     - dupl
     - dupword
@@ -160,6 +159,8 @@ linters:
     # - maligned
     # - scopelint
 
+    # # Not useful
+    # - depguard
     # # Not terribly useful and ends up in too much boilerplate
     # - exhaustruct
     # # False positives (https://github.com/daixiang0/gci/issues/54)
