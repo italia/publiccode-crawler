@@ -97,11 +97,12 @@ func (scanner BitBucketScanner) ScanRepo(url url.URL, publisher common.Publisher
 	filesOpt := &bitbucket.RepositoryFilesOptions {
 		Owner: owner,
 		RepoSlug: slug,
+		Ref: "HEAD",
 		Path: "publiccode.yml",
 	}
 	res, err := scanner.client.Repositories.Repository.GetFileContent(filesOpt)
 	if (err != nil) {
-		return err
+		return fmt.Errorf("[%s]: no publiccode.yml: %w", url.String(), err)
 	}
 	if res != nil {
 		u, err := url.Parse(fmt.Sprintf("https://bitbucket.org/%s/%s.git", owner, slug))
