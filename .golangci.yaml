@@ -84,7 +84,7 @@ linters:
     - execinquery
     - exhaustive
     - exportloopref
-    # - forbidigo
+    - forbidigo
     - forcetypeassert
     # - funlen
     - gci
