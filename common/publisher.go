@@ -11,7 +11,7 @@ import (
 var fileReaderInject = ioutil.ReadFile
 
 type Publisher struct {
-	Id            string    `yaml:"id"`
+	ID            string    `yaml:"id"`
 	Name          string    `yaml:"name"`
 	Organizations []url.URL `yaml:"orgs"`
 	Repositories  []url.URL `yaml:"repos"`

@@ -59,7 +59,7 @@ var downloadPublishersCmd = &cobra.Command{
 	REPOLIST:
 		for _, i := range repolist.Registrati {
 			for idx, publisher := range publishers {
-				if publisher.Id == i.IPA {
+				if publisher.ID == i.IPA {
 					u, _ := url.Parse(i.URL)
 					// If this Id is already known, append this URL to the existing item
 					publishers[idx].Organizations = append(publisher.Organizations, (ymlurl.URL)(*u))
@@ -72,7 +72,7 @@ var downloadPublishersCmd = &cobra.Command{
 			// If this IPA code is not known, append a new publisher item
 			publishers = append(publishers, common.Publisher{
 				Name:          i.IPA,
-				Id:            i.IPA,
+				ID:            i.IPA,
 				Organizations: []ymlurl.URL{(ymlurl.URL)(*u)},
 			})
 		}

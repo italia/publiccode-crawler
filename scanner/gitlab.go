@@ -80,11 +80,7 @@ func (scanner GitLabScanner) ScanRepo(
 		return err
 	}
 
-	if err = addProject(&url, *prj, publisher, repositories); err != nil {
-		return err
-	}
-
-	return nil
+	return addProject(&url, *prj, publisher, repositories)
 }
 
 // isGitlabGroup returns true if the API URL points to a group.
