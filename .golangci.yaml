@@ -103,7 +103,6 @@ linters:
     - gofumpt
     - goheader
     - goimports
-    # - gomnd
     - gomoddirectives
     - gomodguard
     - goprintffuncname
@@ -168,6 +167,9 @@ linters:
     # # https://github.com/italia/developers-italia-api/issues/190)
     # # Don't feel about chasing this one down
     # - musttag
+
+    # More false positive than actual issues
+    - gomnd
 
   # Run only fast linters from enabled linters set (first run won't be fast)
   # Default: false
