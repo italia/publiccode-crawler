@@ -38,7 +38,7 @@ type Crawler struct {
 	gitLabScanner    scanner.Scanner
 	bitBucketScanner scanner.Scanner
 
-	apiClient apiclient.ApiClient
+	apiClient apiclient.APIClient
 }
 
 // NewCrawler initializes a new Crawler object and connects to Elasticsearch (if dryRun == false).
@@ -358,7 +358,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 	}
 
 	publisherID := viper.GetString("MAIN_PUBLISHER_ID")
-	if valid && repository.Publisher.Id != publisherID {
+	if valid && repository.Publisher.ID != publisherID {
 		err = validateFile(repository.Publisher, *parser, repository.FileRawURL)
 		if err != nil {
 			valid = false
@@ -435,7 +435,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		}
 
 		// Calculate Repository activity index and vitality. Defaults to 60 days.
-		var activityDays int = 60
+		activityDays := 60
 		if viper.IsSet("ACTIVITY_DAYS") {
 			activityDays = viper.GetInt("ACTIVITY_DAYS")
 		}
@@ -486,16 +486,16 @@ func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawU
 	// //nolint:godox
 	// TODO: This is not ideal and also an Italian-specific check
 	// (https://github.com/italia/publiccode-crawler/issues/298)
-	idIsUUID, _ := regexp.MatchString("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", publisher.Id)
+	idIsUUID, _ := regexp.MatchString("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", publisher.ID)
 
 	if !idIsUUID && !strings.EqualFold(
-		strings.TrimSpace(publisher.Id),
+		strings.TrimSpace(publisher.ID),
 		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
 	) {
 		return fmt.Errorf(
 			"codiceIPA is '%s', but '%s' was expected for '%s' in %s",
 			parser.PublicCode.It.Riuso.CodiceIPA,
-			publisher.Id,
+			publisher.ID,
 			publisher.Name,
 			fileRawURL,
 		)

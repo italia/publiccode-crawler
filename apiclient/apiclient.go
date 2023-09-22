@@ -17,7 +17,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-type ApiClient struct {
+type APIClient struct {
 	baseURL         string
 	retryableClient *http.Client
 	token           string
@@ -66,17 +66,17 @@ type Software struct {
 	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
-func NewClient() ApiClient {
+func NewClient() APIClient {
 	retryableClient := retryablehttp.NewClient().StandardClient()
 
-	return ApiClient{
+	return APIClient{
 		baseURL:         viper.GetString("API_BASEURL"),
 		retryableClient: retryableClient,
 		token:           "Bearer " + viper.GetString("API_BEARER_TOKEN"),
 	}
 }
 
-func (clt ApiClient) Get(url string) (*http.Response, error) {
+func (clt APIClient) Get(url string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -85,7 +85,7 @@ func (clt ApiClient) Get(url string) (*http.Response, error) {
 	return clt.retryableClient.Do(req)
 }
 
-func (clt ApiClient) Post(url string, body []byte) (*http.Response, error) {
+func (clt APIClient) Post(url string, body []byte) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(
 		context.Background(),
 		http.MethodPost,
@@ -102,7 +102,7 @@ func (clt ApiClient) Post(url string, body []byte) (*http.Response, error) {
 	return clt.retryableClient.Do(req)
 }
 
-func (clt ApiClient) Patch(url string, body []byte) (*http.Response, error) {
+func (clt APIClient) Patch(url string, body []byte) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(
 		context.Background(),
 		http.MethodPatch,
@@ -121,30 +121,30 @@ func (clt ApiClient) Patch(url string, body []byte) (*http.Response, error) {
 
 // GetPublishers returns a slice with all the publishers from the API and
 // any error encountered.
-func (c ApiClient) GetPublishers() ([]common.Publisher, error) {
+func (clt APIClient) GetPublishers() ([]common.Publisher, error) {
 	var publishersResponse *PublishersPaginated
 
 	pageAfter := ""
 	publishers := make([]common.Publisher, 0, 25)
 
 page:
-	reqUrl := joinPath(c.baseURL, "/publishers") + pageAfter
+	reqURL := joinPath(clt.baseURL, "/publishers") + pageAfter
 
-	res, err := c.Get(reqUrl)
+	res, err := clt.Get(reqURL)
 	if err != nil {
-		return nil, fmt.Errorf("can't get publishers %s: %w", reqUrl, err)
+		return nil, fmt.Errorf("can't get publishers %s: %w", reqURL, err)
 	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return nil, fmt.Errorf("can't get publishers %s: HTTP status %s", reqUrl, res.Status)
+		return nil, fmt.Errorf("can't get publishers %s: HTTP status %s", reqURL, res.Status)
 	}
 
 	publishersResponse = &PublishersPaginated{}
 	err = json.NewDecoder(res.Body).Decode(&publishersResponse)
 	if err != nil {
-		return nil, fmt.Errorf("can't parse GET %s response: %w", reqUrl, err)
+		return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
 	}
 
 	for _, p := range publishersResponse.Data {
@@ -153,7 +153,7 @@ page:
 		for _, codeHosting := range p.CodeHostings {
 			u, err := url.Parse(codeHosting.URL)
 			if err != nil {
-				return nil, fmt.Errorf("can't parse GET %s response: %w", reqUrl, err)
+				return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
 			}
 
 			if codeHosting.Group {
@@ -176,7 +176,7 @@ page:
 			id = p.ID
 		}
 		publishers = append(publishers, common.Publisher{
-			Id:            id,
+			ID:            id,
 			Name:          fmt.Sprintf("%s %s", p.Description, p.Email),
 			Organizations: groups,
 			Repositories:  repos,
@@ -195,10 +195,10 @@ page:
 // GetSoftwareByURL returns the software matching the given repo URL and
 // any error encountered.
 // In case no software is found and no error occours, (nil, nil) is returned.
-func (c ApiClient) GetSoftwareByURL(url string) (*Software, error) {
+func (clt APIClient) GetSoftwareByURL(url string) (*Software, error) {
 	var softwareResponse SoftwarePaginated
 
-	res, err := c.retryableClient.Get(joinPath(c.baseURL, "/software") + "?url=" + url)
+	res, err := clt.retryableClient.Get(joinPath(clt.baseURL, "/software") + "?url=" + url)
 	if err != nil {
 		return nil, fmt.Errorf("can't GET /software?url=%s: %w", url, err)
 	}
@@ -219,7 +219,7 @@ func (c ApiClient) GetSoftwareByURL(url string) (*Software, error) {
 
 // PostSoftware creates a new software resource with the given fields and returns
 // a Software struct or any error encountered.
-func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml string, active bool) (*Software, error) {
+func (clt APIClient) PostSoftware(url string, aliases []string, publiccodeYml string, active bool) (*Software, error) {
 	body, err := json.Marshal(map[string]interface{}{
 		"publiccodeYml": publiccodeYml,
 		"url":           url,
@@ -230,7 +230,7 @@ func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml stri
 		return nil, fmt.Errorf("can't create software: %w", err)
 	}
 
-	res, err := c.Post(joinPath(c.baseURL, "/software"), body)
+	res, err := clt.Post(joinPath(clt.baseURL, "/software"), body)
 	if err != nil {
 		return nil, fmt.Errorf("can't create software: %w", err)
 	}
@@ -250,7 +250,7 @@ func (c ApiClient) PostSoftware(url string, aliases []string, publiccodeYml stri
 
 // PatchSoftware updates a software resource with the given fields and returns
 // an http.Response and any error encountered.
-func (c ApiClient) PatchSoftware(
+func (clt APIClient) PatchSoftware(
 	id string, url string, aliases []string, publiccodeYml string,
 ) (*http.Response, error) {
 	body, err := json.Marshal(map[string]interface{}{
@@ -262,7 +262,7 @@ func (c ApiClient) PatchSoftware(
 		return nil, fmt.Errorf("can't update software: %w", err)
 	}
 
-	res, err := c.Patch(joinPath(c.baseURL, "/software/"+id), body)
+	res, err := clt.Patch(joinPath(clt.baseURL, "/software/"+id), body)
 	if err != nil {
 		return res, fmt.Errorf("can't update software: %w", err)
 	}
@@ -276,7 +276,7 @@ func (c ApiClient) PatchSoftware(
 
 // PostSoftwareLog creates a new software log with the given fields and returns
 // an http.Response and any error encountered.
-func (c ApiClient) PostSoftwareLog(softwareId string, message string) (*http.Response, error) {
+func (clt APIClient) PostSoftwareLog(softwareID string, message string) (*http.Response, error) {
 	payload, err := json.Marshal(map[string]interface{}{
 		"message": message,
 	})
@@ -284,7 +284,7 @@ func (c ApiClient) PostSoftwareLog(softwareId string, message string) (*http.Res
 		return nil, fmt.Errorf("can't create log: %w", err)
 	}
 
-	res, err := c.Post(joinPath(c.baseURL, "/software/", softwareId, "logs"), payload)
+	res, err := clt.Post(joinPath(clt.baseURL, "/software/", softwareID, "logs"), payload)
 	if err != nil {
 		return res, fmt.Errorf("can't create software log: %w", err)
 	}
@@ -298,7 +298,7 @@ func (c ApiClient) PostSoftwareLog(softwareId string, message string) (*http.Res
 
 // PostLog creates a new log with the given message and returns an http.Response
 // and any error encountered.
-func (c ApiClient) PostLog(message string) (*http.Response, error) {
+func (clt APIClient) PostLog(message string) (*http.Response, error) {
 	payload, err := json.Marshal(map[string]interface{}{
 		"message": message,
 	})
@@ -306,7 +306,7 @@ func (c ApiClient) PostLog(message string) (*http.Response, error) {
 		return nil, fmt.Errorf("can't create log: %w", err)
 	}
 
-	res, err := c.Post(joinPath(c.baseURL, "/logs"), payload)
+	res, err := clt.Post(joinPath(clt.baseURL, "/logs"), payload)
 	if err != nil {
 		return res, fmt.Errorf("can't create log: %w", err)
 	}
