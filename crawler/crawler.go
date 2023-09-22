@@ -44,6 +44,7 @@ type Crawler struct {
 // NewCrawler initializes a new Crawler object and connects to Elasticsearch (if dryRun == false).
 func NewCrawler(dryRun bool) *Crawler {
 	var c Crawler
+	const channelSize = 1000
 
 	c.DryRun = dryRun
 
@@ -53,7 +54,7 @@ func NewCrawler(dryRun bool) *Crawler {
 	}
 
 	// Initiate a channel of repositories.
-	c.repositories = make(chan common.Repository, 1000)
+	c.repositories = make(chan common.Repository, channelSize)
 
 	// Register Prometheus metrics.
 	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", c.Index)
