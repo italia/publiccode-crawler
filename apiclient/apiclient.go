@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
-	"github.com/italia/publiccode-crawler/v3/common"
-	internalUrl "github.com/italia/publiccode-crawler/v3/internal"
+	"github.com/italia/publiccode-crawler/v4/common"
+	internalUrl "github.com/italia/publiccode-crawler/v4/internal"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

@@ -7,7 +7,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/italia/publiccode-crawler/v3/common"
+	"github.com/italia/publiccode-crawler/v4/common"
 	"github.com/xanzy/go-gitlab"
 )
 

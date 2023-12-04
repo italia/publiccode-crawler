@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/italia/publiccode-crawler/v3/common"
+	"github.com/italia/publiccode-crawler/v4/common"
 	"github.com/ktrysmt/go-bitbucket"
 	log "github.com/sirupsen/logrus"
 )
