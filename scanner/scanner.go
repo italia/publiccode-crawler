@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/url"
 
-	"github.com/italia/publiccode-crawler/v3/common"
+	"github.com/italia/publiccode-crawler/v4/common"
 )
 
 var ErrPubliccodeNotFound = errors.New("publiccode.yml not found")

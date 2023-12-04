@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/google/go-github/v43/github"
-	"github.com/italia/publiccode-crawler/v3/common"
+	"github.com/italia/publiccode-crawler/v4/common"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )

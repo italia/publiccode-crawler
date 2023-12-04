@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/italia/publiccode-crawler/v3/common"
+	"github.com/italia/publiccode-crawler/v4/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	git "gopkg.in/src-d/go-git.v4"

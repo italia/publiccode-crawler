@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/italia/publiccode-crawler/v3/cmd"
+	"github.com/italia/publiccode-crawler/v4/cmd"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )

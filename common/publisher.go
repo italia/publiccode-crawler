@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
-	url "github.com/italia/publiccode-crawler/v3/internal"
+	url "github.com/italia/publiccode-crawler/v4/internal"
 	"gopkg.in/yaml.v2"
 )
 
