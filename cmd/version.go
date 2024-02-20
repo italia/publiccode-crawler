@@ -15,7 +15,7 @@ var versionCmd = &cobra.Command{
 	Use:   "version",
 	Short: "Print the version number of the crawler.",
 	Long:  `All software has versions. This too.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, _ []string) {
 		//nolint:forbidigo
 		fmt.Println("Version:\t", internal.VERSION)
 		//nolint:forbidigo

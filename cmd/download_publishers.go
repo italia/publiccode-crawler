@@ -30,7 +30,7 @@ var downloadPublishersCmd = &cobra.Command{
 	Short: "Download the list of repos and orgs from the onboarding portal.",
 	Long:  `Download the list of repos and orgs from the onboarding portal and convert it into a publishers.yml.`,
 	Args:  cobra.ExactArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		var publishers []common.Publisher
 		if _, err := os.Stat(args[1]); err == nil {
 			data, err := ioutil.ReadFile(args[1])

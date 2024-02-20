@@ -21,7 +21,7 @@ var crawlCmd = &cobra.Command{
 				When run with no arguments, the publishers are fetched from the API,
 				otherwise the passed YAML files are used.`,
 	Args: cobra.MinimumNArgs(0),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		c := crawler.NewCrawler(dryRun)
 
 		var publishers []common.Publisher
