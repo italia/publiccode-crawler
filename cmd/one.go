@@ -23,7 +23,7 @@ var oneCmd = &cobra.Command{
 		according to the supplied file(s).
 		No organizations! Only single repositories!`,
 	Args: cobra.MinimumNArgs(2),
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(_ *cobra.Command, args []string) {
 		c := crawler.NewCrawler(dryRun)
 
 		paths := args[1:]

@@ -12,7 +12,7 @@ var (
 		Short: "A crawler for publiccode.yml files.",
 		Long: `A fast and robust publiccode.yml file crawler.
 Complete documentation is available at https://github.com/italia/publiccode-crawler`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			err := cmd.Help()
 			if err != nil {
 				log.Fatal(err)
