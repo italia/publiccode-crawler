@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -33,7 +33,7 @@ var downloadPublishersCmd = &cobra.Command{
 	Run: func(_ *cobra.Command, args []string) {
 		var publishers []common.Publisher
 		if _, err := os.Stat(args[1]); err == nil {
-			data, err := ioutil.ReadFile(args[1])
+			data, err := os.ReadFile(args[1])
 			if err != nil {
 				log.Fatalf("error in reading %s: %v", args[1], err)
 			}
@@ -45,7 +45,7 @@ var downloadPublishersCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 		defer resp.Body.Close()
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Fatal(err)
 		}
