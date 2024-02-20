@@ -2,7 +2,6 @@ package git
 
 import (
 	"errors"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -242,7 +241,7 @@ func extractOldestCommitDate(cIter object.CommitIter) time.Time {
 }
 
 func ranges(name string, value float64) float64 {
-	data, err := ioutil.ReadFile("vitality-ranges.yml")
+	data, err := os.ReadFile("vitality-ranges.yml")
 	if err != nil {
 		log.Error(err)
 	}

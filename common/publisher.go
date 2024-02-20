@@ -2,13 +2,13 @@ package common
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	url "github.com/italia/publiccode-crawler/v4/internal"
 	"gopkg.in/yaml.v2"
 )
 
-var fileReaderInject = ioutil.ReadFile
+var fileReaderInject = os.ReadFile
 
 type Publisher struct {
 	ID            string    `yaml:"id"`

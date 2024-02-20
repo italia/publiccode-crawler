@@ -2,7 +2,7 @@ package common
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +16,7 @@ type FakeReadFiler struct {
 
 func (f FakeReadFiler) ReadFile(filename string) ([]byte, error) {
 	buf := bytes.NewBufferString(f.Str)
-	return ioutil.ReadAll(buf)
+	return io.ReadAll(buf)
 }
 
 func TestReadPublishers(t *testing.T) {
