@@ -14,7 +14,7 @@ vendor
 
 # Compiled binaries
 bin/*
-publiccode-crawler
+/publiccode-crawler
 
 # Env
 .env
