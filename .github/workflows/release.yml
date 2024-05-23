@@ -17,7 +17,7 @@ jobs:
         id: go
       -
         name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       -
         name: Unshallow
         run: git fetch --prune --unshallow
