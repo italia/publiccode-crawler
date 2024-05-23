@@ -49,7 +49,8 @@ output:
   # Example: "checkstyle:report.json,colored-line-number"
   #
   # Default: colored-line-number
-  format: github-actions
+  formats:
+    format: github-actions
 
 linters-settings:
   wrapcheck:
@@ -94,7 +95,6 @@ linters:
     - errchkjson
     - errname
     - errorlint
-    - execinquery
     - exhaustive
     - exportloopref
     - forbidigo
@@ -170,6 +170,7 @@ linters:
     # - interfacer
     # - maligned
     # - scopelint
+    # - execinquery
 
     # # Not useful
     # - depguard

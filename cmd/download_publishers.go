@@ -37,6 +37,7 @@ var downloadPublishersCmd = &cobra.Command{
 			if err != nil {
 				log.Fatalf("error in reading %s: %v", args[1], err)
 			}
+			//nolint:musttag // false positive
 			_ = yaml.Unmarshal(data, &publishers)
 		}
 
