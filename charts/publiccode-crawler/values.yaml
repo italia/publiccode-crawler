@@ -1,0 +1,48 @@
+---
+
+image:
+  repository: docker.io/italia/publiccode-crawler
+  tag: latest
+  pullPolicy: Always
+
+env:
+  # fe. "https://api.developers.italia.it/v1"
+  API_BASEURL:
+
+  # fe. "456123fe-e5ad-41fa-b894-8a021a8ed972"
+  # (https://api.developers.italia.it/v1/publishers/456123fe-e5ad-41fa-b894-8a021a8ed972)
+  MAIN_PUBLISHER_ID:
+
+  SKIP_VITALITY: true
+
+# -- (string) When to run the crawler (cronjob format)
+cronjob_schedule: "0 0 * * *"
+
+# -- (string) Name of existing Kubernetes secret containing 'api-bearer-token'
+# and 'github-token'. If not provided, a secret will be generated using values
+# from 'apiBearerToken' and 'githubToken'.
+useExistingSecret:
+
+secrets:
+  # -- (string) The Developers Italia API compatible PASETO bearer token
+  apiBearerToken:
+  # -- (string) The GitHub token to use for the GitHub API requests
+  githubToken:
+
+resources:
+   # We usually recommend not to specify default resources and to leave this as a conscious
+   # choice for the user. This also increases chances charts run on environments with little
+   # resources, such as Minikube. If you do want to specify resources, uncomment the following
+   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+   # limits:
+   #   cpu: 100m
+   #   memory: 128Mi
+   # requests:
+   #   cpu: 100m
+   #   memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: {}
+
+affinity: {}

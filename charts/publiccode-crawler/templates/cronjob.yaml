@@ -1,0 +1,65 @@
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ template "publiccode-crawler.fullname" . }}
+spec:
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  concurrencyPolicy: Forbid
+  schedule: "{{ .Values.publiccode-crawler.cronjob_schedule }}"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: "{{ template "publiccode-crawler.fullname" . }}"
+        spec:
+          securityContext:
+            fsGroup: 1000
+
+          containers:
+          - name: {{ template "publiccode-crawler.fullname" . }}
+            image: "{{ .Values.publiccode-crawler.image.repository }}:{{ tpl .Values.publiccode-crawler.image.tag . }}"
+            imagePullPolicy: {{ .Values.publiccode-crawler.image.pullPolicy }}
+
+            command:
+              - /bin/bash
+            args:
+              - -c
+              - ln -sf /secrets-store/k8s-secrets-publiccode-crawler-domains-yml domains.yml && ./start.sh
+
+            volumeMounts:
+            - mountPath: /secrets-store
+              name: secrets-store
+
+            resources:
+              {{- toYaml .Values.publiccode-crawler.resources. | indent 14 }}
+            env:
+              - name: API_BASEURL
+                value: "{{ .Values.publiccode-crawler.env.API_BASEURL}}"
+              - name: MAIN_PUBLISHER_ID
+                value: "{{ .Values.publiccode-crawler.env.MAIN_PUBLISHER_ID }}"
+              - name: SKIP_VITALITY
+                value: "{{ .Values.publiccode-crawler.env.SKIP_VITALITY }}"
+              - name: API_BEARER_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ default (include "publiccode-crawler.fullname" .) .Values.useExistingSecret }}
+                    key: api-bearer-token
+              - name: GITHUB_TOKEN
+                valueFrom:
+                  secretKeyRef:
+                    name: {{ default (include "publiccode-crawler.fullname" .) .Values.useExistingSecret }}
+                    key: github-token
+
+          restartPolicy: Never
+
+          volumes:
+          - name: secrets-store
+            csi:
+              driver: secrets-store.csi.k8s.io
+              readOnly: true
+              volumeAttributes:
+                secretProviderClass: {{ template "publiccode-crawler.fullname" . }}

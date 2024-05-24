@@ -1,0 +1,10 @@
+---
+apiVersion: v2
+
+name: publiccode-crawler
+description: |
+   publiccode.yml crawler for the Open Source software catalog of Developers Italia
+
+type: application
+
+version: 0.1.0
