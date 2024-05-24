@@ -13,13 +13,13 @@ jobs:
       - uses: actions/checkout@v4
       - name: Get version
         id: get_version
-        run: echo "::set-output name=version::${GITHUB_REF_NAME#helm/}"
+        run: echo "version=${GITHUB_REF_NAME#helm/}" >> $GITHUB_ENV
       - name: Push chart to GitHub Container Registry
         uses: appany/helm-oci-chart-releaser@v0.4.1
         with:
           name: publiccode-crawler
           repository: ${{ github.repository }}/charts
-          tag: ${{ steps.get_version.outputs.version }}
+          tag: ${{ env.version }}
           registry: ghcr.io
           registry_username: ${{ github.actor }}
           registry_password: ${{ secrets.GITHUB_TOKEN }}
