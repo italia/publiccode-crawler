@@ -6,12 +6,12 @@ import (
 	"path/filepath"
 	"time"
 
+	git "github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/italia/publiccode-crawler/v4/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	git "gopkg.in/src-d/go-git.v4"
-	"gopkg.in/src-d/go-git.v4/plumbing"
-	"gopkg.in/src-d/go-git.v4/plumbing/object"
 	yaml "gopkg.in/yaml.v2"
 )
 
