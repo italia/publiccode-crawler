@@ -29,6 +29,10 @@ spec:
             args:
               - crawl
 
+            volumeMounts:
+            - mountPath: /secrets-store
+              name: secrets-store
+
             resources:
               {{- toYaml .Values.resources | indent 14 }}
             env:
@@ -50,3 +54,11 @@ spec:
                     key: github-token
 
           restartPolicy: Never
+
+          volumes:
+          - name: secrets-store
+            csi:
+              driver: secrets-store.csi.k8s.io
+              readOnly: true
+              volumeAttributes:
+                secretProviderClass: {{ template "publiccode-crawler.fullname" . }}
