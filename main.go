@@ -23,6 +23,7 @@ func main() {
 	viper.SetDefault("ACTIVITY_DAYS", 60)
 	viper.SetDefault("API_BASEURL", "https://api.developers.italia.it/v1/")
 	viper.SetDefault("MAIN_PUBLISHER_ID", "")
+	viper.SetDefault("GITHUB_TOKEN", "")
 
 	if err := viper.ReadInConfig(); err != nil {
 		var notFoundError viper.ConfigFileNotFoundError
