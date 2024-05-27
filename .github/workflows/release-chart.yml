@@ -15,7 +15,7 @@ jobs:
         id: get_version
         run: echo "version=${GITHUB_REF_NAME#helm/}" >> $GITHUB_ENV
       - name: Push chart to GitHub Container Registry
-        uses: appany/helm-oci-chart-releaser@v0.4.1
+        uses: appany/helm-oci-chart-releaser@v0.4.2
         with:
           name: publiccode-crawler
           repository: ${{ github.repository }}/charts
