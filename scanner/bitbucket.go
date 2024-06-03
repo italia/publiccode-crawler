@@ -22,6 +22,8 @@ func NewBitBucketScanner() Scanner {
 func (scanner BitBucketScanner) ScanGroupOfRepos(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
+	log.Debugf("BitBucketScanner.ScanGroupOfRepos(%s)", url.String())
+
 	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
 
 	if len(splitted) != 1 {
@@ -82,6 +84,8 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(
 func (scanner BitBucketScanner) ScanRepo(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
+	log.Debugf("BitBucketScanner.ScanRepo(%s)", url.String())
+
 	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
 	if len(splitted) != 2 {
 		return fmt.Errorf("bitbucket URL %s doesn't look like a repo", url.String())

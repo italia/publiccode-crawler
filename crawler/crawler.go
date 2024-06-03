@@ -129,7 +129,7 @@ func (c *Crawler) CrawlPublishers(publishers []common.Publisher) error {
 	// Process every item in publishers.
 	for _, publisher := range publishers {
 		c.publishersWg.Add(1)
-		go c.ScanPublisher(publisher)
+		c.ScanPublisher(publisher)
 	}
 
 	// Close the repositories channel when all the publisher goroutines are done
@@ -151,11 +151,15 @@ func (c *Crawler) crawl() error {
 
 	// Get cpus number
 	numCPUs := runtime.NumCPU()
+	log.Debugf("CPUs #: %d", numCPUs)
 
 	// Process the repositories in order to retrieve the files.
 	for i := 0; i < numCPUs; i++ {
 		c.repositoriesWg.Add(1)
-		go c.ProcessRepositories(reposChan)
+		go func(id int) {
+			log.Debugf("Starting ProcessRepositories() goroutine (#%d)", id)
+			c.ProcessRepositories(reposChan)
+		}(i)
 	}
 
 	for repo := range c.repositories {

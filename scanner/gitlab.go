@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/italia/publiccode-crawler/v4/common"
+	log "github.com/sirupsen/logrus"
 	"github.com/xanzy/go-gitlab"
 )
 
@@ -21,6 +22,8 @@ func NewGitLabScanner() Scanner {
 func (scanner GitLabScanner) ScanGroupOfRepos(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
+	log.Debugf("GitLabScanner.ScanGroupOfRepos(%s)", url.String())
+
 	apiURL, _ := url.Parse("/api/v4")
 	git, err := gitlab.NewClient(os.Getenv("GITLAB_TOKEN"), gitlab.WithBaseURL(apiURL.String()))
 	if err != nil {
@@ -68,6 +71,8 @@ func (scanner GitLabScanner) ScanGroupOfRepos(
 func (scanner GitLabScanner) ScanRepo(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
+	log.Debugf("GitLabScanner.ScanRepo(%s)", url.String())
+
 	apiURL, _ := url.Parse("/api/v4")
 	git, err := gitlab.NewClient(os.Getenv("GITLAB_TOKEN"), gitlab.WithBaseURL(apiURL.String()))
 	if err != nil {

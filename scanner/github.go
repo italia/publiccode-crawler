@@ -47,6 +47,8 @@ func NewGitHubScanner() Scanner {
 func (scanner GitHubScanner) ScanGroupOfRepos(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
+	log.Debugf("GitHubScanner.ScanGroupOfRepos(%s)", url.String())
+
 	opt := &github.RepositoryListByOrgOptions{}
 
 	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
@@ -128,6 +130,8 @@ func (scanner GitHubScanner) ScanGroupOfRepos(
 func (scanner GitHubScanner) ScanRepo(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
+	log.Debugf("GitHubScanner.ScanRepo(%s)", url.String())
+
 	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
 	if len(splitted) != 2 {
 		return fmt.Errorf("doesn't look like a GitHub repo %s", url.String())
