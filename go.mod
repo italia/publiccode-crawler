@@ -5,8 +5,8 @@ require (
 	github.com/go-git/go-git/v5 v5.11.0
 	github.com/google/go-github/v43 v43.0.0
 	github.com/hashicorp/go-retryablehttp v0.7.1
-	github.com/italia/httpclient-lib-go v0.0.1
-	github.com/italia/publiccode-parser-go/v3 v3.1.2
+	github.com/italia/httpclient-lib-go v0.0.2
+	github.com/italia/publiccode-parser-go/v3 v3.1.3
 	github.com/ktrysmt/go-bitbucket v0.9.63
 	github.com/prometheus/client_golang v1.11.1
 	github.com/prometheus/client_model v0.3.0
@@ -15,7 +15,7 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.8.4
 	github.com/xanzy/go-gitlab v0.57.0
-	golang.org/x/exp v0.0.0-20220907003533-145caa8ea1d0
+	golang.org/x/exp v0.0.0-20220827204233-334a2380cb91
 	golang.org/x/oauth2 v0.10.0
 	gopkg.in/yaml.v2 v2.3.0
 	gopkg.in/yaml.v3 v3.0.1
