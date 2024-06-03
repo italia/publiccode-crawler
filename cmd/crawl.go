@@ -19,8 +19,10 @@ var crawlCmd = &cobra.Command{
 	Use:   "crawl publishers.yml [directory/*.yml ...]",
 	Short: "Crawl publiccode.yml files in publishers' repos.",
 	Long: `Crawl publiccode.yml files in publishers' repos.
-				When run with no arguments, the publishers are fetched from the API,
-				otherwise the passed YAML files are used.`,
+
+When run with no arguments, the publishers are fetched from the API,
+otherwise the passed YAML files are used.`,
+
 	Args: cobra.MinimumNArgs(0),
 	Run: func(_ *cobra.Command, args []string) {
 		if token := viper.GetString("GITHUB_TOKEN"); token == "" {
