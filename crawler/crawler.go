@@ -18,7 +18,7 @@ import (
 	"github.com/italia/publiccode-crawler/v4/git"
 	"github.com/italia/publiccode-crawler/v4/metrics"
 	"github.com/italia/publiccode-crawler/v4/scanner"
-	publiccode "github.com/italia/publiccode-parser-go/v3"
+	publiccode "github.com/italia/publiccode-parser-go/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"golang.org/x/exp/slices"
@@ -327,15 +327,6 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		),
 	)
 
-	var parser *publiccode.Parser
-	parser, err = publiccode.NewParser(repository.FileRawURL)
-	if err != nil {
-		logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %s\n", repository.Name, err.Error()))
-		metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
-
-		return
-	}
-
 	//nolint:godox
 	// FIXME: this is hardcoded for now, because it requires changes to publiccode-parser-go.
 	domain := publiccode.Domain{
@@ -344,9 +335,22 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		BasicAuth:   []string{os.Getenv("GITHUB_TOKEN")},
 	}
 
+	var parser *publiccode.Parser
+	parser, err = publiccode.NewParser(publiccode.ParserConfig{Domain: domain})
+	if err != nil {
+		logEntries = append(
+			logEntries,
+			fmt.Sprintf("[%s] can't create a Parser: %s\n", repository.Name, err.Error()),
+		)
+
+		return
+	}
+
+	var parsed publiccode.PublicCode
+	parsed, err = parser.Parse(repository.FileRawURL)
+
 	valid := true
 
-	err = parser.ParseInDomain(resp.Body, domain.Host, domain.UseTokenFor, domain.BasicAuth)
 	if err != nil {
 		var validationResults publiccode.ValidationResults
 		if errors.As(err, &validationResults) {
@@ -363,7 +367,8 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 
 	publisherID := viper.GetString("MAIN_PUBLISHER_ID")
 	if valid && repository.Publisher.ID != publisherID {
-		err = validateFile(repository.Publisher, *parser, repository.FileRawURL)
+		//nolint:forcetypeassert // we'd want to panic here anyway if the library returns a non v0
+		err = validateFile(repository.Publisher, parsed.(publiccode.PublicCodeV0), repository.FileRawURL)
 		if err != nil {
 			valid = false
 		}
@@ -372,10 +377,11 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 	if !valid {
 		logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
 		metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
-	} else {
-		logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
-		metrics.GetCounter("repository_good_publiccodeyml", c.Index).Inc()
+
+		return
 	}
+	logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
+	metrics.GetCounter("repository_good_publiccodeyml", c.Index).Inc()
 
 	if c.DryRun {
 		log.Infof("[%s]: Skipping other steps (--dry-run)", repository.Name)
@@ -391,7 +397,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		aliases = append(aliases, repository.URL.String())
 	}
 
-	publiccodeYml, err := parser.ToYAML()
+	publiccodeYml, err := parsed.ToYAML()
 	if err != nil {
 		logEntries = append(logEntries, fmt.Sprintf("[%s] parsing error: %s", repository.Name, err.Error()))
 
@@ -433,7 +439,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 
 	if !viper.GetBool("SKIP_VITALITY") && !c.DryRun {
 		// Clone repository.
-		err = git.CloneRepository(repository.URL.Host, repository.Name, parser.PublicCode.URL.String(), c.Index)
+		err = git.CloneRepository(repository.URL.Host, repository.Name, parsed.Url().String(), c.Index)
 		if err != nil {
 			logEntries = append(logEntries, fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err))
 		}
@@ -460,11 +466,11 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 // validateFile performs additional validations that are not strictly mandated
 // by the publiccode.yml Standard.
 // Using `one` command this check will be skipped.
-func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawURL string) error {
+func validateFile(publisher common.Publisher, parsed publiccode.PublicCodeV0, fileRawURL string) error {
 	u, _ := url.Parse(fileRawURL)
 	repo1 := vcsurl.GetRepo(u)
 
-	repo2 := vcsurl.GetRepo((*url.URL)(parser.PublicCode.URL))
+	repo2 := vcsurl.GetRepo((*url.URL)(parsed.Url()))
 
 	if repo1 != nil && repo2 != nil {
 		// Let's ignore the schema when checking for equality.
@@ -477,7 +483,7 @@ func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawU
 			return fmt.Errorf(
 				"declared url (%s) and actual publiccode.yml location URL (%s) "+
 					"are not in the same repo: '%s' vs '%s'",
-				parser.PublicCode.URL, fileRawURL, repo2, repo1,
+				parsed.Url(), fileRawURL, repo2, repo1,
 			)
 		}
 	}
@@ -494,11 +500,11 @@ func validateFile(publisher common.Publisher, parser publiccode.Parser, fileRawU
 
 	if !idIsUUID && !strings.EqualFold(
 		strings.TrimSpace(publisher.ID),
-		strings.TrimSpace(parser.PublicCode.It.Riuso.CodiceIPA),
+		strings.TrimSpace(parsed.It.Riuso.CodiceIPA),
 	) {
 		return fmt.Errorf(
 			"codiceIPA is '%s', but '%s' was expected for '%s' in %s",
-			parser.PublicCode.It.Riuso.CodiceIPA,
+			parsed.It.Riuso.CodiceIPA,
 			publisher.ID,
 			publisher.Name,
 			fileRawURL,
