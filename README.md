@@ -9,15 +9,15 @@
 Developers Italia provides [a catalog of Free and Open Source](https://developers.italia.it/en/search)
 software aimed to Public Administrations.
 
-This **crawler** retrieves the `publiccode.yml` files from the
+`publiccode-crawler` retrieves the `publiccode.yml` files from the
 repositories of publishers found in the [Developers Italia API](https://github.com/italia/developers-italia-api).
 
 ## Setup and deployment processes
 
-The crawler can either run manually on the target machine or it can be deployed
+`publiccode-crawler` can either run manually on the target machine or it can be deployed
 from a Docker container.
 
-### Manually configure and build the crawler
+### Manually configure and build
 
 1. Rename `config.toml.example` to `config.toml` and set the variables
 
@@ -43,15 +43,22 @@ docker run -it italia/publiccode-crawler
 
 ## Commands
 
-### `crawler crawl`
+### `publiccode-crawler crawl`
 
 Gets the list of publishers from `https://api.developers.italia.it/v1/publishers`
 and starts to crawl their repositories.
 
-### `crawler crawl publishers*.yml`
+### `publiccode-crawler crawl publishers*.yml`
 
 Gets the list of publishers in `publishers*.yml` and starts to crawl
 their repositories.
+
+### `publiccode-crawler crawl-software <software> <publisher>`
+
+Crawl just the software specified as paramenter.
+It takes the software URL and its publisher id as parameters.
+
+Ex. `publiccode-crawler crawl-software https://api.developers.italia.it/v1/software/a2ea59b0-87cd-4419-b93f-00bed8a7b859 edb66b3d-3e36-4b69-aba9-b7c4661b3fdd"
 
 ### Other commands
 

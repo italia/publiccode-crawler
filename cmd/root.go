@@ -8,7 +8,7 @@ import (
 var (
 	dryRun  bool
 	rootCmd = &cobra.Command{
-		Use:   "crawler",
+		Use:   "publiccode-crawler",
 		Short: "A crawler for publiccode.yml files.",
 		Long: `A fast and robust publiccode.yml file crawler.
 Complete documentation is available at https://github.com/italia/publiccode-crawler`,
