@@ -192,6 +192,25 @@ page:
 	return publishers, nil
 }
 
+// GetSoftware returns the software with the given id or any error encountered.
+func (clt APIClient) GetSoftware(id string) (*Software, error) {
+	var softwareResponse Software
+
+	res, err := clt.retryableClient.Get(joinPath(clt.baseURL, "/software") + "/" + id)
+	if err != nil {
+		return nil, fmt.Errorf("can't GET /software/%s: %w", id, err)
+	}
+
+	defer res.Body.Close()
+
+	err = json.NewDecoder(res.Body).Decode(&softwareResponse)
+	if err != nil {
+		return nil, fmt.Errorf("can't parse GET /software/%s response: %w", id, err)
+	}
+
+	return &softwareResponse, nil
+}
+
 // GetSoftwareByURL returns the software matching the given repo URL and
 // any error encountered.
 // In case no software is found and no error occours, (nil, nil) is returned.

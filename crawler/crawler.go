@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path"
 	"regexp"
 	"runtime"
 	"strings"
@@ -83,18 +84,38 @@ func NewCrawler(dryRun bool) *Crawler {
 	return &c
 }
 
-// CrawlRepo crawls a single repository (only used by the 'one' command).
-func (c *Crawler) CrawlRepo(repoURL url.URL, publisher common.Publisher) error {
-	log.Infof("Processing repository: %s", repoURL.String())
+// CrawlSoftwareByAPIURL crawls a single software.
+func (c *Crawler) CrawlSoftwareByID(software string, publisher common.Publisher) error {
+	var id string
 
-	var err error
+	softwareURL, err := url.Parse(software)
+	if err != nil {
+		id = software
+	} else {
+		id = path.Base(softwareURL.Path)
+	}
+
+	s, err := c.apiClient.GetSoftware(id)
+	if err != nil {
+		return err
+	}
+
+	s.URL = strings.TrimSuffix(s.URL, ".git")
+
+	repoURL, err := url.Parse(s.URL)
+	if err != nil {
+		return err
+	}
+
+	log.Infof("Processing repository: %s", softwareURL.String())
+
 	switch {
-	case vcsurl.IsGitHub(&repoURL):
-		err = c.gitHubScanner.ScanRepo(repoURL, publisher, c.repositories)
-	case vcsurl.IsBitBucket(&repoURL):
-		err = c.bitBucketScanner.ScanRepo(repoURL, publisher, c.repositories)
-	case vcsurl.IsGitLab(&repoURL):
-		err = c.gitLabScanner.ScanRepo(repoURL, publisher, c.repositories)
+	case vcsurl.IsGitHub(repoURL):
+		err = c.gitHubScanner.ScanRepo(*repoURL, publisher, c.repositories)
+	case vcsurl.IsBitBucket(repoURL):
+		err = c.bitBucketScanner.ScanRepo(*repoURL, publisher, c.repositories)
+	case vcsurl.IsGitLab(repoURL):
+		err = c.gitLabScanner.ScanRepo(*repoURL, publisher, c.repositories)
 	default:
 		err = fmt.Errorf(
 			"publisher %s: unsupported code hosting platform for %s",
