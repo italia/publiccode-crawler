@@ -58,7 +58,7 @@ their repositories.
 Crawl just the software specified as paramenter.
 It takes the software URL and its publisher id as parameters.
 
-Ex. `publiccode-crawler crawl-software https://api.developers.italia.it/v1/software/a2ea59b0-87cd-4419-b93f-00bed8a7b859 edb66b3d-3e36-4b69-aba9-b7c4661b3fdd"
+Ex. `publiccode-crawler crawl-software https://api.developers.italia.it/v1/software/a2ea59b0-87cd-4419-b93f-00bed8a7b859 edb66b3d-3e36-4b69-aba9-b7c4661b3fdd`
 
 ### Other commands
 
