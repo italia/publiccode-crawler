@@ -918,6 +918,8 @@ github.com/italia/publiccode-parser-go/v4 v4.0.0 h1:1/q4VH7WtnkaJyq3Cn0HU0KUz9X6
 github.com/italia/publiccode-parser-go/v4 v4.0.0/go.mod h1:qmxP/BgLwCeNMjfcXbRz8WCMPn85Pekcy+oGTUmEF4U=
 github.com/italia/publiccode-parser-go/v4 v4.1.0 h1:xKk9Lr+ehhdmzSghEXFeS4PWJ5iK0kAeAb8ioCuLYKc=
 github.com/italia/publiccode-parser-go/v4 v4.1.0/go.mod h1:qmxP/BgLwCeNMjfcXbRz8WCMPn85Pekcy+oGTUmEF4U=
+github.com/italia/publiccode-parser-go/v4 v4.1.1 h1:ulGsQaGV/p+pXwCf5qS/9HO5VZtrlTwuqh6TWRql0L4=
+github.com/italia/publiccode-parser-go/v4 v4.1.1/go.mod h1:qmxP/BgLwCeNMjfcXbRz8WCMPn85Pekcy+oGTUmEF4U=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jonboulle/clockwork v0.1.0/go.mod h1:Ii8DK3G1RaLaWxj9trq07+26W01tbo22gdxWY5EU2bo=
