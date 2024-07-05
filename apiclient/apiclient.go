@@ -173,7 +173,7 @@ page:
 		// This way, we also take a minimalist approach to Publisher concept in the crawler,
 		// having just one id.
 		if p.AlternativeID != "" {
-			id = p.ID
+			id = p.AlternativeID
 		}
 		publishers = append(publishers, common.Publisher{
 			ID:            id,
