@@ -9,6 +9,7 @@ import (
 	"path"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 
@@ -22,7 +23,6 @@ import (
 	publiccode "github.com/italia/publiccode-parser-go/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"golang.org/x/exp/slices"
 )
 
 // Crawler is a helper class representing a crawler.

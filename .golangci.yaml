@@ -38,6 +38,7 @@ linters:
     - errname
     - errorlint
     - exhaustive
+    - exptostd
     - forbidigo
     - forcetypeassert
     # - funlen
