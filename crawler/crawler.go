@@ -175,7 +175,7 @@ func (c *Crawler) crawl() error {
 	log.Debugf("CPUs #: %d", numCPUs)
 
 	// Process the repositories in order to retrieve the files.
-	for i := 0; i < numCPUs; i++ {
+	for i := range numCPUs {
 		c.repositoriesWg.Add(1)
 		go func(id int) {
 			log.Debugf("Starting ProcessRepositories() goroutine (#%d)", id)

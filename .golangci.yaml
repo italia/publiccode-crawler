@@ -61,6 +61,7 @@ linters:
     - grouper
     - importas
     - interfacebloat
+    - intrange
     # - ireturn
     - lll
     - loggercheck

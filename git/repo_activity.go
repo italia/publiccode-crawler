@@ -95,7 +95,7 @@ func CalculateRepoActivity(repository common.Repository, days int) (float64, map
 		log.Warn(err)
 	}
 
-	for i := 0; i < days; i++ {
+	for i := range days {
 		userCommunity = ranges("userCommunity", userCommunityLastDays(commitsLastDays[i]))
 
 		codeActivity = ranges("codeActivity", activityLastDays(commitsPerDay[i]))
@@ -271,7 +271,7 @@ func ranges(name string, value float64) float64 {
 func extractCommitsLastDays(days int, commits []*object.Commit) map[int][]*object.Commit {
 	commitsLastDays := map[int][]*object.Commit{}
 	// Populate the slice of commits in every day.
-	for i := 0; i < days; i++ {
+	for i := range days {
 		lastDays := time.Now().AddDate(0, 0, -i)
 		// Append all the commits created before lastDays date.
 		for _, c := range commits {
@@ -288,7 +288,7 @@ func extractCommitsLastDays(days int, commits []*object.Commit) map[int][]*objec
 func extractCommitsPerDay(days int, commits []*object.Commit) map[int][]*object.Commit {
 	commitsPerDay := map[int][]*object.Commit{}
 	// Populate the slice of commits in every day.
-	for i := 0; i < days; i++ {
+	for i := range days {
 		lastDays := time.Now().AddDate(0, 0, -i)
 		// Append all the commits created before lastDays date.
 		for _, c := range commits {
@@ -306,7 +306,7 @@ func extractCommitsPerDay(days int, commits []*object.Commit) map[int][]*object.
 // extractTagsPerDay returns a map of #[days] commits where a tag is created.
 func extractTagsPerDay(days int, tags []*object.Commit) map[int][]*object.Commit {
 	tagsPerDays := map[int][]*object.Commit{}
-	for i := 0; i < days; i++ {
+	for i := range days {
 		lastDays := time.Now().AddDate(0, 0, -i)
 		// Append all the commits created before lastDays date.
 		for _, t := range tags {
