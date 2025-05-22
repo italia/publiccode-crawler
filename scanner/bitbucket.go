@@ -38,7 +38,7 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(
 
 	res, err := scanner.client.Repositories.ListForAccount(opt)
 	if err != nil {
-		return fmt.Errorf("Can't list repositories in %s: %w", url.String(), err)
+		return fmt.Errorf("can't list repositories in %s: %w", url.String(), err)
 	}
 
 	for _, r := range res.Items {
