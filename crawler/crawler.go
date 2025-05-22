@@ -162,47 +162,6 @@ func (c *Crawler) CrawlPublishers(publishers []common.Publisher) error {
 	return c.crawl()
 }
 
-func (c *Crawler) crawl() error {
-	reposChan := make(chan common.Repository)
-
-	// Start the metrics server.
-	go metrics.StartPrometheusMetricsServer()
-
-	defer c.publishersWg.Wait()
-
-	// Get cpus number
-	numCPUs := runtime.NumCPU()
-	log.Debugf("CPUs #: %d", numCPUs)
-
-	// Process the repositories in order to retrieve the files.
-	for i := range numCPUs {
-		c.repositoriesWg.Add(1)
-		go func(id int) {
-			log.Debugf("Starting ProcessRepositories() goroutine (#%d)", id)
-			c.ProcessRepositories(reposChan)
-		}(i)
-	}
-
-	for repo := range c.repositories {
-		reposChan <- repo
-	}
-	close(reposChan)
-	c.repositoriesWg.Wait()
-
-	log.Infof(
-		"Summary: Total repos scanned: %v. With good publiccode.yml file: %v. With bad publiccode.yml file: %v\n"+
-			"Repos with good publiccode.yml file: New repos: %v, Known repos: %v, Failures saving to API: %v",
-		metrics.GetCounterValue("repository_processed", c.Index),
-		metrics.GetCounterValue("repository_good_publiccodeyml", c.Index),
-		metrics.GetCounterValue("repository_bad_publiccodeyml", c.Index),
-		metrics.GetCounterValue("repository_new", c.Index),
-		metrics.GetCounterValue("repository_known", c.Index),
-		metrics.GetCounterValue("repository_upsert_failures", c.Index),
-	)
-
-	return nil
-}
-
 // ScanPublisher scans all the publisher' repositories and sends the ones
 // with a valid publiccode.yml to the repositories channel.
 func (c *Crawler) ScanPublisher(publisher common.Publisher) {
@@ -482,6 +441,47 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 			)
 		}
 	}
+}
+
+func (c *Crawler) crawl() error {
+	reposChan := make(chan common.Repository)
+
+	// Start the metrics server.
+	go metrics.StartPrometheusMetricsServer()
+
+	defer c.publishersWg.Wait()
+
+	// Get cpus number
+	numCPUs := runtime.NumCPU()
+	log.Debugf("CPUs #: %d", numCPUs)
+
+	// Process the repositories in order to retrieve the files.
+	for i := range numCPUs {
+		c.repositoriesWg.Add(1)
+		go func(id int) {
+			log.Debugf("Starting ProcessRepositories() goroutine (#%d)", id)
+			c.ProcessRepositories(reposChan)
+		}(i)
+	}
+
+	for repo := range c.repositories {
+		reposChan <- repo
+	}
+	close(reposChan)
+	c.repositoriesWg.Wait()
+
+	log.Infof(
+		"Summary: Total repos scanned: %v. With good publiccode.yml file: %v. With bad publiccode.yml file: %v\n"+
+			"Repos with good publiccode.yml file: New repos: %v, Known repos: %v, Failures saving to API: %v",
+		metrics.GetCounterValue("repository_processed", c.Index),
+		metrics.GetCounterValue("repository_good_publiccodeyml", c.Index),
+		metrics.GetCounterValue("repository_bad_publiccodeyml", c.Index),
+		metrics.GetCounterValue("repository_new", c.Index),
+		metrics.GetCounterValue("repository_known", c.Index),
+		metrics.GetCounterValue("repository_upsert_failures", c.Index),
+	)
+
+	return nil
 }
 
 // validateFile performs additional validations that are not strictly mandated

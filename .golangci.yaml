@@ -41,6 +41,7 @@ linters:
     - exptostd
     - forbidigo
     - forcetypeassert
+    - funcorder
     # - funlen
     - ginkgolinter
     - gocheckcompilerdirectives
