@@ -38,8 +38,10 @@ linters:
     - errname
     - errorlint
     - exhaustive
+    - exptostd
     - forbidigo
     - forcetypeassert
+    - funcorder
     # - funlen
     - ginkgolinter
     - gocheckcompilerdirectives
@@ -60,6 +62,7 @@ linters:
     - grouper
     - importas
     - interfacebloat
+    - intrange
     # - ireturn
     - lll
     - loggercheck
@@ -80,11 +83,11 @@ linters:
     - prealloc
     - predeclared
     - promlinter
+    - protogetter
     - reassign
     - revive
     - rowserrcheck
     - sqlclosecheck
-    # - stylecheck
     - tagliatelle
     - testableexamples
     - testpackage

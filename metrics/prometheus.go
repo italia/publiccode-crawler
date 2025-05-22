@@ -40,7 +40,7 @@ func GetCounterValue(name, namespace string) float64 {
 		return 0
 	}
 
-	return m.Counter.GetValue()
+	return m.GetCounter().GetValue()
 }
 
 // RegisterPrometheusCounter register a new Counter of given name with help text.
