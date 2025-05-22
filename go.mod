@@ -83,4 +83,4 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 
-go 1.23.0
+go 1.24
