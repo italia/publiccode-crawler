@@ -61,6 +61,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(
 	for {
 	Retry:
 		repos, resp, err := scanner.client.Repositories.ListByOrg(scanner.ctx, orgName, opt)
+
 		var rateLimitError *github.RateLimitError
 		if errors.As(err, &rateLimitError) {
 			log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
@@ -75,6 +76,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(
 
 			goto Retry
 		}
+
 		if err != nil {
 			// Try to list repos by user, for backwards compatibility.
 			log.Warnf(
@@ -157,6 +159,7 @@ Retry:
 
 		goto Retry
 	}
+
 	if err != nil {
 		return fmt.Errorf("can't get repo %s: %w", url.String(), err)
 	}
@@ -172,6 +175,7 @@ Retry:
 
 		goto Retry
 	}
+
 	if errors.As(err, &abuseRateLimitError) {
 		secondaryRateLimit(abuseRateLimitError)
 

@@ -25,6 +25,7 @@ func (scanner GitLabScanner) ScanGroupOfRepos(
 	log.Debugf("GitLabScanner.ScanGroupOfRepos(%s)", url.String())
 
 	apiURL, _ := url.Parse("/api/v4")
+
 	git, err := gitlab.NewClient(os.Getenv("GITLAB_TOKEN"), gitlab.WithBaseURL(apiURL.String()))
 	if err != nil {
 		return err
@@ -51,6 +52,7 @@ func (scanner GitLabScanner) ScanGroupOfRepos(
 			if err != nil {
 				return err
 			}
+
 			for _, prj := range projects {
 				if err = addProject(nil, *prj, publisher, repositories); err != nil {
 					return err
@@ -60,6 +62,7 @@ func (scanner GitLabScanner) ScanGroupOfRepos(
 			if res.NextPage == 0 {
 				break
 			}
+
 			opts.Page = res.NextPage
 		}
 	}
@@ -74,12 +77,14 @@ func (scanner GitLabScanner) ScanRepo(
 	log.Debugf("GitLabScanner.ScanRepo(%s)", url.String())
 
 	apiURL, _ := url.Parse("/api/v4")
+
 	git, err := gitlab.NewClient(os.Getenv("GITLAB_TOKEN"), gitlab.WithBaseURL(apiURL.String()))
 	if err != nil {
 		return err
 	}
 
 	projectName := strings.Trim(url.Path, "/")
+
 	prj, _, err := git.Projects.GetProject(projectName, &gitlab.GetProjectOptions{})
 	if err != nil {
 		return err
@@ -105,6 +110,7 @@ func generateGitlabRawURL(baseURL, defaultBranch string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	u.Path = path.Join(u.Path, "raw", defaultBranch, "publiccode.yml")
 
 	return u.String(), err
@@ -124,6 +130,7 @@ func addGroupProjects(
 		if err != nil {
 			return err
 		}
+
 		for _, prj := range projects {
 			err = addProject(nil, *prj, publisher, repositories)
 			if err != nil {
@@ -134,17 +141,20 @@ func addGroupProjects(
 		if res.NextPage == 0 {
 			break
 		}
+
 		opts.Page = res.NextPage
 	}
 
 	dgOpts := &gitlab.ListDescendantGroupsOptions{
 		ListOptions: gitlab.ListOptions{Page: 1},
 	}
+
 	for {
 		groups, res, err := client.Groups.ListDescendantGroups(group.ID, dgOpts)
 		if err != nil {
 			return err
 		}
+
 		for _, g := range groups {
 			err = addGroupProjects(*g, publisher, repositories, client)
 			if err != nil {
@@ -155,6 +165,7 @@ func addGroupProjects(
 		if res.NextPage == 0 {
 			break
 		}
+
 		dgOpts.Page = res.NextPage
 	}
 
@@ -176,6 +187,7 @@ func addProject(
 		if err != nil {
 			return fmt.Errorf("failed to get canonical repo URL for %s: %w", project.WebURL, err)
 		}
+
 		if originalURL == nil {
 			originalURL = canonicalURL
 		}

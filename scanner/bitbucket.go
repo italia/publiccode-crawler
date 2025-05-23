@@ -54,12 +54,14 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(
 			Ref:      r.Mainbranch.Name,
 			Path:     "publiccode.yml",
 		}
+
 		res, err := scanner.client.Repositories.Repository.GetFileContent(opt)
 		if err != nil {
 			log.Infof("[%s]: no publiccode.yml: %s", r.Full_name, err.Error())
 
 			continue
 		}
+
 		if res != nil {
 			u, err := url.Parse(fmt.Sprintf("https://bitbucket.org/%s/%s.git", owner, r.Slug))
 			if err != nil {
@@ -110,10 +112,12 @@ func (scanner BitBucketScanner) ScanRepo(
 		Ref:      "HEAD",
 		Path:     "publiccode.yml",
 	}
+
 	res, err := scanner.client.Repositories.Repository.GetFileContent(filesOpt)
 	if err != nil {
 		return fmt.Errorf("[%s]: no publiccode.yml: %w", url.String(), err)
 	}
+
 	if res != nil {
 		canonicalURL, err := url.Parse(fmt.Sprintf("https://bitbucket.org/%s/%s.git", owner, repo.Slug))
 		if err != nil {

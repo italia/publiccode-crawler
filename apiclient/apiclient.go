@@ -142,6 +142,7 @@ page:
 	}
 
 	publishersResponse = &PublishersPaginated{}
+
 	err = json.NewDecoder(res.Body).Decode(&publishersResponse)
 	if err != nil {
 		return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
@@ -175,6 +176,7 @@ page:
 		if p.AlternativeID != "" {
 			id = p.AlternativeID
 		}
+
 		publishers = append(publishers, common.Publisher{
 			ID:            id,
 			Name:          fmt.Sprintf("%s %s", p.Description, p.Email),
@@ -259,6 +261,7 @@ func (clt APIClient) PostSoftware(url string, aliases []string, publiccodeYml st
 	}
 
 	postSoftwareResponse := &Software{}
+
 	err = json.NewDecoder(res.Body).Decode(&postSoftwareResponse)
 	if err != nil {
 		return nil, fmt.Errorf("can't parse POST /software (for %s) response: %w", url, err)
