@@ -45,6 +45,7 @@ type Crawler struct {
 // NewCrawler initializes a new Crawler object and connects to Elasticsearch (if dryRun == false).
 func NewCrawler(dryRun bool) *Crawler {
 	var c Crawler
+
 	const channelSize = 1000
 
 	c.DryRun = dryRun
@@ -166,9 +167,11 @@ func (c *Crawler) CrawlPublishers(publishers []common.Publisher) error {
 // with a valid publiccode.yml to the repositories channel.
 func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 	log.Infof("Processing publisher: %s", publisher.Name)
+
 	defer c.publishersWg.Done()
 
 	var err error
+
 	for _, u := range publisher.Organizations {
 		orgURL := (url.URL)(u)
 
@@ -186,6 +189,7 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 				u.String(),
 			)
 		}
+
 		if err != nil {
 			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
 				log.Warnf("[%s] %s", orgURL.String(), err.Error())
@@ -316,6 +320,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 	}
 
 	var parser *publiccode.Parser
+
 	parser, err = publiccode.NewParser(publiccode.ParserConfig{Domain: domain})
 	if err != nil {
 		logEntries = append(
@@ -356,11 +361,14 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 
 	if !valid {
 		logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
+
 		metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
 
 		return
 	}
+
 	logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
+
 	metrics.GetCounter("repository_good_publiccodeyml", c.Index).Inc()
 
 	if c.DryRun {
@@ -368,6 +376,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 	}
 
 	var aliases []string
+
 	url := repository.CanonicalURL.String()
 
 	// If the URL of the repo we have is different from the canonical URL
@@ -384,9 +393,10 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		return
 	}
 
-	// New software to add
 	if software == nil {
+		// New software to add
 		metrics.GetCounter("repository_new", c.Index).Inc()
+
 		if !c.DryRun {
 			// Add the software even if publiccode.yml is invalid, setting active to
 			// false so that we know about the new software and for example
@@ -399,8 +409,8 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 				return
 			}
 		}
-		// Known software
 	} else {
+		// Known software
 		for _, alias := range software.Aliases {
 			if !slices.Contains(aliases, alias) {
 				aliases = append(aliases, alias)
@@ -408,12 +418,15 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		}
 
 		metrics.GetCounter("repository_known", c.Index).Inc()
+
 		if !c.DryRun {
 			_, err = c.apiClient.PatchSoftware(software.ID, url, aliases, string(publiccodeYml))
 		}
 	}
+
 	if err != nil {
 		logEntries = append(logEntries, fmt.Sprintf("[%s]: %s", repository.Name, err.Error()))
+
 		metrics.GetCounter("repository_upsert_failures", c.Index).Inc()
 	}
 
@@ -429,6 +442,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		if viper.IsSet("ACTIVITY_DAYS") {
 			activityDays = viper.GetInt("ACTIVITY_DAYS")
 		}
+
 		activityIndex, _, err := git.CalculateRepoActivity(repository, activityDays)
 		if err != nil {
 			logEntries = append(
@@ -458,6 +472,7 @@ func (c *Crawler) crawl() error {
 	// Process the repositories in order to retrieve the files.
 	for i := range numCPUs {
 		c.repositoriesWg.Add(1)
+
 		go func(id int) {
 			log.Debugf("Starting ProcessRepositories() goroutine (#%d)", id)
 			c.ProcessRepositories(reposChan)
@@ -467,6 +482,7 @@ func (c *Crawler) crawl() error {
 	for repo := range c.repositories {
 		reposChan <- repo
 	}
+
 	close(reposChan)
 	c.repositoriesWg.Wait()
 

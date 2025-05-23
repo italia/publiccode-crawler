@@ -17,6 +17,7 @@ func CloneRepository(hostname, name, gitURL, index string) error {
 	if name == "" {
 		return errors.New("cannot save a file without name")
 	}
+
 	if gitURL == "" {
 		return errors.New("cannot clone a repository without git URL")
 	}

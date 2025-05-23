@@ -17,6 +17,7 @@ func (u *URL) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	if err != nil {
 		return err
 	}
+
 	*u = (URL)(*urlp)
 
 	return nil

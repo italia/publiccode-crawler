@@ -25,6 +25,7 @@ func LoadPublishers(path string) ([]Publisher, error) {
 	}
 
 	var publishers []Publisher
+
 	err = yaml.Unmarshal(data, &publishers)
 	if err != nil {
 		return nil, fmt.Errorf("error in parsing `%s': %w", path, err)

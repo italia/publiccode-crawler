@@ -100,7 +100,7 @@ linters:
     - wastedassign
     - whitespace
     # - wrapcheck
-    # - wsl
+    - wsl
 
   # disable:
     # # Not useful

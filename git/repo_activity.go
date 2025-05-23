@@ -105,6 +105,7 @@ func CalculateRepoActivity(repository common.Repository, days int) (float64, map
 		if repoActivity > 100 {
 			repoActivity = 100
 		}
+
 		vitalityIndex[i] = repoActivity
 	}
 
@@ -132,6 +133,7 @@ func userCommunityLastDays(commits []*object.Commit) float64 {
 func activityLastDays(commits []*object.Commit) float64 {
 	numberCommits := float64(len(commits))
 	numberMerges := 0
+
 	for _, c := range commits {
 		if c.NumParents() > 1 {
 			numberMerges++
@@ -154,6 +156,7 @@ func extractAllTagsCommit(r *git.Repository) ([]*object.Commit, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	err = tagrefs.ForEach(func(t *plumbing.Reference) error {
 		if !t.Hash().IsZero() {
 			tagObject, _ := r.CommitObject(t.Hash())
@@ -179,6 +182,7 @@ func extractAllCommits(r *git.Repository) ([]*object.Commit, error) {
 
 		return nil, err
 	}
+
 	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
 	if err != nil {
 		log.Error(err)
@@ -205,18 +209,21 @@ func calculateLongevityIndex(r *git.Repository) (float64, error) {
 
 		return 0, err
 	}
+
 	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
 	if err != nil {
 		log.Error(err)
 
 		return 0, err
 	}
+
 	creationDate := extractOldestCommitDate(cIter)
 
 	age := time.Since(creationDate).Hours() / 24
 
 	// Git was invented in 2005. If some repo starts before, remove.
 	then := time.Date(2005, time.January, 1, 1, 0, 0, 0, time.UTC)
+
 	duration := time.Since(then).Hours()
 	if age > duration/24 {
 		return -1, errors.New("first commit is too old. Must be after the creation of git (2005)")
@@ -306,6 +313,7 @@ func extractCommitsPerDay(days int, commits []*object.Commit) map[int][]*object.
 // extractTagsPerDay returns a map of #[days] commits where a tag is created.
 func extractTagsPerDay(days int, tags []*object.Commit) map[int][]*object.Commit {
 	tagsPerDays := map[int][]*object.Commit{}
+
 	for i := range days {
 		lastDays := time.Now().AddDate(0, 0, -i)
 		// Append all the commits created before lastDays date.
