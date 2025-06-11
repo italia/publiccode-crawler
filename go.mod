@@ -15,7 +15,6 @@ require (
 	github.com/spf13/viper v1.7.0
 	github.com/stretchr/testify v1.10.0
 	github.com/xanzy/go-gitlab v0.57.0
-	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	golang.org/x/oauth2 v0.10.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -28,7 +27,7 @@ require (
 	github.com/ProtonMail/go-crypto v1.1.3 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
-	github.com/cloudflare/circl v1.3.7 // indirect
+	github.com/cloudflare/circl v1.6.1 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.5 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dyatlov/go-oembed v0.0.0-20191103150536-a57c85b3b37c // indirect
