@@ -8,7 +8,7 @@ jobs:
     container:
       image: italia/publiccode-crawler:latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: publiccode-crawler crawl
         env:
           CRAWLER_DATADIR: /tmp/data
