@@ -9,7 +9,7 @@ require (
 	github.com/italia/publiccode-parser-go/v4 v4.3.1
 	github.com/ktrysmt/go-bitbucket v0.9.63
 	github.com/prometheus/client_golang v1.11.1
-	github.com/prometheus/client_model v0.3.0
+	github.com/prometheus/client_model v0.6.2
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/viper v1.20.1
@@ -74,7 +74,7 @@ require (
 	golang.org/x/sys v0.32.0 // indirect
 	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/time v0.8.0 // indirect
-	google.golang.org/protobuf v1.36.1 // indirect
+	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )
 
