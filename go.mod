@@ -4,7 +4,7 @@ require (
 	github.com/alranel/go-vcsurl/v2 v2.0.2
 	github.com/go-git/go-git/v5 v5.16.2
 	github.com/google/go-github/v43 v43.0.0
-	github.com/hashicorp/go-retryablehttp v0.7.7
+	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/italia/httpclient-lib-go v0.0.2
 	github.com/italia/publiccode-parser-go/v4 v4.3.3
 	github.com/ktrysmt/go-bitbucket v0.9.86
