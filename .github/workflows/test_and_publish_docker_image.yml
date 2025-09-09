@@ -15,7 +15,7 @@ jobs:
           # The build job will use the .git directory to
           # infer the current version to embed in the binary
           fetch-depth: 0
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: '1.24'
       - run: go build
