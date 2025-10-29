@@ -80,14 +80,6 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/italia/httpclient-lib-go v0.0.2 h1:4bJLywTVd7qHPdKxJXvvhlXp436JTC4KA6dLhIl5a6c=
 github.com/italia/httpclient-lib-go v0.0.2/go.mod h1:b0/D3ULsBw8X+zEl7j/kSZmiMlUdj+agppneOvSq6eA=
-github.com/italia/publiccode-parser-go/v5 v5.0.0 h1:1m/gWbL9hS6XqMwSILvm7wkVNEr3QM2me4Plm6mfBtA=
-github.com/italia/publiccode-parser-go/v5 v5.0.0/go.mod h1:xndoanQHcweEnJlubntvOHlT/cvde0eFDF59O5PwuCg=
-github.com/italia/publiccode-parser-go/v5 v5.1.0 h1:gBfi+2JjuKsSjwmSkdDFbuZRqh1xZUm2DPXH4TXrs/Y=
-github.com/italia/publiccode-parser-go/v5 v5.1.0/go.mod h1:xndoanQHcweEnJlubntvOHlT/cvde0eFDF59O5PwuCg=
-github.com/italia/publiccode-parser-go/v5 v5.1.1 h1:XVuWXNohNJfSvvXO3OjBoKJU09UELEtRXFpkSwOttvg=
-github.com/italia/publiccode-parser-go/v5 v5.1.1/go.mod h1:xndoanQHcweEnJlubntvOHlT/cvde0eFDF59O5PwuCg=
-github.com/italia/publiccode-parser-go/v5 v5.2.0 h1:48vhBosMiF357Ya2xRG3Guzq7rTmHvSpo45T7xfU5nU=
-github.com/italia/publiccode-parser-go/v5 v5.2.0/go.mod h1:xndoanQHcweEnJlubntvOHlT/cvde0eFDF59O5PwuCg=
 github.com/italia/publiccode-parser-go/v5 v5.2.1 h1:9aDiCrh84nHAJzDRhf/Gx+exusfd4iQ0GCwtEwofeqo=
 github.com/italia/publiccode-parser-go/v5 v5.2.1/go.mod h1:xndoanQHcweEnJlubntvOHlT/cvde0eFDF59O5PwuCg=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
@@ -174,8 +166,8 @@ github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80 h1:nrZ3ySNYwJ
 github.com/tomnomnom/linkheader v0.0.0-20180905144013-02ca5825eb80/go.mod h1:iFyPdL66DjUD96XmzVL3ZntbzcflLnznH0fr99w5VqE=
 github.com/xanzy/ssh-agent v0.3.3 h1:+/15pJfg/RsTxqYcX6fHqOXZwwMP+2VyYWJeWM2qQFM=
 github.com/xanzy/ssh-agent v0.3.3/go.mod h1:6dzNDKs0J9rVPHPhaGCukekBHKqfl+L3KghI1Bc68Uw=
-gitlab.com/gitlab-org/api/client-go v0.157.0 h1:B+/Ku1ek3V/MInR/SmvL4FOqE0YYx51u7lBVYIHC2ic=
-gitlab.com/gitlab-org/api/client-go v0.157.0/go.mod h1:CQVoxjEswJZeXft4Mi+H+OF1MVrpNVF6m4xvlPTQ2J4=
+gitlab.com/gitlab-org/api/client-go v0.157.1 h1:oYbOYk0A2Q+bc1drw8fikSvgi5GImQ9Cj0L0zkZ+PfY=
+gitlab.com/gitlab-org/api/client-go v0.157.1/go.mod h1:CQVoxjEswJZeXft4Mi+H+OF1MVrpNVF6m4xvlPTQ2J4=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=
 go.uber.org/goleak v1.3.0/go.mod h1:CoHD4mav9JJNrW/WLlf7HGZPjdw8EucARQHekz1X6bE=
 go.yaml.in/yaml/v2 v2.4.2 h1:DzmwEr2rDGHl7lsFgAHxmNz/1NlQ7xLIrlN2h5d1eGI=
