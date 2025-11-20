@@ -1,7 +1,7 @@
 module github.com/italia/publiccode-crawler/v4
 
 require (
-	github.com/alranel/go-vcsurl/v2 v2.0.2
+	github.com/alranel/go-vcsurl/v2 v2.0.3
 	github.com/go-git/go-git/v5 v5.16.3
 	github.com/google/go-github/v43 v43.0.0
 	github.com/hashicorp/go-retryablehttp v0.7.8
