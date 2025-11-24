@@ -10,7 +10,7 @@ jobs:
   release_chart:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Get version
         id: get_version
         run: echo "version=${GITHUB_REF_NAME#helm/}" >> $GITHUB_ENV
