@@ -80,8 +80,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/italia/httpclient-lib-go v0.0.2 h1:4bJLywTVd7qHPdKxJXvvhlXp436JTC4KA6dLhIl5a6c=
 github.com/italia/httpclient-lib-go v0.0.2/go.mod h1:b0/D3ULsBw8X+zEl7j/kSZmiMlUdj+agppneOvSq6eA=
-github.com/italia/publiccode-parser-go/v5 v5.2.1 h1:9aDiCrh84nHAJzDRhf/Gx+exusfd4iQ0GCwtEwofeqo=
-github.com/italia/publiccode-parser-go/v5 v5.2.1/go.mod h1:xndoanQHcweEnJlubntvOHlT/cvde0eFDF59O5PwuCg=
+github.com/italia/publiccode-parser-go/v5 v5.2.2 h1:yI3AOfNwUS2wR6qdb6s66evF7Z3Khnk3ugLAwDX6gRQ=
+github.com/italia/publiccode-parser-go/v5 v5.2.2/go.mod h1:27aTQgtwFmnhBzHTEsyWzauXF/L/uhCkbnR/gBYoW8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 h1:BQSFePA1RWJOlocH6Fxy8MmwDt+yVQYULKfN0RoTN8A=
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/kevinburke/ssh_config v1.2.0 h1:x584FjTGwHzMwvHx18PXxbBVzfnxogHaAReU4gf13a4=
