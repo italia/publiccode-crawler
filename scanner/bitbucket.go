@@ -15,7 +15,12 @@ type BitBucketScanner struct {
 }
 
 func NewBitBucketScanner() Scanner {
-	return BitBucketScanner{client: bitbucket.NewBasicAuth("", "")}
+	client, err := bitbucket.NewBasicAuth("", "")
+	if err != nil {
+		panic(err)
+	}
+
+	return BitBucketScanner{client: client}
 }
 
 // RegisterBitbucketAPI register the crawler function for Bitbucket API.
