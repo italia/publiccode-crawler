@@ -5,8 +5,8 @@ require (
 	github.com/go-git/go-git/v5 v5.17.0
 	github.com/google/go-github/v43 v43.0.0
 	github.com/hashicorp/go-retryablehttp v0.7.8
-	github.com/italia/httpclient-lib-go v0.0.2
-	github.com/italia/publiccode-parser-go/v5 v5.2.3
+	github.com/italia/httpclient-lib-go v0.0.3-0.20260316100201-5dd490bc4896
+	github.com/italia/publiccode-parser-go/v5 v5.3.0
 	github.com/ktrysmt/go-bitbucket v0.9.94
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
@@ -22,7 +22,6 @@ require (
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
-	github.com/Jeffail/gabs v1.4.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -30,7 +29,6 @@ require (
 	github.com/cloudflare/circl v1.6.3 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/dyatlov/go-oembed v0.0.0-20191103150536-a57c85b3b37c // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
