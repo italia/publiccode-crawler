@@ -27,7 +27,7 @@ func CloneRepository(hostname, name, gitURL, index string) error {
 
 	// If folder already exists it will do a fetch instead of a clone.
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
-		out, err := exec.Command("git", "-C", path, "fetch", "--all").CombinedOutput()
+		out, err := exec.Command("git", "-C", path, "fetch", "--all").CombinedOutput() //nolint:noctx
 		if err != nil {
 			return fmt.Errorf("cannot git pull the repository: %s: %w", out, err)
 		}
@@ -35,7 +35,9 @@ func CloneRepository(hostname, name, gitURL, index string) error {
 		return nil
 	}
 
-	out, err := exec.Command("git", "clone", "--filter=blob:none", "--mirror", gitURL, path).CombinedOutput()
+	out, err := exec.Command( //nolint:noctx
+		"git", "clone", "--filter=blob:none", "--mirror", gitURL, path,
+	).CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("cannot git clone the repository: %s: %w", out, err)
 	}

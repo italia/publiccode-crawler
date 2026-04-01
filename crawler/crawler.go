@@ -85,7 +85,7 @@ func NewCrawler(dryRun bool) *Crawler {
 	return &c
 }
 
-// CrawlSoftwareByAPIURL crawls a single software.
+// CrawlSoftwareByID crawls a single software.
 func (c *Crawler) CrawlSoftwareByID(software string, publisher common.Publisher) error {
 	var id string
 
@@ -253,9 +253,9 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 
 			var err error
 			if software != nil {
-				_, err = c.apiClient.PostSoftwareLog(software.ID, entries)
+				err = c.apiClient.PostSoftwareLog(software.ID, entries)
 			} else {
-				_, err = c.apiClient.PostLog(entries)
+				err = c.apiClient.PostLog(entries)
 			}
 
 			if err != nil {
@@ -420,7 +420,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		metrics.GetCounter("repository_known", c.Index).Inc()
 
 		if !c.DryRun {
-			_, err = c.apiClient.PatchSoftware(software.ID, url, aliases, string(publiccodeYml))
+			err = c.apiClient.PatchSoftware(software.ID, url, aliases, string(publiccodeYml))
 		}
 	}
 

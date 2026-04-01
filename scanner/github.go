@@ -167,7 +167,9 @@ Retry:
 		return fmt.Errorf("skipping private or archived repo %s", *repo.FullName)
 	}
 
-	file, _, resp, err := scanner.client.Repositories.GetContents(context.Background(), orgName, repoName, "publiccode.yml", nil)
+	file, _, resp, err := scanner.client.Repositories.GetContents(
+		context.Background(), orgName, repoName, "publiccode.yml", nil,
+	)
 	if errors.As(err, &rateLimitError) {
 		log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 		time.Sleep(time.Until(resp.Rate.Reset.Time))

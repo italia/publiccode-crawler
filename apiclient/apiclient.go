@@ -198,7 +198,14 @@ page:
 func (clt APIClient) GetSoftware(id string) (*Software, error) {
 	var softwareResponse Software
 
-	res, err := clt.retryableClient.Get(joinPath(clt.baseURL, "/software") + "/" + id)
+	url := joinPath(clt.baseURL, "/software") + "/" + id
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("can't GET /software/%s: %w", id, err)
+	}
+
+	res, err := clt.retryableClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("can't GET /software/%s: %w", id, err)
 	}
@@ -219,7 +226,14 @@ func (clt APIClient) GetSoftware(id string) (*Software, error) {
 func (clt APIClient) GetSoftwareByURL(url string) (*Software, error) {
 	var softwareResponse SoftwarePaginated
 
-	res, err := clt.retryableClient.Get(joinPath(clt.baseURL, "/software") + "?url=" + url)
+	reqURL := joinPath(clt.baseURL, "/software") + "?url=" + url
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("can't GET /software?url=%s: %w", url, err)
+	}
+
+	res, err := clt.retryableClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("can't GET /software?url=%s: %w", url, err)
 	}
@@ -241,7 +255,7 @@ func (clt APIClient) GetSoftwareByURL(url string) (*Software, error) {
 // PostSoftware creates a new software resource with the given fields and returns
 // a Software struct or any error encountered.
 func (clt APIClient) PostSoftware(url string, aliases []string, publiccodeYml string, active bool) (*Software, error) {
-	body, err := json.Marshal(map[string]interface{}{
+	body, err := json.Marshal(map[string]any{
 		"publiccodeYml": publiccodeYml,
 		"url":           url,
 		"aliases":       aliases,
@@ -273,73 +287,78 @@ func (clt APIClient) PostSoftware(url string, aliases []string, publiccodeYml st
 }
 
 // PatchSoftware updates a software resource with the given fields and returns
-// an http.Response and any error encountered.
+// any error encountered.
 func (clt APIClient) PatchSoftware(
 	id string, url string, aliases []string, publiccodeYml string,
-) (*http.Response, error) {
-	body, err := json.Marshal(map[string]interface{}{
+) error {
+	body, err := json.Marshal(map[string]any{
 		"publiccodeYml": publiccodeYml,
 		"url":           url,
 		"aliases":       aliases,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("can't update software: %w", err)
+		return fmt.Errorf("can't update software: %w", err)
 	}
 
-	res, err := clt.Patch(joinPath(clt.baseURL, "/software/"+id), body) //nolint:bodyclose
+	res, err := clt.Patch(joinPath(clt.baseURL, "/software/"+id), body)
 	if err != nil {
-		return res, fmt.Errorf("can't update software: %w", err)
+		return fmt.Errorf("can't update software: %w", err)
 	}
+
+	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return res, fmt.Errorf("can't update software: API replied with HTTP %s", res.Status)
+		return fmt.Errorf("can't update software: API replied with HTTP %s", res.Status)
 	}
 
-	return res, nil
+	return nil
 }
 
 // PostSoftwareLog creates a new software log with the given fields and returns
-// an http.Response and any error encountered.
-func (clt APIClient) PostSoftwareLog(softwareID string, message string) (*http.Response, error) {
-	payload, err := json.Marshal(map[string]interface{}{
+// any error encountered.
+func (clt APIClient) PostSoftwareLog(softwareID string, message string) error {
+	payload, err := json.Marshal(map[string]any{
 		"message": message,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("can't create log: %w", err)
+		return fmt.Errorf("can't create log: %w", err)
 	}
 
-	res, err := clt.Post(joinPath(clt.baseURL, "/software/", softwareID, "logs"), payload) //nolint:bodyclose
+	res, err := clt.Post(joinPath(clt.baseURL, "/software/", softwareID, "logs"), payload)
 	if err != nil {
-		return res, fmt.Errorf("can't create software log: %w", err)
+		return fmt.Errorf("can't create software log: %w", err)
 	}
+
+	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return res, fmt.Errorf("can't create software log: API replied with HTTP %s", res.Status)
+		return fmt.Errorf("can't create software log: API replied with HTTP %s", res.Status)
 	}
 
-	return res, nil
+	return nil
 }
 
-// PostLog creates a new log with the given message and returns an http.Response
-// and any error encountered.
-func (clt APIClient) PostLog(message string) (*http.Response, error) {
-	payload, err := json.Marshal(map[string]interface{}{
+// PostLog creates a new log with the given message and returns any error encountered.
+func (clt APIClient) PostLog(message string) error {
+	payload, err := json.Marshal(map[string]any{
 		"message": message,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("can't create log: %w", err)
+		return fmt.Errorf("can't create log: %w", err)
 	}
 
-	res, err := clt.Post(joinPath(clt.baseURL, "/logs"), payload) //nolint:bodyclose
+	res, err := clt.Post(joinPath(clt.baseURL, "/logs"), payload)
 	if err != nil {
-		return res, fmt.Errorf("can't create log: %w", err)
+		return fmt.Errorf("can't create log: %w", err)
 	}
+
+	defer res.Body.Close()
 
 	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return res, fmt.Errorf("can't create log: API replied with HTTP %s", res.Status)
+		return fmt.Errorf("can't create log: API replied with HTTP %s", res.Status)
 	}
 
-	return res, nil
+	return nil
 }
 
 func joinPath(base string, paths ...string) string {

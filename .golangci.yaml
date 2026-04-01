@@ -41,6 +41,16 @@ linters:
     - gochecknoglobals
     - gochecknoinits
 
+    # Too pervasive, needs a dedicated pass
+    - err113
+    - wrapcheck
+
+    # Scanner constructors return Scanner by design
+    - ireturn
+
+    # Same as wsl above, v2 version
+    - wsl_v5
+
     # TODO: fix and enable these
     - cyclop
     - funlen
@@ -86,7 +96,6 @@ linters:
     forbidigo:
       forbid:
         - pattern: ^(fmt\.Print(|f|ln)|print|println)$
-        - pattern: ^panic$
         - pattern: ^os\.Exit$
 
   exclusions:
