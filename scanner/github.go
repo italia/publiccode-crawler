@@ -19,7 +19,6 @@ import (
 
 type GitHubScanner struct {
 	client *github.Client
-	ctx    context.Context
 }
 
 // NewGitHubScanner returns a new GitHubScanner using the
@@ -37,7 +36,7 @@ func NewGitHubScanner() Scanner {
 
 	client := github.NewClient(tc)
 
-	return GitHubScanner{client: client, ctx: ctx}
+	return GitHubScanner{client: client}
 }
 
 // ScanGroupOfRepos scans a GitHub organization represented by url, associated to
@@ -60,7 +59,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(
 
 	for {
 	Retry:
-		repos, resp, err := scanner.client.Repositories.ListByOrg(scanner.ctx, orgName, opt)
+		repos, resp, err := scanner.client.Repositories.ListByOrg(context.Background(), orgName, opt)
 
 		var rateLimitError *github.RateLimitError
 		if errors.As(err, &rateLimitError) {
@@ -84,7 +83,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(
 				url.String(), err.Error(),
 			)
 
-			repos, resp, err = scanner.client.Repositories.List(scanner.ctx, orgName, nil)
+			repos, resp, err = scanner.client.Repositories.List(context.Background(), orgName, nil)
 			if err != nil {
 				return fmt.Errorf("can't list repositories in %s (not an GitHub organization?): %w", url.String(), err)
 			}
@@ -143,7 +142,7 @@ func (scanner GitHubScanner) ScanRepo(
 	repoName := splitted[1]
 
 Retry:
-	repo, resp, err := scanner.client.Repositories.Get(scanner.ctx, orgName, repoName)
+	repo, resp, err := scanner.client.Repositories.Get(context.Background(), orgName, repoName)
 
 	var rateLimitError *github.RateLimitError
 	if errors.As(err, &rateLimitError) {
@@ -168,7 +167,7 @@ Retry:
 		return fmt.Errorf("skipping private or archived repo %s", *repo.FullName)
 	}
 
-	file, _, resp, err := scanner.client.Repositories.GetContents(scanner.ctx, orgName, repoName, "publiccode.yml", nil)
+	file, _, resp, err := scanner.client.Repositories.GetContents(context.Background(), orgName, repoName, "publiccode.yml", nil)
 	if errors.As(err, &rateLimitError) {
 		log.Infof("GitHub rate limit hit, sleeping until %s", resp.Rate.Reset.Time.String())
 		time.Sleep(time.Until(resp.Rate.Reset.Time))
