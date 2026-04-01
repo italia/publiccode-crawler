@@ -18,105 +18,42 @@ run:
   tests: false
 
 linters:
-  # TODO: incrementally enable all of them
-  default: standard
+  default: all
 
-  enable:
-    - asasalint
-    - asciicheck
-    - bidichk
-    # - bodyclose
-    # - containedctx
-    - contextcheck
-    # - cyclop
-    - decorder
-    - dogsled
-    - dupl
-    - dupword
-    - durationcheck
-    - errchkjson
-    - errname
-    - errorlint
-    - exhaustive
-    - exptostd
-    - forbidigo
-    - forcetypeassert
-    - funcorder
-    # - funlen
-    - ginkgolinter
-    - gocheckcompilerdirectives
-    # - gochecknoglobals
-    # - gochecknoinits
-    # - gocognit
-    - goconst
-    - gocritic
-    # - gocyclo
-    - godot
+  disable:
+    # Not useful
+    - depguard
+    # Banning TODO/FIXME outright removes useful context from the codebase
     - godox
-    # - goerr113
-    - goheader
-    - gomoddirectives
-    - gomodguard
-    - goprintffuncname
-    - gosec
-    - grouper
-    - importas
-    - interfacebloat
-    - intrange
-    # - ireturn
-    - lll
-    - loggercheck
-    - maintidx
-    - makezero
-    - misspell
+    # Not terribly useful and ends up in too much boilerplate
+    - exhaustruct
+    # False positives in this codebase
     - musttag
-    - nakedret
-    # - nestif
-    - nilerr
-    - nilnil
-    - nlreturn
-    # - noctx
-    - nolintlint
-    - nonamedreturns
-    - nosprintfhostport
-    - paralleltest
-    - prealloc
-    - predeclared
-    - promlinter
-    - protogetter
-    - reassign
-    - revive
-    - rowserrcheck
-    - sqlclosecheck
-    - tagliatelle
-    - testableexamples
-    - testpackage
-    - thelper
-    - tparallel
-    - unconvert
-    - unparam
-    - usestdlibvars
-    # - varnamelen
-    - wastedassign
-    - whitespace
-    # - wrapcheck
+    # Meh
+    - noinlineerr
+    # Deprecated
     - wsl
 
-  # disable:
-    # # Not useful
-    # - depguard
-    # # Not terribly useful and ends up in too much boilerplate
-    # - exhaustruct
-    # # False positives (https://github.com/daixiang0/gci/issues/54)
-    # - gci
-    # # https://github.com/italia/developers-italia-api/issues/190)
-    # # Don't feel about chasing this one down
-    # - musttag
-    #
-    # # More false positive than actual issues
-    # - mnd
+    # More false positive than actual issues
+    - mnd
+
+    # Cobra CLI pattern: init() for command registration, package-level command vars
+    - gochecknoglobals
+    - gochecknoinits
+
+    # TODO: fix and enable these
+    - cyclop
+    - funlen
+    - gocognit
+    - goconst
+    - nestif
+    - tagliatelle
+    - varnamelen
+    - gocyclo
 
   settings:
+    lll:
+      line-length: 120
     wrapcheck:
       ignore-sigs:
         # No point in wrapping these
@@ -146,6 +83,11 @@ linters:
       os-setenv: true
       os-create-temp: true
       os-temp-dir: false
+    forbidigo:
+      forbid:
+        - pattern: ^(fmt\.Print(|f|ln)|print|println)$
+        - pattern: ^panic$
+        - pattern: ^os\.Exit$
 
   exclusions:
     generated: lax
