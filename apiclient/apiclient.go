@@ -256,6 +256,8 @@ func (clt APIClient) PostSoftware(url string, aliases []string, publiccodeYml st
 		return nil, fmt.Errorf("can't create software: %w", err)
 	}
 
+	defer res.Body.Close()
+
 	if res.StatusCode < 200 || res.StatusCode > 299 {
 		return nil, fmt.Errorf("can't create software: API replied with HTTP %s", res.Status)
 	}
@@ -284,7 +286,7 @@ func (clt APIClient) PatchSoftware(
 		return nil, fmt.Errorf("can't update software: %w", err)
 	}
 
-	res, err := clt.Patch(joinPath(clt.baseURL, "/software/"+id), body)
+	res, err := clt.Patch(joinPath(clt.baseURL, "/software/"+id), body) //nolint:bodyclose
 	if err != nil {
 		return res, fmt.Errorf("can't update software: %w", err)
 	}
@@ -306,7 +308,7 @@ func (clt APIClient) PostSoftwareLog(softwareID string, message string) (*http.R
 		return nil, fmt.Errorf("can't create log: %w", err)
 	}
 
-	res, err := clt.Post(joinPath(clt.baseURL, "/software/", softwareID, "logs"), payload)
+	res, err := clt.Post(joinPath(clt.baseURL, "/software/", softwareID, "logs"), payload) //nolint:bodyclose
 	if err != nil {
 		return res, fmt.Errorf("can't create software log: %w", err)
 	}
@@ -328,7 +330,7 @@ func (clt APIClient) PostLog(message string) (*http.Response, error) {
 		return nil, fmt.Errorf("can't create log: %w", err)
 	}
 
-	res, err := clt.Post(joinPath(clt.baseURL, "/logs"), payload)
+	res, err := clt.Post(joinPath(clt.baseURL, "/logs"), payload) //nolint:bodyclose
 	if err != nil {
 		return res, fmt.Errorf("can't create log: %w", err)
 	}
