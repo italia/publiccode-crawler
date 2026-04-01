@@ -23,7 +23,7 @@ func NewBitBucketScanner() Scanner {
 	return BitBucketScanner{client: client}
 }
 
-// RegisterBitbucketAPI register the crawler function for Bitbucket API.
+// ScanGroupOfRepos scans a Bitbucket workspace represented by url.
 func (scanner BitBucketScanner) ScanGroupOfRepos(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
@@ -87,7 +87,7 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(
 	return nil
 }
 
-// RegisterSingleBitbucketAPI register the crawler function for single Bitbucket repository.
+// ScanRepo scans a single Bitbucket repository represented by url.
 func (scanner BitBucketScanner) ScanRepo(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {

@@ -18,7 +18,7 @@ func NewGitLabScanner() Scanner {
 	return GitLabScanner{}
 }
 
-// RegisterGitlabAPI register the crawler function for Gitlab API.
+// ScanGroupOfRepos scans a GitLab group represented by url.
 func (scanner GitLabScanner) ScanGroupOfRepos(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
@@ -70,7 +70,7 @@ func (scanner GitLabScanner) ScanGroupOfRepos(
 	return nil
 }
 
-// RegisterSingleGitlabAPI register the crawler function for single Bitbucket API.
+// ScanRepo scans a single GitLab repository represented by url.
 func (scanner GitLabScanner) ScanRepo(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
