@@ -42,7 +42,7 @@ jobs:
           TAGS=${IMAGE}:latest
           TAGS="$TAGS,${IMAGE}:${GITHUB_SHA::8}"
 
-          echo ::set-output name=tags::${TAGS}
+          echo "tags=${TAGS}" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
         uses: docker/build-push-action@v7
