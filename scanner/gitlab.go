@@ -31,30 +31,34 @@ func (scanner GitLabScanner) ScanGroupOfRepos(
 		return err
 	}
 
-	if isGitlabGroup(url) {
+	switch {
+	case isGitlabGroup(url):
 		groupName := strings.Trim(url.Path, "/")
 
 		group, _, err := git.Groups.GetGroup(groupName, &gitlab.GetGroupOptions{})
 		if err != nil {
-			return fmt.Errorf("can't get GitLag group '%s': %w", groupName, err)
+			return fmt.Errorf("can't get GitLab group '%s': %w", groupName, err)
 		}
 
 		if err = addGroupProjects(*group, publisher, repositories, git); err != nil {
 			return err
 		}
-	} else {
-		opts := &gitlab.ListProjectsOptions{
-			ListOptions: gitlab.ListOptions{Page: 1},
+	default:
+		// Root URL of an on premise instance, crawl all top level groups.
+		topLevel := true
+		opts := &gitlab.ListGroupsOptions{
+			ListOptions:  gitlab.ListOptions{Page: 1},
+			TopLevelOnly: &topLevel,
 		}
 
 		for {
-			projects, res, err := git.Projects.ListProjects(opts)
+			groups, res, err := git.Groups.ListGroups(opts)
 			if err != nil {
 				return err
 			}
 
-			for _, prj := range projects {
-				if err = addProject(nil, *prj, publisher, repositories); err != nil {
+			for _, g := range groups {
+				if err = addGroupProjects(*g, publisher, repositories, git); err != nil {
 					return err
 				}
 			}
