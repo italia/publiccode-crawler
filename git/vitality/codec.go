@@ -9,24 +9,12 @@ import (
 const dateLayout = "2006-01-02"
 
 type jsonCache struct {
-	LU  string      `json:"lu"`
-	OCD string      `json:"ocd"`
-	D0  string      `json:"d0"`
-	A   []string    `json:"a"`
-	E   []jsonEntry `json:"e"`
-	T   []jsonTag   `json:"t"`
-}
-
-type jsonEntry struct {
-	Delta uint32  `json:"delta"`
-	C     uint32  `json:"c"`
-	M     uint32  `json:"m"`
-	A     []uint8 `json:"a"`
-}
-
-type jsonTag struct {
-	Delta uint32 `json:"delta"`
-	N     uint32 `json:"n"`
+	LU  string   `json:"lu"`
+	OCD string   `json:"ocd"`
+	D0  string   `json:"d0"`
+	A   []string `json:"a"`
+	E   []int    `json:"e"`
+	T   []int    `json:"t"`
 }
 
 func Marshal(c Cache) ([]byte, error) {
@@ -38,15 +26,15 @@ func Marshal(c Cache) ([]byte, error) {
 	}
 
 	for _, e := range c.Entries {
-		a := e.Authors
-		if a == nil {
-			a = []uint8{}
+		j.E = append(j.E, int(e.Delta), int(e.Commits), int(e.Merges))
+		for _, a := range e.Authors {
+			j.E = append(j.E, int(a))
 		}
-		j.E = append(j.E, jsonEntry{Delta: e.Delta, C: e.Commits, M: e.Merges, A: a})
+		j.E = append(j.E, -1)
 	}
 
 	for _, t := range c.Tags {
-		j.T = append(j.T, jsonTag{Delta: t.Delta, N: t.Count})
+		j.T = append(j.T, int(t.Delta), int(t.Count))
 	}
 
 	return json.Marshal(j)
@@ -77,16 +65,30 @@ func Unmarshal(data []byte) (Cache, error) {
 
 	c.Authors = j.A
 
-	for _, e := range j.E {
-		a := e.A
-		if a == nil {
-			a = []uint8{}
+	i := 0
+	for i < len(j.E) {
+		if i+2 >= len(j.E) {
+			return c, fmt.Errorf("vitality unmarshal: truncated entry at e[%d]", i)
 		}
-		c.Entries = append(c.Entries, DayEntry{Delta: e.Delta, Commits: e.C, Merges: e.M, Authors: a})
+		e := DayEntry{
+			Delta:   uint32(j.E[i]),
+			Commits: uint32(j.E[i+1]),
+			Merges:  uint32(j.E[i+2]),
+		}
+		i += 3
+		for i < len(j.E) && j.E[i] != -1 {
+			e.Authors = append(e.Authors, uint8(j.E[i]))
+			i++
+		}
+		if i >= len(j.E) {
+			return c, fmt.Errorf("vitality unmarshal: missing -1 sentinel")
+		}
+		i++
+		c.Entries = append(c.Entries, e)
 	}
 
-	for _, t := range j.T {
-		c.Tags = append(c.Tags, TagEntry{Delta: t.Delta, Count: t.N})
+	for i := 0; i+1 < len(j.T); i += 2 {
+		c.Tags = append(c.Tags, TagEntry{Delta: uint32(j.T[i]), Count: uint32(j.T[i+1])})
 	}
 
 	return c, nil
