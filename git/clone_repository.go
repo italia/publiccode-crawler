@@ -112,18 +112,32 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 	var cache vitality.Cache
 	cache.LastUpdated = time.Now().UTC()
 
+	authorIndex := map[string]uint8{}
 	existingDays := map[dayKey]dayData{}
 	existingTags := map[dayKey]uint32{}
 	existingTagDates := map[dayKey]time.Time{}
 
 	if existing != nil {
 		cache.OldestCommitDate = existing.OldestCommitDate
+		cache.Authors = append(cache.Authors, existing.Authors...)
+
+		for i, a := range existing.Authors {
+			authorIndex[a] = uint8(i)
+		}
 
 		cur := existing.FirstEntryDate
 		for _, e := range existing.Entries {
 			cur = cur.AddDate(0, 0, int(e.Delta))
+
+			authors := make([]string, 0, len(e.Authors))
+			for _, id := range e.Authors {
+				if int(id) < len(existing.Authors) {
+					authors = append(authors, existing.Authors[id])
+				}
+			}
+
 			existingDays[dayKey{cur.Year(), cur.Month(), cur.Day()}] = dayData{
-				date: cur, commits: e.Commits, merges: e.Merges, authors: e.Authors,
+				date: cur, commits: e.Commits, merges: e.Merges, authors: authors,
 			}
 		}
 
@@ -148,6 +162,11 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 
 		if cache.OldestCommitDate.IsZero() || t.Before(cache.OldestCommitDate) {
 			cache.OldestCommitDate = t
+		}
+
+		if _, ok := authorIndex[c.Author.Email]; !ok {
+			authorIndex[c.Author.Email] = uint8(len(cache.Authors))
+			cache.Authors = append(cache.Authors, c.Author.Email)
 		}
 
 		key := dayKey{t.Year(), t.Month(), t.Day()}
@@ -189,11 +208,17 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 
 		for _, d := range days {
 			delta := uint32(d.date.Sub(prev).Hours() / 24)
+			authorIDs := make([]uint8, len(d.authors))
+
+			for i, a := range d.authors {
+				authorIDs[i] = authorIndex[a]
+			}
+
 			cache.Entries = append(cache.Entries, vitality.DayEntry{
 				Delta:   delta,
 				Commits: d.commits,
 				Merges:  d.merges,
-				Authors: d.authors,
+				Authors: authorIDs,
 			})
 			prev = d.date
 		}
