@@ -64,21 +64,25 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 		authorSet := map[string]struct{}{}
 		var commits, merges float64
 
+		cur := cache.FirstEntryDate
 		for _, e := range cache.Entries {
-			if e.Date.Before(cutoff) {
+			cur = cur.AddDate(0, 0, int(e.Delta))
+			if cur.Before(cutoff) {
 				for _, a := range e.Authors {
 					authorSet[a] = struct{}{}
 				}
 			}
-			if sameDay(e.Date, cutoff) {
+			if sameDay(cur, cutoff) {
 				commits = float64(e.Commits)
 				merges = float64(e.Merges)
 			}
 		}
 
 		var tagCount float64
+		cur = cache.FirstEntryDate
 		for _, t := range cache.Tags {
-			if sameDay(t.Date, cutoff) {
+			cur = cur.AddDate(0, 0, int(t.Delta))
+			if sameDay(cur, cutoff) {
 				tagCount = float64(t.Count)
 			}
 		}

@@ -101,22 +101,38 @@ type dayKey struct {
 	d int
 }
 
+type dayData struct {
+	date    time.Time
+	commits uint32
+	merges  uint32
+	authors []string
+}
+
 func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality.Cache, error) {
 	var cache vitality.Cache
 	cache.LastUpdated = time.Now().UTC()
 
-	existingDays := map[dayKey]vitality.DayEntry{}
-	existingTags := map[dayKey]vitality.TagEntry{}
+	existingDays := map[dayKey]dayData{}
+	existingTags := map[dayKey]uint32{}
+	existingTagDates := map[dayKey]time.Time{}
 
 	if existing != nil {
 		cache.OldestCommitDate = existing.OldestCommitDate
 
+		cur := existing.FirstEntryDate
 		for _, e := range existing.Entries {
-			existingDays[dayKey{e.Date.Year(), e.Date.Month(), e.Date.Day()}] = e
+			cur = cur.AddDate(0, 0, int(e.Delta))
+			existingDays[dayKey{cur.Year(), cur.Month(), cur.Day()}] = dayData{
+				date: cur, commits: e.Commits, merges: e.Merges, authors: e.Authors,
+			}
 		}
 
+		tagCur := existing.FirstEntryDate
 		for _, t := range existing.Tags {
-			existingTags[dayKey{t.Date.Year(), t.Date.Month(), t.Date.Day()}] = t
+			tagCur = tagCur.AddDate(0, 0, int(t.Delta))
+			k := dayKey{tagCur.Year(), tagCur.Month(), tagCur.Day()}
+			existingTags[k] = t.Count
+			existingTagDates[k] = tagCur
 		}
 	}
 
@@ -125,7 +141,7 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 		return cache, err
 	}
 
-	newDays := map[dayKey]*vitality.DayEntry{}
+	newDays := map[dayKey]*dayData{}
 
 	for _, c := range commits {
 		t := c.Author.When.UTC()
@@ -136,20 +152,20 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 
 		key := dayKey{t.Year(), t.Month(), t.Day()}
 		if newDays[key] == nil {
-			newDays[key] = &vitality.DayEntry{
-				Date: time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC),
+			newDays[key] = &dayData{
+				date: time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC),
 			}
 		}
 
 		e := newDays[key]
-		e.Commits++
+		e.commits++
 
 		if c.NumParents() > 1 {
-			e.Merges++
+			e.merges++
 		}
 
-		if !slices.Contains(e.Authors, c.Author.Email) {
-			e.Authors = append(e.Authors, c.Author.Email)
+		if !slices.Contains(e.authors, c.Author.Email) {
+			e.authors = append(e.authors, c.Author.Email)
 		}
 	}
 
@@ -158,23 +174,37 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 		merged[k] = *e
 	}
 
-	days := make([]vitality.DayEntry, 0, len(merged))
+	days := make([]dayData, 0, len(merged))
 	for _, d := range merged {
 		days = append(days, d)
 	}
 
 	sort.Slice(days, func(i, j int) bool {
-		return days[i].Date.Before(days[j].Date)
+		return days[i].date.Before(days[j].date)
 	})
 
-	cache.Entries = days
+	if len(days) > 0 {
+		cache.FirstEntryDate = days[0].date
+		prev := days[0].date
+
+		for _, d := range days {
+			delta := uint32(d.date.Sub(prev).Hours() / 24)
+			cache.Entries = append(cache.Entries, vitality.DayEntry{
+				Delta:   delta,
+				Commits: d.commits,
+				Merges:  d.merges,
+				Authors: d.authors,
+			})
+			prev = d.date
+		}
+	}
 
 	tags, err := extractAllTagsCommit(r)
 	if err != nil {
 		return cache, err
 	}
 
-	newTags := map[dayKey]vitality.TagEntry{}
+	newTags := map[dayKey]uint32{}
 
 	for _, t := range tags {
 		if t == nil {
@@ -183,25 +213,39 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 
 		d := t.Author.When.UTC()
 		key := dayKey{d.Year(), d.Month(), d.Day()}
-		entry := newTags[key]
-		entry.Date = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
-		entry.Count++
-		newTags[key] = entry
+		existingTagDates[key] = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
+		newTags[key]++
 	}
 
 	mergedTags := maps.Clone(existingTags)
 	maps.Copy(mergedTags, newTags)
 
-	tagDays := make([]vitality.TagEntry, 0, len(mergedTags))
-	for _, t := range mergedTags {
-		tagDays = append(tagDays, t)
+	type tagDay struct {
+		date  time.Time
+		count uint32
+	}
+
+	tagDays := make([]tagDay, 0, len(mergedTags))
+	for k, count := range mergedTags {
+		tagDays = append(tagDays, tagDay{date: existingTagDates[k], count: count})
 	}
 
 	sort.Slice(tagDays, func(i, j int) bool {
-		return tagDays[i].Date.Before(tagDays[j].Date)
+		return tagDays[i].date.Before(tagDays[j].date)
 	})
 
-	cache.Tags = tagDays
+	if len(tagDays) > 0 {
+		prev := cache.FirstEntryDate
+
+		for _, t := range tagDays {
+			delta := uint32(t.date.Sub(prev).Hours() / 24)
+			cache.Tags = append(cache.Tags, vitality.TagEntry{
+				Delta: delta,
+				Count: t.count,
+			})
+			prev = t.date
+		}
+	}
 
 	return cache, nil
 }
