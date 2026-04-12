@@ -15,7 +15,7 @@ type DayEntry struct {
 	Delta   uint32
 	Commits uint32
 	Merges  uint32
-	Authors []uint8
+	Authors []uint16
 }
 
 type TagEntry struct {
