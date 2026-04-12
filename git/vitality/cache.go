@@ -6,6 +6,7 @@ type Cache struct {
 	LastUpdated      time.Time
 	OldestCommitDate time.Time
 	FirstEntryDate   time.Time
+	Authors          []string
 	Entries          []DayEntry
 	Tags             []TagEntry
 }
@@ -14,7 +15,7 @@ type DayEntry struct {
 	Delta   uint32
 	Commits uint32
 	Merges  uint32
-	Authors []string
+	Authors []uint8
 }
 
 type TagEntry struct {

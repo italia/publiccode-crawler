@@ -12,15 +12,16 @@ type jsonCache struct {
 	LU  string      `json:"lu"`
 	OCD string      `json:"ocd"`
 	D0  string      `json:"d0"`
+	A   []string    `json:"a"`
 	E   []jsonEntry `json:"e"`
 	T   []jsonTag   `json:"t"`
 }
 
 type jsonEntry struct {
-	Delta uint32   `json:"delta"`
-	C     uint32   `json:"c"`
-	M     uint32   `json:"m"`
-	A     []string `json:"a"`
+	Delta uint32  `json:"delta"`
+	C     uint32  `json:"c"`
+	M     uint32  `json:"m"`
+	A     []uint8 `json:"a"`
 }
 
 type jsonTag struct {
@@ -33,12 +34,13 @@ func Marshal(c Cache) ([]byte, error) {
 		LU:  c.LastUpdated.UTC().Format(dateLayout),
 		OCD: c.OldestCommitDate.UTC().Format(dateLayout),
 		D0:  c.FirstEntryDate.UTC().Format(dateLayout),
+		A:   c.Authors,
 	}
 
 	for _, e := range c.Entries {
 		a := e.Authors
 		if a == nil {
-			a = []string{}
+			a = []uint8{}
 		}
 		j.E = append(j.E, jsonEntry{Delta: e.Delta, C: e.Commits, M: e.Merges, A: a})
 	}
@@ -73,10 +75,12 @@ func Unmarshal(data []byte) (Cache, error) {
 		return c, fmt.Errorf("vitality unmarshal d0: %w", err)
 	}
 
+	c.Authors = j.A
+
 	for _, e := range j.E {
 		a := e.A
 		if a == nil {
-			a = []string{}
+			a = []uint8{}
 		}
 		c.Entries = append(c.Entries, DayEntry{Delta: e.Delta, Commits: e.C, Merges: e.M, Authors: a})
 	}
@@ -93,6 +97,7 @@ func EntryDate(c Cache, i int) time.Time {
 	for j := 0; j <= i; j++ {
 		d = d.AddDate(0, 0, int(c.Entries[j].Delta))
 	}
+
 	return d
 }
 
@@ -101,5 +106,6 @@ func TagDate(c Cache, i int) time.Time {
 	for j := 0; j <= i; j++ {
 		d = d.AddDate(0, 0, int(c.Tags[j].Delta))
 	}
+
 	return d
 }
