@@ -61,7 +61,7 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 	for i := range days {
 		cutoff := now.AddDate(0, 0, -i)
 
-		authorSet := map[uint8]struct{}{}
+		authorSet := map[uint16]struct{}{}
 		var commits, merges float64
 
 		cur := cache.FirstEntryDate

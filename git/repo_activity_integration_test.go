@@ -91,13 +91,10 @@ func TestCalculateRepoActivityLongevityBoundary(t *testing.T) {
 	cache := vitality.Cache{
 		LastUpdated:      fixedNow,
 		OldestCommitDate: fixedNow.AddDate(0, 0, -365),
+		FirstEntryDate:   fixedNow.AddDate(0, 0, -365),
+		Authors:          []string{"mario@example.com"},
 		Entries: []vitality.DayEntry{
-			{
-				Date:    fixedNow.AddDate(0, 0, -365),
-				Commits: 1,
-				Merges:  0,
-				Authors: []string{"mario@example.com"},
-			},
+			{Delta: 0, Commits: 1, Merges: 0, Authors: []uint16{0}},
 		},
 	}
 
