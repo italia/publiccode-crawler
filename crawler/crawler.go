@@ -77,6 +77,10 @@ func NewCrawler(dryRun bool) *Crawler {
 		"repository_upsert_failures", "Number of failures in creating or updating software in the API",
 		c.Index,
 	)
+	metrics.RegisterPrometheusCounter(
+		"repository_fetch_failed", "Number of repositories where fetching publiccode.yml failed (non-404)",
+		c.Index,
+	)
 
 	c.gitHubScanner = scanner.NewGitHubScanner()
 	c.gitLabScanner = scanner.NewGitLabScanner()
@@ -306,7 +310,16 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 
 	resp, err := httpclient.GetURL(repository.FileRawURL, repository.Headers)
 	if resp.Status.Code != http.StatusOK || err != nil {
-		logEntries = append(logEntries, fmt.Sprintf("[%s] Failed to GET publiccode.yml", repository.Name))
+		if resp.Status.Code == http.StatusNotFound {
+			logEntries = append(logEntries, fmt.Sprintf("[%s] publiccode.yml not found (404)", repository.Name))
+		} else {
+			// Code -1 means all backoff retries were exhausted (usually sustained rate limiting).
+			logEntries = append(logEntries, fmt.Sprintf(
+				"[%s] failed to fetch publiccode.yml (HTTP %d): %v",
+				repository.Name, resp.Status.Code, err,
+			))
+			metrics.GetCounter("repository_fetch_failed", c.Index).Inc()
+		}
 
 		return
 	}
@@ -495,7 +508,9 @@ func (c *Crawler) crawl() error {
 	close(reposChan)
 	c.repositoriesWg.Wait()
 
-	log.Infof(
+	fetchFailed := metrics.GetCounterValue("repository_fetch_failed", c.Index)
+
+	summary := fmt.Sprintf(
 		"Summary: Total repos scanned: %v. With good publiccode.yml file: %v. With bad publiccode.yml file: %v\n"+
 			"Repos with good publiccode.yml file: New repos: %v, Known repos: %v, Failures saving to API: %v",
 		metrics.GetCounterValue("repository_processed", c.Index),
@@ -505,6 +520,16 @@ func (c *Crawler) crawl() error {
 		metrics.GetCounterValue("repository_known", c.Index),
 		metrics.GetCounterValue("repository_upsert_failures", c.Index),
 	)
+
+	if fetchFailed > 0 {
+		summary += fmt.Sprintf(
+			"\nWARNING: %v repos could not be fetched (non-404, likely rate limited or network error)"+
+				" — search logs for \"failed to fetch publiccode.yml\"",
+			fetchFailed,
+		)
+	}
+
+	log.Info(summary)
 
 	return nil
 }
