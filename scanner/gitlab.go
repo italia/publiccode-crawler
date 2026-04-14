@@ -14,15 +14,15 @@ import (
 
 type GitLabScanner struct{}
 
-func NewGitLabScanner() Scanner {
+func NewGitLabScanner() GitLabScanner {
 	return GitLabScanner{}
 }
 
-// ScanGroupOfRepos scans a GitLab group represented by url.
-func (scanner GitLabScanner) ScanGroupOfRepos(
+// List scans a GitLab group represented by url.
+func (scanner GitLabScanner) List(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("GitLabScanner.ScanGroupOfRepos(%s)", url.String())
+	log.Debugf("GitLabScanner.List(%s)", url.String())
 
 	apiURL, _ := url.Parse("/api/v4")
 
@@ -74,11 +74,11 @@ func (scanner GitLabScanner) ScanGroupOfRepos(
 	return nil
 }
 
-// ScanRepo scans a single GitLab repository represented by url.
-func (scanner GitLabScanner) ScanRepo(
+// Scan scans a single GitLab repository represented by url.
+func (scanner GitLabScanner) Scan(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("GitLabScanner.ScanRepo(%s)", url.String())
+	log.Debugf("GitLabScanner.Scan(%s)", url.String())
 
 	apiURL, _ := url.Parse("/api/v4")
 

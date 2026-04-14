@@ -40,30 +40,57 @@ crawl directory/*.yml`,
 
 		crwlr := crawler.NewCrawler(dryRun)
 
-		var publishers []common.Publisher
+		if len(args) > 0 {
+			crawlFromYAML(crwlr, args)
 
-		if len(args) == 0 {
-			var err error
-
-			apiclient := apiclient.NewClient()
-
-			publishers, err = apiclient.GetPublishers()
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			for _, yamlFile := range args {
-				filePublishers, err := common.LoadPublishers(yamlFile)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				publishers = append(publishers, filePublishers...)
-			}
+			return
 		}
 
-		if err := crwlr.CrawlPublishers(publishers); err != nil {
+		crawlFromAPI(crwlr)
+	},
+}
+
+func crawlFromAPI(crwlr *crawler.Crawler) {
+	client := apiclient.NewClient()
+
+	catalogs, err := client.GetCatalogs()
+	if err != nil {
+		log.Warnf("Failed to get catalogs: %s, falling back to publishers", err)
+	}
+
+	if len(catalogs) > 0 {
+		if err := crwlr.CrawlCatalogs(catalogs); err != nil {
 			log.Fatal(err)
 		}
-	},
+
+		return
+	}
+
+	log.Info("No catalogs found, falling back to publishers")
+
+	publishers, err := client.GetPublishers()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := crwlr.CrawlPublishers(publishers); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func crawlFromYAML(crwlr *crawler.Crawler, args []string) {
+	var publishers []common.Publisher
+
+	for _, yamlFile := range args {
+		filePublishers, err := common.LoadPublishers(yamlFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		publishers = append(publishers, filePublishers...)
+	}
+
+	if err := crwlr.CrawlPublishers(publishers); err != nil {
+		log.Fatal(err)
+	}
 }

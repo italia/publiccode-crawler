@@ -18,7 +18,7 @@ var errNotFound = errors.New("not found")
 
 type GiteaScanner struct{}
 
-func NewGiteaScanner() Scanner {
+func NewGiteaScanner() GiteaScanner {
 	return GiteaScanner{}
 }
 
@@ -37,12 +37,12 @@ type giteaSearchResult struct {
 	Data []giteaRepo `json:"data"`
 }
 
-// ScanGroupOfRepos scans a Gitea or Forgejo org/user represented by u,
+// List scans a Gitea or Forgejo org/user represented by u,
 // or all public repos on the instance if u is a root URL.
-func (scanner GiteaScanner) ScanGroupOfRepos(
+func (scanner GiteaScanner) List(
 	groupURL url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("GiteaScanner.ScanGroupOfRepos(%s)", groupURL.String())
+	log.Debugf("GiteaScanner.List(%s)", groupURL.String())
 
 	owner := strings.Trim(groupURL.Path, "/")
 
@@ -73,11 +73,11 @@ func (scanner GiteaScanner) ScanGroupOfRepos(
 	return nil
 }
 
-// ScanRepo scans a single Gitea or Forgejo repository represented by repoURL.
-func (scanner GiteaScanner) ScanRepo(
+// Scan scans a single Gitea or Forgejo repository represented by repoURL.
+func (scanner GiteaScanner) Scan(
 	repoURL url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("GiteaScanner.ScanRepo(%s)", repoURL.String())
+	log.Debugf("GiteaScanner.Scan(%s)", repoURL.String())
 
 	repoPath := strings.TrimSuffix(strings.Trim(repoURL.Path, "/"), ".git")
 

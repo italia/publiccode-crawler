@@ -14,7 +14,7 @@ type BitBucketScanner struct {
 	client *bitbucket.Client
 }
 
-func NewBitBucketScanner() Scanner {
+func NewBitBucketScanner() BitBucketScanner {
 	client, err := bitbucket.NewBasicAuth("", "")
 	if err != nil {
 		panic(err)
@@ -23,11 +23,11 @@ func NewBitBucketScanner() Scanner {
 	return BitBucketScanner{client: client}
 }
 
-// ScanGroupOfRepos scans a Bitbucket workspace represented by url.
-func (scanner BitBucketScanner) ScanGroupOfRepos(
+// List scans a Bitbucket workspace represented by url.
+func (scanner BitBucketScanner) List(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("BitBucketScanner.ScanGroupOfRepos(%s)", url.String())
+	log.Debugf("BitBucketScanner.List(%s)", url.String())
 
 	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
 
@@ -91,11 +91,11 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(
 	return nil
 }
 
-// ScanRepo scans a single Bitbucket repository represented by url.
-func (scanner BitBucketScanner) ScanRepo(
+// Scan scans a single Bitbucket repository represented by url.
+func (scanner BitBucketScanner) Scan(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("BitBucketScanner.ScanRepo(%s)", url.String())
+	log.Debugf("BitBucketScanner.Scan(%s)", url.String())
 
 	splitted := strings.Split(strings.TrimSuffix(strings.Trim(url.Path, "/"), ".git"), "/")
 	if len(splitted) != 2 {

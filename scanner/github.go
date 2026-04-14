@@ -24,7 +24,7 @@ type GitHubScanner struct {
 // NewGitHubScanner returns a new GitHubScanner using the
 // authentication token from the GITHUB_TOKEN environment variable or,
 // if not set, the tokens in domains.yml.
-func NewGitHubScanner() Scanner {
+func NewGitHubScanner() GitHubScanner {
 	ctx := context.Background()
 
 	token := viper.GetString("GITHUB_TOKEN")
@@ -39,14 +39,14 @@ func NewGitHubScanner() Scanner {
 	return GitHubScanner{client: client}
 }
 
-// ScanGroupOfRepos scans a GitHub organization represented by url, associated to
+// List scans a GitHub organization represented by url, associated to
 // publisher and sends any repository containing a publiccode.yml to the repositories
 // channel as a [common.Repository].
 // It returns any error encountered if any, otherwise nil.
-func (scanner GitHubScanner) ScanGroupOfRepos(
+func (scanner GitHubScanner) List(
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("GitHubScanner.ScanGroupOfRepos(%s)", url.String())
+	log.Debugf("GitHubScanner.List(%s)", url.String())
 
 	opt := &github.RepositoryListByOrgOptions{}
 
@@ -103,7 +103,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(
 				continue
 			}
 
-			if err = scanner.ScanRepo(*repoURL, publisher, repositories); err != nil {
+			if err = scanner.Scan(*repoURL, publisher, repositories); err != nil {
 				if errors.Is(err, ErrPubliccodeNotFound) {
 					log.Warnf("can't scan repository %s: %s", repoURL.String(), err.Error())
 				} else {
@@ -124,14 +124,14 @@ func (scanner GitHubScanner) ScanGroupOfRepos(
 	return nil
 }
 
-// ScanRepo scans a GitHub repository represented by url, associated to
+// Scan scans a GitHub repository represented by url, associated to
 // publisher and, if it contains a publiccode.yml, sends it as a [common.Repository]
 // repositories channel.
 // It returns any error encountered if any, otherwise nil.
-func (scanner GitHubScanner) ScanRepo( //nolint:funlen // goto retry blocks can't be extracted
+func (scanner GitHubScanner) Scan( //nolint:funlen // goto retry blocks can't be extracted
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("GitHubScanner.ScanRepo(%s)", url.String())
+	log.Debugf("GitHubScanner.Scan(%s)", url.String())
 
 	splitted := strings.Split(strings.TrimSuffix(strings.Trim(url.Path, "/"), ".git"), "/")
 	if len(splitted) != 2 {
