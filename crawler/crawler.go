@@ -12,6 +12,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/alranel/go-vcsurl/v2"
 	httpclient "github.com/italia/httpclient-lib-go"
@@ -443,7 +444,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 			activityDays = viper.GetInt("ACTIVITY_DAYS")
 		}
 
-		activityIndex, _, err := git.CalculateRepoActivity(repository, activityDays)
+		activityIndex, _, err := git.CalculateRepoActivity(repository, activityDays, time.Now())
 		if err != nil {
 			logEntries = append(
 				logEntries, fmt.Sprintf("[%s] error calculating activity index: %v\n", repository.Name, err),
