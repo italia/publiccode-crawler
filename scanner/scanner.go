@@ -9,7 +9,8 @@ import (
 
 var ErrPubliccodeNotFound = errors.New("publiccode.yml not found")
 
+// Scanner scans a single repository and emits a common.Repository on the
+// repositories channel.
 type Scanner interface {
-	ScanRepo(url url.URL, publisher common.Publisher, repositories chan common.Repository) error
-	ScanGroupOfRepos(url url.URL, publisher common.Publisher, repositories chan common.Repository) error
+	Scan(repoURL url.URL, publisher common.Publisher, repositories chan common.Repository) error
 }

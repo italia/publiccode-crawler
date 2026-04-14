@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/italia/publiccode-crawler/v4/common"
-	ymlurl "github.com/italia/publiccode-crawler/v4/internal"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -63,7 +62,11 @@ var downloadPublishersCmd = &cobra.Command{
 				if publisher.ID == entry.IPA {
 					parsedURL, _ := url.Parse(entry.URL)
 					// If this Id is already known, append this URL to the existing item
-					publishers[idx].Organizations = append(publisher.Organizations, (ymlurl.URL)(*parsedURL))
+					publishers[idx].Sources = append(publisher.Sources, common.CatalogSource{
+						URL:    *parsedURL,
+						Driver: common.InferVCSDriver(*parsedURL),
+						Group:  true,
+					})
 
 					continue REPOLIST
 				}
@@ -72,9 +75,13 @@ var downloadPublishersCmd = &cobra.Command{
 			parsedURL, _ := url.Parse(entry.URL)
 			// If this IPA code is not known, append a new publisher item
 			publishers = append(publishers, common.Publisher{
-				Name:          entry.IPA,
-				ID:            entry.IPA,
-				Organizations: []ymlurl.URL{(ymlurl.URL)(*parsedURL)},
+				Name: entry.IPA,
+				ID:   entry.IPA,
+				Sources: []common.CatalogSource{{
+					URL:    *parsedURL,
+					Driver: common.InferVCSDriver(*parsedURL),
+					Group:  true,
+				}},
 			})
 		}
 

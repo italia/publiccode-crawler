@@ -53,7 +53,7 @@ func TestGiteaScanner_ScanRepo_success(t *testing.T) {
 	repositories := make(chan common.Repository, 1)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanRepo(*repoURL, giteaPublisher(), repositories)
+	err = sc.Scan(*repoURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	require.Len(t, repositories, 1)
@@ -81,7 +81,7 @@ func TestGiteaScanner_ScanRepo_dotGitSuffix(t *testing.T) {
 	repositories := make(chan common.Repository, 1)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanRepo(*repoURL, giteaPublisher(), repositories)
+	err = sc.Scan(*repoURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	assert.Len(t, repositories, 1)
@@ -102,7 +102,7 @@ func TestGiteaScanner_ScanRepo_private(t *testing.T) {
 	repositories := make(chan common.Repository, 1)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanRepo(*repoURL, giteaPublisher(), repositories)
+	err = sc.Scan(*repoURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	assert.Empty(t, repositories)
@@ -123,7 +123,7 @@ func TestGiteaScanner_ScanRepo_archived(t *testing.T) {
 	repositories := make(chan common.Repository, 1)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanRepo(*repoURL, giteaPublisher(), repositories)
+	err = sc.Scan(*repoURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	assert.Empty(t, repositories)
@@ -144,7 +144,7 @@ func TestGiteaScanner_ScanRepo_empty(t *testing.T) {
 	repositories := make(chan common.Repository, 1)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanRepo(*repoURL, giteaPublisher(), repositories)
+	err = sc.Scan(*repoURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	assert.Empty(t, repositories)
@@ -162,7 +162,7 @@ func TestGiteaScanner_ScanRepo_apiError(t *testing.T) {
 	repositories := make(chan common.Repository, 1)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanRepo(*repoURL, giteaPublisher(), repositories)
+	err = sc.Scan(*repoURL, giteaPublisher(), repositories)
 
 	require.Error(t, err)
 	assert.Empty(t, repositories)
@@ -174,7 +174,7 @@ func TestGiteaScanner_ScanRepo_invalidURL(t *testing.T) {
 	repoURL, _ := url.Parse("http://example.com/onlyone")
 
 	sc := scanner.NewGiteaScanner()
-	err := sc.ScanRepo(*repoURL, giteaPublisher(), repositories)
+	err := sc.Scan(*repoURL, giteaPublisher(), repositories)
 
 	require.Error(t, err)
 }
@@ -202,7 +202,7 @@ func TestGiteaScanner_ScanGroupOfRepos_org(t *testing.T) {
 	repositories := make(chan common.Repository, 10)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanGroupOfRepos(*groupURL, giteaPublisher(), repositories)
+	err = sc.List(*groupURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	assert.Len(t, repositories, 2)
@@ -233,7 +233,7 @@ func TestGiteaScanner_ScanGroupOfRepos_fallbackToUser(t *testing.T) {
 	repositories := make(chan common.Repository, 10)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanGroupOfRepos(*groupURL, giteaPublisher(), repositories)
+	err = sc.List(*groupURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	assert.Len(t, repositories, 1)
@@ -259,7 +259,7 @@ func TestGiteaScanner_ScanGroupOfRepos_instance(t *testing.T) {
 	repositories := make(chan common.Repository, 10)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanGroupOfRepos(*instanceURL, giteaPublisher(), repositories)
+	err = sc.List(*instanceURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	assert.Len(t, repositories, 1)
@@ -284,7 +284,7 @@ func TestGiteaScanner_ScanGroupOfRepos_skipsPrivateAndArchived(t *testing.T) {
 	repositories := make(chan common.Repository, 10)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanGroupOfRepos(*groupURL, giteaPublisher(), repositories)
+	err = sc.List(*groupURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	assert.Len(t, repositories, 1)
@@ -321,7 +321,7 @@ func TestGiteaScanner_ScanGroupOfRepos_pagination(t *testing.T) {
 	repositories := make(chan common.Repository, 100)
 
 	sc := scanner.NewGiteaScanner()
-	err = sc.ScanGroupOfRepos(*groupURL, giteaPublisher(), repositories)
+	err = sc.List(*groupURL, giteaPublisher(), repositories)
 
 	require.NoError(t, err)
 	assert.Len(t, repositories, 51)

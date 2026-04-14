@@ -11,6 +11,7 @@ type Repository struct {
 	CanonicalURL url.URL
 	FileRawURL   string
 	GitBranch    string
+	CatalogID    string
 	Publisher    Publisher
 	Headers      map[string]string
 }
