@@ -57,13 +57,14 @@ type CodeHosting struct {
 }
 
 type APICatalog struct {
-	ID            string             `json:"id"`
-	AlternativeID string             `json:"alternativeId,omitempty"`
-	Name          string             `json:"name"`
-	Active        bool               `json:"active"`
-	Sources       []APICatalogSource `json:"sources"`
-	CreatedAt     time.Time          `json:"createdAt"`
-	UpdatedAt     time.Time          `json:"updatedAt"`
+	ID                  string             `json:"id"`
+	AlternativeID       string             `json:"alternativeId,omitempty"`
+	Name                string             `json:"name"`
+	PublishersNamespace string             `json:"publishersNamespace,omitempty"`
+	Active              bool               `json:"active"`
+	Sources             []APICatalogSource `json:"sources"`
+	CreatedAt           time.Time          `json:"createdAt"`
+	UpdatedAt           time.Time          `json:"updatedAt"`
 }
 
 type APICatalogSource struct {
@@ -259,8 +260,9 @@ page:
 		}
 
 		cat := common.Catalog{
-			ID:   catalogID,
-			Name: catEntry.Name,
+			ID:                  catalogID,
+			Name:                catEntry.Name,
+			PublishersNamespace: catEntry.PublishersNamespace,
 		}
 
 		for _, source := range catEntry.Sources {
