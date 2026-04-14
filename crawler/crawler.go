@@ -1,6 +1,7 @@
 package crawler
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -17,6 +18,7 @@ import (
 	"github.com/alranel/go-vcsurl/v2"
 	httpclient "github.com/italia/httpclient-lib-go"
 	"github.com/italia/publiccode-crawler/v4/apiclient"
+	"github.com/italia/publiccode-crawler/v4/catalog"
 	"github.com/italia/publiccode-crawler/v4/common"
 	"github.com/italia/publiccode-crawler/v4/git"
 	"github.com/italia/publiccode-crawler/v4/metrics"
@@ -34,6 +36,7 @@ type Crawler struct {
 	repositories chan common.Repository
 	// Sync mutex guard.
 	publishersWg   sync.WaitGroup
+	catalogsWg     sync.WaitGroup
 	repositoriesWg sync.WaitGroup
 
 	gitHubScanner    scanner.Scanner
@@ -185,6 +188,68 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 	}
 }
 
+// CrawlCatalogs processes a list of catalogs.
+func (c *Crawler) CrawlCatalogs(catalogs []common.Catalog) error {
+	sourcesNum := 0
+	for _, cat := range catalogs {
+		sourcesNum += len(cat.Sources)
+	}
+
+	log.Infof("Scanning %d catalogs (%d sources)", len(catalogs), sourcesNum)
+
+	for _, cat := range catalogs {
+		c.catalogsWg.Add(1)
+
+		go c.ScanCatalog(cat)
+	}
+
+	go func() {
+		c.catalogsWg.Wait()
+		close(c.repositories)
+	}()
+
+	return c.crawl()
+}
+
+// ScanCatalog scans all sources in a catalog and sends discovered repositories
+// to the repositories channel, tagging each with the catalog ID.
+func (c *Crawler) ScanCatalog(cat common.Catalog) {
+	log.Infof("Processing catalog: %s", cat.Name)
+
+	defer c.catalogsWg.Done()
+
+	const proxyChanSize = 100
+
+	proxyCh := make(chan common.Repository, proxyChanSize)
+
+	var proxyWg sync.WaitGroup
+
+	proxyWg.Go(func() {
+		for repo := range proxyCh {
+			repo.CatalogID = cat.ID
+			c.repositories <- repo
+		}
+	})
+
+	publisher := common.Publisher{
+		ID:   cat.ID,
+		Name: cat.Name,
+	}
+
+	for _, src := range cat.Sources {
+		if err := c.scanSource(src, publisher, proxyCh); err != nil {
+			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
+				log.Warnf("[%s] %s", src.URL.String(), err.Error())
+			} else {
+				log.Error(err)
+			}
+		}
+	}
+
+	close(proxyCh)
+	proxyWg.Wait()
+}
+
 // ProcessRepositories process the repositories channel, check the repo's publiccode.yml
 // and send new data to the API if the publiccode.yml file is valid.
 func (c *Crawler) ProcessRepositories(repos chan common.Repository) {
@@ -200,6 +265,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 	var logEntries []string
 
 	var software *apiclient.Software
+	var err error
 
 	defer func() {
 		for _, e := range logEntries {
@@ -210,9 +276,15 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 			entries := strings.Join(logEntries, "\n")
 
 			var err error
-			if software != nil {
+
+			switch {
+			case repository.CatalogID != "" && software != nil:
+				err = c.apiClient.PostCatalogSoftwareLog(repository.CatalogID, software.ID, entries)
+			case repository.CatalogID != "":
+				err = c.apiClient.PostCatalogLog(repository.CatalogID, entries)
+			case software != nil:
 				err = c.apiClient.PostSoftwareLog(software.ID, entries)
-			} else {
+			default:
 				err = c.apiClient.PostLog(entries)
 			}
 
@@ -225,7 +297,12 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 	// Increment counter for the number of repositories processed.
 	metrics.GetCounter("repository_processed", c.Index).Inc()
 
-	software, err := c.apiClient.GetSoftwareByURL(repository.URL.String())
+	if repository.CatalogID != "" {
+		software, err = c.apiClient.GetCatalogSoftwareByURL(repository.CatalogID, repository.URL.String())
+	} else {
+		software, err = c.apiClient.GetSoftwareByURL(repository.URL.String())
+	}
+
 	if err != nil {
 		logEntries = append(
 			logEntries,
@@ -371,7 +448,13 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 			// notify maintainers about the errors.
 			active := valid
 
-			software, err = c.apiClient.PostSoftware(url, aliases, string(publiccodeYml), active)
+			if repository.CatalogID != "" {
+				software, err = c.apiClient.PostCatalogSoftware(
+					repository.CatalogID, url, aliases, string(publiccodeYml), active,
+				)
+			} else {
+				software, err = c.apiClient.PostSoftware(url, aliases, string(publiccodeYml), active)
+			}
 			if err != nil {
 				return
 			}
@@ -387,7 +470,13 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		metrics.GetCounter("repository_known", c.Index).Inc()
 
 		if !c.DryRun {
-			err = c.apiClient.PatchSoftware(software.ID, url, aliases, string(publiccodeYml))
+			if repository.CatalogID != "" {
+				err = c.apiClient.PatchCatalogSoftware(
+					repository.CatalogID, software.ID, url, aliases, string(publiccodeYml),
+				)
+			} else {
+				err = c.apiClient.PatchSoftware(software.ID, url, aliases, string(publiccodeYml))
+			}
 		}
 	}
 
@@ -461,6 +550,8 @@ func (c *Crawler) scanSource(
 		}
 
 		return c.giteaScanner.ScanRepo(src.URL, publisher, repos)
+	case "json":
+		return c.scanJSONCatalog(src, publisher, repos)
 	default:
 		return fmt.Errorf(
 			"%s: unknown catalog driver %q for %s",
@@ -469,6 +560,45 @@ func (c *Crawler) scanSource(
 			src.URL.String(),
 		)
 	}
+}
+
+// scanJSONCatalog enumerates repository URLs from a JSON catalog and dispatches
+// each one to the appropriate scanner.
+func (c *Crawler) scanJSONCatalog(
+	src common.CatalogSource, publisher common.Publisher, repos chan common.Repository,
+) error {
+	if len(src.Args) == 0 {
+		return fmt.Errorf(
+			"%s: json source %s is missing the JSONPath argument",
+			publisher.Name,
+			src.URL.String(),
+		)
+	}
+
+	cat := catalog.NewJSON(src.Args[0])
+
+	urls, err := cat.Enumerate(context.Background(), src.URL)
+	if err != nil {
+		return fmt.Errorf("%s: %w", publisher.Name, err)
+	}
+
+	for _, u := range urls {
+		repoSrc := common.CatalogSource{
+			URL:    u,
+			Driver: common.InferDriver(u),
+			Group:  false,
+		}
+
+		if err := c.scanSource(repoSrc, publisher, repos); err != nil {
+			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
+				log.Warnf("[%s] %s", u.String(), err.Error())
+			} else {
+				log.Warnf("[%s] %s (skipping)", u.String(), err.Error())
+			}
+		}
+	}
+
+	return nil
 }
 
 func (c *Crawler) crawl() error {

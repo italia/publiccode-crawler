@@ -17,13 +17,14 @@ func init() {
 
 var crawlCmd = &cobra.Command{
 	Use:   "crawl [publishers.yml] [directory/*.yml ...]",
-	Short: "Crawl publiccode.yml files in publishers' repos.",
-	Long: `Crawl publiccode.yml files in publishers' repos.
+	Short: "Crawl publiccode.yml files from catalogs or publishers.",
+	Long: `Crawl publiccode.yml files from catalogs or publishers.
 
-When run with no arguments, the publishers are fetched from the API,
-otherwise the passed YAML files are used.`,
+When run with no arguments, the catalogs are fetched from the API.
+If no catalogs are found, the publishers are fetched as fallback.
+When YAML files are passed, they are used as publisher definitions.`,
 	Example: `
-# Crawl publishers fetched from the API
+# Crawl catalogs fetched from the API (with publisher fallback)
 crawl
 
 # Crawl using a specific publishers.yml file
@@ -40,30 +41,57 @@ crawl directory/*.yml`,
 
 		c := crawler.NewCrawler(dryRun)
 
-		var publishers []common.Publisher
+		if len(args) > 0 {
+			crawlFromYAML(c, args)
 
-		if len(args) == 0 {
-			var err error
-
-			apiclient := apiclient.NewClient()
-
-			publishers, err = apiclient.GetPublishers()
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			for _, yamlFile := range args {
-				filePublishers, err := common.LoadPublishers(yamlFile)
-				if err != nil {
-					log.Fatal(err)
-				}
-
-				publishers = append(publishers, filePublishers...)
-			}
+			return
 		}
 
-		if err := c.CrawlPublishers(publishers); err != nil {
+		crawlFromAPI(c)
+	},
+}
+
+func crawlFromAPI(c *crawler.Crawler) {
+	client := apiclient.NewClient()
+
+	catalogs, err := client.GetCatalogs()
+	if err != nil {
+		log.Warnf("Failed to get catalogs: %s, falling back to publishers", err)
+	}
+
+	if len(catalogs) > 0 {
+		if err := c.CrawlCatalogs(catalogs); err != nil {
 			log.Fatal(err)
 		}
-	},
+
+		return
+	}
+
+	log.Info("No catalogs found, falling back to publishers")
+
+	publishers, err := client.GetPublishers()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if err := c.CrawlPublishers(publishers); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func crawlFromYAML(c *crawler.Crawler, args []string) {
+	var publishers []common.Publisher
+
+	for _, yamlFile := range args {
+		filePublishers, err := common.LoadPublishers(yamlFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		publishers = append(publishers, filePublishers...)
+	}
+
+	if err := c.CrawlPublishers(publishers); err != nil {
+		log.Fatal(err)
+	}
 }
