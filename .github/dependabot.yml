@@ -1,5 +1,3 @@
-# Set update schedule for GitHub Actions
-
 version: 2
 updates:
 
@@ -7,8 +5,16 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      go-deps:
+        patterns:
+          - "*"
