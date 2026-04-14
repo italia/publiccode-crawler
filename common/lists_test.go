@@ -33,7 +33,6 @@ func TestReadPublishers(t *testing.T) {
 	fake := FakeReadFiler{Str: payload}
 	fileReaderInject = fake.ReadFile
 	result, err := LoadPublishers(path)
-
 	if err != nil {
 		t.Logf("err: %+v", err)
 		t.Fail()

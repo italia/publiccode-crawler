@@ -39,6 +39,7 @@ type Crawler struct {
 	gitHubScanner    scanner.Scanner
 	gitLabScanner    scanner.Scanner
 	bitBucketScanner scanner.Scanner
+	giteaScanner     scanner.Scanner
 
 	apiClient apiclient.APIClient
 }
@@ -80,6 +81,7 @@ func NewCrawler(dryRun bool) *Crawler {
 	c.gitHubScanner = scanner.NewGitHubScanner()
 	c.gitLabScanner = scanner.NewGitLabScanner()
 	c.bitBucketScanner = scanner.NewBitBucketScanner()
+	c.giteaScanner = scanner.NewGiteaScanner()
 
 	c.apiClient = apiclient.NewClient()
 
@@ -118,6 +120,8 @@ func (c *Crawler) CrawlSoftwareByID(software string, publisher common.Publisher)
 		err = c.bitBucketScanner.ScanRepo(*repoURL, publisher, c.repositories)
 	case vcsurl.IsGitLab(repoURL):
 		err = c.gitLabScanner.ScanRepo(*repoURL, publisher, c.repositories)
+	case vcsurl.IsGitea(repoURL) || vcsurl.IsForgeJo(repoURL):
+		err = c.giteaScanner.ScanRepo(*repoURL, publisher, c.repositories)
 	default:
 		err = fmt.Errorf(
 			"publisher %s: unsupported code hosting platform for %s",
@@ -173,7 +177,7 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 
 	var err error
 
-	for _, u := range publisher.Organizations {
+	for _, u := range publisher.Organizations { //nolint:dupl
 		orgURL := (url.URL)(u)
 
 		switch {
@@ -183,6 +187,8 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 			err = c.bitBucketScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
 		case vcsurl.IsGitLab(&orgURL):
 			err = c.gitLabScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
+		case vcsurl.IsGitea(&orgURL) || vcsurl.IsForgeJo(&orgURL):
+			err = c.giteaScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
 		default:
 			err = fmt.Errorf(
 				"publisher %s: unsupported code hosting platform for %s",
@@ -200,7 +206,7 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 		}
 	}
 
-	for _, u := range publisher.Repositories {
+	for _, u := range publisher.Repositories { //nolint:dupl
 		repoURL := (url.URL)(u)
 
 		switch {
@@ -210,6 +216,8 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 			err = c.bitBucketScanner.ScanRepo(repoURL, publisher, c.repositories)
 		case vcsurl.IsGitLab(&repoURL):
 			err = c.gitLabScanner.ScanRepo(repoURL, publisher, c.repositories)
+		case vcsurl.IsGitea(&repoURL) || vcsurl.IsForgeJo(&repoURL):
+			err = c.giteaScanner.ScanRepo(repoURL, publisher, c.repositories)
 		default:
 			err = fmt.Errorf(
 				"publisher %s: unsupported code hosting platform for %s",
