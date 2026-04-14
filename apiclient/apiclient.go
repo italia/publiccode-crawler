@@ -12,7 +12,6 @@ import (
 
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/italia/publiccode-crawler/v4/common"
-	internalUrl "github.com/italia/publiccode-crawler/v4/internal"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -54,6 +53,28 @@ type CodeHosting struct {
 	UpdatedAt time.Time `json:"updatedAt"`
 	Group     bool      `json:"group"`
 	URL       string    `json:"url"`
+	Type      []string  `json:"type,omitempty"`
+}
+
+type APICatalog struct {
+	ID            string             `json:"id"`
+	AlternativeID string             `json:"alternativeId,omitempty"`
+	Name          string             `json:"name"`
+	Active        bool               `json:"active"`
+	Sources       []APICatalogSource `json:"sources"`
+	CreatedAt     time.Time          `json:"createdAt"`
+	UpdatedAt     time.Time          `json:"updatedAt"`
+}
+
+type APICatalogSource struct {
+	URL    string   `json:"url"`
+	Driver *string  `json:"driver,omitempty"`
+	Args   []string `json:"args,omitempty"`
+}
+
+type CatalogsPaginated struct {
+	Data  []APICatalog `json:"data"`
+	Links Links        `json:"links"`
 }
 
 type Software struct {
@@ -149,21 +170,6 @@ page:
 	}
 
 	for _, p := range publishersResponse.Data {
-		var groups, repos []internalUrl.URL
-
-		for _, codeHosting := range p.CodeHostings {
-			u, err := url.Parse(codeHosting.URL)
-			if err != nil {
-				return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
-			}
-
-			if codeHosting.Group {
-				groups = append(groups, (internalUrl.URL)(*u))
-			} else {
-				repos = append(repos, (internalUrl.URL)(*u))
-			}
-		}
-
 		id := p.ID
 
 		// Let's give precedence to the alternativeId. It's usually set by
@@ -177,12 +183,36 @@ page:
 			id = p.AlternativeID
 		}
 
-		publishers = append(publishers, common.Publisher{
-			ID:            id,
-			Name:          fmt.Sprintf("%s %s", p.Description, p.Email),
-			Organizations: groups,
-			Repositories:  repos,
-		})
+		pub := common.Publisher{
+			ID:   id,
+			Name: fmt.Sprintf("%s %s", p.Description, p.Email),
+		}
+
+		for _, ch := range p.CodeHostings {
+			u, err := url.Parse(ch.URL)
+			if err != nil {
+				return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
+			}
+
+			var driver string
+			var args []string
+
+			if len(ch.Type) > 0 {
+				driver = ch.Type[0]
+				args = ch.Type[1:]
+			} else {
+				driver = common.InferDriver(*u)
+			}
+
+			pub.Sources = append(pub.Sources, common.CatalogSource{
+				URL:    *u,
+				Driver: driver,
+				Args:   args,
+				Group:  ch.Group,
+			})
+		}
+
+		publishers = append(publishers, pub)
 	}
 
 	if publishersResponse.Links.Next != "" {
@@ -192,6 +222,226 @@ page:
 	}
 
 	return publishers, nil
+}
+
+// GetCatalogs returns all catalogs from the API with their sources.
+func (clt APIClient) GetCatalogs() ([]common.Catalog, error) {
+	var catalogsResponse *CatalogsPaginated
+
+	pageAfter := ""
+	catalogs := make([]common.Catalog, 0, 10)
+
+page:
+	reqURL := joinPath(clt.baseURL, "/catalogs") + "?all=true" + pageAfter
+
+	res, err := clt.Get(reqURL)
+	if err != nil {
+		return nil, fmt.Errorf("can't get catalogs %s: %w", reqURL, err)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return nil, fmt.Errorf("can't get catalogs %s: HTTP status %s", reqURL, res.Status)
+	}
+
+	catalogsResponse = &CatalogsPaginated{}
+
+	err = json.NewDecoder(res.Body).Decode(&catalogsResponse)
+	if err != nil {
+		return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
+	}
+
+	for _, c := range catalogsResponse.Data {
+		id := c.ID
+		if c.AlternativeID != "" {
+			id = c.AlternativeID
+		}
+
+		cat := common.Catalog{
+			ID:   id,
+			Name: c.Name,
+		}
+
+		for _, s := range c.Sources {
+			u, err := url.Parse(s.URL)
+			if err != nil {
+				return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
+			}
+
+			var driver string
+			if s.Driver != nil {
+				driver = *s.Driver
+			} else {
+				driver = common.InferDriver(*u)
+			}
+
+			cat.Sources = append(cat.Sources, common.CatalogSource{
+				URL:    *u,
+				Driver: driver,
+				Args:   s.Args,
+			})
+		}
+
+		catalogs = append(catalogs, cat)
+	}
+
+	if catalogsResponse.Links.Next != "" {
+		pageAfter = catalogsResponse.Links.Next
+
+		goto page
+	}
+
+	return catalogs, nil
+}
+
+func catalogPath(catalogID string, segments ...string) string {
+	parts := append([]string{"/catalogs/", catalogID}, segments...)
+
+	return joinPath(parts[0], parts[1:]...)
+}
+
+// GetCatalogSoftwareByURL returns the software matching the given repo URL
+// within the given catalog. Returns (nil, nil) if not found.
+func (clt APIClient) GetCatalogSoftwareByURL(catalogID string, softwareURL string) (*Software, error) {
+	var softwareResponse SoftwarePaginated
+
+	reqURL := joinPath(clt.baseURL, catalogPath(catalogID, "software")) + "?url=" + softwareURL
+
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, reqURL, nil)
+	if err != nil {
+		return nil, fmt.Errorf("can't GET catalog %s software by url: %w", catalogID, err)
+	}
+
+	res, err := clt.retryableClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("can't GET catalog %s software by url: %w", catalogID, err)
+	}
+
+	defer res.Body.Close()
+
+	err = json.NewDecoder(res.Body).Decode(&softwareResponse)
+	if err != nil {
+		return nil, fmt.Errorf("can't parse GET catalog %s software response: %w", catalogID, err)
+	}
+
+	if len(softwareResponse.Data) > 0 {
+		return &softwareResponse.Data[0], nil
+	}
+
+	return nil, nil //nolint:nilnil
+}
+
+// PostCatalogSoftware creates a new software resource within the given catalog.
+func (clt APIClient) PostCatalogSoftware(
+	catalogID string, softwareURL string, aliases []string, publiccodeYml string, active bool,
+) (*Software, error) {
+	body, err := json.Marshal(map[string]any{
+		"publiccodeYml": publiccodeYml,
+		"url":           softwareURL,
+		"aliases":       aliases,
+		"active":        active,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("can't create software in catalog %s: %w", catalogID, err)
+	}
+
+	res, err := clt.Post(joinPath(clt.baseURL, catalogPath(catalogID, "software")), body)
+	if err != nil {
+		return nil, fmt.Errorf("can't create software in catalog %s: %w", catalogID, err)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return nil, fmt.Errorf("can't create software in catalog %s: API replied with HTTP %s", catalogID, res.Status)
+	}
+
+	response := &Software{}
+
+	err = json.NewDecoder(res.Body).Decode(&response)
+	if err != nil {
+		return nil, fmt.Errorf("can't parse POST catalog %s software response: %w", catalogID, err)
+	}
+
+	return response, nil
+}
+
+// PatchCatalogSoftware updates a software resource within the given catalog.
+func (clt APIClient) PatchCatalogSoftware(
+	catalogID string, softwareID string, softwareURL string, aliases []string, publiccodeYml string,
+) error {
+	body, err := json.Marshal(map[string]any{
+		"publiccodeYml": publiccodeYml,
+		"url":           softwareURL,
+		"aliases":       aliases,
+	})
+	if err != nil {
+		return fmt.Errorf("can't update software in catalog %s: %w", catalogID, err)
+	}
+
+	res, err := clt.Patch(
+		joinPath(clt.baseURL, catalogPath(catalogID, "software", softwareID)), body,
+	)
+	if err != nil {
+		return fmt.Errorf("can't update software in catalog %s: %w", catalogID, err)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return fmt.Errorf("can't update software in catalog %s: API replied with HTTP %s", catalogID, res.Status)
+	}
+
+	return nil
+}
+
+// PostCatalogSoftwareLog creates a log entry for the given software within a catalog.
+func (clt APIClient) PostCatalogSoftwareLog(catalogID string, softwareID string, message string) error {
+	payload, err := json.Marshal(map[string]any{
+		"message": message,
+	})
+	if err != nil {
+		return fmt.Errorf("can't create software log: %w", err)
+	}
+
+	res, err := clt.Post(
+		joinPath(clt.baseURL, catalogPath(catalogID, "software", softwareID, "logs")), payload,
+	)
+	if err != nil {
+		return fmt.Errorf("can't create software log: %w", err)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return fmt.Errorf("can't create software log: API replied with HTTP %s", res.Status)
+	}
+
+	return nil
+}
+
+// PostCatalogLog creates a general log entry for the given catalog.
+func (clt APIClient) PostCatalogLog(catalogID string, message string) error {
+	payload, err := json.Marshal(map[string]any{
+		"message": message,
+	})
+	if err != nil {
+		return fmt.Errorf("can't create catalog log: %w", err)
+	}
+
+	res, err := clt.Post(joinPath(clt.baseURL, catalogPath(catalogID, "logs")), payload)
+	if err != nil {
+		return fmt.Errorf("can't create catalog log: %w", err)
+	}
+
+	defer res.Body.Close()
+
+	if res.StatusCode < 200 || res.StatusCode > 299 {
+		return fmt.Errorf("can't create catalog log: API replied with HTTP %s", res.Status)
+	}
+
+	return nil
 }
 
 // GetSoftware returns the software with the given id or any error encountered.

@@ -145,17 +145,12 @@ func (c *Crawler) CrawlSoftwareByID(software string, publisher common.Publisher)
 
 // CrawlPublishers processes a list of publishers.
 func (c *Crawler) CrawlPublishers(publishers []common.Publisher) error {
-	groupsNum := 0
+	sourcesNum := 0
 	for _, publisher := range publishers {
-		groupsNum += len(publisher.Organizations)
+		sourcesNum += len(publisher.Sources)
 	}
 
-	reposNum := 0
-	for _, publisher := range publishers {
-		reposNum += len(publisher.Repositories)
-	}
-
-	log.Infof("Scanning %d publishers (%d orgs + %d repositories)", len(publishers), groupsNum, reposNum)
+	log.Infof("Scanning %d publishers (%d catalog sources)", len(publishers), sourcesNum)
 
 	// Process every item in publishers.
 	for _, publisher := range publishers {
@@ -172,67 +167,17 @@ func (c *Crawler) CrawlPublishers(publishers []common.Publisher) error {
 	return c.crawl()
 }
 
-// ScanPublisher scans all the publisher' repositories and sends the ones
-// with a valid publiccode.yml to the repositories channel.
+// ScanPublisher scans all the publisher's catalog sources and sends discovered
+// repositories to the repositories channel.
 func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 	log.Infof("Processing publisher: %s", publisher.Name)
 
 	defer c.publishersWg.Done()
 
-	var err error
-
-	for _, u := range publisher.Organizations { //nolint:dupl
-		orgURL := (url.URL)(u)
-
-		switch {
-		case vcsurl.IsGitHub(&orgURL):
-			err = c.gitHubScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
-		case vcsurl.IsBitBucket(&orgURL):
-			err = c.bitBucketScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
-		case vcsurl.IsGitLab(&orgURL):
-			err = c.gitLabScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
-		case vcsurl.IsGitea(&orgURL) || vcsurl.IsForgeJo(&orgURL):
-			err = c.giteaScanner.ScanGroupOfRepos(orgURL, publisher, c.repositories)
-		default:
-			err = fmt.Errorf(
-				"publisher %s: unsupported code hosting platform for %s",
-				publisher.Name,
-				u.String(),
-			)
-		}
-
-		if err != nil {
+	for _, src := range publisher.Sources {
+		if err := c.scanSource(src, publisher, c.repositories); err != nil {
 			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
-				log.Warnf("[%s] %s", orgURL.String(), err.Error())
-			} else {
-				log.Error(err)
-			}
-		}
-	}
-
-	for _, u := range publisher.Repositories { //nolint:dupl
-		repoURL := (url.URL)(u)
-
-		switch {
-		case vcsurl.IsGitHub(&repoURL):
-			err = c.gitHubScanner.ScanRepo(repoURL, publisher, c.repositories)
-		case vcsurl.IsBitBucket(&repoURL):
-			err = c.bitBucketScanner.ScanRepo(repoURL, publisher, c.repositories)
-		case vcsurl.IsGitLab(&repoURL):
-			err = c.gitLabScanner.ScanRepo(repoURL, publisher, c.repositories)
-		case vcsurl.IsGitea(&repoURL) || vcsurl.IsForgeJo(&repoURL):
-			err = c.giteaScanner.ScanRepo(repoURL, publisher, c.repositories)
-		default:
-			err = fmt.Errorf(
-				"publisher %s: unsupported code hosting platform for %s",
-				publisher.Name,
-				u.String(),
-			)
-		}
-
-		if err != nil {
-			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
-				log.Warnf("[%s] %s", repoURL.String(), err.Error())
+				log.Warnf("[%s] %s", src.URL.String(), err.Error())
 			} else {
 				log.Error(err)
 			}
@@ -476,6 +421,53 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 				fmt.Sprintf("[%s] activity index in the last %d days: %f\n", repository.Name, activityDays, activityIndex),
 			)
 		}
+	}
+}
+
+// scanSource dispatches a single CatalogSource to the appropriate scanner.
+func (c *Crawler) scanSource(
+	src common.CatalogSource, publisher common.Publisher, repos chan common.Repository,
+) error {
+	if src.Driver == "" {
+		return fmt.Errorf(
+			"%s: unrecognized platform for %s, skipping",
+			publisher.Name,
+			src.URL.String(),
+		)
+	}
+
+	switch src.Driver {
+	case "github":
+		if src.Group {
+			return c.gitHubScanner.ScanGroupOfRepos(src.URL, publisher, repos)
+		}
+
+		return c.gitHubScanner.ScanRepo(src.URL, publisher, repos)
+	case "gitlab":
+		if src.Group {
+			return c.gitLabScanner.ScanGroupOfRepos(src.URL, publisher, repos)
+		}
+
+		return c.gitLabScanner.ScanRepo(src.URL, publisher, repos)
+	case "bitbucket":
+		if src.Group {
+			return c.bitBucketScanner.ScanGroupOfRepos(src.URL, publisher, repos)
+		}
+
+		return c.bitBucketScanner.ScanRepo(src.URL, publisher, repos)
+	case "gitea", "forgejo":
+		if src.Group {
+			return c.giteaScanner.ScanGroupOfRepos(src.URL, publisher, repos)
+		}
+
+		return c.giteaScanner.ScanRepo(src.URL, publisher, repos)
+	default:
+		return fmt.Errorf(
+			"%s: unknown catalog driver %q for %s",
+			publisher.Name,
+			src.Driver,
+			src.URL.String(),
+		)
 	}
 }
 
