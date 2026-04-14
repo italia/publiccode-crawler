@@ -34,7 +34,7 @@ type Range struct {
 // CalculateRepoActivity return the repository activity index and the vitality slice calculated on the git clone.
 // It follows the document https://lg-acquisizione-e-riuso-software-per-la-pa.readthedocs.io/
 // In reference to section: 2.5.2. Fase 2.2: Valutazione soluzioni riusabili per la PA.
-func CalculateRepoActivity(repository common.Repository, days int) (float64, map[int]float64, error) {
+func CalculateRepoActivity(repository common.Repository, days int, now time.Time) (float64, map[int]float64, error) {
 	if repository.Name == "" {
 		return 0, nil, errors.New("cannot  calculate repository activity without name")
 	}
@@ -72,10 +72,10 @@ func CalculateRepoActivity(repository common.Repository, days int) (float64, map
 	}
 
 	// List commits before a number of days: commitsLastDays[from days before today][]commits
-	commitsLastDays := extractCommitsLastDays(days, commits)
+	commitsLastDays := extractCommitsLastDays(days, commits, now)
 
 	// List commits in a day: commitsPerDay[day][]commits
-	commitsPerDay := extractCommitsPerDay(days, commits)
+	commitsPerDay := extractCommitsPerDay(days, commits, now)
 
 	// Extract all tags.
 	tags, err := extractAllTagsCommit(r)
@@ -84,13 +84,13 @@ func CalculateRepoActivity(repository common.Repository, days int) (float64, map
 	}
 
 	// List tags in a day: tagsPerDay[day][]commits
-	tagsPerDays := extractTagsPerDay(days, tags)
+	tagsPerDays := extractTagsPerDay(days, tags, now)
 
 	// For every day (and before) calculate the Vitality index.
 	vitalityIndex := map[int]float64{}
 
 	// Longevity is the repository age.
-	longevity, err = calculateLongevityIndex(r)
+	longevity, err = calculateLongevityIndex(r, now)
 	if err != nil {
 		log.Warn(err)
 	}
@@ -202,7 +202,7 @@ func extractAllCommits(r *git.Repository) ([]*object.Commit, error) {
 	return commits, nil
 }
 
-func calculateLongevityIndex(r *git.Repository) (float64, error) {
+func calculateLongevityIndex(r *git.Repository, now time.Time) (float64, error) {
 	ref, err := r.Head()
 	if err != nil {
 		log.Error(err)
@@ -219,12 +219,12 @@ func calculateLongevityIndex(r *git.Repository) (float64, error) {
 
 	creationDate := extractOldestCommitDate(cIter)
 
-	age := time.Since(creationDate).Hours() / 24
+	age := now.Sub(creationDate).Hours() / 24
 
 	// Git was invented in 2005. If some repo starts before, remove.
 	then := time.Date(2005, time.January, 1, 1, 0, 0, 0, time.UTC)
 
-	duration := time.Since(then).Hours()
+	duration := now.Sub(then).Hours()
 	if age > duration/24 {
 		return -1, errors.New("first commit is too old. Must be after the creation of git (2005)")
 	}
@@ -275,11 +275,11 @@ func ranges(name string, value float64) float64 {
 }
 
 // extractCommitsLastDays returns a map of last days commits.
-func extractCommitsLastDays(days int, commits []*object.Commit) map[int][]*object.Commit {
+func extractCommitsLastDays(days int, commits []*object.Commit, now time.Time) map[int][]*object.Commit {
 	commitsLastDays := map[int][]*object.Commit{}
 	// Populate the slice of commits in every day.
 	for i := range days {
-		lastDays := time.Now().AddDate(0, 0, -i)
+		lastDays := now.AddDate(0, 0, -i)
 		// Append all the commits created before lastDays date.
 		for _, c := range commits {
 			if c.Author.When.Before(lastDays) {
@@ -292,11 +292,11 @@ func extractCommitsLastDays(days int, commits []*object.Commit) map[int][]*objec
 }
 
 // extractCommitsPerDay returns a map of number of commits per day, in the last [days].
-func extractCommitsPerDay(days int, commits []*object.Commit) map[int][]*object.Commit {
+func extractCommitsPerDay(days int, commits []*object.Commit, now time.Time) map[int][]*object.Commit {
 	commitsPerDay := map[int][]*object.Commit{}
 	// Populate the slice of commits in every day.
 	for i := range days {
-		lastDays := time.Now().AddDate(0, 0, -i)
+		lastDays := now.AddDate(0, 0, -i)
 		// Append all the commits created before lastDays date.
 		for _, c := range commits {
 			if c.Author.When.Day() == lastDays.Day() &&
@@ -311,11 +311,11 @@ func extractCommitsPerDay(days int, commits []*object.Commit) map[int][]*object.
 }
 
 // extractTagsPerDay returns a map of #[days] commits where a tag is created.
-func extractTagsPerDay(days int, tags []*object.Commit) map[int][]*object.Commit {
+func extractTagsPerDay(days int, tags []*object.Commit, now time.Time) map[int][]*object.Commit {
 	tagsPerDays := map[int][]*object.Commit{}
 
 	for i := range days {
-		lastDays := time.Now().AddDate(0, 0, -i)
+		lastDays := now.AddDate(0, 0, -i)
 		// Append all the commits created before lastDays date.
 		for _, t := range tags {
 			if t != nil {
