@@ -381,17 +381,13 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		}
 	}
 
-	if !valid {
+	if valid {
+		logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
+		metrics.GetCounter("repository_good_publiccodeyml", c.Index).Inc()
+	} else {
 		logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
-
 		metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
-
-		return
 	}
-
-	logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
-
-	metrics.GetCounter("repository_good_publiccodeyml", c.Index).Inc()
 
 	if c.DryRun {
 		log.Infof("[%s]: Skipping other steps (--dry-run)", repository.Name)
