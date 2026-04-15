@@ -506,7 +506,7 @@ func (c *Crawler) scanSource(
 		)
 	}
 
-	if src.Group {
+	if src.Group || vcsurl.IsAccount(&src.URL) {
 		return host.lister.List(src.URL, publisher, repos)
 	}
 
