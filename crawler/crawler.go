@@ -404,11 +404,15 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		aliases = append(aliases, repository.URL.String())
 	}
 
-	publiccodeYml, err := parsed.ToYAML()
-	if err != nil {
-		logEntries = append(logEntries, fmt.Sprintf("[%s] parsing error: %s", repository.Name, err.Error()))
+	var publiccodeYml []byte
 
-		return
+	if parsed != nil {
+		publiccodeYml, err = parsed.ToYAML()
+		if err != nil {
+			logEntries = append(logEntries, fmt.Sprintf("[%s] parsing error: %s", repository.Name, err.Error()))
+
+			return
+		}
 	}
 
 	if software == nil {
