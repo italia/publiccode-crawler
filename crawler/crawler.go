@@ -285,7 +285,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,go
 
 			switch {
 			case repository.CatalogID != "" && software != nil:
-				err = c.apiClient.PostCatalogSoftwareLog(repository.CatalogID, software.ID, entries)
+				err = c.apiClient.PostSoftwareLog(software.ID, entries)
 			case repository.CatalogID != "":
 				err = c.apiClient.PostCatalogLog(repository.CatalogID, entries)
 			case software != nil:
