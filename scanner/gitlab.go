@@ -87,7 +87,7 @@ func (scanner GitLabScanner) ScanRepo(
 		return err
 	}
 
-	projectName := strings.Trim(url.Path, "/")
+	projectName := strings.TrimSuffix(strings.Trim(url.Path, "/"), ".git")
 
 	prj, _, err := git.Projects.GetProject(projectName, &gitlab.GetProjectOptions{})
 	if err != nil {
