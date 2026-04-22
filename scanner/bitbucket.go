@@ -93,7 +93,7 @@ func (scanner BitBucketScanner) ScanRepo(
 ) error {
 	log.Debugf("BitBucketScanner.ScanRepo(%s)", url.String())
 
-	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
+	splitted := strings.Split(strings.TrimSuffix(strings.Trim(url.Path, "/"), ".git"), "/")
 	if len(splitted) != 2 {
 		return fmt.Errorf("bitbucket URL %s doesn't look like a repo", url.String())
 	}

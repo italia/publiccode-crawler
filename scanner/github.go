@@ -133,7 +133,7 @@ func (scanner GitHubScanner) ScanRepo(
 ) error {
 	log.Debugf("GitHubScanner.ScanRepo(%s)", url.String())
 
-	splitted := strings.Split(strings.Trim(url.Path, "/"), "/")
+	splitted := strings.Split(strings.TrimSuffix(strings.Trim(url.Path, "/"), ".git"), "/")
 	if len(splitted) != 2 {
 		return fmt.Errorf("doesn't look like a GitHub repo %s", url.String())
 	}
