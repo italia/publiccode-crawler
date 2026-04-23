@@ -38,7 +38,7 @@ crawl directory/*.yml`,
 			log.Fatal("Please set GITHUB_TOKEN, it's needed to use the GitHub API'")
 		}
 
-		c := crawler.NewCrawler(dryRun)
+		crwlr := crawler.NewCrawler(dryRun)
 
 		var publishers []common.Publisher
 
@@ -62,7 +62,7 @@ crawl directory/*.yml`,
 			}
 		}
 
-		if err := c.CrawlPublishers(publishers); err != nil {
+		if err := crwlr.CrawlPublishers(publishers); err != nil {
 			log.Fatal(err)
 		}
 	},

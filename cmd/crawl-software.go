@@ -30,13 +30,13 @@ Crawl a single software given its API id and its publisher.`,
 			log.Fatal("Please set GITHUB_TOKEN, it's needed to use the GitHub API'")
 		}
 
-		c := crawler.NewCrawler(dryRun)
+		crwlr := crawler.NewCrawler(dryRun)
 
 		publisher := common.Publisher{
 			ID: args[1],
 		}
 
-		if err := c.CrawlSoftwareByID(args[0], publisher); err != nil {
+		if err := crwlr.CrawlSoftwareByID(args[0], publisher); err != nil {
 			log.Fatal(err)
 		}
 	},

@@ -128,7 +128,7 @@ func (scanner GitHubScanner) ScanGroupOfRepos(
 // publisher and, if it contains a publiccode.yml, sends it as a [common.Repository]
 // repositories channel.
 // It returns any error encountered if any, otherwise nil.
-func (scanner GitHubScanner) ScanRepo(
+func (scanner GitHubScanner) ScanRepo( //nolint:funlen // goto retry blocks can't be extracted
 	url url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
 	log.Debugf("GitHubScanner.ScanRepo(%s)", url.String())
