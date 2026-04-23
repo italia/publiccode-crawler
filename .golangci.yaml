@@ -53,13 +53,7 @@ linters:
 
     # TODO: fix and enable these
     - cyclop
-    - funlen
     - gocognit
-    - goconst
-    - nestif
-    - tagliatelle
-    - varnamelen
-    - gocyclo
 
   settings:
     lll:

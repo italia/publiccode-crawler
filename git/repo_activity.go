@@ -58,7 +58,7 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 	)
 
 	// Open and load the git repo path.
-	r, err := git.PlainOpen(path)
+	gitRepo, err := git.PlainOpen(path)
 	if err != nil {
 		log.Error(err)
 
@@ -66,7 +66,7 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 	}
 
 	// Extract all the commits.
-	commits, err := extractAllCommits(r)
+	commits, err := extractAllCommits(gitRepo)
 	if err != nil {
 		log.Error(err)
 	}
@@ -78,7 +78,7 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 	commitsPerDay := extractCommitsPerDay(days, commits, now)
 
 	// Extract all tags.
-	tags, err := extractAllTagsCommit(r)
+	tags, err := extractAllTagsCommit(gitRepo)
 	if err != nil {
 		log.Error(err)
 	}
@@ -90,23 +90,23 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 	vitalityIndex := map[int]float64{}
 
 	// Longevity is the repository age.
-	longevity, err = calculateLongevityIndex(r, now)
+	longevity, err = calculateLongevityIndex(gitRepo, now)
 	if err != nil {
 		log.Warn(err)
 	}
 
-	for i := range days {
-		userCommunity = ranges("userCommunity", userCommunityLastDays(commitsLastDays[i]))
+	for idx := range days {
+		userCommunity = ranges("userCommunity", userCommunityLastDays(commitsLastDays[idx]))
 
-		codeActivity = ranges("codeActivity", activityLastDays(commitsPerDay[i]))
-		releaseHistory = ranges("releaseHistory", releaseHistoryLastDays(tagsPerDays[i]))
+		codeActivity = ranges("codeActivity", activityLastDays(commitsPerDay[idx]))
+		releaseHistory = ranges("releaseHistory", releaseHistoryLastDays(tagsPerDays[idx]))
 
 		repoActivity = userCommunity + codeActivity + releaseHistory + ranges("longevity", longevity)
 		if repoActivity > 100 {
 			repoActivity = 100
 		}
 
-		vitalityIndex[i] = repoActivity
+		vitalityIndex[idx] = repoActivity
 	}
 
 	vitalityIndexTotal := meanActivity(vitalityIndex)
@@ -149,17 +149,17 @@ func releaseHistoryLastDays(tags []*object.Commit) float64 {
 }
 
 // Extract all commits referred to released Tags.
-func extractAllTagsCommit(r *git.Repository) ([]*object.Commit, error) {
+func extractAllTagsCommit(repo *git.Repository) ([]*object.Commit, error) {
 	var allTags []*object.Commit
 
-	tagrefs, err := r.Tags()
+	tagrefs, err := repo.Tags()
 	if err != nil {
 		return nil, err
 	}
 
 	err = tagrefs.ForEach(func(t *plumbing.Reference) error {
 		if !t.Hash().IsZero() {
-			tagObject, _ := r.CommitObject(t.Hash())
+			tagObject, _ := repo.CommitObject(t.Hash())
 			allTags = append(allTags, tagObject)
 		}
 
@@ -173,17 +173,17 @@ func extractAllTagsCommit(r *git.Repository) ([]*object.Commit, error) {
 }
 
 // extractAllCommits returns a slice of all the commits from the passed repository.
-func extractAllCommits(r *git.Repository) ([]*object.Commit, error) {
+func extractAllCommits(repo *git.Repository) ([]*object.Commit, error) {
 	var commits []*object.Commit
 
-	ref, err := r.Head()
+	ref, err := repo.Head()
 	if err != nil {
 		log.Error(err)
 
 		return nil, err
 	}
 
-	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
+	cIter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
 	if err != nil {
 		log.Error(err)
 
@@ -202,15 +202,15 @@ func extractAllCommits(r *git.Repository) ([]*object.Commit, error) {
 	return commits, nil
 }
 
-func calculateLongevityIndex(r *git.Repository, now time.Time) (float64, error) {
-	ref, err := r.Head()
+func calculateLongevityIndex(repo *git.Repository, now time.Time) (float64, error) {
+	ref, err := repo.Head()
 	if err != nil {
 		log.Error(err)
 
 		return 0, err
 	}
 
-	cIter, err := r.Log(&git.LogOptions{From: ref.Hash()})
+	cIter, err := repo.Log(&git.LogOptions{From: ref.Hash()})
 	if err != nil {
 		log.Error(err)
 
@@ -253,19 +253,19 @@ func ranges(name string, value float64) float64 {
 		log.Error(err)
 	}
 	// Prepare the data structure for load.
-	t := RangesData{}
+	rangesData := RangesData{}
 	// Populate the yaml.
-	err = yaml.Unmarshal(data, &t)
+	err = yaml.Unmarshal(data, &rangesData)
 	if err != nil {
 		log.Errorf("error: %v", err)
 	}
 
-	for _, v := range t {
+	for _, v := range rangesData {
 		// Select the right ranges table.
 		if v.Name == name {
-			for _, r := range v.Ranges {
-				if value >= r.Min && value < r.Max {
-					return r.Points
+			for _, rangeEntry := range v.Ranges {
+				if value >= rangeEntry.Min && value < rangeEntry.Max {
+					return rangeEntry.Points
 				}
 			}
 		}
@@ -278,12 +278,12 @@ func ranges(name string, value float64) float64 {
 func extractCommitsLastDays(days int, commits []*object.Commit, now time.Time) map[int][]*object.Commit {
 	commitsLastDays := map[int][]*object.Commit{}
 	// Populate the slice of commits in every day.
-	for i := range days {
-		lastDays := now.AddDate(0, 0, -i)
+	for idx := range days {
+		lastDays := now.AddDate(0, 0, -idx)
 		// Append all the commits created before lastDays date.
 		for _, c := range commits {
 			if c.Author.When.Before(lastDays) {
-				commitsLastDays[i] = append(commitsLastDays[i], c)
+				commitsLastDays[idx] = append(commitsLastDays[idx], c)
 			}
 		}
 	}
@@ -295,14 +295,14 @@ func extractCommitsLastDays(days int, commits []*object.Commit, now time.Time) m
 func extractCommitsPerDay(days int, commits []*object.Commit, now time.Time) map[int][]*object.Commit {
 	commitsPerDay := map[int][]*object.Commit{}
 	// Populate the slice of commits in every day.
-	for i := range days {
-		lastDays := now.AddDate(0, 0, -i)
+	for idx := range days {
+		lastDays := now.AddDate(0, 0, -idx)
 		// Append all the commits created before lastDays date.
 		for _, c := range commits {
 			if c.Author.When.Day() == lastDays.Day() &&
 				c.Author.When.Month() == lastDays.Month() && c.Author.When.Year() ==
 				lastDays.Year() {
-				commitsPerDay[i] = append(commitsPerDay[i], c)
+				commitsPerDay[idx] = append(commitsPerDay[idx], c)
 			}
 		}
 	}
@@ -314,15 +314,15 @@ func extractCommitsPerDay(days int, commits []*object.Commit, now time.Time) map
 func extractTagsPerDay(days int, tags []*object.Commit, now time.Time) map[int][]*object.Commit {
 	tagsPerDays := map[int][]*object.Commit{}
 
-	for i := range days {
-		lastDays := now.AddDate(0, 0, -i)
+	for idx := range days {
+		lastDays := now.AddDate(0, 0, -idx)
 		// Append all the commits created before lastDays date.
-		for _, t := range tags {
-			if t != nil {
-				if t.Author.When.Day() == lastDays.Day() &&
-					t.Author.When.Month() == lastDays.Month() &&
-					t.Author.When.Year() == lastDays.Year() {
-					tagsPerDays[i] = append(tagsPerDays[i], t)
+		for _, tag := range tags {
+			if tag != nil {
+				if tag.Author.When.Day() == lastDays.Day() &&
+					tag.Author.When.Month() == lastDays.Month() &&
+					tag.Author.When.Year() == lastDays.Year() {
+					tagsPerDays[idx] = append(tagsPerDays[idx], tag)
 				}
 			}
 		}

@@ -46,11 +46,11 @@ type Crawler struct {
 
 // NewCrawler initializes a new Crawler object and connects to Elasticsearch (if dryRun == false).
 func NewCrawler(dryRun bool) *Crawler {
-	var c Crawler
+	var crwlr Crawler
 
 	const channelSize = 1000
 
-	c.DryRun = dryRun
+	crwlr.DryRun = dryRun
 
 	datadir := viper.GetString("DATADIR")
 	if err := os.MkdirAll(datadir, 0o744); err != nil {
@@ -58,59 +58,59 @@ func NewCrawler(dryRun bool) *Crawler {
 	}
 
 	// Initiate a channel of repositories.
-	c.repositories = make(chan common.Repository, channelSize)
+	crwlr.repositories = make(chan common.Repository, channelSize)
 
 	// Register Prometheus metrics.
-	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", c.Index)
+	metrics.RegisterPrometheusCounter("repository_processed", "Number of repository processed.", crwlr.Index)
 	metrics.RegisterPrometheusCounter(
 		"repository_good_publiccodeyml", "Number of valid publiccode.yml files in the processed repos.",
-		c.Index,
+		crwlr.Index,
 	)
 	metrics.RegisterPrometheusCounter(
 		"repository_bad_publiccodeyml", "Number of invalid publiccode.yml files in the processed repos.",
-		c.Index,
+		crwlr.Index,
 	)
-	metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", c.Index)
-	metrics.RegisterPrometheusCounter("repository_new", "Number of new repositories", c.Index)
-	metrics.RegisterPrometheusCounter("repository_known", "Number of already known repositories", c.Index)
+	metrics.RegisterPrometheusCounter("repository_cloned", "Number of repository cloned", crwlr.Index)
+	metrics.RegisterPrometheusCounter("repository_new", "Number of new repositories", crwlr.Index)
+	metrics.RegisterPrometheusCounter("repository_known", "Number of already known repositories", crwlr.Index)
 	metrics.RegisterPrometheusCounter(
 		"repository_upsert_failures", "Number of failures in creating or updating software in the API",
-		c.Index,
+		crwlr.Index,
 	)
 	metrics.RegisterPrometheusCounter(
 		"repository_fetch_failed", "Number of repositories where fetching publiccode.yml failed (non-404)",
-		c.Index,
+		crwlr.Index,
 	)
 
-	c.gitHubScanner = scanner.NewGitHubScanner()
-	c.gitLabScanner = scanner.NewGitLabScanner()
-	c.bitBucketScanner = scanner.NewBitBucketScanner()
-	c.giteaScanner = scanner.NewGiteaScanner()
+	crwlr.gitHubScanner = scanner.NewGitHubScanner()
+	crwlr.gitLabScanner = scanner.NewGitLabScanner()
+	crwlr.bitBucketScanner = scanner.NewBitBucketScanner()
+	crwlr.giteaScanner = scanner.NewGiteaScanner()
 
-	c.apiClient = apiclient.NewClient()
+	crwlr.apiClient = apiclient.NewClient()
 
-	return &c
+	return &crwlr
 }
 
 // CrawlSoftwareByID crawls a single software.
 func (c *Crawler) CrawlSoftwareByID(software string, publisher common.Publisher) error {
-	var id string
+	var softwareID string
 
 	softwareURL, err := url.Parse(software)
 	if err != nil {
-		id = software
+		softwareID = software
 	} else {
-		id = path.Base(softwareURL.Path)
+		softwareID = path.Base(softwareURL.Path)
 	}
 
-	s, err := c.apiClient.GetSoftware(id)
+	softwareData, err := c.apiClient.GetSoftware(softwareID)
 	if err != nil {
 		return err
 	}
 
-	s.URL = strings.TrimSuffix(s.URL, ".git")
+	softwareData.URL = strings.TrimSuffix(softwareData.URL, ".git")
 
-	repoURL, err := url.Parse(s.URL)
+	repoURL, err := url.Parse(softwareData.URL)
 	if err != nil {
 		return err
 	}
@@ -181,8 +181,8 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 
 	var err error
 
-	for _, u := range publisher.Organizations { //nolint:dupl
-		orgURL := (url.URL)(u)
+	for _, orgEntry := range publisher.Organizations { //nolint:dupl
+		orgURL := (url.URL)(orgEntry)
 
 		switch {
 		case vcsurl.IsGitHub(&orgURL):
@@ -197,7 +197,7 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 			err = fmt.Errorf(
 				"publisher %s: unsupported code hosting platform for %s",
 				publisher.Name,
-				u.String(),
+				orgEntry.String(),
 			)
 		}
 
@@ -210,8 +210,8 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 		}
 	}
 
-	for _, u := range publisher.Repositories { //nolint:dupl
-		repoURL := (url.URL)(u)
+	for _, repoEntry := range publisher.Repositories { //nolint:dupl
+		repoURL := (url.URL)(repoEntry)
 
 		switch {
 		case vcsurl.IsGitHub(&repoURL):
@@ -226,7 +226,7 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 			err = fmt.Errorf(
 				"publisher %s: unsupported code hosting platform for %s",
 				publisher.Name,
-				u.String(),
+				repoEntry.String(),
 			)
 		}
 
@@ -251,7 +251,7 @@ func (c *Crawler) ProcessRepositories(repos chan common.Repository) {
 }
 
 // ProcessRepo looks for a publiccode.yml file in a repository, and if found it processes it.
-func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
+func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,gocyclo
 	var logEntries []string
 
 	var software *apiclient.Software
@@ -415,37 +415,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:maintidx
 		}
 	}
 
-	if software == nil {
-		// New software to add
-		metrics.GetCounter("repository_new", c.Index).Inc()
-
-		if !c.DryRun {
-			// Add the software even if publiccode.yml is invalid, setting active to
-			// false so that we know about the new software and for example
-			// [publiccode-issueopener](https://github.com/italia/publiccode-issueopener) can
-			// notify maintainers about the errors.
-			active := valid
-
-			software, err = c.apiClient.PostSoftware(url, aliases, string(publiccodeYml), active)
-			if err != nil {
-				return
-			}
-		}
-	} else {
-		// Known software
-		for _, alias := range software.Aliases {
-			if !slices.Contains(aliases, alias) {
-				aliases = append(aliases, alias)
-			}
-		}
-
-		metrics.GetCounter("repository_known", c.Index).Inc()
-
-		if !c.DryRun {
-			err = c.apiClient.PatchSoftware(software.ID, url, aliases, string(publiccodeYml))
-		}
-	}
-
+	err = c.upsertSoftware(software, url, aliases, publiccodeYml, valid)
 	if err != nil {
 		logEntries = append(logEntries, fmt.Sprintf("[%s]: %s", repository.Name, err.Error()))
 
@@ -492,13 +462,13 @@ func (c *Crawler) crawl() error {
 	log.Debugf("CPUs #: %d", numCPUs)
 
 	// Process the repositories in order to retrieve the files.
-	for i := range numCPUs {
+	for idx := range numCPUs {
 		c.repositoriesWg.Add(1)
 
-		go func(id int) {
-			log.Debugf("Starting ProcessRepositories() goroutine (#%d)", id)
+		go func(workerID int) {
+			log.Debugf("Starting ProcessRepositories() goroutine (#%d)", workerID)
 			c.ProcessRepositories(reposChan)
-		}(i)
+		}(idx)
 	}
 
 	for repo := range c.repositories {
@@ -593,4 +563,52 @@ func validateFile(publisher common.Publisher, parsed publiccode.PublicCodeV0, fi
 	}
 
 	return nil
+}
+
+// upsertSoftware posts or patches a software entry depending on whether it already exists.
+func (c *Crawler) upsertSoftware(
+	software *apiclient.Software,
+	repoURL string,
+	aliases []string,
+	publiccodeYml []byte,
+	valid bool,
+) error {
+	if software == nil {
+		// New software to add.
+		metrics.GetCounter("repository_new", c.Index).Inc()
+
+		if c.DryRun {
+			return nil
+		}
+
+		// Add the software even if publiccode.yml is invalid, setting active to
+		// false so that we know about the new software and for example
+		// [publiccode-issueopener](https://github.com/italia/publiccode-issueopener) can
+		// notify maintainers about the errors.
+		_, err := c.apiClient.PostSoftware(repoURL, aliases, string(publiccodeYml), valid)
+
+		return err
+	}
+
+	// Known software: merge any aliases from the API that we don't already have.
+	aliases = mergeNewAliases(aliases, software.Aliases)
+
+	metrics.GetCounter("repository_known", c.Index).Inc()
+
+	if !c.DryRun {
+		return c.apiClient.PatchSoftware(software.ID, repoURL, aliases, string(publiccodeYml))
+	}
+
+	return nil
+}
+
+// mergeNewAliases appends aliases from newAliases that are not already in existing.
+func mergeNewAliases(existing, newAliases []string) []string {
+	for _, alias := range newAliases {
+		if !slices.Contains(existing, alias) {
+			existing = append(existing, alias)
+		}
+	}
+
+	return existing
 }

@@ -148,23 +148,23 @@ page:
 		return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
 	}
 
-	for _, p := range publishersResponse.Data {
+	for _, pub := range publishersResponse.Data {
 		var groups, repos []internalUrl.URL
 
-		for _, codeHosting := range p.CodeHostings {
-			u, err := url.Parse(codeHosting.URL)
+		for _, codeHosting := range pub.CodeHostings {
+			parsedURL, err := url.Parse(codeHosting.URL)
 			if err != nil {
 				return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
 			}
 
 			if codeHosting.Group {
-				groups = append(groups, (internalUrl.URL)(*u))
+				groups = append(groups, (internalUrl.URL)(*parsedURL))
 			} else {
-				repos = append(repos, (internalUrl.URL)(*u))
+				repos = append(repos, (internalUrl.URL)(*parsedURL))
 			}
 		}
 
-		id := p.ID
+		publisherID := pub.ID
 
 		// Let's give precedence to the alternativeId. It's usually set by
 		// at Publisher creation and it's supposed to be more representative of the
@@ -173,13 +173,13 @@ page:
 		//
 		// This way, we also take a minimalist approach to Publisher concept in the crawler,
 		// having just one id.
-		if p.AlternativeID != "" {
-			id = p.AlternativeID
+		if pub.AlternativeID != "" {
+			publisherID = pub.AlternativeID
 		}
 
 		publishers = append(publishers, common.Publisher{
-			ID:            id,
-			Name:          fmt.Sprintf("%s %s", p.Description, p.Email),
+			ID:            publisherID,
+			Name:          fmt.Sprintf("%s %s", pub.Description, pub.Email),
 			Organizations: groups,
 			Repositories:  repos,
 		})
@@ -195,26 +195,26 @@ page:
 }
 
 // GetSoftware returns the software with the given id or any error encountered.
-func (clt APIClient) GetSoftware(id string) (*Software, error) {
+func (clt APIClient) GetSoftware(softwareID string) (*Software, error) {
 	var softwareResponse Software
 
-	url := joinPath(clt.baseURL, "/software") + "/" + id
+	url := joinPath(clt.baseURL, "/software") + "/" + softwareID
 
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("can't GET /software/%s: %w", id, err)
+		return nil, fmt.Errorf("can't GET /software/%s: %w", softwareID, err)
 	}
 
 	res, err := clt.retryableClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("can't GET /software/%s: %w", id, err)
+		return nil, fmt.Errorf("can't GET /software/%s: %w", softwareID, err)
 	}
 
 	defer res.Body.Close()
 
 	err = json.NewDecoder(res.Body).Decode(&softwareResponse)
 	if err != nil {
-		return nil, fmt.Errorf("can't parse GET /software/%s response: %w", id, err)
+		return nil, fmt.Errorf("can't parse GET /software/%s response: %w", softwareID, err)
 	}
 
 	return &softwareResponse, nil
@@ -289,7 +289,7 @@ func (clt APIClient) PostSoftware(url string, aliases []string, publiccodeYml st
 // PatchSoftware updates a software resource with the given fields and returns
 // any error encountered.
 func (clt APIClient) PatchSoftware(
-	id string, url string, aliases []string, publiccodeYml string,
+	softwareID string, url string, aliases []string, publiccodeYml string,
 ) error {
 	body, err := json.Marshal(map[string]any{
 		"publiccodeYml": publiccodeYml,
@@ -300,7 +300,7 @@ func (clt APIClient) PatchSoftware(
 		return fmt.Errorf("can't update software: %w", err)
 	}
 
-	res, err := clt.Patch(joinPath(clt.baseURL, "/software/"+id), body)
+	res, err := clt.Patch(joinPath(clt.baseURL, "/software/"+softwareID), body)
 	if err != nil {
 		return fmt.Errorf("can't update software: %w", err)
 	}
@@ -362,14 +362,14 @@ func (clt APIClient) PostLog(message string) error {
 }
 
 func joinPath(base string, paths ...string) string {
-	u, err := url.Parse(base)
+	parsedURL, err := url.Parse(base)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, p := range paths {
-		u.Path = path.Join(u.Path, p)
+		parsedURL.Path = path.Join(parsedURL.Path, p)
 	}
 
-	return u.String()
+	return parsedURL.String()
 }

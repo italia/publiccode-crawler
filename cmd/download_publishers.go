@@ -58,37 +58,37 @@ var downloadPublishersCmd = &cobra.Command{
 		}
 
 	REPOLIST:
-		for _, i := range repolist.Registrati {
+		for _, entry := range repolist.Registrati {
 			for idx, publisher := range publishers {
-				if publisher.ID == i.IPA {
-					u, _ := url.Parse(i.URL)
+				if publisher.ID == entry.IPA {
+					parsedURL, _ := url.Parse(entry.URL)
 					// If this Id is already known, append this URL to the existing item
-					publishers[idx].Organizations = append(publisher.Organizations, (ymlurl.URL)(*u))
+					publishers[idx].Organizations = append(publisher.Organizations, (ymlurl.URL)(*parsedURL))
 
 					continue REPOLIST
 				}
 			}
 
-			u, _ := url.Parse(i.URL)
+			parsedURL, _ := url.Parse(entry.URL)
 			// If this IPA code is not known, append a new publisher item
 			publishers = append(publishers, common.Publisher{
-				Name:          i.IPA,
-				ID:            i.IPA,
-				Organizations: []ymlurl.URL{(ymlurl.URL)(*u)},
+				Name:          entry.IPA,
+				ID:            entry.IPA,
+				Organizations: []ymlurl.URL{(ymlurl.URL)(*parsedURL)},
 			})
 		}
 
 		// Write to the destination file
-		f, err := os.Create(args[1])
+		outFile, err := os.Create(args[1])
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer f.Close()
+		defer outFile.Close()
 		data, err := yaml.Marshal(publishers)
 		if err != nil {
 			log.Fatal(err)
 		}
-		if _, err = f.Write(data); err != nil {
+		if _, err = outFile.Write(data); err != nil {
 			log.Fatal(err)
 		}
 	},

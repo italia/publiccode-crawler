@@ -46,39 +46,43 @@ func (scanner BitBucketScanner) ScanGroupOfRepos(
 		return fmt.Errorf("can't list repositories in %s: %w", url.String(), err)
 	}
 
-	for _, r := range res.Items {
-		if r.Is_private {
-			log.Warnf("Skipping %s: repo is private", r.Full_name)
+	for _, item := range res.Items {
+		if item.Is_private {
+			log.Warnf("Skipping %s: repo is private", item.Full_name)
 
 			continue
 		}
 
 		opt := &bitbucket.RepositoryFilesOptions{
 			Owner:    owner,
-			RepoSlug: r.Slug,
-			Ref:      r.Mainbranch.Name,
+			RepoSlug: item.Slug,
+			Ref:      item.Mainbranch.Name,
 			Path:     "publiccode.yml",
 		}
 
-		res, err := scanner.client.Repositories.Repository.GetFileContent(opt)
+		fileContent, err := scanner.client.Repositories.Repository.GetFileContent(opt)
 		if err != nil {
-			log.Infof("[%s]: no publiccode.yml: %s", r.Full_name, err.Error())
+			log.Infof("[%s]: no publiccode.yml: %s", item.Full_name, err.Error())
 
 			continue
 		}
 
-		if res != nil {
-			u, err := url.Parse(fmt.Sprintf("https://bitbucket.org/%s/%s.git", owner, r.Slug))
+		if fileContent != nil {
+			repoURL, err := url.Parse(fmt.Sprintf("https://bitbucket.org/%s/%s.git", owner, item.Slug))
 			if err != nil {
 				return fmt.Errorf("failed to get canonical repo URL for %s: %w", url.String(), err)
 			}
 
+			rawURL := fmt.Sprintf(
+				"https://bitbucket.org/%s/%s/raw/%s/publiccode.yml",
+				owner, item.Slug, item.Mainbranch.Name,
+			)
 			repositories <- common.Repository{
-				Name:         r.Full_name,
-				FileRawURL:   fmt.Sprintf("https://bitbucket.org/%s/%s/raw/%s/publiccode.yml", owner, r.Slug, r.Mainbranch.Name),
-				URL:          *u,
-				CanonicalURL: *u,
-				GitBranch:    r.Mainbranch.Name,
+				Name:         item.Full_name,
+				FileRawURL:   rawURL,
+				URL:          *repoURL,
+				CanonicalURL: *repoURL,
+				GitBranch:    item.Mainbranch.Name,
 				Publisher:    publisher,
 			}
 		}

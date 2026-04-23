@@ -24,12 +24,12 @@ func NewGiteaScanner() Scanner {
 
 type giteaRepo struct {
 	Name          string `json:"name"`
-	FullName      string `json:"full_name"`
+	FullName      string `json:"full_name"` //nolint:tagliatelle // Gitea API uses snake_case
 	Private       bool   `json:"private"`
 	Archived      bool   `json:"archived"`
-	DefaultBranch string `json:"default_branch"`
-	HTMLURL       string `json:"html_url"`
-	CloneURL      string `json:"clone_url"`
+	DefaultBranch string `json:"default_branch"` //nolint:tagliatelle // Gitea API uses snake_case
+	HTMLURL       string `json:"html_url"`       //nolint:tagliatelle // Gitea API uses snake_case
+	CloneURL      string `json:"clone_url"`      //nolint:tagliatelle // Gitea API uses snake_case
 	Empty         bool   `json:"empty"`
 }
 
@@ -40,11 +40,11 @@ type giteaSearchResult struct {
 // ScanGroupOfRepos scans a Gitea or Forgejo org/user represented by u,
 // or all public repos on the instance if u is a root URL.
 func (scanner GiteaScanner) ScanGroupOfRepos(
-	u url.URL, publisher common.Publisher, repositories chan common.Repository,
+	groupURL url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("GiteaScanner.ScanGroupOfRepos(%s)", u.String())
+	log.Debugf("GiteaScanner.ScanGroupOfRepos(%s)", groupURL.String())
 
-	owner := strings.Trim(u.Path, "/")
+	owner := strings.Trim(groupURL.Path, "/")
 
 	const limit = 50
 
@@ -54,7 +54,7 @@ func (scanner GiteaScanner) ScanGroupOfRepos(
 	}
 
 	for page := 1; ; page++ {
-		repos, err := fetchPage(&u, owner, limit, page)
+		repos, err := fetchPage(&groupURL, owner, limit, page)
 		if err != nil {
 			return fmt.Errorf("GiteaScanner: %w", err)
 		}
@@ -73,28 +73,28 @@ func (scanner GiteaScanner) ScanGroupOfRepos(
 	return nil
 }
 
-// ScanRepo scans a single Gitea or Forgejo repository represented by u.
+// ScanRepo scans a single Gitea or Forgejo repository represented by repoURL.
 func (scanner GiteaScanner) ScanRepo(
-	u url.URL, publisher common.Publisher, repositories chan common.Repository,
+	repoURL url.URL, publisher common.Publisher, repositories chan common.Repository,
 ) error {
-	log.Debugf("GiteaScanner.ScanRepo(%s)", u.String())
+	log.Debugf("GiteaScanner.ScanRepo(%s)", repoURL.String())
 
-	repoPath := strings.TrimSuffix(strings.Trim(u.Path, "/"), ".git")
+	repoPath := strings.TrimSuffix(strings.Trim(repoURL.Path, "/"), ".git")
 
 	parts := strings.SplitN(repoPath, "/", 2)
 	if len(parts) != 2 {
-		return fmt.Errorf("GiteaScanner: invalid repo URL: %s", u.String())
+		return fmt.Errorf("GiteaScanner: invalid repo URL: %s", repoURL.String())
 	}
 
 	owner, repoName := parts[0], parts[1]
-	apiURL := fmt.Sprintf("%s://%s/api/v1/repos/%s/%s", u.Scheme, u.Host, owner, repoName)
+	apiURL := fmt.Sprintf("%s://%s/api/v1/repos/%s/%s", repoURL.Scheme, repoURL.Host, owner, repoName)
 
 	repo, err := giteaFetchRepo(apiURL)
 	if err != nil {
 		return fmt.Errorf("GiteaScanner: %w", err)
 	}
 
-	return addGiteaRepo(&u, repo, publisher, repositories)
+	return addGiteaRepo(&repoURL, repo, publisher, repositories)
 }
 
 func addGiteaRepo(

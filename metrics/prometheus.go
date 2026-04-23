@@ -32,15 +32,15 @@ func GetCounter(name, namespace string) prometheus.Counter {
 }
 
 func GetCounterValue(name, namespace string) float64 {
-	m := &dto.Metric{}
+	metric := &dto.Metric{}
 
-	if err := GetCounter(name, namespace).Write(m); err != nil {
+	if err := GetCounter(name, namespace).Write(metric); err != nil {
 		log.Error(err)
 
 		return 0
 	}
 
-	return m.GetCounter().GetValue()
+	return metric.GetCounter().GetValue()
 }
 
 // RegisterPrometheusCounter register a new Counter of given name with help text.
