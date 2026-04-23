@@ -10,6 +10,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// version prefixes every cache file. Bump on any incompatible binary layout
+// change so old caches are rejected instead of misread.
+const version uint8 = 1
+
 // epoch is the cache's date anchor: uint16 days from this point covers
 // 1980-01-01 through ~2159-06-06.
 var epoch = time.Date(1980, 1, 1, 0, 0, 0, 0, time.UTC)
@@ -40,6 +44,8 @@ func daysToTime(d uint16) time.Time {
 func Marshal(c Cache) ([]byte, error) {
 	var buf bytes.Buffer
 	w := func(v any) { binary.Write(&buf, binary.LittleEndian, v) } //nolint:errcheck
+
+	buf.WriteByte(version)
 
 	w(daysFromEpoch(c.LastUpdated))
 	w(daysFromEpoch(c.OldestCommitDate))
@@ -106,6 +112,15 @@ func Unmarshal(data []byte) (Cache, error) {
 	rd := func(v any) error { return binary.Read(r, binary.LittleEndian, v) }
 
 	var c Cache
+
+	v, err := r.ReadByte()
+	if err != nil {
+		return c, fmt.Errorf("vitality unmarshal: read version: %w", err)
+	}
+
+	if v != version {
+		return c, fmt.Errorf("vitality unmarshal: unsupported version %d (expected %d)", v, version)
+	}
 
 	var lu, ocd, d0 uint16
 	if err := rd(&lu); err != nil {
