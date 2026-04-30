@@ -7,7 +7,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/italia/httpclient-lib-go v0.0.3-0.20260316100201-5dd490bc4896
 	github.com/italia/publiccode-parser-go/v5 v5.3.1
-	github.com/ktrysmt/go-bitbucket v0.9.96
+	github.com/ktrysmt/go-bitbucket v0.9.100
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
 	github.com/sirupsen/logrus v1.9.4
