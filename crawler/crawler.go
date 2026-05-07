@@ -338,7 +338,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,go
 	domain := publiccode.Domain{
 		Host:        "github.com",
 		UseTokenFor: []string{"github.com", "api.github.com", "raw.githubusercontent.com"},
-		BasicAuth:   []string{os.Getenv("GITHUB_TOKEN")},
+		BasicAuth:   []string{viper.GetString("GITHUB_TOKEN")},
 	}
 
 	var parser *publiccode.Parser

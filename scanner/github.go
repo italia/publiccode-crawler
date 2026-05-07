@@ -7,13 +7,13 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/google/go-github/v43/github"
 	"github.com/italia/publiccode-crawler/v4/common"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"golang.org/x/oauth2"
 )
 
@@ -27,7 +27,7 @@ type GitHubScanner struct {
 func NewGitHubScanner() Scanner {
 	ctx := context.Background()
 
-	token := os.Getenv("GITHUB_TOKEN")
+	token := viper.GetString("GITHUB_TOKEN")
 
 	ts := oauth2.StaticTokenSource(
 		&oauth2.Token{AccessToken: token},
