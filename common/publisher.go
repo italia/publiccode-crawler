@@ -23,9 +23,10 @@ type CatalogSource struct {
 }
 
 type Publisher struct {
-	ID      string
-	Name    string
-	Sources []CatalogSource
+	ID            string
+	AlternativeID string
+	Name          string
+	Sources       []CatalogSource
 }
 
 // publisherYAML is the on-disk representation. Driver is inferred from the URL.

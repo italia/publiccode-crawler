@@ -171,22 +171,10 @@ page:
 	}
 
 	for _, pub := range publishersResponse.Data {
-		publisherID := pub.ID
-
-		// Let's give precedence to the alternativeId. It's usually set by
-		// at Publisher creation and it's supposed to be more representative of the
-		// Publisher than the automatically generated UUID, since it's explicitly
-		// set with the API by the creator.
-		//
-		// This way, we also take a minimalist approach to Publisher concept in the crawler,
-		// having just one id.
-		if pub.AlternativeID != "" {
-			publisherID = pub.AlternativeID
-		}
-
 		publisher := common.Publisher{
-			ID:   publisherID,
-			Name: fmt.Sprintf("%s %s", pub.Description, pub.Email),
+			ID:            pub.ID,
+			AlternativeID: pub.AlternativeID,
+			Name:          fmt.Sprintf("%s %s", pub.Description, pub.Email),
 		}
 
 		for _, hosting := range pub.CodeHostings {
