@@ -57,14 +57,14 @@ func CloneRepository(hostname, name, gitURL, index string) error {
 		return fmt.Errorf("cannot clone %s: %w: %s", gitURL, err, out)
 	}
 
-	r, err := gogit.PlainOpen(tmpDir)
+	repository, err := gogit.PlainOpen(tmpDir)
 	if err != nil {
 		return fmt.Errorf("cannot open clone of %s: %w", gitURL, err)
 	}
 
 	metrics.GetCounter("repository_cloned", index).Inc()
 
-	cache, err := buildVitalityCache(r, existing)
+	cache, err := buildVitalityCache(repository, existing)
 	if err != nil {
 		return fmt.Errorf("cannot build vitality cache: %w", err)
 	}
@@ -87,12 +87,12 @@ func loadExistingCache(path string) *vitality.Cache {
 		return nil
 	}
 
-	c, err := vitality.Unmarshal(data)
+	cache, err := vitality.Unmarshal(data)
 	if err != nil {
 		return nil
 	}
 
-	return &c
+	return &cache
 }
 
 type dayKey struct {
@@ -108,7 +108,7 @@ type dayData struct {
 	authors []string
 }
 
-func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality.Cache, error) {
+func buildVitalityCache(repository *gogit.Repository, existing *vitality.Cache) (vitality.Cache, error) {
 	var cache vitality.Cache
 	cache.LastUpdated = time.Now().UTC()
 
@@ -117,8 +117,8 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 	existingTags := map[dayKey]uint32{}
 
 	if existing != nil {
-		for _, a := range existing.Authors {
-			authorIndex[a] = uint16(len(authorIndex)) //nolint:gosec // Authors capped at 65535
+		for _, author := range existing.Authors {
+			authorIndex[author] = uint16(len(authorIndex)) //nolint:gosec // Authors capped at 65535
 		}
 
 		cache.Authors = append(cache.Authors, existing.Authors...)
@@ -127,7 +127,7 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 		existingTags = decodeExistingTags(existing)
 	}
 
-	commits, err := extractAllCommits(r)
+	commits, err := extractAllCommits(repository)
 	if err != nil {
 		return cache, err
 	}
@@ -139,7 +139,7 @@ func buildVitalityCache(r *gogit.Repository, existing *vitality.Cache) (vitality
 
 	cache.Entries = mergeDayEntries(existingDays, newDays, authorIndex, &cache)
 
-	tags, err := extractAllTagsCommit(r)
+	tags, err := extractAllTagsCommit(repository)
 	if err != nil {
 		return cache, err
 	}
@@ -153,18 +153,18 @@ func decodeExistingDays(existing *vitality.Cache) map[dayKey]dayData {
 	out := map[dayKey]dayData{}
 	cur := existing.FirstEntryDate
 
-	for _, e := range existing.Entries {
-		cur = cur.AddDate(0, 0, int(e.Delta))
-		authors := make([]string, 0, len(e.Authors))
+	for _, entry := range existing.Entries {
+		cur = cur.AddDate(0, 0, int(entry.Delta))
+		authors := make([]string, 0, len(entry.Authors))
 
-		for _, id := range e.Authors {
+		for _, id := range entry.Authors {
 			if int(id) < len(existing.Authors) {
 				authors = append(authors, existing.Authors[id])
 			}
 		}
 
 		out[dayKey{cur.Year(), cur.Month(), cur.Day()}] = dayData{
-			date: cur, commits: e.Commits, merges: e.Merges, authors: authors,
+			date: cur, commits: entry.Commits, merges: entry.Merges, authors: authors,
 		}
 	}
 
@@ -175,9 +175,9 @@ func decodeExistingTags(existing *vitality.Cache) map[dayKey]uint32 {
 	out := map[dayKey]uint32{}
 	cur := existing.FirstEntryDate
 
-	for _, t := range existing.Tags {
-		cur = cur.AddDate(0, 0, int(t.Delta))
-		out[dayKey{cur.Year(), cur.Month(), cur.Day()}] = t.Count
+	for _, tag := range existing.Tags {
+		cur = cur.AddDate(0, 0, int(tag.Delta))
+		out[dayKey{cur.Year(), cur.Month(), cur.Day()}] = tag.Count
 	}
 
 	return out
@@ -188,38 +188,38 @@ func aggregateCommits(
 ) (map[dayKey]*dayData, error) {
 	newDays := map[dayKey]*dayData{}
 
-	for _, c := range commits {
-		t := c.Author.When.UTC()
+	for _, commit := range commits {
+		when := commit.Author.When.UTC()
 
-		if cache.OldestCommitDate.IsZero() || t.Before(cache.OldestCommitDate) {
-			cache.OldestCommitDate = t
+		if cache.OldestCommitDate.IsZero() || when.Before(cache.OldestCommitDate) {
+			cache.OldestCommitDate = when
 		}
 
-		if _, ok := authorIndex[c.Author.Email]; !ok {
+		if _, ok := authorIndex[commit.Author.Email]; !ok {
 			if len(authorIndex) >= 65535 {
 				return nil, errors.New("vitality cache: more than 65535 unique authors")
 			}
 
-			authorIndex[c.Author.Email] = uint16(len(authorIndex)) //nolint:gosec // bounded by check above
-			cache.Authors = append(cache.Authors, c.Author.Email)
+			authorIndex[commit.Author.Email] = uint16(len(authorIndex)) //nolint:gosec // bounded by check above
+			cache.Authors = append(cache.Authors, commit.Author.Email)
 		}
 
-		key := dayKey{t.Year(), t.Month(), t.Day()}
+		key := dayKey{when.Year(), when.Month(), when.Day()}
 		if newDays[key] == nil {
 			newDays[key] = &dayData{
-				date: time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC),
+				date: time.Date(when.Year(), when.Month(), when.Day(), 0, 0, 0, 0, time.UTC),
 			}
 		}
 
-		e := newDays[key]
-		e.commits++
+		entry := newDays[key]
+		entry.commits++
 
-		if c.NumParents() > 1 {
-			e.merges++
+		if commit.NumParents() > 1 {
+			entry.merges++
 		}
 
-		if !slices.Contains(e.authors, c.Author.Email) {
-			e.authors = append(e.authors, c.Author.Email)
+		if !slices.Contains(entry.authors, commit.Author.Email) {
+			entry.authors = append(entry.authors, commit.Author.Email)
 		}
 	}
 
@@ -231,13 +231,13 @@ func mergeDayEntries(
 	authorIndex map[string]uint16, cache *vitality.Cache,
 ) []vitality.DayEntry {
 	merged := maps.Clone(existing)
-	for k, e := range fresh {
-		merged[k] = *e
+	for k, entry := range fresh {
+		merged[k] = *entry
 	}
 
 	days := make([]dayData, 0, len(merged))
-	for _, d := range merged {
-		days = append(days, d)
+	for _, day := range merged {
+		days = append(days, day)
 	}
 
 	sort.Slice(days, func(i, j int) bool {
@@ -252,21 +252,21 @@ func mergeDayEntries(
 	prev := days[0].date
 	out := make([]vitality.DayEntry, 0, len(days))
 
-	for _, d := range days {
-		delta := uint32(d.date.Sub(prev).Hours() / 24)
-		authorIDs := make([]uint16, len(d.authors))
+	for _, day := range days {
+		delta := uint32(day.date.Sub(prev).Hours() / 24)
+		authorIDs := make([]uint16, len(day.authors))
 
-		for i, a := range d.authors {
-			authorIDs[i] = authorIndex[a]
+		for idx, author := range day.authors {
+			authorIDs[idx] = authorIndex[author]
 		}
 
 		out = append(out, vitality.DayEntry{
 			Delta:   delta,
-			Commits: d.commits,
-			Merges:  d.merges,
+			Commits: day.commits,
+			Merges:  day.merges,
 			Authors: authorIDs,
 		})
-		prev = d.date
+		prev = day.date
 	}
 
 	return out
@@ -276,14 +276,14 @@ func mergeTagEntries(existing map[dayKey]uint32, tags []*object.Commit, firstEnt
 	tagDates := map[dayKey]time.Time{}
 	newTags := map[dayKey]uint32{}
 
-	for _, t := range tags {
-		if t == nil {
+	for _, tag := range tags {
+		if tag == nil {
 			continue
 		}
 
-		d := t.Author.When.UTC()
-		key := dayKey{d.Year(), d.Month(), d.Day()}
-		tagDates[key] = time.Date(d.Year(), d.Month(), d.Day(), 0, 0, 0, 0, time.UTC)
+		when := tag.Author.When.UTC()
+		key := dayKey{when.Year(), when.Month(), when.Day()}
+		tagDates[key] = time.Date(when.Year(), when.Month(), when.Day(), 0, 0, 0, 0, time.UTC)
 		newTags[key]++
 	}
 
@@ -317,33 +317,33 @@ func mergeTagEntries(existing map[dayKey]uint32, tags []*object.Commit, firstEnt
 	prev := firstEntry
 	out := make([]vitality.TagEntry, 0, len(tagDays))
 
-	for _, t := range tagDays {
-		delta := uint32(t.date.Sub(prev).Hours() / 24)
+	for _, tag := range tagDays {
+		delta := uint32(tag.date.Sub(prev).Hours() / 24)
 		out = append(out, vitality.TagEntry{
 			Delta: delta,
-			Count: t.count,
+			Count: tag.count,
 		})
-		prev = t.date
+		prev = tag.date
 	}
 
 	return out
 }
 
-func extractAllCommits(r *gogit.Repository) ([]*object.Commit, error) {
+func extractAllCommits(repository *gogit.Repository) ([]*object.Commit, error) {
 	var commits []*object.Commit
 
-	ref, err := r.Head()
+	ref, err := repository.Head()
 	if err != nil {
 		return nil, err
 	}
 
-	cIter, err := r.Log(&gogit.LogOptions{From: ref.Hash()})
+	cIter, err := repository.Log(&gogit.LogOptions{From: ref.Hash()})
 	if err != nil {
 		return nil, err
 	}
 
-	err = cIter.ForEach(func(c *object.Commit) error {
-		commits = append(commits, c)
+	err = cIter.ForEach(func(commit *object.Commit) error {
+		commits = append(commits, commit)
 
 		return nil
 	})
@@ -351,17 +351,17 @@ func extractAllCommits(r *gogit.Repository) ([]*object.Commit, error) {
 	return commits, err
 }
 
-func extractAllTagsCommit(r *gogit.Repository) ([]*object.Commit, error) {
+func extractAllTagsCommit(repository *gogit.Repository) ([]*object.Commit, error) {
 	var allTags []*object.Commit
 
-	tagrefs, err := r.Tags()
+	tagrefs, err := repository.Tags()
 	if err != nil {
 		return nil, err
 	}
 
-	err = tagrefs.ForEach(func(t *plumbing.Reference) error {
-		if !t.Hash().IsZero() {
-			tagObject, _ := r.CommitObject(t.Hash())
+	err = tagrefs.ForEach(func(ref *plumbing.Reference) error {
+		if !ref.Hash().IsZero() {
+			tagObject, _ := repository.CommitObject(ref.Hash())
 			if tagObject != nil {
 				allTags = append(allTags, tagObject)
 			}

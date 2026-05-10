@@ -18,202 +18,208 @@ const version uint8 = 1
 // 1980-01-01 through ~2159-06-06.
 var epoch = time.Date(1980, 1, 1, 0, 0, 0, 0, time.UTC)
 
-func daysFromEpoch(t time.Time) uint16 {
-	d := t.UTC().Unix()/86400 - epoch.Unix()/86400
-	if d < 0 {
+func daysFromEpoch(date time.Time) uint16 {
+	days := date.UTC().Unix()/86400 - epoch.Unix()/86400
+	if days < 0 {
 		log.Warnf("vitality cache: date %s is before epoch %s; clamping",
-			t.UTC().Format(time.RFC3339), epoch.Format(time.RFC3339))
+			date.UTC().Format(time.RFC3339), epoch.Format(time.RFC3339))
 
 		return 0
 	}
 
-	if d > 65535 {
+	if days > 65535 {
 		log.Warnf("vitality cache: date %s is after max representable date; clamping",
-			t.UTC().Format(time.RFC3339))
+			date.UTC().Format(time.RFC3339))
 
 		return 65535
 	}
 
-	return uint16(d)
+	return uint16(days)
 }
 
-func daysToTime(d uint16) time.Time {
-	return epoch.AddDate(0, 0, int(d))
+func daysToTime(days uint16) time.Time {
+	return epoch.AddDate(0, 0, int(days))
 }
 
-func Marshal(c Cache) ([]byte, error) {
+func Marshal(cache Cache) ([]byte, error) {
 	var buf bytes.Buffer
-	w := func(v any) { binary.Write(&buf, binary.LittleEndian, v) } //nolint:errcheck
+	write := func(v any) { binary.Write(&buf, binary.LittleEndian, v) } //nolint:errcheck
 
 	buf.WriteByte(version)
 
-	w(daysFromEpoch(c.LastUpdated))
-	w(daysFromEpoch(c.OldestCommitDate))
-	w(daysFromEpoch(c.FirstEntryDate))
+	write(daysFromEpoch(cache.LastUpdated))
+	write(daysFromEpoch(cache.OldestCommitDate))
+	write(daysFromEpoch(cache.FirstEntryDate))
 
-	if len(c.Authors) > 65535 {
-		return nil, fmt.Errorf("vitality marshal: too many authors (%d)", len(c.Authors))
+	if len(cache.Authors) > 65535 {
+		return nil, fmt.Errorf("vitality marshal: too many authors (%d)", len(cache.Authors))
 	}
 
-	w(uint16(len(c.Authors))) //nolint:gosec // bounded above
-	for _, a := range c.Authors {
-		buf.WriteString(a)
+	write(uint16(len(cache.Authors))) //nolint:gosec // bounded above
+	for _, author := range cache.Authors {
+		buf.WriteString(author)
 		buf.WriteByte(0)
 	}
 
-	if len(c.Tags) > 65535 {
-		return nil, fmt.Errorf("vitality marshal: too many tag days (%d)", len(c.Tags))
+	if len(cache.Tags) > 65535 {
+		return nil, fmt.Errorf("vitality marshal: too many tag days (%d)", len(cache.Tags))
 	}
 
-	w(uint16(len(c.Tags))) //nolint:gosec // bounded above
-	for _, t := range c.Tags {
-		if t.Delta > 65535 || t.Count > 65535 {
-			return nil, fmt.Errorf("vitality marshal: tag delta %d or count %d out of range", t.Delta, t.Count)
+	write(uint16(len(cache.Tags))) //nolint:gosec // bounded above
+	for _, tag := range cache.Tags {
+		if tag.Delta > 65535 || tag.Count > 65535 {
+			return nil, fmt.Errorf("vitality marshal: tag delta %d or count %d out of range", tag.Delta, tag.Count)
 		}
 
-		w(uint16(t.Delta))
-		w(uint16(t.Count))
+		write(uint16(tag.Delta))
+		write(uint16(tag.Count))
 	}
 
-	if len(c.Entries) > 65535 {
-		return nil, fmt.Errorf("vitality marshal: too many entries (%d)", len(c.Entries))
+	if len(cache.Entries) > 65535 {
+		return nil, fmt.Errorf("vitality marshal: too many entries (%d)", len(cache.Entries))
 	}
 
-	w(uint16(len(c.Entries))) //nolint:gosec // bounded above
-	for _, e := range c.Entries {
-		if e.Delta > 65535 || e.Commits > 65535 || e.Merges > 65535 {
+	write(uint16(len(cache.Entries))) //nolint:gosec // bounded above
+	for _, entry := range cache.Entries {
+		if entry.Delta > 65535 || entry.Commits > 65535 || entry.Merges > 65535 {
 			return nil, fmt.Errorf("vitality marshal: entry out of range (delta=%d commits=%d merges=%d)",
-				e.Delta, e.Commits, e.Merges)
+				entry.Delta, entry.Commits, entry.Merges)
 		}
 
-		w(uint16(e.Delta))
-		w(uint16(e.Commits))
-		w(uint16(e.Merges))
+		write(uint16(entry.Delta))
+		write(uint16(entry.Commits))
+		write(uint16(entry.Merges))
 
-		if len(e.Authors) > 65535 {
-			return nil, fmt.Errorf("vitality marshal: too many authors in entry (%d)", len(e.Authors))
+		if len(entry.Authors) > 65535 {
+			return nil, fmt.Errorf("vitality marshal: too many authors in entry (%d)", len(entry.Authors))
 		}
 
-		w(uint16(len(e.Authors))) //nolint:gosec // bounded above
-		for _, a := range e.Authors {
-			w(a)
+		write(uint16(len(entry.Authors))) //nolint:gosec // bounded above
+		for _, author := range entry.Authors {
+			write(author)
 		}
 	}
 
 	return buf.Bytes(), nil
 }
 
+//nolint:funlen // Linear binary decoder, splitting hurts readability.
 func Unmarshal(data []byte) (Cache, error) {
 	if len(data) == 0 {
 		return Cache{}, errors.New("vitality unmarshal: empty data")
 	}
 
-	r := bytes.NewReader(data)
-	rd := func(v any) error { return binary.Read(r, binary.LittleEndian, v) }
+	reader := bytes.NewReader(data)
+	read := func(v any) error { return binary.Read(reader, binary.LittleEndian, v) }
 
-	var c Cache
+	var cache Cache
 
-	v, err := r.ReadByte()
+	ver, err := reader.ReadByte()
 	if err != nil {
-		return c, fmt.Errorf("vitality unmarshal: read version: %w", err)
+		return cache, fmt.Errorf("vitality unmarshal: read version: %w", err)
 	}
 
-	if v != version {
-		return c, fmt.Errorf("vitality unmarshal: unsupported version %d (expected %d)", v, version)
+	if ver != version {
+		return cache, fmt.Errorf("vitality unmarshal: unsupported version %d (expected %d)", ver, version)
 	}
 
-	var lu, ocd, d0 uint16
-	if err := rd(&lu); err != nil {
-		return c, fmt.Errorf("vitality unmarshal lu: %w", err)
+	var lastUpdated, oldestCommit, firstDay uint16
+	if err := read(&lastUpdated); err != nil {
+		return cache, fmt.Errorf("vitality unmarshal lastUpdated: %w", err)
 	}
 
-	if err := rd(&ocd); err != nil {
-		return c, fmt.Errorf("vitality unmarshal ocd: %w", err)
+	if err := read(&oldestCommit); err != nil {
+		return cache, fmt.Errorf("vitality unmarshal oldestCommit: %w", err)
 	}
 
-	if err := rd(&d0); err != nil {
-		return c, fmt.Errorf("vitality unmarshal d0: %w", err)
+	if err := read(&firstDay); err != nil {
+		return cache, fmt.Errorf("vitality unmarshal firstDay: %w", err)
 	}
 
-	c.LastUpdated = daysToTime(lu)
-	c.OldestCommitDate = daysToTime(ocd)
-	c.FirstEntryDate = daysToTime(d0)
+	cache.LastUpdated = daysToTime(lastUpdated)
+	cache.OldestCommitDate = daysToTime(oldestCommit)
+	cache.FirstEntryDate = daysToTime(firstDay)
 
 	var numAuthors uint16
-	if err := rd(&numAuthors); err != nil {
-		return c, fmt.Errorf("vitality unmarshal num_authors: %w", err)
+	if err := read(&numAuthors); err != nil {
+		return cache, fmt.Errorf("vitality unmarshal num_authors: %w", err)
 	}
 
-	c.Authors = make([]string, numAuthors)
-	for i := range c.Authors {
-		var sb bytes.Buffer
+	cache.Authors = make([]string, numAuthors)
+	for idx := range cache.Authors {
+		var nameBuf bytes.Buffer
 
 		for {
-			b, err := r.ReadByte()
+			nextByte, err := reader.ReadByte()
 			if err != nil {
-				return c, fmt.Errorf("vitality unmarshal author[%d]: %w", i, err)
+				return cache, fmt.Errorf("vitality unmarshal author[%d]: %w", idx, err)
 			}
 
-			if b == 0 {
+			if nextByte == 0 {
 				break
 			}
 
-			sb.WriteByte(b)
+			nameBuf.WriteByte(nextByte)
 		}
 
-		c.Authors[i] = sb.String()
+		cache.Authors[idx] = nameBuf.String()
 	}
 
 	var numTags uint16
-	if err := rd(&numTags); err != nil {
-		return c, fmt.Errorf("vitality unmarshal num_tags: %w", err)
+	if err := read(&numTags); err != nil {
+		return cache, fmt.Errorf("vitality unmarshal num_tags: %w", err)
 	}
 
-	c.Tags = make([]TagEntry, numTags)
-	for i := range c.Tags {
+	cache.Tags = make([]TagEntry, numTags)
+	for idx := range cache.Tags {
 		var delta, count uint16
-		if err := rd(&delta); err != nil {
-			return c, fmt.Errorf("vitality unmarshal tag[%d].delta: %w", i, err)
+		if err := read(&delta); err != nil {
+			return cache, fmt.Errorf("vitality unmarshal tag[%d].delta: %w", idx, err)
 		}
 
-		if err := rd(&count); err != nil {
-			return c, fmt.Errorf("vitality unmarshal tag[%d].count: %w", i, err)
+		if err := read(&count); err != nil {
+			return cache, fmt.Errorf("vitality unmarshal tag[%d].count: %w", idx, err)
 		}
 
-		c.Tags[i] = TagEntry{Delta: uint32(delta), Count: uint32(count)}
+		cache.Tags[idx] = TagEntry{Delta: uint32(delta), Count: uint32(count)}
 	}
 
 	var numEntries uint16
-	if err := rd(&numEntries); err != nil {
-		return c, fmt.Errorf("vitality unmarshal num_entries: %w", err)
+	if err := read(&numEntries); err != nil {
+		return cache, fmt.Errorf("vitality unmarshal num_entries: %w", err)
 	}
 
-	c.Entries = make([]DayEntry, numEntries)
-	for i := range c.Entries {
+	cache.Entries = make([]DayEntry, numEntries)
+	for idx := range cache.Entries {
 		var delta, commits, merges, numA uint16
-		if err := rd(&delta); err != nil {
-			return c, fmt.Errorf("vitality unmarshal entry[%d].delta: %w", i, err)
+		if err := read(&delta); err != nil {
+			return cache, fmt.Errorf("vitality unmarshal entry[%d].delta: %w", idx, err)
 		}
 
-		if err := rd(&commits); err != nil {
-			return c, fmt.Errorf("vitality unmarshal entry[%d].commits: %w", i, err)
+		if err := read(&commits); err != nil {
+			return cache, fmt.Errorf("vitality unmarshal entry[%d].commits: %w", idx, err)
 		}
 
-		if err := rd(&merges); err != nil {
-			return c, fmt.Errorf("vitality unmarshal entry[%d].merges: %w", i, err)
+		if err := read(&merges); err != nil {
+			return cache, fmt.Errorf("vitality unmarshal entry[%d].merges: %w", idx, err)
 		}
 
-		if err := rd(&numA); err != nil {
-			return c, fmt.Errorf("vitality unmarshal entry[%d].num_authors: %w", i, err)
+		if err := read(&numA); err != nil {
+			return cache, fmt.Errorf("vitality unmarshal entry[%d].num_authors: %w", idx, err)
 		}
 
 		authors := make([]uint16, numA)
-		if err := binary.Read(r, binary.LittleEndian, authors); err != nil {
-			return c, fmt.Errorf("vitality unmarshal entry[%d].authors: %w", i, err)
+		if err := binary.Read(reader, binary.LittleEndian, authors); err != nil {
+			return cache, fmt.Errorf("vitality unmarshal entry[%d].authors: %w", idx, err)
 		}
 
-		c.Entries[i] = DayEntry{Delta: uint32(delta), Commits: uint32(commits), Merges: uint32(merges), Authors: authors}
+		cache.Entries[idx] = DayEntry{
+			Delta:   uint32(delta),
+			Commits: uint32(commits),
+			Merges:  uint32(merges),
+			Authors: authors,
+		}
 	}
 
-	return c, nil
+	return cache, nil
 }
