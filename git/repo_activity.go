@@ -31,6 +31,8 @@ type Range struct {
 // CalculateRepoActivity return the repository activity index and the vitality slice calculated on the git clone.
 // It follows the document https://lg-acquisizione-e-riuso-software-per-la-pa.readthedocs.io/
 // In reference to section: 2.5.2. Fase 2.2: Valutazione soluzioni riusabili per la PA.
+//
+//nolint:funlen // Single linear walk over the cache, splitting hurts readability.
 func CalculateRepoActivity(repository common.Repository, days int, now time.Time) (float64, map[int]float64, error) {
 	if repository.Name == "" {
 		return 0, nil, errors.New("cannot calculate repository activity without name")
@@ -58,32 +60,32 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 
 	vitalityIndex := map[int]float64{}
 
-	for i := range days {
-		cutoff := now.AddDate(0, 0, -i)
+	for idx := range days {
+		cutoff := now.AddDate(0, 0, -idx)
 
 		authorSet := map[uint16]struct{}{}
 		var commits, merges float64
 
 		cur := cache.FirstEntryDate
-		for _, e := range cache.Entries {
-			cur = cur.AddDate(0, 0, int(e.Delta))
+		for _, entry := range cache.Entries {
+			cur = cur.AddDate(0, 0, int(entry.Delta))
 			if cur.Before(cutoff) {
-				for _, id := range e.Authors {
+				for _, id := range entry.Authors {
 					authorSet[id] = struct{}{}
 				}
 			}
 			if sameDay(cur, cutoff) {
-				commits = float64(e.Commits)
-				merges = float64(e.Merges)
+				commits = float64(entry.Commits)
+				merges = float64(entry.Merges)
 			}
 		}
 
 		var tagCount float64
 		cur = cache.FirstEntryDate
-		for _, t := range cache.Tags {
-			cur = cur.AddDate(0, 0, int(t.Delta))
+		for _, tag := range cache.Tags {
+			cur = cur.AddDate(0, 0, int(tag.Delta))
 			if sameDay(cur, cutoff) {
-				tagCount = float64(t.Count)
+				tagCount = float64(tag.Count)
 			}
 		}
 
@@ -96,7 +98,7 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 			repoActivity = 100
 		}
 
-		vitalityIndex[i] = repoActivity
+		vitalityIndex[idx] = repoActivity
 	}
 
 	total := meanActivity(vitalityIndex)
@@ -113,18 +115,18 @@ func ranges(name string, value float64) float64 {
 		log.Error(err)
 	}
 
-	t := RangesData{}
+	rangesData := RangesData{}
 
-	err = yaml.Unmarshal(data, &t)
+	err = yaml.Unmarshal(data, &rangesData)
 	if err != nil {
 		log.Errorf("error: %v", err)
 	}
 
-	for _, v := range t {
-		if v.Name == name {
-			for _, r := range v.Ranges {
-				if value >= r.Min && value < r.Max {
-					return r.Points
+	for _, group := range rangesData {
+		if group.Name == name {
+			for _, entry := range group.Ranges {
+				if value >= entry.Min && value < entry.Max {
+					return entry.Points
 				}
 			}
 		}
