@@ -183,7 +183,7 @@ func (c *Crawler) ScanPublisher(publisher common.Publisher) {
 	defer c.publishersWg.Done()
 
 	for _, src := range publisher.Sources {
-		if err := c.scanSource(src, publisher, c.repositories); err != nil {
+		if err := c.scanCodeHosting(src, publisher, c.repositories); err != nil {
 			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
 				log.Warnf("[%s] %s", src.URL.String(), err.Error())
 			} else {
@@ -243,7 +243,7 @@ func (c *Crawler) ScanCatalog(cat common.Catalog) {
 	}
 
 	for _, src := range cat.Sources {
-		if err := c.scanSource(src, publisher, proxyCh); err != nil {
+		if err := c.scanCatalogSource(src, publisher, proxyCh); err != nil {
 			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
 				log.Warnf("[%s] %s", src.URL.String(), err.Error())
 			} else {
@@ -480,8 +480,40 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,go
 	}
 }
 
-// scanSource dispatches a single CatalogSource to the appropriate scanner.
-func (c *Crawler) scanSource(
+// scanCodeHosting dispatches a publisher's code hosting location. Group
+// distinguishes account/group scans from single-repo scans.
+func (c *Crawler) scanCodeHosting(
+	host common.CodeHosting, publisher common.Publisher, repos chan common.Repository,
+) error {
+	if host.Driver == "" {
+		return fmt.Errorf(
+			"%s: unrecognized platform for %s, skipping",
+			publisher.Name,
+			host.URL.String(),
+		)
+	}
+
+	vcs, ok := c.hosts[host.Driver]
+	if !ok {
+		return fmt.Errorf(
+			"%s: unknown code hosting driver %q for %s",
+			publisher.Name,
+			host.Driver,
+			host.URL.String(),
+		)
+	}
+
+	if host.Group {
+		return vcs.lister.List(host.URL, publisher, repos)
+	}
+
+	return vcs.scanner.Scan(host.URL, publisher, repos)
+}
+
+// scanCatalogSource dispatches a single catalog source. A source is always
+// a list of repositories: code-host drivers (github/gitlab/...) go through
+// List, the json driver enumerates URLs and recurses one-by-one.
+func (c *Crawler) scanCatalogSource(
 	src common.CatalogSource, publisher common.Publisher, repos chan common.Repository,
 ) error {
 	if src.Driver == "" {
@@ -496,7 +528,7 @@ func (c *Crawler) scanSource(
 		return c.scanJSONCatalog(src, publisher, repos)
 	}
 
-	host, ok := c.hosts[src.Driver]
+	vcs, ok := c.hosts[src.Driver]
 	if !ok {
 		return fmt.Errorf(
 			"%s: unknown catalog driver %q for %s",
@@ -506,15 +538,11 @@ func (c *Crawler) scanSource(
 		)
 	}
 
-	if src.Group {
-		return host.lister.List(src.URL, publisher, repos)
-	}
-
-	return host.scanner.Scan(src.URL, publisher, repos)
+	return vcs.lister.List(src.URL, publisher, repos)
 }
 
 // scanJSONCatalog enumerates repository URLs from a JSON catalog and dispatches
-// each one to the appropriate scanner.
+// each one as a single-repo code hosting entry.
 func (c *Crawler) scanJSONCatalog(
 	src common.CatalogSource, publisher common.Publisher, repos chan common.Repository,
 ) error {
@@ -534,13 +562,13 @@ func (c *Crawler) scanJSONCatalog(
 	}
 
 	for _, repoURL := range urls {
-		repoSrc := common.CatalogSource{
+		host := common.CodeHosting{
 			URL:    repoURL,
 			Driver: common.InferVCSDriver(repoURL),
 			Group:  false,
 		}
 
-		if err := c.scanSource(repoSrc, publisher, repos); err != nil {
+		if err := c.scanCodeHosting(host, publisher, repos); err != nil {
 			if errors.Is(err, scanner.ErrPubliccodeNotFound) {
 				log.Warnf("[%s] %s", repoURL.String(), err.Error())
 			} else {

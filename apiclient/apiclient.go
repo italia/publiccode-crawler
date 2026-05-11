@@ -193,7 +193,7 @@ page:
 				driver = common.InferVCSDriver(*hostingURL)
 			}
 
-			publisher.Sources = append(publisher.Sources, common.CatalogSource{
+			publisher.Sources = append(publisher.Sources, common.CodeHosting{
 				URL:    *hostingURL,
 				Driver: driver,
 				Args:   args,

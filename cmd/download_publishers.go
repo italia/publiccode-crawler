@@ -62,7 +62,7 @@ var downloadPublishersCmd = &cobra.Command{
 				if publisher.ID == entry.IPA {
 					parsedURL, _ := url.Parse(entry.URL)
 					// If this Id is already known, append this URL to the existing item
-					publishers[idx].Sources = append(publisher.Sources, common.CatalogSource{
+					publishers[idx].Sources = append(publisher.Sources, common.CodeHosting{
 						URL:    *parsedURL,
 						Driver: common.InferVCSDriver(*parsedURL),
 						Group:  true,
@@ -77,7 +77,7 @@ var downloadPublishersCmd = &cobra.Command{
 			publishers = append(publishers, common.Publisher{
 				Name: entry.IPA,
 				ID:   entry.IPA,
-				Sources: []common.CatalogSource{{
+				Sources: []common.CodeHosting{{
 					URL:    *parsedURL,
 					Driver: common.InferVCSDriver(*parsedURL),
 					Group:  true,
