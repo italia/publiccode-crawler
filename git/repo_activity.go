@@ -39,7 +39,7 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 	}
 
 	vendor, repo := common.SplitFullName(repository.Name)
-	path := vitilityCachePath(repository.URL.Host, vendor, repo)
+	path := vitalityCachePath(repository.URL.Host, vendor, repo)
 
 	data, err := os.ReadFile(path)
 	if err != nil {

@@ -21,7 +21,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func vitilityCachePath(hostname, vendor, repo string) string {
+func vitalityCachePath(hostname, vendor, repo string) string {
 	return filepath.Join(viper.GetString("DATADIR"), "repos", hostname, vendor, repo, "vitality.json")
 }
 
@@ -35,7 +35,7 @@ func CloneRepository(hostname, name, gitURL, index string) error {
 	}
 
 	vendor, repo := common.SplitFullName(name)
-	cachePath := vitilityCachePath(hostname, vendor, repo)
+	cachePath := vitalityCachePath(hostname, vendor, repo)
 
 	existing := loadExistingCache(cachePath)
 
