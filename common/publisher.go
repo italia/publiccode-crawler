@@ -11,11 +11,10 @@ import (
 
 var fileReaderInject = os.ReadFile
 
-// CatalogSource is a single source of repository URLs.
-// Driver identifies the driver ("github", "gitlab", "bitbucket", "gitea", "json", ...).
-// Args holds positional arguments for the driver, e.g. a JSONPath expression for "json".
-// Group distinguishes org/group scans (true) from single-repo scans (false).
-type CatalogSource struct {
+// CodeHosting is one of a publisher's hosting locations. It may be a single
+// repository or an account/group (Group=true). Driver is one of "github",
+// "gitlab", "bitbucket", "gitea" — code-host scanners only.
+type CodeHosting struct {
 	URL    url.URL
 	Driver string
 	Args   []string
@@ -26,7 +25,7 @@ type Publisher struct {
 	ID            string
 	AlternativeID string
 	Name          string
-	Sources       []CatalogSource
+	Sources       []CodeHosting
 }
 
 // publisherYAML is the on-disk representation. Driver is inferred from the URL.
@@ -61,7 +60,7 @@ func LoadPublishers(path string) ([]Publisher, error) {
 
 		for _, org := range rawPub.Organizations {
 			stdURL := (url.URL)(org)
-			pub.Sources = append(pub.Sources, CatalogSource{
+			pub.Sources = append(pub.Sources, CodeHosting{
 				URL:    stdURL,
 				Driver: InferVCSDriver(stdURL),
 				Group:  true,
@@ -70,7 +69,7 @@ func LoadPublishers(path string) ([]Publisher, error) {
 
 		for _, repo := range rawPub.Repositories {
 			stdURL := (url.URL)(repo)
-			pub.Sources = append(pub.Sources, CatalogSource{
+			pub.Sources = append(pub.Sources, CodeHosting{
 				URL:    stdURL,
 				Driver: InferVCSDriver(stdURL),
 				Group:  false,
