@@ -25,3 +25,5 @@ config.toml
 # Downloaded files
 cache
 data
+
+.claude

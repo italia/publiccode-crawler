@@ -659,7 +659,7 @@ func validateFile(
 
 	uri := strings.TrimSpace(organisationURI)
 	if !strings.EqualFold(strings.TrimSpace(expected), uri) &&
-		!(publishersNamespace == "" && strings.EqualFold(strings.TrimSpace(italianPAExpected), uri)) {
+		(publishersNamespace != "" || !strings.EqualFold(strings.TrimSpace(italianPAExpected), uri)) {
 		return fmt.Errorf(
 			"organisation is '%s', but '%s' was expected for '%s' in %s",
 			organisationURI,
