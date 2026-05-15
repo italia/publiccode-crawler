@@ -648,7 +648,18 @@ func validateFile(
 
 	expected := publishersNamespace + publisher.AlternativeID
 
-	if !strings.EqualFold(strings.TrimSpace(expected), strings.TrimSpace(organisationURI)) {
+	// When no namespace is configured for this publisher, also accept the Italian PA
+	// URN format ("urn:x-italian-pa:<alternativeId>") as a valid match. Self-onboarded
+	// Italian PA publishers have no publishersNamespace in the crawler but their
+	// publiccode.yml legitimately declares the full URN.
+	//nolint:godox
+	// TODO: remove this fallback once publishers expose publishersNamespace via the API
+	// (https://github.com/italia/publiccode-crawler/issues/298)
+	italianPAExpected := "urn:x-italian-pa:" + publisher.AlternativeID
+
+	uri := strings.TrimSpace(organisationURI)
+	if !strings.EqualFold(strings.TrimSpace(expected), uri) &&
+		!(publishersNamespace == "" && strings.EqualFold(strings.TrimSpace(italianPAExpected), uri)) {
 		return fmt.Errorf(
 			"organisation is '%s', but '%s' was expected for '%s' in %s",
 			organisationURI,
