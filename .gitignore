@@ -26,4 +26,4 @@ config.toml
 cache
 data
 
-.claude
+.claude/*
