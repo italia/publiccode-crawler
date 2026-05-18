@@ -455,7 +455,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,go
 
 	if !viper.GetBool("SKIP_VITALITY") && !c.DryRun {
 		// Clone repository.
-		err = git.CloneRepository(repository.URL.Host, repository.Name, parsed.Url().String(), c.Index)
+		err = git.CloneRepository(repository.URL.Host, repository.Name, repository.CanonicalURL.String(), c.Index)
 		if err != nil {
 			logEntries = append(logEntries, fmt.Sprintf("[%s] error while cloning: %v\n", repository.Name, err))
 		}
