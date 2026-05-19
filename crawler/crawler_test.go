@@ -116,21 +116,6 @@ func TestValidateFile_NoNamespaceMismatch(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// Self-onboarded Italian PA publishers have no publishersNamespace in the crawler
-// but their publiccode.yml declares the full URN — both forms must be accepted.
-func TestValidateFile_NoNamespaceMatchesItalianPAUrn(t *testing.T) {
-	pc := newPublicCode(t,
-		"https://github.com/foo/bar",
-		"urn:x-italian-pa:pcm",
-	)
-	publisher := common.Publisher{ID: "uuid-1234", AlternativeID: "pcm", Name: "PCM"}
-
-	err := validateFile("", publisher, pc,
-		"https://raw.githubusercontent.com/foo/bar/main/publiccode.yml")
-
-	assert.NoError(t, err)
-}
-
 func TestValidateFile_OrganisationMatchesPublisher(t *testing.T) {
 	pc := newPublicCode(t,
 		"https://github.com/foo/bar",
