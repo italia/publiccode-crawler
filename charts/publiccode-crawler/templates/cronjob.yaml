@@ -34,7 +34,7 @@ spec:
               name: secrets-store
 
             resources:
-              {{- toYaml .Values.resources | indent 14 }}
+              {{- toYaml .Values.resources | nindent 14 }}
             env:
               - name: API_BASEURL
                 value: "{{ .Values.env.API_BASEURL}}"
