@@ -386,31 +386,6 @@ func (clt APIClient) PatchCatalogSoftware(
 	return nil
 }
 
-// PostCatalogSoftwareLog creates a log entry for the given software within a catalog.
-func (clt APIClient) PostCatalogSoftwareLog(catalogID string, softwareID string, message string) error {
-	payload, err := json.Marshal(map[string]any{
-		"message": message,
-	})
-	if err != nil {
-		return fmt.Errorf("can't create software log: %w", err)
-	}
-
-	res, err := clt.Post(
-		joinPath(clt.baseURL, catalogPath(catalogID, "software", softwareID, "logs")), payload,
-	)
-	if err != nil {
-		return fmt.Errorf("can't create software log: %w", err)
-	}
-
-	defer res.Body.Close()
-
-	if res.StatusCode < 200 || res.StatusCode > 299 {
-		return fmt.Errorf("can't create software log: API replied with HTTP %s", res.Status)
-	}
-
-	return nil
-}
-
 // PostCatalogLog creates a general log entry for the given catalog.
 func (clt APIClient) PostCatalogLog(catalogID string, message string) error {
 	payload, err := json.Marshal(map[string]any{
