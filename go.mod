@@ -4,7 +4,7 @@ require (
 	github.com/PaesslerAG/jsonpath v0.1.1
 	github.com/alranel/go-vcsurl/v2 v2.1.1
 	github.com/go-git/go-git/v5 v5.19.1
-	github.com/google/go-github/v43 v43.0.0
+	github.com/google/go-github/v68 v68.0.0
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/italia/httpclient-lib-go v0.0.3-0.20260316100201-5dd490bc4896
 	github.com/italia/publiccode-parser-go/v5 v5.3.1

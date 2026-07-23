@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/go-github/v43/github"
+	"github.com/google/go-github/v68/github"
 	"github.com/italia/publiccode-crawler/v4/common"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -83,7 +83,7 @@ func (scanner GitHubScanner) List(
 				url.String(), err.Error(),
 			)
 
-			repos, resp, err = scanner.client.Repositories.List(context.Background(), orgName, nil)
+			repos, resp, err = scanner.client.Repositories.ListByUser(context.Background(), orgName, nil)
 			if err != nil {
 				return fmt.Errorf("can't list repositories in %s (not an GitHub organization?): %w", url.String(), err)
 			}
