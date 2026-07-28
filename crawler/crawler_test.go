@@ -1,11 +1,17 @@
 package crawler
 
 import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
+	"github.com/italia/publiccode-crawler/v4/apiclient"
 	"github.com/italia/publiccode-crawler/v4/common"
 	publiccode "github.com/italia/publiccode-parser-go/v5"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -140,4 +146,72 @@ func TestValidateFile_OrganisationMismatch(t *testing.T) {
 		"https://raw.githubusercontent.com/foo/bar/main/publiccode.yml")
 
 	assert.Error(t, err)
+}
+
+func newTestCrawler(t *testing.T, handler http.HandlerFunc) *Crawler {
+	t.Helper()
+
+	server := httptest.NewServer(handler)
+	t.Cleanup(server.Close)
+
+	viper.Set("API_BASEURL", server.URL)
+	viper.Set("API_BEARER_TOKEN", "token")
+
+	return &Crawler{Index: "test", apiClient: apiclient.NewClient()}
+}
+
+func TestUpsertSoftware_reactivatesOnValidFile(t *testing.T) {
+	var patched map[string]any
+
+	crawler := newTestCrawler(t, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPatch, r.Method)
+
+		bytes, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, json.Unmarshal(bytes, &patched))
+
+		_, _ = w.Write([]byte(`{}`))
+	})
+
+	software := &apiclient.Software{ID: "id1", Active: false}
+	err := crawler.upsertSoftware("", software, "https://example.org/repo.git", nil, []byte("yml"), true)
+
+	assert.NoError(t, err)
+	assert.Equal(t, true, patched["active"])
+}
+
+func TestUpsertSoftware_skipsInactiveWithInvalidFile(t *testing.T) {
+	requests := 0
+
+	crawler := newTestCrawler(t, func(w http.ResponseWriter, _ *http.Request) {
+		requests++
+
+		_, _ = w.Write([]byte(`{}`))
+	})
+
+	software := &apiclient.Software{ID: "id1", Active: false}
+	err := crawler.upsertSoftware("", software, "https://example.org/repo.git", nil, []byte("yml"), false)
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, requests)
+}
+
+func TestUpsertSoftware_keepsActiveOnInvalidFile(t *testing.T) {
+	var patched map[string]any
+
+	crawler := newTestCrawler(t, func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, http.MethodPatch, r.Method)
+
+		bytes, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+		assert.NoError(t, json.Unmarshal(bytes, &patched))
+
+		_, _ = w.Write([]byte(`{}`))
+	})
+
+	software := &apiclient.Software{ID: "id1", Active: true}
+	err := crawler.upsertSoftware("", software, "https://example.org/repo.git", nil, []byte("yml"), false)
+
+	assert.NoError(t, err)
+	assert.Equal(t, true, patched["active"])
 }

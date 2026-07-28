@@ -296,7 +296,10 @@ func catalogPath(catalogID string, segments ...string) string {
 func (clt APIClient) GetCatalogSoftwareByURL(catalogID string, softwareURL string) (*Software, error) {
 	var softwareResponse SoftwarePaginated
 
-	reqURL := joinPath(clt.baseURL, catalogPath(catalogID, "software")) + "?url=" + softwareURL
+	// all=true makes the API return inactive software as well: without it
+	// software created as inactive is invisible to us and we'd try to
+	// create it again, failing on the duplicate URL.
+	reqURL := joinPath(clt.baseURL, catalogPath(catalogID, "software")) + "?all=true&url=" + softwareURL
 
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, reqURL, nil)
 	if err != nil {
@@ -359,12 +362,13 @@ func (clt APIClient) PostCatalogSoftware(
 
 // PatchCatalogSoftware updates a software resource within the given catalog.
 func (clt APIClient) PatchCatalogSoftware(
-	catalogID string, softwareID string, softwareURL string, aliases []string, publiccodeYml string,
+	catalogID string, softwareID string, softwareURL string, aliases []string, publiccodeYml string, active bool,
 ) error {
 	body, err := json.Marshal(map[string]any{
 		"publiccodeYml": publiccodeYml,
 		"url":           softwareURL,
 		"aliases":       aliases,
+		"active":        active,
 	})
 	if err != nil {
 		return fmt.Errorf("can't update software in catalog %s: %w", catalogID, err)
@@ -441,7 +445,10 @@ func (clt APIClient) GetSoftware(softwareID string) (*Software, error) {
 func (clt APIClient) GetSoftwareByURL(url string) (*Software, error) {
 	var softwareResponse SoftwarePaginated
 
-	reqURL := joinPath(clt.baseURL, "/software") + "?url=" + url
+	// all=true makes the API return inactive software as well: without it
+	// software created as inactive is invisible to us and we'd try to
+	// create it again, failing on the duplicate URL.
+	reqURL := joinPath(clt.baseURL, "/software") + "?all=true&url=" + url
 
 	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, reqURL, nil)
 	if err != nil {
@@ -504,12 +511,13 @@ func (clt APIClient) PostSoftware(url string, aliases []string, publiccodeYml st
 // PatchSoftware updates a software resource with the given fields and returns
 // any error encountered.
 func (clt APIClient) PatchSoftware(
-	softwareID string, url string, aliases []string, publiccodeYml string,
+	softwareID string, url string, aliases []string, publiccodeYml string, active bool,
 ) error {
 	body, err := json.Marshal(map[string]any{
 		"publiccodeYml": publiccodeYml,
 		"url":           url,
 		"aliases":       aliases,
+		"active":        active,
 	})
 	if err != nil {
 		return fmt.Errorf("can't update software: %w", err)
