@@ -726,12 +726,27 @@ func (c *Crawler) upsertSoftware(
 
 	metrics.GetCounter("repository_known", c.Index).Inc()
 
+	// Software auto-created as inactive is only recognizable by its
+	// created_at being equal to updated_at (see the manual deactivation
+	// check in ProcessRepo). Patching it while publiccode.yml is still
+	// invalid would bump updated_at and make it look manually
+	// deactivated, locking it inactive forever, so leave it untouched.
+	if !valid && !software.Active {
+		return nil
+	}
+
+	// Re-activate software that was auto-created as inactive now that its
+	// publiccode.yml is valid. Manually deactivated software never gets
+	// this far, and active software is not deactivated on an invalid
+	// file.
+	active := valid || software.Active
+
 	if !c.DryRun {
 		if catalogID != "" {
-			return c.apiClient.PatchCatalogSoftware(catalogID, software.ID, repoURL, aliases, string(publiccodeYml))
+			return c.apiClient.PatchCatalogSoftware(catalogID, software.ID, repoURL, aliases, string(publiccodeYml), active)
 		}
 
-		return c.apiClient.PatchSoftware(software.ID, repoURL, aliases, string(publiccodeYml))
+		return c.apiClient.PatchSoftware(software.ID, repoURL, aliases, string(publiccodeYml), active)
 	}
 
 	return nil
