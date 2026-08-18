@@ -1,0 +1,50 @@
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  reproducibility:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # goreleaser and the ldflags below read the tag and commit history
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7
+        with:
+          version: v2.15.2
+          install-only: true
+      - name: Build the release artifact with goreleaser
+        run: goreleaser build --snapshot --clean --single-target -o /tmp/goreleaser-build
+        env:
+          # The newest tag may well be a helm/* one, which goreleaser
+          # cannot parse as semver.
+          GORELEASER_CURRENT_TAG: v0.0.0
+
+      - name: Rebuild from source and compare digests
+        run: |
+          MODULE=github.com/italia/publiccode-crawler/v4/internal
+          VERSION=$(jq -r .version dist/metadata.json)
+          DATE=$(git log -1 --format=%cd --date=format-local:'%Y-%m-%dT%H:%M:%SZ')
+          cp -a . /tmp/src-elsewhere
+          cd /tmp/src-elsewhere
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GOAMD64=v1 \
+            go build -trimpath \
+              -ldflags="-s -w -buildid= -X $MODULE.VERSION=$VERSION -X $MODULE.BuildTime=$DATE" \
+              -o /tmp/plain-build ./main.go
+          sha256sum /tmp/goreleaser-build /tmp/plain-build
+          cmp /tmp/goreleaser-build /tmp/plain-build \
+            && echo "Reproducible build confirmed"
+        env:
+          TZ: UTC
