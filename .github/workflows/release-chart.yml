@@ -12,6 +12,8 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Get version
         id: get_version
         run: echo "version=${GITHUB_REF_NAME#helm/}" >> $GITHUB_ENV
