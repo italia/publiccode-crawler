@@ -8,8 +8,10 @@ builds:
   id: crawler
   binary: crawler
   main: ./main.go
+  flags:
+    - -trimpath
   ldflags:
-    - -s -w -X github.com/italia/publiccode-crawler/v4/internal.VERSION={{.Version}} -X github.com/italia/publiccode-crawler/v4/internal.BuildTime={{.Date}}
+    - -s -w -buildid= -X github.com/italia/publiccode-crawler/v4/internal.VERSION={{.Version}} -X github.com/italia/publiccode-crawler/v4/internal.BuildTime={{.CommitDate}}
   env:
   - CGO_ENABLED=0
   hooks:
