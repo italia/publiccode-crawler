@@ -16,7 +16,7 @@ builds:
     post: cp config.toml {{ dir .Path }}/config.toml
 archives:
 -
-  builds:
+  ids:
     - crawler
   wrap_in_directory: false
   files:
