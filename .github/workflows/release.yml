@@ -26,6 +26,8 @@ jobs:
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
+          # A restored module cache would end up inside a published artifact
+          cache: false
         id: go
       - # goreleaser shells out to syft for the sboms stanza
         uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
