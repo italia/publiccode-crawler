@@ -11,7 +11,8 @@ jobs:
     permissions:
       contents: read
     container:
-      image: italia/publiccode-crawler:latest
+      # The nightly crawl has to run the image this repo published last
+      image: italia/publiccode-crawler:latest # zizmor: ignore[unpinned-images]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
