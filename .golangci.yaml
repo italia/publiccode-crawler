@@ -48,9 +48,6 @@ linters:
     # Scanner constructors return Scanner by design
     - ireturn
 
-    # Same as wsl above, v2 version
-    - wsl_v5
-
     # TODO: fix and enable these
     - cyclop
     - gocognit
