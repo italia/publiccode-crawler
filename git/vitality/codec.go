@@ -43,6 +43,7 @@ func daysToTime(days uint16) time.Time {
 
 func Marshal(cache Cache) ([]byte, error) {
 	var buf bytes.Buffer
+
 	write := func(v any) { binary.Write(&buf, binary.LittleEndian, v) } //nolint:errcheck
 
 	buf.WriteByte(version)
@@ -56,6 +57,7 @@ func Marshal(cache Cache) ([]byte, error) {
 	}
 
 	write(uint16(len(cache.Authors))) //nolint:gosec // bounded above
+
 	for _, author := range cache.Authors {
 		buf.WriteString(author)
 		buf.WriteByte(0)
@@ -66,6 +68,7 @@ func Marshal(cache Cache) ([]byte, error) {
 	}
 
 	write(uint16(len(cache.Tags))) //nolint:gosec // bounded above
+
 	for _, tag := range cache.Tags {
 		if tag.Delta > 65535 || tag.Count > 65535 {
 			return nil, fmt.Errorf("vitality marshal: tag delta %d or count %d out of range", tag.Delta, tag.Count)
@@ -80,6 +83,7 @@ func Marshal(cache Cache) ([]byte, error) {
 	}
 
 	write(uint16(len(cache.Entries))) //nolint:gosec // bounded above
+
 	for _, entry := range cache.Entries {
 		if entry.Delta > 65535 || entry.Commits > 65535 || entry.Merges > 65535 {
 			return nil, fmt.Errorf("vitality marshal: entry out of range (delta=%d commits=%d merges=%d)",
@@ -95,6 +99,7 @@ func Marshal(cache Cache) ([]byte, error) {
 		}
 
 		write(uint16(len(entry.Authors))) //nolint:gosec // bounded above
+
 		for _, author := range entry.Authors {
 			write(author)
 		}

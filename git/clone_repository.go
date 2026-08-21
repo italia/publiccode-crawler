@@ -110,6 +110,7 @@ type dayData struct {
 
 func buildVitalityCache(repository *gogit.Repository, existing *vitality.Cache) (vitality.Cache, error) {
 	var cache vitality.Cache
+
 	cache.LastUpdated = time.Now().UTC()
 
 	authorIndex := map[string]uint16{}

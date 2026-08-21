@@ -183,8 +183,10 @@ page:
 				return nil, fmt.Errorf("can't parse GET %s response: %w", reqURL, err)
 			}
 
-			var driver string
-			var args []string
+			var (
+				driver string
+				args   []string
+			)
 
 			if len(hosting.Type) > 0 {
 				driver = hosting.Type[0]

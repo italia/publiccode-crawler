@@ -47,6 +47,7 @@ func (c *JSONDriver) Enumerate(ctx context.Context, catalogURL url.URL) ([]url.U
 	}
 
 	var rawURLs []any
+
 	switch v := result.(type) {
 	case []any:
 		rawURLs = v

@@ -64,6 +64,7 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 		cutoff := now.AddDate(0, 0, -idx)
 
 		authorSet := map[uint16]struct{}{}
+
 		var commits, merges float64
 
 		cur := cache.FirstEntryDate
@@ -74,6 +75,7 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 					authorSet[id] = struct{}{}
 				}
 			}
+
 			if sameDay(cur, cutoff) {
 				commits = float64(entry.Commits)
 				merges = float64(entry.Merges)
@@ -81,6 +83,7 @@ func CalculateRepoActivity(repository common.Repository, days int, now time.Time
 		}
 
 		var tagCount float64
+
 		cur = cache.FirstEntryDate
 		for _, tag := range cache.Tags {
 			cur = cur.AddDate(0, 0, int(tag.Delta))

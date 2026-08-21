@@ -232,6 +232,7 @@ func (c *Crawler) ScanCatalog(cat common.Catalog) {
 	proxyWg.Go(func() {
 		for repo := range proxyCh {
 			repo.CatalogID = cat.ID
+
 			repo.PublishersNamespace = cat.PublishersNamespace
 			c.repositories <- repo
 		}
@@ -270,8 +271,10 @@ func (c *Crawler) ProcessRepositories(repos chan common.Repository) {
 func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,gocyclo,maintidx
 	var logEntries []string
 
-	var software *apiclient.Software
-	var err error
+	var (
+		software *apiclient.Software
+		err      error
+	)
 
 	defer func() {
 		for _, e := range logEntries {
@@ -346,6 +349,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,go
 				"[%s] failed to fetch publiccode.yml (HTTP %d): %v",
 				repository.Name, resp.Status.Code, err,
 			))
+
 			metrics.GetCounter("repository_fetch_failed", c.Index).Inc()
 		}
 
@@ -382,6 +386,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,go
 	}
 
 	var parsed publiccode.PublicCode
+
 	parsed, err = parser.Parse(repository.FileRawURL)
 
 	valid := true
@@ -414,9 +419,11 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,go
 
 	if valid {
 		logEntries = append(logEntries, fmt.Sprintf("[%s] GOOD publiccode.yml\n", repository.Name))
+
 		metrics.GetCounter("repository_good_publiccodeyml", c.Index).Inc()
 	} else {
 		logEntries = append(logEntries, fmt.Sprintf("[%s] BAD publiccode.yml: %+v\n", repository.Name, err))
+
 		metrics.GetCounter("repository_bad_publiccodeyml", c.Index).Inc()
 	}
 
