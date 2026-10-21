@@ -10,7 +10,7 @@ import (
 
 	"github.com/italia/publiccode-crawler/v4/apiclient"
 	"github.com/italia/publiccode-crawler/v4/common"
-	publiccode "github.com/italia/publiccode-parser-go/v5"
+	publiccode "github.com/publiccodeyml/libpubliccode/v5"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )

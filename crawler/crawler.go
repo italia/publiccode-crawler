@@ -22,7 +22,7 @@ import (
 	"github.com/italia/publiccode-crawler/v4/git"
 	"github.com/italia/publiccode-crawler/v4/metrics"
 	"github.com/italia/publiccode-crawler/v4/scanner"
-	publiccode "github.com/italia/publiccode-parser-go/v5"
+	publiccode "github.com/publiccodeyml/libpubliccode/v5"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -366,7 +366,7 @@ func (c *Crawler) ProcessRepo(repository common.Repository) { //nolint:funlen,go
 	)
 
 	//nolint:godox
-	// FIXME: this is hardcoded for now, because it requires changes to publiccode-parser-go.
+	// FIXME: this is hardcoded for now, because it requires changes to libpubliccode.
 	domain := publiccode.Domain{
 		Host:        "github.com",
 		UseTokenFor: []string{"github.com", "api.github.com", "raw.githubusercontent.com"},
